@@ -27,13 +27,13 @@ export function useProducts(filters?: ProductFilters) {
   });
 }
 
-// Fetch single product
-export function useProduct(id: string) {
+// Fetch single product by slug
+export function useProduct(slug: string) {
   return useQuery({
-    queryKey: productKeys.detail(id),
-    queryFn: () => fetchProduct(id),
+    queryKey: productKeys.detail(slug),
+    queryFn: () => fetchProduct(slug),
     staleTime: 1000 * 60 * 10, // 10 minutes
-    enabled: !!id,
+    enabled: !!slug,
   });
 }
 
@@ -41,10 +41,10 @@ export function useProduct(id: string) {
 export function usePrefetchProduct() {
   const queryClient = useQueryClient();
 
-  return (id: string) => {
+  return (slug: string) => {
     queryClient.prefetchQuery({
-      queryKey: productKeys.detail(id),
-      queryFn: () => fetchProduct(id),
+      queryKey: productKeys.detail(slug),
+      queryFn: () => fetchProduct(slug),
       staleTime: 1000 * 60 * 10,
     });
   };

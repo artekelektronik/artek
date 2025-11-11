@@ -2,13 +2,20 @@
 
 import { useMemo, Suspense } from "react";
 import { Package } from "lucide-react";
-import { parseAsString, parseAsArrayOf, parseAsInteger, parseAsBoolean, useQueryStates } from "nuqs";
+import {
+  parseAsString,
+  parseAsArrayOf,
+  parseAsInteger,
+  parseAsBoolean,
+  useQueryStates,
+} from "nuqs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductFilters, type FilterState } from "@/components/product-filters";
 import { ProductCard } from "@/components/product-card";
 import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
 import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
+import { generateProductSlug } from "@/lib/utils";
 import type { AirtableProduct } from "@/types/airtable";
 
 // Define search params parsers
@@ -21,7 +28,7 @@ const searchParamsParser = {
   minPrice: parseAsInteger.withDefault(0),
   maxPrice: parseAsInteger.withDefault(10000),
   inStock: parseAsBoolean.withDefault(false),
-  
+
   // UI state
   page: parseAsInteger.withDefault(1),
   perPage: parseAsInteger.withDefault(9),
@@ -31,27 +38,30 @@ const searchParamsParser = {
 
 function ProductsContent() {
   const prefetchProduct = usePrefetchProduct();
-  
+
   // Use nuqs to manage URL search params
   const [params, setParams] = useQueryStates(searchParamsParser, {
     history: "push",
     shallow: true,
   });
-  
+
   // Fetch products with React Query
   const { data, isLoading, error } = useProducts();
-  
+
   const products = data?.products || [];
 
   // Convert URL params to FilterState
-  const filters: FilterState = useMemo(() => ({
-    priceRange: { min: params.minPrice, max: params.maxPrice },
-    selectedCategories: params.categories,
-    selectedAltCategories: params.altCategories,
-    selectedProductTypes: params.productTypes,
-    selectedSupplierCountries: params.supplierCountries,
-    inStockOnly: params.inStock,
-  }), [params]);
+  const filters: FilterState = useMemo(
+    () => ({
+      priceRange: { min: params.minPrice, max: params.maxPrice },
+      selectedCategories: params.categories,
+      selectedAltCategories: params.altCategories,
+      selectedProductTypes: params.productTypes,
+      selectedSupplierCountries: params.supplierCountries,
+      inStockOnly: params.inStock,
+    }),
+    [params]
+  );
 
   // Memoized filtered and sorted products
   const filteredProducts = useMemo(() => {
@@ -59,7 +69,9 @@ function ProductsContent() {
 
     // Stock filter
     if (filters.inStockOnly) {
-      filtered = filtered.filter((product) => (product.fields["Stock Quantity"] || 0) > 0);
+      filtered = filtered.filter(
+        (product) => (product.fields["Stock Quantity"] || 0) > 0
+      );
     }
 
     // Category filter
@@ -73,7 +85,9 @@ function ProductsContent() {
     if (filters.selectedAltCategories.length > 0) {
       filtered = filtered.filter((product) => {
         const altCategories = product.fields["Alt Kategori"] || [];
-        return altCategories.some((cat) => filters.selectedAltCategories.includes(cat));
+        return altCategories.some((cat) =>
+          filters.selectedAltCategories.includes(cat)
+        );
       });
     }
 
@@ -81,7 +95,9 @@ function ProductsContent() {
     if (filters.selectedProductTypes.length > 0) {
       filtered = filtered.filter((product) => {
         const productTypes = product.fields["Ürün Tipi"] || [];
-        return productTypes.some((type) => filters.selectedProductTypes.includes(type));
+        return productTypes.some((type) =>
+          filters.selectedProductTypes.includes(type)
+        );
       });
     }
 
@@ -89,13 +105,16 @@ function ProductsContent() {
     if (filters.selectedSupplierCountries.length > 0) {
       filtered = filtered.filter((product) => {
         const countries = product.fields["Supplier Country"] || [];
-        return countries.some((country) => filters.selectedSupplierCountries.includes(country));
+        return countries.some((country) =>
+          filters.selectedSupplierCountries.includes(country)
+        );
       });
     }
 
     // Price filter
     filtered = filtered.filter((product) => {
-      const price = product.fields["Unit Price"] || product.fields["Parakende Fiyatı"] || 0;
+      const price =
+        product.fields["Unit Price"] || product.fields["Parakende Fiyatı"] || 0;
       return price >= filters.priceRange.min && price <= filters.priceRange.max;
     });
 
@@ -103,21 +122,32 @@ function ProductsContent() {
     filtered.sort((a, b) => {
       switch (params.sort) {
         case "name-asc":
-          return a.fields["Product Name"].localeCompare(b.fields["Product Name"]);
+          return a.fields["Product Name"].localeCompare(
+            b.fields["Product Name"]
+          );
         case "name-desc":
-          return b.fields["Product Name"].localeCompare(a.fields["Product Name"]);
+          return b.fields["Product Name"].localeCompare(
+            a.fields["Product Name"]
+          );
         case "price-asc": {
-          const priceA = a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
-          const priceB = b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
+          const priceA =
+            a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
+          const priceB =
+            b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
           return priceA - priceB;
         }
         case "price-desc": {
-          const priceA = a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
-          const priceB = b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
+          const priceA =
+            a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
+          const priceB =
+            b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
           return priceB - priceA;
         }
         case "stock-desc":
-          return (b.fields["Stock Quantity"] || 0) - (a.fields["Stock Quantity"] || 0);
+          return (
+            (b.fields["Stock Quantity"] || 0) -
+            (a.fields["Stock Quantity"] || 0)
+          );
         case "newest":
         default:
           return 0;
@@ -128,31 +158,35 @@ function ProductsContent() {
   }, [products, filters, params.sort]);
 
   // Get unique filter values (memoized)
-  const categories = useMemo(() => 
-    Array.from(
-      new Set(products.map((p) => p.fields.Category).filter(Boolean))
-    ) as string[],
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set(products.map((p) => p.fields.Category).filter(Boolean))
+      ) as string[],
     [products]
   );
 
-  const altCategories = useMemo(() =>
-    Array.from(
-      new Set(products.flatMap((p) => p.fields["Alt Kategori"] || []))
-    ).filter(Boolean) as string[],
+  const altCategories = useMemo(
+    () =>
+      Array.from(
+        new Set(products.flatMap((p) => p.fields["Alt Kategori"] || []))
+      ).filter(Boolean) as string[],
     [products]
   );
 
-  const productTypes = useMemo(() =>
-    Array.from(
-      new Set(products.flatMap((p) => p.fields["Ürün Tipi"] || []))
-    ).filter(Boolean) as string[],
+  const productTypes = useMemo(
+    () =>
+      Array.from(
+        new Set(products.flatMap((p) => p.fields["Ürün Tipi"] || []))
+      ).filter(Boolean) as string[],
     [products]
   );
 
-  const supplierCountries = useMemo(() =>
-    Array.from(
-      new Set(products.flatMap((p) => p.fields["Supplier Country"] || []))
-    ).filter(Boolean) as string[],
+  const supplierCountries = useMemo(
+    () =>
+      Array.from(
+        new Set(products.flatMap((p) => p.fields["Supplier Country"] || []))
+      ).filter(Boolean) as string[],
     [products]
   );
 
@@ -167,12 +201,26 @@ function ProductsContent() {
   // Handle filter changes - update URL params
   const handleFilterChange = (newFilters: FilterState) => {
     setParams({
-      categories: newFilters.selectedCategories.length > 0 ? newFilters.selectedCategories : null,
-      altCategories: newFilters.selectedAltCategories.length > 0 ? newFilters.selectedAltCategories : null,
-      productTypes: newFilters.selectedProductTypes.length > 0 ? newFilters.selectedProductTypes : null,
-      supplierCountries: newFilters.selectedSupplierCountries.length > 0 ? newFilters.selectedSupplierCountries : null,
-      minPrice: newFilters.priceRange.min !== 0 ? newFilters.priceRange.min : null,
-      maxPrice: newFilters.priceRange.max !== 10000 ? newFilters.priceRange.max : null,
+      categories:
+        newFilters.selectedCategories.length > 0
+          ? newFilters.selectedCategories
+          : null,
+      altCategories:
+        newFilters.selectedAltCategories.length > 0
+          ? newFilters.selectedAltCategories
+          : null,
+      productTypes:
+        newFilters.selectedProductTypes.length > 0
+          ? newFilters.selectedProductTypes
+          : null,
+      supplierCountries:
+        newFilters.selectedSupplierCountries.length > 0
+          ? newFilters.selectedSupplierCountries
+          : null,
+      minPrice:
+        newFilters.priceRange.min !== 0 ? newFilters.priceRange.min : null,
+      maxPrice:
+        newFilters.priceRange.max !== 10000 ? newFilters.priceRange.max : null,
       inStock: newFilters.inStockOnly ? newFilters.inStockOnly : null,
       page: 1, // Reset to first page when filters change
     });
@@ -227,7 +275,9 @@ function ProductsContent() {
       <div className="container mx-auto px-4 py-8 mt-16">
         <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-lg">
           <p className="font-semibold">Hata</p>
-          <p className="text-sm">{error instanceof Error ? error.message : "Bir hata oluştu"}</p>
+          <p className="text-sm">
+            {error instanceof Error ? error.message : "Bir hata oluştu"}
+          </p>
         </div>
       </div>
     );
@@ -291,21 +341,27 @@ function ProductsContent() {
             </div>
           ) : (
             <>
-              <div 
+              <div
                 className={`grid gap-6 ${
-                  params.grid === 2 
-                    ? "grid-cols-1 sm:grid-cols-2" 
+                  params.grid === 2
+                    ? "grid-cols-1 sm:grid-cols-2"
                     : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 }`}
               >
-                {currentProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    onMouseEnter={() => prefetchProduct(product.id)}
-                  >
-                    <ProductCard product={product} />
-                  </div>
-                ))}
+                {currentProducts.map((product) => {
+                  const slug = generateProductSlug(
+                    product.fields["Product Name"],
+                    product.id
+                  );
+                  return (
+                    <div
+                      key={product.id}
+                      onMouseEnter={() => prefetchProduct(slug)}
+                    >
+                      <ProductCard product={product} />
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Pagination */}
@@ -326,31 +382,33 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8 mt-16">
-        <div className="mb-8">
-          <Skeleton className="h-10 w-48 mb-4" />
-          <Skeleton className="h-6 w-96" />
-        </div>
-        <div className="flex gap-8">
-          <div className="w-64 hidden lg:block">
-            <Skeleton className="h-96 w-full" />
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8 mt-16">
+          <div className="mb-8">
+            <Skeleton className="h-10 w-48 mb-4" />
+            <Skeleton className="h-6 w-96" />
           </div>
-          <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {[...Array(9)].map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-square w-full rounded-md" />
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ))}
+          <div className="flex gap-8">
+            <div className="w-64 hidden lg:block">
+              <Skeleton className="h-96 w-full" />
+            </div>
+            <div className="flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[...Array(9)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="aspect-square w-full rounded-md" />
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-20 w-full" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ProductsContent />
     </Suspense>
   );

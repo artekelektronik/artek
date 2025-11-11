@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MapPin, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { generateProductSlug } from "@/lib/utils";
 import type { AirtableProduct } from "@/types/airtable";
 
 interface ProductCardProps {
@@ -15,11 +16,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const { fields } = product;
   const hasStock = (fields["Stock Quantity"] ?? 0) > 0;
   const primaryPrice = fields["Unit Price"] || fields["Parakende Fiyatı"];
+  const productSlug = generateProductSlug(fields["Product Name"], product.id);
 
   return (
     <div className="group relative flex flex-col h-full bg-card rounded-lg border overflow-hidden hover:shadow-lg transition-shadow">
       {/* Image Section - Fixed aspect ratio */}
-      <Link href={`/products/${product.id}`} className="block relative aspect-square bg-muted">
+      <Link href={`/products/${productSlug}`} className="block relative aspect-square bg-muted">
         {fields.Photo && fields.Photo[0] ? (
           <Image
             src={fields.Photo[0].thumbnails?.large.url || fields.Photo[0].url}
@@ -60,7 +62,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Product Name - Fixed 2 lines */}
-        <Link href={`/products/${product.id}`} className="mb-3">
+        <Link href={`/products/${productSlug}`} className="mb-3">
           <h3 className="font-medium text-base line-clamp-2 min-h-12 hover:underline">
             {fields["Product Name"]}
           </h3>
@@ -136,7 +138,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Action Button - Fixed position */}
         <Button asChild variant="default" size="sm" className="w-full mt-4">
-          <Link href={`/products/${product.id}`}>
+          <Link href={`/products/${productSlug}`}>
             Detayları Gör
           </Link>
         </Button>

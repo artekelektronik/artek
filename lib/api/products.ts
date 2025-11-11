@@ -27,8 +27,8 @@ export async function fetchProducts(
   return response.json();
 }
 
-export async function fetchProduct(id: string): Promise<AirtableProduct> {
-  const response = await fetch(`/api/products/${id}`);
+export async function fetchProduct(slug: string): Promise<AirtableProduct> {
+  const response = await fetch(`/api/products/${slug}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch product");
