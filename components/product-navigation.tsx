@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import Image from "next/image"
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
 
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,34 +12,42 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 
 const products: { title: string; href: string; description: string }[] = [
   {
-    title: "EMC Filters",
-    href: "/products/emc-filters",
-    description: "Precision engineered electronic components for EMI suppression.",
+    title: "Tüm Ürünler",
+    href: "/products",
+    description: "Tüm ürün kataloğumuzu görüntüleyin ve filtreleyin.",
   },
   {
-    title: "Ferrite Cores",
-    href: "/products/ferrite-cores",
-    description: "Superior magnetic performance for optimal EMI suppression.",
+    title: "PEM",
+    href: "/products?categories=PEM",
+    description: "PEM kategorisindeki ürünleri görüntüleyin.",
   },
   {
-    title: "Power Components",
-    href: "/products/power-components",
-    description: "High-performance components for critical systems.",
+    title: "Ferrit",
+    href: "/products?categories=Ferrit",
+    description: "Ferrit kategorisindeki ürünleri görüntüleyin.",
   },
-]
+  {
+    title: "EE",
+    href: "/products?categories=EE",
+    description: "EE kategorisindeki ürünleri görüntüleyin.",
+  },
+];
 
 export function ProductNavigation() {
-  const isMobile = useIsMobile()
+  const isMobile = useIsMobile();
 
   return (
-    <NavigationMenu viewport={!isMobile} className="**:data-[slot=navigation-menu-viewport]:bg-background **:data-[slot=navigation-menu-viewport]:text-foreground">
+    <NavigationMenu
+      viewport={!isMobile}
+      className="**:data-[slot=navigation-menu-viewport]:bg-background **:data-[slot=navigation-menu-viewport]:text-foreground"
+    >
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger className="h-auto py-1 text-sm font-light text-white bg-transparent hover:bg-transparent hover:text-white focus:bg-transparent focus:text-white data-[state=open]:bg-transparent data-[state=open]:text-white">
+          <NavigationMenuTrigger className="h-auto py-1 text-sm font-light text-white bg-transparent hover:bg-transparent hover:text-white focus:bg-transparent focus:text-black data-[state=open]:bg-transparent data-[state=open]:text-black">
             Products
           </NavigationMenuTrigger>
           <NavigationMenuContent className="bg-background text-foreground">
@@ -61,7 +69,8 @@ export function ProductNavigation() {
                       Our Products
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground hover:text-muted-foreground">
-                      High-quality electronic components for demanding applications.
+                      High-quality electronic components for demanding
+                      applications.
                     </p>
                   </Link>
                 </NavigationMenuLink>
@@ -75,18 +84,12 @@ export function ProductNavigation() {
                   {product.description}
                 </ListItem>
               ))}
-              <ListItem
-                title="Signal Transformers"
-                href="/products/signal-transformers"
-              >
-                Precision transformers for specialized applications.
-              </ListItem>
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
-  )
+  );
 }
 
 function ListItem({
@@ -98,16 +101,18 @@ function ListItem({
   return (
     <li {...props}>
       <NavigationMenuLink asChild>
-        <Link 
+        <Link
           href={href}
           className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-muted focus:bg-muted hover:text-foreground focus:text-foreground"
         >
-          <div className="text-sm font-medium leading-none text-foreground hover:text-foreground">{title}</div>
+          <div className="text-sm font-medium leading-none text-foreground hover:text-foreground">
+            {title}
+          </div>
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground hover:text-muted-foreground">
             {children}
           </p>
         </Link>
       </NavigationMenuLink>
     </li>
-  )
+  );
 }
