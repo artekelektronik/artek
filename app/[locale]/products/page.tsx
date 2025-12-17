@@ -9,6 +9,7 @@ import {
   parseAsBoolean,
   useQueryStates,
 } from "nuqs";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProductFilters, type FilterState } from "@/components/product-filters";
 import { ProductCard } from "@/components/product-card";
@@ -16,7 +17,6 @@ import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
 import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
 import { generateProductSlug } from "@/lib/utils";
-import type { AirtableProduct } from "@/types/airtable";
 
 // Define search params parsers
 const searchParamsParser = {
@@ -37,6 +37,7 @@ const searchParamsParser = {
 };
 
 function ProductsContent() {
+  const t = useTranslations("products");
   const prefetchProduct = usePrefetchProduct();
 
   // Use nuqs to manage URL search params
@@ -48,7 +49,7 @@ function ProductsContent() {
   // Fetch products with React Query
   const { data, isLoading, error } = useProducts();
 
-  const products = data?.products || [];
+  const products = useMemo(() => data?.products || [], [data?.products]);
 
   // Convert URL params to FilterState
   const filters: FilterState = useMemo(
@@ -274,9 +275,9 @@ function ProductsContent() {
     return (
       <div className="container mx-auto px-4 py-8 mt-16">
         <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-lg">
-          <p className="font-semibold">Hata</p>
+          <p className="font-semibold">{t("error")}</p>
           <p className="text-sm">
-            {error instanceof Error ? error.message : "Bir hata oluştu"}
+            {error instanceof Error ? error.message : t("errorOccurred")}
           </p>
         </div>
       </div>
@@ -287,7 +288,7 @@ function ProductsContent() {
     <div className="container mx-auto px-4 py-8 mt-16">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Ürünler</h1>
+        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
       </div>
 
       {/* Main Layout: Sidebar + Content */}
@@ -326,7 +327,6 @@ function ProductsContent() {
               }}
               sortBy={params.sort}
               onSortChange={(sort) => setParams({ sort })}
-              totalItems={filteredProducts.length}
             />
           </div>
 
@@ -334,9 +334,9 @@ function ProductsContent() {
           {currentProducts.length === 0 ? (
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium mb-2">Ürün bulunamadı</p>
+              <p className="text-lg font-medium mb-2">{t("noProducts")}</p>
               <p className="text-muted-foreground">
-                Filtrelerinizi değiştirmeyi deneyin
+                {t("tryChangingFilters")}
               </p>
             </div>
           ) : (

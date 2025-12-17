@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 interface MenuItem {
   title: string;
   links: {
@@ -23,59 +27,72 @@ interface Footer2Props {
 }
 
 const Footer = ({
-  logo = {
+  logo,
+  tagline,
+  menuItems,
+  copyright,
+  bottomLinks,
+}: Footer2Props) => {
+  const t = useTranslations("footer");
+
+  const defaultLogo = {
     src: "",
     alt: "Artek Teknoloji",
-    title: "ARTEK TEKNOLOJİ",
+    title: t("brand"),
     url: "https://www.artekteknoloji.com",
-  },
-  tagline = "Precision engineering meets uncompromising quality standards.",
-  menuItems = [
+  };
+
+  const defaultMenuItems = [
     {
-      title: "Product",
+      title: t("sections.product"),
       links: [
-        { text: "Overview", url: "#" },
-        { text: "Pricing", url: "#" },
-        { text: "Marketplace", url: "#" },
-        { text: "Features", url: "#" },
-        { text: "Integrations", url: "#" },
-        { text: "Pricing", url: "#" },
+        { text: t("links.overview"), url: "#" },
+        { text: t("links.pricing"), url: "#" },
+        { text: t("links.marketplace"), url: "#" },
+        { text: t("links.features"), url: "#" },
+        { text: t("links.integrations"), url: "#" },
       ],
     },
     {
-      title: "Company",
+      title: t("sections.company"),
       links: [
-        { text: "About", url: "#" },
-        { text: "Team", url: "#" },
-        { text: "Blog", url: "#" },
-        { text: "Careers", url: "#" },
-        { text: "Contact", url: "#" },
-        { text: "Privacy", url: "#" },
+        { text: t("links.about"), url: "#" },
+        { text: t("links.team"), url: "#" },
+        { text: t("links.blog"), url: "#" },
+        { text: t("links.careers"), url: "#" },
+        { text: t("links.contact"), url: "#" },
+        { text: t("links.privacy"), url: "#" },
       ],
     },
     {
-      title: "Resources",
+      title: t("sections.resources"),
       links: [
-        { text: "Help", url: "#" },
-        { text: "Sales", url: "#" },
-        { text: "Advertise", url: "#" },
+        { text: t("links.help"), url: "#" },
+        { text: t("links.sales"), url: "#" },
+        { text: t("links.advertise"), url: "#" },
       ],
     },
     {
-      title: "Social",
+      title: t("sections.social"),
       links: [
-        { text: "Twitter", url: "#" },
-        { text: "Instagram", url: "#" },
-        { text: "LinkedIn", url: "#" },
+        { text: t("links.twitter"), url: "#" },
+        { text: t("links.instagram"), url: "#" },
+        { text: t("links.linkedin"), url: "#" },
       ],
     },
-  ],
-  copyright = "© 2025 Artek Teknoloji. All rights reserved.",
-  bottomLinks = [
-    { text: "Terms and Conditions", url: "#" },
-    { text: "Privacy Policy", url: "#" },
-  ],
-}: Footer2Props) => {
+  ];
+
+  const defaultBottomLinks = [
+    { text: t("terms"), url: "#" },
+    { text: t("privacyPolicy"), url: "#" },
+  ];
+
+  const finalLogo = logo || defaultLogo;
+  const finalTagline = tagline || t("tagline");
+  const finalMenuItems = menuItems || defaultMenuItems;
+  const finalCopyright = copyright || t("copyright");
+  const finalBottomLinks = bottomLinks || defaultBottomLinks;
+
   return (
     <section className="py-32 px-4">
       <div className="w-full">
@@ -83,11 +100,11 @@ const Footer = ({
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
             <div className="col-span-2 mb-8 lg:mb-0">
               <div className="flex items-center gap-2 lg:justify-start">
-                <h2 className="text-2xl font-bold">{logo.title}</h2>
+                <h2 className="text-2xl font-bold">{finalLogo.title}</h2>
               </div>
-              <p className="mt-4 font-medium text-gray-600">{tagline}</p>
+              <p className="mt-4 font-medium text-gray-600">{finalTagline}</p>
             </div>
-            {menuItems.map((section, sectionIdx) => (
+            {finalMenuItems.map((section, sectionIdx) => (
               <div key={sectionIdx}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>
                 <ul className="text-muted-foreground space-y-4">
@@ -104,9 +121,9 @@ const Footer = ({
             ))}
           </div>
           <div className="text-muted-foreground mt-24 flex flex-col justify-between gap-4 border-t pt-8 text-sm font-medium md:flex-row md:items-center">
-            <p>{copyright}</p>
+            <p>{finalCopyright}</p>
             <ul className="flex gap-4">
-              {bottomLinks.map((link, linkIdx) => (
+              {finalBottomLinks.map((link, linkIdx) => (
                 <li key={linkIdx} className="hover:text-primary underline">
                   <a href={link.url}>{link.text}</a>
                 </li>

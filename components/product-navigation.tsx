@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -14,31 +15,32 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
-const products: { title: string; href: string; description: string }[] = [
-  {
-    title: "Tüm Ürünler",
-    href: "/products",
-    description: "Tüm ürün kataloğumuzu görüntüleyin ve filtreleyin.",
-  },
-  {
-    title: "PEM",
-    href: "/products?categories=PEM",
-    description: "PEM kategorisindeki ürünleri görüntüleyin.",
-  },
-  {
-    title: "Ferrit",
-    href: "/products?categories=Ferrit",
-    description: "Ferrit kategorisindeki ürünleri görüntüleyin.",
-  },
-  {
-    title: "EE",
-    href: "/products?categories=EE",
-    description: "EE kategorisindeki ürünleri görüntüleyin.",
-  },
-];
-
 export function ProductNavigation() {
   const isMobile = useIsMobile();
+  const t = useTranslations("productNav");
+
+  const products = [
+    {
+      title: t("allProducts"),
+      href: "/products",
+      description: t("allProductsDesc"),
+    },
+    {
+      title: "PEM",
+      href: "/products?categories=PEM",
+      description: t("pemDesc"),
+    },
+    {
+      title: "Ferrit",
+      href: "/products?categories=Ferrit",
+      description: t("ferritDesc"),
+    },
+    {
+      title: "EE",
+      href: "/products?categories=EE",
+      description: t("eeDesc"),
+    },
+  ];
 
   return (
     <NavigationMenu
@@ -48,7 +50,7 @@ export function ProductNavigation() {
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuTrigger className="h-auto py-1 text-sm font-light text-white bg-transparent hover:bg-transparent hover:text-white focus:bg-transparent focus:text-black data-[state=open]:bg-transparent data-[state=open]:text-black">
-            Products
+            {t("title")}
           </NavigationMenuTrigger>
           <NavigationMenuContent className="bg-background text-foreground">
             <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr] bg-background">
@@ -66,11 +68,10 @@ export function ProductNavigation() {
                       className="mb-4 rounded-md"
                     />
                     <div className="mb-2 mt-4 text-lg font-medium text-foreground hover:text-foreground">
-                      Our Products
+                      {t("ourProducts")}
                     </div>
                     <p className="text-sm leading-tight text-muted-foreground hover:text-muted-foreground">
-                      High-quality electronic components for demanding
-                      applications.
+                      {t("ourProductsDesc")}
                     </p>
                   </Link>
                 </NavigationMenuLink>

@@ -2,17 +2,19 @@
 
 import { Suspense } from "react";
 import { use } from "react";
+import { useTranslations } from "next-intl";
 import { useProduct } from "@/hooks/use-products";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Package, MapPin, ShoppingCart, AlertCircle } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Package, ShoppingCart, AlertCircle } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 
 function ProductDetailContent({ slug }: { slug: string }) {
+  const t = useTranslations("productDetail");
   const { data: product, isLoading, error } = useProduct(slug);
 
   if (isLoading) {
@@ -46,7 +48,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
         <Link href="/products">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Ürünlere Dön
+            {t("backButton")}
           </Button>
         </Link>
         <Card className="border-destructive">
@@ -54,8 +56,8 @@ function ProductDetailContent({ slug }: { slug: string }) {
             <div className="flex items-center gap-3 text-destructive">
               <AlertCircle className="h-6 w-6" />
               <div>
-                <p className="font-semibold">Ürün Bulunamadı</p>
-                <p className="text-sm">Bu ürün mevcut değil veya kaldırılmış olabilir.</p>
+                <p className="font-semibold">{t("notFound")}</p>
+                <p className="text-sm">{t("notFoundDescription")}</p>
               </div>
             </div>
           </CardContent>
@@ -71,11 +73,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
     "Parakende Fiyatı": retailPrice,
     "Toptan Fiyatı": wholesalePrice,
     "Toptan Taban ": wholesaleBase,
-    "Alış Fiyatı": purchasePrice,
     "Stock Quantity": totalStock,
-    "Stock (Karakoy)": karakoyStock,
-    "Stock (Cekmekoy)": cekmekoyStock,
-    "Total Stock Value": stockValue,
     Description: description,
     "Alt Kategori": altCategories,
     "Ürün Tipi": productTypes,
@@ -94,7 +92,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
       <Link href="/products">
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Ürünlere Dön
+          {t("backButton")}
         </Button>
       </Link>
 
@@ -123,7 +121,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
               variant={inStock ? "default" : "destructive"}
               className="absolute top-4 right-4 text-sm"
             >
-              {inStock ? "Stokta Var" : "Stokta Yok"}
+              {inStock ? t("inStock") : t("outOfStock")}
             </Badge>
           </div>
 
@@ -164,7 +162,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
               )}
               {productCode && (
                 <Badge variant="outline" className="text-sm">
-                  Kod: {productCode}
+                  {t("code")} {productCode}
                 </Badge>
               )}
             </div>
@@ -175,7 +173,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
             <CardContent className="pt-6 space-y-3">
               {unitPrice && (
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Birim Fiyat:</span>
+                  <span className="text-muted-foreground">{t("unitPrice")}</span>
                   <span className="text-2xl font-bold">
                     ₺{unitPrice.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
@@ -187,7 +185,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
               
               {retailPrice && (
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Perakende Fiyatı:</span>
+                  <span className="text-muted-foreground">{t("retailPrice")}</span>
                   <span className="text-lg font-semibold">
                     ₺{retailPrice.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
@@ -199,7 +197,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
 
               {wholesalePrice && (
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Toptan Fiyatı:</span>
+                  <span className="text-muted-foreground">{t("wholesalePrice")}</span>
                   <span className="text-lg">
                     ₺{wholesalePrice.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
@@ -211,7 +209,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
 
               {wholesaleBase && (
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Toptan Taban:</span>
+                  <span className="text-muted-foreground">{t("wholesaleBase")}</span>
                   <span className="text-lg">
                     ₺{wholesaleBase.toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
@@ -229,7 +227,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
               <CardContent className="pt-6">
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  AI Ürün Özeti
+                  {t("aiSummary")}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {aiSummary.value}
@@ -241,67 +239,22 @@ function ProductDetailContent({ slug }: { slug: string }) {
           {/* Description */}
           {description && (
             <div>
-              <h3 className="font-semibold mb-2">Açıklama</h3>
+              <h3 className="font-semibold mb-2">{t("description")}</h3>
               <p className="text-muted-foreground leading-relaxed">{description}</p>
             </div>
           )}
-
-          {/* Stock Information - Hidden */}
-          {/* <Separator />
-
-          <div className="space-y-3">
-            <h3 className="font-semibold flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Stok Durumu
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Karaköy</p>
-                  <p className="text-2xl font-bold">{karakoyStock || 0}</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardContent className="pt-4 text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Çekmeköy</p>
-                  <p className="text-2xl font-bold">{cekmekoyStock || 0}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-sm text-muted-foreground">Toplam Stok:</span>
-              <Badge variant={inStock ? "default" : "secondary"} className="text-base px-3 py-1">
-                {totalStock || 0} adet
-              </Badge>
-            </div>
-
-            {stockValue && (
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Stok Değeri:</span>
-                <span className="font-semibold">
-                  ₺{stockValue.toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-            )}
-          </div> */}
 
           {/* Additional Information */}
           {(altCategories?.length || productTypes?.length || supplierCountries?.length) && (
             <>
               <Separator />
               <div className="space-y-3">
-                <h3 className="font-semibold">Ek Bilgiler</h3>
+                <h3 className="font-semibold">{t("additionalInfo")}</h3>
                 
                 {altCategories && altCategories.length > 0 && (
                   <div>
                     <span className="text-sm text-muted-foreground block mb-2">
-                      Alt Kategoriler:
+                      {t("altCategories")}
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {altCategories.map((cat) => (
@@ -316,7 +269,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
                 {productTypes && productTypes.length > 0 && (
                   <div>
                     <span className="text-sm text-muted-foreground block mb-2">
-                      Ürün Tipleri:
+                      {t("productTypes")}
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {productTypes.map((type) => (
@@ -331,7 +284,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
                 {supplierCountries && supplierCountries.length > 0 && (
                   <div>
                     <span className="text-sm text-muted-foreground block mb-2">
-                      Tedarikçi Ülkeler:
+                      {t("supplierCountries")}
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {supplierCountries.map((country) => (
@@ -349,7 +302,7 @@ function ProductDetailContent({ slug }: { slug: string }) {
           {/* Action Button */}
           <Button size="lg" className="w-full" disabled={!inStock}>
             <ShoppingCart className="mr-2 h-5 w-5" />
-            {inStock ? "Sepete Ekle" : "Stokta Yok"}
+            {inStock ? t("addToCart") : t("outOfStockButton")}
           </Button>
         </div>
       </div>

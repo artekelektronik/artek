@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import base from "@/lib/airtable";
-import type { AirtableProduct } from "@/types/airtable";
+import type { AirtableProduct, AirtableSelectOptions, AirtableApiError, ProductFields } from "@/types/airtable";
 
 export async function GET(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     console.log("Fetching products from Airtable...");
 
-    let selectOptions: any = {
+    const selectOptions: AirtableSelectOptions = {
       sort: [{ field: "Product Name", direction: "asc" }],
     };
 
@@ -33,20 +33,21 @@ export async function GET(request: Request) {
 
     const products: AirtableProduct[] = records.map((record) => ({
       id: record.id,
-      fields: record.fields as any,
+      fields: record.fields as unknown as ProductFields,
       createdTime: record._rawJson.createdTime,
     }));
 
     return NextResponse.json({ products, count: products.length });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching products:", error);
+    const apiError = error as AirtableApiError;
     return NextResponse.json(
       {
         error: "Failed to fetch products",
-        message: error.message,
-        statusCode: error.statusCode,
+        message: apiError.message,
+        statusCode: apiError.statusCode,
       },
-      { status: error.statusCode || 500 }
+      { status: apiError.statusCode || 500 }
     );
   }
 }

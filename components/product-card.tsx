@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { MapPin, Package } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { generateProductSlug } from "@/lib/utils";
@@ -13,9 +14,9 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const t = useTranslations("productCard");
   const { fields } = product;
   const hasStock = (fields["Stock Quantity"] ?? 0) > 0;
-  const primaryPrice = fields["Unit Price"] || fields["Parakende Fiyatı"];
   const productSlug = generateProductSlug(fields["Product Name"], product.id);
 
   return (
@@ -41,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
           variant={hasStock ? "default" : "destructive"}
           className="absolute top-3 right-3"
         >
-          {hasStock ? "Stokta" : "Tükendi"}
+          {hasStock ? t("inStock") : t("outOfStock")}
         </Badge>
       </Link>
 
@@ -72,7 +73,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
           <MapPin className="h-3.5 w-3.5" />
           <span>
-            Karaköy: {fields["Stock (Karakoy)"] ?? 0}
+            {t("locationKarakoy")} {fields["Stock (Karakoy)"] ?? 0}
           </span>
         </div>
 
@@ -80,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="min-h-5 mb-3">
           {fields["Product Code"] && (
             <p className="text-xs text-muted-foreground">
-              Kod: {fields["Product Code"]}
+              {t("code")} {fields["Product Code"]}
             </p>
           )}
         </div>
@@ -94,7 +95,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex justify-between items-center min-h-5">
             {fields["Unit Price"] && (
               <>
-                <span className="text-xs text-muted-foreground">Birim Fiyat:</span>
+                <span className="text-xs text-muted-foreground">{t("unitPrice")}</span>
                 <span className="font-semibold text-sm">
                   ₺{fields["Unit Price"].toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
@@ -109,7 +110,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex justify-between items-center min-h-5">
             {fields["Parakende Fiyatı"] && (
               <>
-                <span className="text-xs text-muted-foreground">Perakende:</span>
+                <span className="text-xs text-muted-foreground">{t("retailPrice")}</span>
                 <span className="text-xs">
                   ₺{fields["Parakende Fiyatı"].toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
@@ -124,7 +125,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex justify-between items-center min-h-5">
             {fields["Toptan Fiyatı"] && (
               <>
-                <span className="text-xs text-muted-foreground">Toptan:</span>
+                <span className="text-xs text-muted-foreground">{t("wholesalePrice")}</span>
                 <span className="text-xs">
                   ₺{fields["Toptan Fiyatı"].toLocaleString("tr-TR", {
                     minimumFractionDigits: 2,
@@ -139,7 +140,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Action Button - Fixed position */}
         <Button asChild variant="default" size="sm" className="w-full mt-4">
           <Link href={`/products/${productSlug}`}>
-            Detayları Gör
+            {t("viewDetails")}
           </Link>
         </Button>
       </div>

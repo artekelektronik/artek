@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import type { AirtableTableMeta, AirtableApiError } from "@/types/airtable";
+
+interface AirtableTablesResponse {
+  tables: AirtableTableMeta[];
+}
 
 export async function GET() {
   const apiKey = process.env.AIRTABLE_API_KEY;
@@ -24,16 +29,18 @@ export async function GET() {
       );
     }
 
+    const tablesData = data as AirtableTablesResponse;
     return NextResponse.json({
-      tables: data.tables.map((t: any) => ({
+      tables: tablesData.tables.map((t: AirtableTableMeta) => ({
         id: t.id,
         name: t.name,
         description: t.description,
       })),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const apiError = error as AirtableApiError;
     return NextResponse.json(
-      { error: "Request failed", message: error.message },
+      { error: "Request failed", message: apiError.message },
       { status: 500 }
     );
   }

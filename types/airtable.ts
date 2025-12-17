@@ -1,3 +1,26 @@
+// Airtable Select Options for querying records
+export interface AirtableSelectOptions {
+  fields?: string[];
+  filterByFormula?: string;
+  maxRecords?: number;
+  pageSize?: number;
+  sort?: Array<{ field: string; direction: "asc" | "desc" }>;
+  view?: string;
+}
+
+// Airtable API Error type
+export interface AirtableApiError extends Error {
+  message: string;
+  statusCode?: number;
+}
+
+// Airtable API Table metadata
+export interface AirtableTableMeta {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 // Airtable Photo/Attachment Type
 export interface AirtableAttachment {
   id: string;

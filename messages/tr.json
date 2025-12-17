@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "title": "Artek - Ürünler",
+    "description": "Artek ürün kataloğu"
+  },
+  "nav": {
+    "brand": "Artek Elektronik",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "whatsappLabel": "Hızlı İletişim",
+    "whatsappMessage": "Merhaba, ürünleriniz hakkında bilgi almak istiyorum.",
+    "products": "Ürünler"
+  },
+  "home": {
+    "hero1": {
+      "title": "Ferrit Nüve",
+      "subtitle": "Üstün manyetik performans"
+    },
+    "hero2": {
+      "title": "Karkaslar",
+      "subtitle": "Hassas bobinaj çözümleri.",
+      "description": "Yüksek kaliteli bobin karkasları."
+    },
+    "hero3": {
+      "title": "Ferrit Trafolar",
+      "subtitle": "Yüksek verimli güç dönüşümü.",
+      "description": "Kompakt ve verimli ferrit transformatörler."
+    },
+    "hero4": {
+      "title": "Saclı Trafolar",
+      "subtitle": "Güvenilir güç çözümleri.",
+      "description": "Endüstriyel uygulamalar için saclı transformatörler."
+    },
+    "grid": {
+      "ferriteCore": {
+        "title": "Ferrit Nüve",
+        "subtitle": "Üstün manyetik performans.",
+        "description": "Optimum EMI bastırma için gelişmiş ferrit malzemeler."
+      },
+      "bobbin": {
+        "title": "Karkaslar",
+        "subtitle": "Hassas bobinaj çözümleri.",
+        "description": "Yüksek kaliteli bobin karkasları."
+      },
+      "ferriteTransformers": {
+        "title": "Ferrit Trafolar",
+        "subtitle": "Yüksek verimli güç dönüşümü.",
+        "description": "Kompakt ve verimli ferrit transformatörler."
+      },
+      "laminatedTransformers": {
+        "title": "Saclı Trafolar",
+        "subtitle": "Güvenilir güç çözümleri.",
+        "description": "Endüstriyel uygulamalar için saclı transformatörler."
+      },
+      "inductors": {
+        "title": "İndüktörler",
+        "subtitle": "Hassas endüktans değerleri.",
+        "description": "Çeşitli uygulamalar için indüktörler."
+      },
+      "powerInductors": {
+        "title": "Güç İndüktörleri",
+        "subtitle": "Yüksek akım kapasitesi.",
+        "description": "Güç elektroniği için optimize edilmiş indüktörler."
+      },
+      "emcFilters": {
+        "title": "EMI/EMC Filtreler",
+        "subtitle": "Sektör lideri gürültü azaltma.",
+        "description": "Zorlu endüstriyel uygulamalar için tasarlandı."
+      },
+      "airCoreCoils": {
+        "title": "Hava Nüveli Bobinler",
+        "subtitle": "Düşük kayıplı çözümler.",
+        "description": "RF ve yüksek frekans uygulamaları için."
+      }
+    }
+  },
+  "buttons": {
+    "viewProducts": "Ürünleri Görüntüle",
+    "contactUs": "Bize Ulaşın",
+    "learnMore": "Daha Fazla",
+    "buy": "Satın Al"
+  },
+  "feature": {
+    "title": "Neden Artek Elektronik'i seçmelisiniz",
+    "subtitle": "Hassas mühendislik, ödün vermeyen kalite standartlarıyla buluşuyor.",
+    "certified": {
+      "title": "Sertifikalı Kalite",
+      "description": "Titiz test standartlarıyla ISO 9001 sertifikalı üretim."
+    },
+    "performance": {
+      "title": "Yüksek Performans",
+      "description": "Maksimum verimlilik ve minimum sinyal paraziti için optimize edildi."
+    },
+    "leading": {
+      "title": "Sektör Lideri",
+      "description": "Birden fazla sektörde önde gelen üreticiler tarafından tercih ediliyor."
+    },
+    "support": {
+      "title": "Global Destek",
+      "description": "Yerel teknik destek ekipleriyle dünya çapında dağıtım."
+    }
+  },
+  "footer": {
+    "brand": "ARTEK TEKNOLOJİ",
+    "tagline": "Hassas mühendislik, ödün vermeyen kalite standartlarıyla buluşuyor.",
+    "copyright": "© 2025 Artek Teknoloji. Tüm hakları saklıdır.",
+    "sections": {
+      "product": "Ürün",
+      "company": "Şirket",
+      "resources": "Kaynaklar",
+      "social": "Sosyal"
+    },
+    "links": {
+      "overview": "Genel Bakış",
+      "pricing": "Fiyatlandırma",
+      "marketplace": "Pazar Yeri",
+      "features": "Özellikler",
+      "integrations": "Entegrasyonlar",
+      "about": "Hakkımızda",
+      "team": "Ekip",
+      "blog": "Blog",
+      "careers": "Kariyer",
+      "contact": "İletişim",
+      "privacy": "Gizlilik",
+      "help": "Yardım",
+      "sales": "Satış",
+      "advertise": "Reklam",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    },
+    "terms": "Şartlar ve Koşullar",
+    "privacyPolicy": "Gizlilik Politikası"
+  },
+  "products": {
+    "title": "Ürünler",
+    "error": "Hata",
+    "errorOccurred": "Bir hata oluştu",
+    "noProducts": "Ürün bulunamadı",
+    "tryChangingFilters": "Filtrelerinizi değiştirmeyi deneyin"
+  },
+  "productCard": {
+    "inStock": "Stokta",
+    "outOfStock": "Tükendi",
+    "locationKarakoy": "Karaköy:",
+    "code": "Kod:",
+    "unitPrice": "Birim Fiyat:",
+    "retailPrice": "Perakende:",
+    "wholesalePrice": "Toptan:",
+    "viewDetails": "Detayları Gör"
+  },
+  "productDetail": {
+    "backButton": "Ürünlere Dön",
+    "notFound": "Ürün Bulunamadı",
+    "notFoundDescription": "Bu ürün mevcut değil veya kaldırılmış olabilir.",
+    "inStock": "Stokta Var",
+    "outOfStock": "Stokta Yok",
+    "unitPrice": "Birim Fiyat:",
+    "retailPrice": "Perakende Fiyatı:",
+    "wholesalePrice": "Toptan Fiyatı:",
+    "wholesaleBase": "Toptan Taban:",
+    "aiSummary": "AI Ürün Özeti",
+    "description": "Açıklama",
+    "additionalInfo": "Ek Bilgiler",
+    "altCategories": "Alt Kategoriler:",
+    "productTypes": "Ürün Tipleri:",
+    "supplierCountries": "Tedarikçi Ülkeler:",
+    "addToCart": "Sepete Ekle",
+    "outOfStockButton": "Stokta Yok"
+  },
+  "filters": {
+    "title": "Filtreler",
+    "reset": "Sıfırla",
+    "priceRange": "Fiyat Aralığı",
+    "min": "Min",
+    "max": "Max",
+    "inStockOnly": "Sadece Stokta Olanlar",
+    "category": "Kategori",
+    "altCategory": "Alt Kategori",
+    "productType": "Ürün Tipi",
+    "supplierCountry": "Tedarikçi Ülke"
+  },
+  "controls": {
+    "view": "Görüntüle",
+    "sortBy": "Sırala",
+    "sort": {
+      "newest": "En yeni",
+      "nameAsc": "İsim: A'dan Z'ye",
+      "nameDesc": "İsim: Z'den A'ya",
+      "priceAsc": "Fiyat: Düşükten Yükseğe",
+      "priceDesc": "Fiyat: Yüksekten Düşüğe",
+      "stockDesc": "Stok: Yüksekten Düşüğe"
+    }
+  },
+  "productNav": {
+    "title": "Ürünler",
+    "trigger": "Ürünler",
+    "ourProducts": "Ürünlerimiz",
+    "ourProductsDesc": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",
+    "description": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",
+    "allProducts": "Tüm Ürünler",
+    "allProductsDesc": "Tüm ürün kataloğumuzu görüntüleyin ve filtreleyin.",
+    "pemDesc": "PEM kategorisindeki ürünleri görüntüleyin.",
+    "ferritDesc": "Ferrit kategorisindeki ürünleri görüntüleyin.",
+    "eeDesc": "EE kategorisindeki ürünleri görüntüleyin."
+  },
+  "about": {
+    "title": "Hakkımızda"
+  },
+  "contact": {
+    "title": "İletişim"
+  },
+  "language": {
+    "switchTo": "Dili değiştir"
+  }
+}

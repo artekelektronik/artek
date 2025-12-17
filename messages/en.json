@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "title": "Artek - Products",
+    "description": "Artek product catalog"
+  },
+  "nav": {
+    "brand": "Artek Elektronik",
+    "about": "About",
+    "contact": "Contact",
+    "whatsappLabel": "Quick Contact",
+    "whatsappMessage": "Hello, I would like to get information about your products.",
+    "products": "Products"
+  },
+  "home": {
+    "hero1": {
+      "title": "Ferrite Core",
+      "subtitle": "Superior magnetic performance"
+    },
+    "hero2": {
+      "title": "Bobbins",
+      "subtitle": "Precision winding solutions.",
+      "description": "High-quality coil bobbins."
+    },
+    "hero3": {
+      "title": "Ferrite Transformers",
+      "subtitle": "High-efficiency power conversion.",
+      "description": "Compact and efficient ferrite transformers."
+    },
+    "hero4": {
+      "title": "Laminated Transformers",
+      "subtitle": "Reliable power solutions.",
+      "description": "Laminated transformers for industrial applications."
+    },
+    "grid": {
+      "ferriteCore": {
+        "title": "Ferrite Core",
+        "subtitle": "Superior magnetic performance.",
+        "description": "Advanced ferrite materials for optimal EMI suppression."
+      },
+      "bobbin": {
+        "title": "Bobbins",
+        "subtitle": "Precision winding solutions.",
+        "description": "High-quality coil bobbins."
+      },
+      "ferriteTransformers": {
+        "title": "Ferrite Transformers",
+        "subtitle": "High-efficiency power conversion.",
+        "description": "Compact and efficient ferrite transformers."
+      },
+      "laminatedTransformers": {
+        "title": "Laminated Transformers",
+        "subtitle": "Reliable power solutions.",
+        "description": "Laminated transformers for industrial applications."
+      },
+      "inductors": {
+        "title": "Inductors",
+        "subtitle": "Precise inductance values.",
+        "description": "Inductors for various applications."
+      },
+      "powerInductors": {
+        "title": "Power Inductors",
+        "subtitle": "High current capacity.",
+        "description": "Inductors optimized for power electronics."
+      },
+      "emcFilters": {
+        "title": "EMI/EMC Filters",
+        "subtitle": "Industry-leading noise reduction.",
+        "description": "Engineered for demanding industrial applications."
+      },
+      "airCoreCoils": {
+        "title": "Air Core Coils",
+        "subtitle": "Low-loss solutions.",
+        "description": "For RF and high-frequency applications."
+      }
+    }
+  },
+  "buttons": {
+    "viewProducts": "View Products",
+    "contactUs": "Contact Us",
+    "learnMore": "Learn More",
+    "buy": "Buy"
+  },
+  "feature": {
+    "title": "Why choose Artek Elektronik",
+    "subtitle": "Precision engineering meets uncompromising quality standards.",
+    "certified": {
+      "title": "Certified Quality",
+      "description": "ISO 9001 certified manufacturing with rigorous testing standards."
+    },
+    "performance": {
+      "title": "High Performance",
+      "description": "Optimized for maximum efficiency and minimal signal interference."
+    },
+    "leading": {
+      "title": "Industry Leading",
+      "description": "Trusted by leading manufacturers across multiple industries."
+    },
+    "support": {
+      "title": "Global Support",
+      "description": "Worldwide distribution with local technical support teams."
+    }
+  },
+  "footer": {
+    "brand": "ARTEK TEKNOLOJİ",
+    "tagline": "Precision engineering meets uncompromising quality standards.",
+    "copyright": "© 2025 Artek Teknoloji. All rights reserved.",
+    "sections": {
+      "product": "Product",
+      "company": "Company",
+      "resources": "Resources",
+      "social": "Social"
+    },
+    "links": {
+      "overview": "Overview",
+      "pricing": "Pricing",
+      "marketplace": "Marketplace",
+      "features": "Features",
+      "integrations": "Integrations",
+      "about": "About",
+      "team": "Team",
+      "blog": "Blog",
+      "careers": "Careers",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "help": "Help",
+      "sales": "Sales",
+      "advertise": "Advertise",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    },
+    "terms": "Terms and Conditions",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "products": {
+    "title": "Products",
+    "error": "Error",
+    "errorOccurred": "An error occurred",
+    "noProducts": "No products found",
+    "tryChangingFilters": "Try changing your filters"
+  },
+  "productCard": {
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "locationKarakoy": "Karaköy:",
+    "code": "Code:",
+    "unitPrice": "Unit Price:",
+    "retailPrice": "Retail:",
+    "wholesalePrice": "Wholesale:",
+    "viewDetails": "View Details"
+  },
+  "productDetail": {
+    "backButton": "Back to Products",
+    "notFound": "Product Not Found",
+    "notFoundDescription": "This product does not exist or has been removed.",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "unitPrice": "Unit Price:",
+    "retailPrice": "Retail Price:",
+    "wholesalePrice": "Wholesale Price:",
+    "wholesaleBase": "Wholesale Base:",
+    "aiSummary": "AI Product Summary",
+    "description": "Description",
+    "additionalInfo": "Additional Information",
+    "altCategories": "Sub Categories:",
+    "productTypes": "Product Types:",
+    "supplierCountries": "Supplier Countries:",
+    "addToCart": "Add to Cart",
+    "outOfStockButton": "Out of Stock"
+  },
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset",
+    "priceRange": "Price Range",
+    "min": "Min",
+    "max": "Max",
+    "inStockOnly": "In Stock Only",
+    "category": "Category",
+    "altCategory": "Sub Category",
+    "productType": "Product Type",
+    "supplierCountry": "Supplier Country"
+  },
+  "controls": {
+    "view": "View",
+    "sortBy": "Sort by",
+    "sort": {
+      "newest": "Newest first",
+      "nameAsc": "Name: A to Z",
+      "nameDesc": "Name: Z to A",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "stockDesc": "Stock: High to Low"
+    }
+  },
+  "productNav": {
+    "title": "Products",
+    "trigger": "Products",
+    "ourProducts": "Our Products",
+    "ourProductsDesc": "High-quality electronic components for demanding applications.",
+    "description": "High-quality electronic components for demanding applications.",
+    "allProducts": "All Products",
+    "allProductsDesc": "Browse and filter our complete product catalog.",
+    "pemDesc": "View products in the PEM category.",
+    "ferritDesc": "View products in the Ferrite category.",
+    "eeDesc": "View products in the EE category."
+  },
+  "about": {
+    "title": "About Us"
+  },
+  "contact": {
+    "title": "Contact"
+  },
+  "language": {
+    "switchTo": "Switch language"
+  }
+}

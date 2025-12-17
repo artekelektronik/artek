@@ -1,27 +1,20 @@
+"use client";
+
 import React from "react";
+import Link from "next/link";
+import { motion } from "motion/react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
 interface BoxProps {
-  /** Background color class (e.g., 'bg-black', 'bg-white') */
   backgroundColor?: string;
-  /** Height class (e.g., 'h-[700px]', 'h-screen') */
   height?: string;
-  /** Main heading text */
   title?: string;
-  /** Subtitle or description text */
   subtitle?: string;
-  /** Third text field for additional description */
   description?: string;
-  /** Title styling classes */
-  titleClassName?: string;
-  /** Subtitle styling classes */
-  subtitleClassName?: string;
-  /** Description styling classes */
-  descriptionClassName?: string;
-  /** Array of button configurations */
   buttons?: Array<{
     text: string;
+    href?: string;
     variant?:
       | "default"
       | "outline"
@@ -30,21 +23,49 @@ interface BoxProps {
       | "link"
       | "destructive";
     onClick?: () => void;
-    href?: string;
   }>;
-  /** Image source URL */
   imageSrc?: string;
-  /** Image alt text */
   imageAlt?: string;
-  /** Custom image styling classes */
   imageClassName?: string;
-  /** Custom container styling classes */
   className?: string;
-  /** Custom content area styling classes */
-  contentClassName?: string;
-  /** Additional children elements */
   children?: React.ReactNode;
 }
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
+
+const imageVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+    },
+  },
+};
 
 export const Box: React.FC<BoxProps> = ({
   backgroundColor = "bg-white",
@@ -52,103 +73,112 @@ export const Box: React.FC<BoxProps> = ({
   title,
   subtitle,
   description,
-  titleClassName = "text-6xl font-semibold",
-  subtitleClassName = "text-2xl font-thin",
-  descriptionClassName = "text-lg font-light",
   buttons = [],
   imageSrc,
   imageAlt = "",
   imageClassName = "",
   className = "",
-  contentClassName = "flex flex-col items-center justify-center space-y-6 h-full relative",
   children,
 }) => {
+  const isDark = backgroundColor === "bg-black";
+
   return (
-    <div
+    <motion.div
       className={cn(
         height,
-        "w-full relative overflow-hidden",
+        "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 py-8 md:py-12",
         backgroundColor,
         className
       )}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
     >
-      <div className={cn(contentClassName)}>
-        {title && (
-          <h1
-            className={cn(
-              titleClassName,
-              backgroundColor === "bg-black" ? "text-white" : "text-black"
-            )}
-          >
-            {title}
-          </h1>
-        )}
+      {title && (
+        <motion.h1
+          variants={itemVariants}
+          className={cn(
+            "text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center",
+            isDark ? "text-white" : "text-black"
+          )}
+        >
+          {title}
+        </motion.h1>
+      )}
 
-        {subtitle && (
-          <p
-            className={cn(
-              subtitleClassName,
-              backgroundColor === "bg-black" ? "text-white" : "text-gray-600"
-            )}
-          >
-            {subtitle}
-          </p>
-        )}
+      {subtitle && (
+        <motion.p
+          variants={itemVariants}
+          className={cn(
+            "text-lg sm:text-xl md:text-2xl font-thin text-center max-w-2xl",
+            isDark ? "text-white" : "text-gray-600"
+          )}
+        >
+          {subtitle}
+        </motion.p>
+      )}
 
-        {description && (
-          <p
-            className={cn(
-              descriptionClassName,
-              backgroundColor === "bg-black" ? "text-white" : "text-gray-600"
-            )}
-          >
-            {description}
-          </p>
-        )}
+      {description && (
+        <motion.p
+          variants={itemVariants}
+          className={cn(
+            "text-sm sm:text-base md:text-lg font-light text-center max-w-xl",
+            isDark ? "text-white" : "text-gray-600"
+          )}
+        >
+          {description}
+        </motion.p>
+      )}
 
-        {buttons.length > 0 && (
-          <div className="space-x-3">
-            {buttons.map((button, index) => {
-              const isOutline = button.variant === "outline" || index === 1;
-              const blueClasses = isOutline 
-                ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent"
-                : "bg-blue-600 hover:bg-blue-700 text-white";
-              
-              return (
-                <Button
-                  key={index}
-                  className={`rounded-full ${blueClasses}`}
-                  variant={button.variant || "default"}
-                  size="lg"
-                  onClick={button.onClick}
-                  asChild={!!button.href}
-                >
-                  {button.href ? (
-                    <a href={button.href}>{button.text}</a>
-                  ) : (
-                    button.text
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        )}
+      {buttons.length > 0 && (
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-wrap justify-center gap-2 md:gap-3"
+        >
+          {buttons.map((button, index) => {
+            const isOutline = button.variant === "outline" || index === 1;
+            const blueClasses = isOutline
+              ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent"
+              : "bg-blue-600 hover:bg-blue-700 text-white";
 
-        {children}
-      </div>
+            const buttonElement = (
+              <Button
+                key={index}
+                className={cn("rounded-full text-sm md:text-base", blueClasses)}
+                variant={button.variant || "default"}
+                size="lg"
+                onClick={button.onClick}
+                asChild={!!button.href}
+              >
+                {button.href ? (
+                  <Link href={button.href}>{button.text}</Link>
+                ) : (
+                  button.text
+                )}
+              </Button>
+            );
+
+            return buttonElement;
+          })}
+        </motion.div>
+      )}
+
+      {children}
 
       {imageSrc && (
-        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-full flex justify-center max-h-2/3">
-          <img
-            src={imageSrc}
-            alt={imageAlt}
-            className={cn(
-              "object-contain max-w-full max-h-full", // Default image styling with containment
-              imageClassName
-            )}
-          />
-        </div>
+        <motion.img
+          variants={imageVariants}
+          src={imageSrc}
+          alt={imageAlt}
+          className={cn(
+            "object-contain max-h-[35%] md:max-h-[40%] w-auto",
+            isDark &&
+              "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)] drop-shadow-[0_0_120px_rgba(255,255,255,0.9)]",
+            imageClassName
+          )}
+        />
       )}
-    </div>
+    </motion.div>
   );
 };

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import base from "@/lib/airtable";
 import { extractIdFromSlug } from "@/lib/utils";
-import type { AirtableProduct } from "@/types/airtable";
+import type { AirtableProduct, AirtableApiError, ProductFields } from "@/types/airtable";
 
 export async function GET(
   request: Request,
@@ -35,20 +35,21 @@ export async function GET(
 
     const result: AirtableProduct = {
       id: product.id,
-      fields: product.fields as any,
+      fields: product.fields as unknown as ProductFields,
       createdTime: product._rawJson.createdTime,
     };
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching product:", error);
+    const apiError = error as AirtableApiError;
     return NextResponse.json(
       {
         error: "Failed to fetch product",
-        message: error.message,
-        statusCode: error.statusCode,
+        message: apiError.message,
+        statusCode: apiError.statusCode,
       },
-      { status: error.statusCode || 500 }
+      { status: apiError.statusCode || 500 }
     );
   }
 }
