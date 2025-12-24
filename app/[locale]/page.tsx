@@ -55,7 +55,7 @@ function HomeContent() {
           { text: t("buttons.viewProducts"), variant: "default", href: productsLink("PEM") },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
-        imageSrc="/products/bobbin.png"
+        imageSrc="/products/bobbins.png"
         imageAlt="Bobbins"
         imageClassName="max-w-lg"
       />
@@ -70,7 +70,7 @@ function HomeContent() {
           { text: t("buttons.viewProducts"), variant: "default", href: productsLink("IRON-POWDER") },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
-        imageSrc="/emc_filter.png"
+        imageSrc="/products/feritte-transformers.png"
         imageAlt="Ferrite Transformers"
         imageClassName="max-w-lg"
       />
@@ -85,7 +85,7 @@ function HomeContent() {
           { text: t("buttons.viewProducts"), variant: "default", href: productsLink("Saclı Trafo") },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
-        imageSrc="/emc_filter.png"
+        imageSrc="/products/laminated-transformers.png"
         imageAlt="Laminated Transformers"
         imageClassName="max-w-lg"
       />
@@ -119,7 +119,7 @@ function HomeContent() {
             { text: t("buttons.learnMore"), variant: "default", href: productsLink("Güç İndüktörü") },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
-          imageSrc="/products/inductors.png"
+          imageSrc="/products/power-inductors.png"
           imageAlt="Power Inductors"
           imageClassName="max-w-xs"
         />
@@ -135,7 +135,7 @@ function HomeContent() {
             { text: t("buttons.learnMore"), variant: "default", href: productsLink("EMC Filtre") },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
-          imageSrc="/emc_filter.png"
+          imageSrc="/products/emc-filters.png"
           imageAlt="EMC Filters"
           imageClassName="max-w-xs"
         />
@@ -151,7 +151,7 @@ function HomeContent() {
             { text: t("buttons.learnMore"), variant: "default", href: productsLink("Hava Nüveli Bobin") },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
-          imageSrc="/emc_filter.png"
+          imageSrc="/products/air-core-coils.png"
           imageAlt="Air Core Coils"
           imageClassName="max-w-xs"
         />

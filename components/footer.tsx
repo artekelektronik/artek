@@ -46,38 +46,32 @@ const Footer = ({
     {
       title: t("sections.product"),
       links: [
-        { text: t("links.overview"), url: "#" },
-        { text: t("links.pricing"), url: "#" },
-        { text: t("links.marketplace"), url: "#" },
-        { text: t("links.features"), url: "#" },
-        { text: t("links.integrations"), url: "#" },
+        { text: t("links.ferriteCores"), url: "/products" },
+        { text: t("links.bobbins"), url: "/products" },
+        { text: t("links.transformers"), url: "/products" },
+        { text: t("links.laminated"), url: "/products" },
       ],
     },
     {
       title: t("sections.company"),
       links: [
-        { text: t("links.about"), url: "#" },
-        { text: t("links.team"), url: "#" },
-        { text: t("links.blog"), url: "#" },
-        { text: t("links.careers"), url: "#" },
-        { text: t("links.contact"), url: "#" },
-        { text: t("links.privacy"), url: "#" },
+        { text: t("links.about"), url: "/about" },
+        { text: t("links.contact"), url: "/contact" },
+        { text: t("links.products"), url: "/products" },
       ],
     },
     {
       title: t("sections.resources"),
       links: [
-        { text: t("links.help"), url: "#" },
-        { text: t("links.sales"), url: "#" },
-        { text: t("links.advertise"), url: "#" },
+        { text: t("links.whatsapp"), url: "https://wa.me/905555551470" },
+        { text: t("links.email"), url: "mailto:sales@artek-elektronik.com" },
       ],
     },
     {
       title: t("sections.social"),
       links: [
-        { text: t("links.twitter"), url: "#" },
-        { text: t("links.instagram"), url: "#" },
-        { text: t("links.linkedin"), url: "#" },
+        { text: t("links.instagram"), url: "https://instagram.com" },
+        { text: t("links.linkedin"), url: "https://linkedin.com" },
       ],
     },
   ];

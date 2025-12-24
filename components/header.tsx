@@ -1,10 +1,18 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, Globe } from "lucide-react";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { ProductNavigation } from "./product-navigation";
+import { SearchDialog } from "./search-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FlagIcon } from "react-flag-kit";
 
 const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   <svg
@@ -26,8 +34,10 @@ const Header = () => {
   const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(t("whatsappMessage"))}`;
 
   return (
-    <nav className="h-11 fixed top-0 left-0 right-0 bg-outer-space/70 backdrop-blur-sm z-50">
-      <div className="max-w-5xl mx-auto flex items-center justify-between w-full h-full px-4">
+    <>
+      <SearchDialog />
+      <nav className="h-11 fixed top-0 left-0 right-0 bg-outer-space/70 backdrop-blur-sm z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between w-full h-full">
         <div className="flex justify-center items-center gap-8">
           <Link href="/" className="text-lg font-medium text-white uppercase">
             {t("brand")}
@@ -47,9 +57,19 @@ const Header = () => {
           {/* Language Switcher */}
           <LanguageSwitcher pathname={pathname} />
           
-          <Link href="/" className="text-white">
+          <button 
+            onClick={() => {
+              const event = new KeyboardEvent('keydown', {
+                key: 'k',
+                metaKey: true,
+              });
+              document.dispatchEvent(event);
+            }}
+            className="flex items-center gap-1.5 text-white hover:text-blue-400 transition-colors cursor-pointer"
+            title="Search (Cmd+K)"
+          >
             <Search size={16} />
-          </Link>
+          </button>
           <a
             href={whatsappUrl}
             target="_blank"
@@ -63,30 +83,42 @@ const Header = () => {
         </div>
       </div>
     </nav>
+    </>
   );
 };
 
-// Language Switcher Component with Country Flags
-function LanguageSwitcher({ pathname }: { pathname: string }) {
+// Language Switcher Component with Dropdown and Country Flags
+function LanguageSwitcher({ pathname }: { pathname: string }) {  
   return (
-    <div className="flex items-center gap-1">
-      <Link
-        href={pathname}
-        locale="tr"
-        className="p-1 rounded hover:bg-white/10 transition-colors"
-        title="Türkçe"
-      >
-        <span className="text-base">🇹🇷</span>
-      </Link>
-      <Link
-        href={pathname}
-        locale="en"
-        className="p-1 rounded hover:bg-white/10 transition-colors"
-        title="English"
-      >
-        <span className="text-base">🇬🇧</span>
-      </Link>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-1 p-1 rounded hover:bg-white/10 transition-colors text-white cursor-pointer">
+          <Globe size={16} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-32">
+        <DropdownMenuItem asChild>
+          <Link
+            href={pathname}
+            locale="tr"
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <FlagIcon code="TR" size={20} />
+            <span>Türkçe</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={pathname}
+            locale="en"
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <FlagIcon code="GB" size={20} />
+            <span>English</span>
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

@@ -13,23 +13,24 @@
   },
   "home": {
     "hero1": {
-      "title": "Ferrit Nüve",
-      "subtitle": "Üstün manyetik performans"
+      "title": "Ferrit Nüveler",
+      "subtitle": "Garantili Manyetik Kararlılık.",
+      "description": "Yüksek frekans ve sıcaklık koşullarında dahi üstün manyetik kararlılık sağlayan, hassasiyetle üretilmiş ferrit nüveler."
     },
     "hero2": {
-      "title": "Karkaslar",
-      "subtitle": "Hassas bobinaj çözümleri.",
-      "description": "Yüksek kaliteli bobin karkasları."
+      "title": "Karkaslar (Bobinler)",
+      "subtitle": "Hassas Üretim Karkasları.",
+      "description": "Yüksek sıcaklık ve gerilime dayanıklı, montaj kolaylığı sağlayan ve projenize özel geometrilerde üretilen trafo karkasları."
     },
     "hero3": {
       "title": "Ferrit Trafolar",
-      "subtitle": "Yüksek verimli güç dönüşümü.",
-      "description": "Kompakt ve verimli ferrit transformatörler."
+      "subtitle": "Maksimum Verimlilik için Tasarlandı.",
+      "description": "Kompakt yapıda, endüstriyel standartların ötesinde enerji verimliliği sunan ve projenize özel optimize edilmiş ferrit trafo çözümleri."
     },
     "hero4": {
-      "title": "Saclı Trafolar",
-      "subtitle": "Güvenilir güç çözümleri.",
-      "description": "Endüstriyel uygulamalar için saclı transformatörler."
+      "title": "Sac Trafolar",
+      "subtitle": "Endüstriyel Gücün Sağlam Temeli.",
+      "description": "Fabrika otomasyonu ve ağır sanayi için tasarlanmış, titreşime ve zorlu koşullara dayanıklı sac nüveli transformatörler."
     },
     "grid": {
       "ferriteCore": {
@@ -54,23 +55,23 @@
       },
       "inductors": {
         "title": "İndüktörler",
-        "subtitle": "Hassas endüktans değerleri.",
-        "description": "Çeşitli uygulamalar için indüktörler."
+        "subtitle": "Sinyal Kalitesinde Artek İmzası.",
+        "description": "Filtreleme ve enerji depolama ihtiyaçlarınız için kararlı indüktans değerleri sunan, yüksek Q faktörlü güç indüktörleri."
       },
       "powerInductors": {
-        "title": "Güç İndüktörleri",
-        "subtitle": "Yüksek akım kapasitesi.",
-        "description": "Güç elektroniği için optimize edilmiş indüktörler."
+        "title": "Power İndüktörler",
+        "subtitle": "Yüksek Akım Yönetiminde Uzmanlık.",
+        "description": "Güç elektroniği devrelerinizin ihtiyaç duyduğu yüksek akım altında dahi kararlı ve güvenilir performans."
       },
       "emcFilters": {
         "title": "EMI/EMC Filtreler",
-        "subtitle": "Sektör lideri gürültü azaltma.",
-        "description": "Zorlu endüstriyel uygulamalar için tasarlandı."
+        "subtitle": "Uluslararası Standartlarda Koruma.",
+        "description": "Cihazlarınızı elektromanyetik kirlilikten koruyan, uluslararası EMC standartlarına tam uyumlu filtreler."
       },
       "airCoreCoils": {
         "title": "Hava Nüveli Bobinler",
-        "subtitle": "Düşük kayıplı çözümler.",
-        "description": "RF ve yüksek frekans uygulamaları için."
+        "subtitle": "RF Uygulamaları için Kayıpsız Çözümler.",
+        "description": "Manyetik kayıp içermeyen, yüksek frekanslı iletişim sistemleri için üstün sinyal bütünlüğü sağlayan bobinler."
       }
     }
   },
@@ -81,23 +82,27 @@
     "buy": "Satın Al"
   },
   "feature": {
-    "title": "Neden Artek Elektronik'i seçmelisiniz",
+    "title": "Neden ARTEK ELEKTRONİK?",
     "subtitle": "Hassas mühendislik, ödün vermeyen kalite standartlarıyla buluşuyor.",
     "certified": {
-      "title": "Sertifikalı Kalite",
-      "description": "Titiz test standartlarıyla ISO 9001 sertifikalı üretim."
+      "title": "Uluslararası Standartlarda Onaylanmış Kalite",
+      "description": "ISO 9001 sertifikalı süreçlerimiz ve titiz testlerimizle, her bir komponentin projenizin gerektirdiği en yüksek performansı sunmasını sağlıyoruz.",
+      "highlight": "Kalite Güvencesi, Test Edilmiş Ürün"
     },
     "performance": {
-      "title": "Yüksek Performans",
-      "description": "Maksimum verimlilik ve minimum sinyal paraziti için optimize edildi."
+      "title": "Projenize Özel Teknik Çözümler",
+      "description": "Mühendislerimizle birlikte çalışarak, standart ürünlerimizin ötesinde, projenizin benzersiz gereksinimlerine tam olarak uyan özel nüve ve karkas geometrileri tasarlıyoruz.",
+      "highlight": "Esneklik, Mühendislik Desteği"
     },
     "leading": {
-      "title": "Sektör Lideri",
-      "description": "Birden fazla sektörde önde gelen üreticiler tarafından tercih ediliyor."
+      "title": "Türkiye'den Hızlı ve Güvenilir Tedarik",
+      "description": "Avrupa ve Asya pazarlarına stratejik konumumuz sayesinde, rekabetçi fiyatlarla hızlı ve kesintisiz lojistik çözümleri sunuyoruz.",
+      "highlight": "Lojistik Avantajı, Türkiye Üretimi"
     },
     "support": {
-      "title": "Global Destek",
-      "description": "Yerel teknik destek ekipleriyle dünya çapında dağıtım."
+      "title": "Çözüm Odaklı İletişim",
+      "description": "Teknik sorularınıza hızlı ve uygulanabilir cevaplar alarak projenizin aksamadan ilerlemesini sağlıyoruz. Artek, sadece tedarikçi değil, güvenilir iş ortağınızdır.",
+      "highlight": "Müşteri Hizmetleri, İş Ortaklığı"
     }
   },
   "footer": {
@@ -205,12 +210,84 @@
     "eeDesc": "EE kategorisindeki ürünleri görüntüleyin."
   },
   "about": {
-    "title": "Hakkımızda"
+    "title": "Hakkımızda",
+    "mainHeading": "ARTEK ELEKTRONİK: Güvenilir Geçmiş, Güçlü Gelecek",
+    "intro": "1987 yılında elektronik komponent sektörüne adım atan Artek Elektronik, otuz yılı aşkın süredir Türkiye'nin önde gelen ithalat ve ihracat firmalarından biri olarak sektörün gelişimine katkıda bulunmaktadır. Kurulduğumuz günden bu yana edindiğimiz derin ticari tecrübe, müşteri memnuniyetini ve hızlı tedariki temel önceliğimiz haline getirmiştir.",
+    "manufacturingStrength": {
+      "heading": "İmalat Gücümüz: 2008 Dönüşümü",
+      "content": "Sektördeki tecrübemizi, müşterilerimizin artan özel çözüm talepleriyle birleştirerek 2008 yılında imalat yolculuğumuza başladık. Bu dönüşümle birlikte Artek Elektronik, sadece bir tedarikçi olmaktan çıkıp, özel tasarım ve üretim yeteneğine sahip bir çözüm ortağı kimliği kazanmıştır.",
+      "current": "Bugün, modern tesislerimizde yüksek frekanslı ferrit nüve, bobin, transformatör ve indüktör gibi kritik komponentlerin imalatını gerçekleştirmekteyiz. Üretim süreçlerimiz, uluslararası kalite standartlarına uygun olarak titizlikle yönetilmektedir."
+    },
+    "expertise": {
+      "heading": "Uzmanlık Alanlarımız ve Vizyonumuz",
+      "intro": "Artek Elektronik olarak, teknik mükemmelliği esas alarak geniş bir yelpazedeki sektörlere özel çözümler sunuyoruz. Başlıca uzmanlık alanlarımız:",
+      "automotive": "Otomotiv: Yüksek güvenilirlik gerektiren araç içi elektronik sistemler.",
+      "lighting": "Aydınlatma: Enerji verimliliği yüksek LED sürücü ve balast çözümleri.",
+      "medical": "Medikal: Hassas ve kararlı güç kaynağı komponentleri.",
+      "agriculture": "Tarım: Zorlu koşullara dayanıklı endüstriyel elektronik uygulamaları."
+    },
+    "vision": {
+      "content": "Artek Elektronik, Türkiye'nin imalat ve ihracat gücünü temsil ederek Türkiye'nin 1 numaralı yüksek frekans trafo ve bobin ihracatçısı olmayı hedeflemektedir. Bu hedef doğrultusunda, teknolojiye ve insan kaynağına yatırım yapmaya devam ediyor, her geçen gün küresel pazardaki etkimizi artırıyoruz.",
+      "closing": "Artek Elektronik, dünden bugüne birikimiyle, yarının enerji çözümlerini şekillendirmeye devam edecektir."
+    }
   },
   "contact": {
-    "title": "İletişim"
+    "title": "İletişim",
+    "heading": "Bize Ulaşın",
+    "description": "Mesajınızı gönderin ve mümkün olan en kısa sürede geri dönüş alalım",
+    "addressLabel": "Adres",
+    "address": "İstanbul, Türkiye",
+    "phone": "+90 (212) 555-0147",
+    "email": "sales@artek-elektronik.com",
+    "form": {
+      "name": "Ad Soyad*",
+      "email": "Email*",
+      "phone": "Telefon*",
+      "service": "İlgilendiğiniz Ürün*",
+      "message": "Talep ve İhtiyaçlarınızı Yazınız*",
+      "submit": "Gönder",
+      "services": {
+        "general": "Genel Bilgilendirme",
+        "ferriteCore": "Ferrit Nüveler",
+        "transformers": "Transformatörler",
+        "partnership": "İş Ortaklığı"
+      }
+    }
+  },
+  "footer": {
+    "brand": "Artek Elektronik",
+    "tagline": "Yüksek frekans transformatörleri ve elektronik bileşenlerin lider üreticisi.",
+    "copyright": "© 2025 Artek Elektronik. Tüm hakları saklıdır.",
+    "terms": "Hizmet Şartları",
+    "privacyPolicy": "Gizlilik Politikası",
+    "sections": {
+      "product": "Ürünler",
+      "company": "Şirket",
+      "resources": "Kaynaklar",
+      "social": "Bizi Takip Edin"
+    },
+    "links": {
+      "ferriteCores": "Ferrit Nüveler",
+      "bobbins": "Karkaslar",
+      "transformers": "Transformatörler",
+      "laminated": "Sac Transformatörler",
+      "about": "Hakkımızda",
+      "contact": "İletişim",
+      "products": "Ürünler",
+      "whatsapp": "WhatsApp",
+      "email": "E-posta",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    }
   },
   "language": {
     "switchTo": "Dili değiştir"
+  },
+  "search": {
+    "placeholder": "Ürünlerde, sayfalarda ara...",
+    "pages": "Sayfalar",
+    "products": "Ürünler",
+    "noResults": "Sonuç bulunamadı.",
+    "pressEsc": "Kapatmak için ESC tuşuna basın"
   }
 }

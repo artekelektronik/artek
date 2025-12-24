@@ -13,23 +13,24 @@
   },
   "home": {
     "hero1": {
-      "title": "Ferrite Core",
-      "subtitle": "Superior magnetic performance"
+      "title": "Ferrite Cores",
+      "subtitle": "Guaranteed Magnetic Stability.",
+      "description": "SMPS and high-frequency applications optimized with thermal stability and superior ferrite core varieties."
     },
     "hero2": {
       "title": "Bobbins",
-      "subtitle": "Precision winding solutions.",
-      "description": "High-quality coil bobbins."
+      "subtitle": "Precision Manufacturing Bobbins.",
+      "description": "EE, ETD, PQ series and more, standard and custom manufacturing bobbin options with fast delivery."
     },
     "hero3": {
       "title": "Ferrite Transformers",
-      "subtitle": "High-efficiency power conversion.",
-      "description": "Compact and efficient ferrite transformers."
+      "subtitle": "Designed for Maximum Efficiency.",
+      "description": "Compact, energy-efficient applications beyond industry standards with SMPS transformer solutions."
     },
     "hero4": {
       "title": "Laminated Transformers",
-      "subtitle": "Reliable power solutions.",
-      "description": "Laminated transformers for industrial applications."
+      "subtitle": "Robust Foundation for Industrial Power.",
+      "description": "Long-lasting and highly isolated laminated core transformer solutions."
     },
     "grid": {
       "ferriteCore": {
@@ -54,23 +55,23 @@
       },
       "inductors": {
         "title": "Inductors",
-        "subtitle": "Precise inductance values.",
-        "description": "Inductors for various applications."
+        "subtitle": "Artek Signature in Signal Quality.",
+        "description": "Wide tolerance range inductor solutions."
       },
       "powerInductors": {
         "title": "Power Inductors",
-        "subtitle": "High current capacity.",
-        "description": "Inductors optimized for power electronics."
+        "subtitle": "Expertise in High Current Management.",
+        "description": "High current power inductors for reliable power management."
       },
       "emcFilters": {
         "title": "EMI/EMC Filters",
-        "subtitle": "Industry-leading noise reduction.",
-        "description": "Engineered for demanding industrial applications."
+        "subtitle": "International Standards Protection.",
+        "description": "Industrial and military standards compliant EMI/EMC filter solutions."
       },
       "airCoreCoils": {
         "title": "Air Core Coils",
-        "subtitle": "Low-loss solutions.",
-        "description": "For RF and high-frequency applications."
+        "subtitle": "Lossless Solutions for RF Applications.",
+        "description": "Superior signal integrity with air core coils."
       }
     }
   },
@@ -81,23 +82,27 @@
     "buy": "Buy"
   },
   "feature": {
-    "title": "Why choose Artek Elektronik",
+    "title": "Why ARTEK ELEKTRONİK?",
     "subtitle": "Precision engineering meets uncompromising quality standards.",
     "certified": {
-      "title": "Certified Quality",
-      "description": "ISO 9001 certified manufacturing with rigorous testing standards."
+      "title": "Internationally Certified Quality",
+      "description": "With our ISO 9001 certified processes and rigorous testing, we ensure that every component delivers the highest performance your project requires.",
+      "highlight": "Quality Assurance, Tested Products"
     },
     "performance": {
-      "title": "High Performance",
-      "description": "Optimized for maximum efficiency and minimal signal interference."
+      "title": "Custom Technical Solutions for Your Project",
+      "description": "Working with our engineers, we design custom core and bobbin geometries that perfectly match your project's unique requirements, beyond our standard products.",
+      "highlight": "Flexibility, Engineering Support"
     },
     "leading": {
-      "title": "Industry Leading",
-      "description": "Trusted by leading manufacturers across multiple industries."
+      "title": "Fast and Reliable Supply from Turkey",
+      "description": "Thanks to our strategic position for European and Asian markets, we offer fast and seamless logistics solutions at competitive prices.",
+      "highlight": "Logistics Advantage, Made in Turkey"
     },
     "support": {
-      "title": "Global Support",
-      "description": "Worldwide distribution with local technical support teams."
+      "title": "Solution-Focused Communication",
+      "description": "We ensure your project progresses smoothly by providing quick and actionable answers to your technical questions. Artek is not just a supplier, but a reliable business partner.",
+      "highlight": "Customer Service, Partnership"
     }
   },
   "footer": {
@@ -205,12 +210,84 @@
     "eeDesc": "View products in the EE category."
   },
   "about": {
-    "title": "About Us"
+    "title": "About Us",
+    "mainHeading": "ARTEK ELEKTRONIK: A Reliable History, A Powerful Future",
+    "intro": "Artek Elektronik, which stepped into the electronic components sector in 1987, has contributed to the development of the industry for over three decades as one of Turkey's leading import and export companies. The deep commercial experience we have gained since our establishment has made customer satisfaction and rapid supply our core priorities.",
+    "manufacturingStrength": {
+      "heading": "Our Manufacturing Strength: The 2008 Transformation",
+      "content": "Combining our industry experience with the increasing demand from our customers for specialized solutions, we began our manufacturing journey in 2008. With this transformation, Artek Elektronik evolved from being just a supplier to a solution partner with custom design and production capabilities.",
+      "current": "Today, in our modern facilities, we manufacture critical components such as high-frequency ferrite cores, bobbins, transformers, and inductors. Our production processes are meticulously managed in compliance with international quality standards."
+    },
+    "expertise": {
+      "heading": "Our Areas of Expertise and Vision",
+      "intro": "At Artek Elektronik, we offer specialized solutions to a wide range of sectors based on technical excellence. Our main areas of expertise include:",
+      "automotive": "Automotive: In-vehicle electronic systems requiring high reliability.",
+      "lighting": "Lighting: High energy efficiency LED driver and ballast solutions.",
+      "medical": "Medical: Precise and stable power supply components.",
+      "agriculture": "Agriculture: Industrial electronic applications resistant to harsh conditions."
+    },
+    "vision": {
+      "content": "Our Vision is clear: Representing Turkey's manufacturing and export power, Artek Elektronik aims to become Turkey's number one exporter of high-frequency transformers and bobbins in the near future. In line with this goal, we continue to invest in technology and human resources, increasing our impact on the global market every day.",
+      "closing": "With the accumulation of experience from yesterday to today, Artek Elektronik will continue to shape the energy solutions of tomorrow."
+    }
   },
   "contact": {
-    "title": "Contact"
+    "title": "Contact",
+    "heading": "Contact us",
+    "description": "Leave your message and we will get back to you ASAP",
+    "addressLabel": "Address",
+    "address": "Istanbul, Turkey",
+    "phone": "+90 (212) 555-0147",
+    "email": "sales@artek-elektronik.com",
+    "form": {
+      "name": "Name*",
+      "email": "Email*",
+      "phone": "Phone*",
+      "service": "Service interested in*",
+      "message": "Describe your requirements*",
+      "submit": "Submit now",
+      "services": {
+        "general": "General Inquiry",
+        "ferriteCore": "Ferrite Core",
+        "transformers": "Transformers",
+        "partnership": "Partnership"
+      }
+    }
+  },
+  "footer": {
+    "brand": "Artek Elektronik",
+    "tagline": "Leading manufacturer of high-frequency transformers and electronic components.",
+    "copyright": "© 2025 Artek Elektronik. All rights reserved.",
+    "terms": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "sections": {
+      "product": "Products",
+      "company": "Company",
+      "resources": "Resources",
+      "social": "Follow Us"
+    },
+    "links": {
+      "ferriteCores": "Ferrite Cores",
+      "bobbins": "Bobbins",
+      "transformers": "Transformers",
+      "laminated": "Laminated Transformers",
+      "about": "About Us",
+      "contact": "Contact",
+      "products": "Products",
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    }
   },
   "language": {
     "switchTo": "Switch language"
+  },
+  "search": {
+    "placeholder": "Search products, pages...",
+    "pages": "Pages",
+    "products": "Products",
+    "noResults": "No results found.",
+    "pressEsc": "Press ESC to close"
   }
 }
