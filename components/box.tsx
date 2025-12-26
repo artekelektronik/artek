@@ -86,7 +86,7 @@ export const Box: React.FC<BoxProps> = ({
     <motion.div
       className={cn(
         height,
-        "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 py-8 md:py-12",
+        "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 pt-8 md:pt-12",
         backgroundColor,
         className
       )}
@@ -99,7 +99,7 @@ export const Box: React.FC<BoxProps> = ({
         <motion.h1
           variants={itemVariants}
           className={cn(
-            "text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-center",
+            "text-3xl sm:text-4xl md:text-5xl  font-semibold text-center",
             isDark ? "text-white" : "text-black"
           )}
         >
@@ -111,7 +111,7 @@ export const Box: React.FC<BoxProps> = ({
         <motion.p
           variants={itemVariants}
           className={cn(
-            "text-lg sm:text-xl md:text-2xl font-thin text-center max-w-2xl",
+            "text-lg sm:text-xl font-thin text-center max-w-2xl",
             isDark ? "text-white" : "text-gray-600"
           )}
         >
@@ -123,7 +123,7 @@ export const Box: React.FC<BoxProps> = ({
         <motion.p
           variants={itemVariants}
           className={cn(
-            "text-sm sm:text-base md:text-lg font-light text-center max-w-xl",
+            "text-sm sm:text-base font-light text-center max-w-xl",
             isDark ? "text-white" : "text-gray-600"
           )}
         >
@@ -172,7 +172,7 @@ export const Box: React.FC<BoxProps> = ({
           src={imageSrc}
           alt={imageAlt}
           className={cn(
-            "object-contain max-h-[35%] md:max-h-[40%] w-auto",
+            "object-contain w-auto max-h-full max-w-full flex-shrink",
             isDark &&
               "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)] drop-shadow-[0_0_120px_rgba(255,255,255,0.9)]",
             imageClassName

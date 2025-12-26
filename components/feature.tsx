@@ -55,7 +55,7 @@ const Feature = () => {
                   {feature.icon}
                 </div>
                 <div>
-                  <h3 className="mb-3 max-w-48 text-lg font-semibold md:mb-4 md:text-2xl lg:mb-6">
+                  <h3 className="mb-3 max-w-72 text-lg font-semibold md:mb-4 md:text-2xl lg:mb-6">
                     {feature.title}
                   </h3>
                   <p className="text-muted-foreground">{feature.description}</p>

@@ -33,7 +33,7 @@ function HomeContent() {
     <div>
       {/* Row 1 - Ferrit Nüve / Ferrite Core */}
       <Box
-        backgroundColor="bg-black"
+        backgroundColor="bg-gray-100"
         title={t("home.hero1.title")}
         subtitle={t("home.hero1.subtitle")}
         buttons={[
@@ -62,7 +62,7 @@ function HomeContent() {
 
       {/* Row 3 - Ferrit Trafolar / Ferrite Transformers */}
       <Box
-        backgroundColor="bg-black"
+        backgroundColor="bg-gray-200"
         title={t("home.hero3.title")}
         subtitle={t("home.hero3.subtitle")}
         description={t("home.hero3.description")}
@@ -95,7 +95,7 @@ function HomeContent() {
         {/* 5. İndüktörler - Inductors */}
         <Box
           backgroundColor="bg-gray-100"
-          height="h-[500px]"
+          height="h-[600px]"
           title={t("home.grid.inductors.title")}
           subtitle={t("home.grid.inductors.subtitle")}
           description={t("home.grid.inductors.description")}
@@ -111,7 +111,7 @@ function HomeContent() {
         {/* 6. Güç İndüktörleri - Power Inductors */}
         <Box
           backgroundColor="bg-black"
-          height="h-[500px]"
+          height="h-[600px]"
           title={t("home.grid.powerInductors.title")}
           subtitle={t("home.grid.powerInductors.subtitle")}
           description={t("home.grid.powerInductors.description")}
@@ -127,7 +127,7 @@ function HomeContent() {
         {/* 7. EMI/EMC Filtreler - EMC Filters */}
         <Box
           backgroundColor="bg-blue-100"
-          height="h-[500px]"
+          height="h-[600px]"
           title={t("home.grid.emcFilters.title")}
           subtitle={t("home.grid.emcFilters.subtitle")}
           description={t("home.grid.emcFilters.description")}
@@ -143,7 +143,7 @@ function HomeContent() {
         {/* 8. Hava Nüveli Bobinler - Air Core Coils */}
         <Box
           backgroundColor="bg-gray-200"
-          height="h-[500px]"
+          height="h-[600px]"
           title={t("home.grid.airCoreCoils.title")}
           subtitle={t("home.grid.airCoreCoils.subtitle")}
           description={t("home.grid.airCoreCoils.description")}
