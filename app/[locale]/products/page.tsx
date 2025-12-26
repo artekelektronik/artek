@@ -17,6 +17,7 @@ import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
 import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
 import { generateProductSlug } from "@/lib/utils";
+import { useLocale } from "next-intl";
 
 // Define search params parsers
 const searchParamsParser = {
@@ -38,6 +39,8 @@ const searchParamsParser = {
 
 function ProductsContent() {
   const t = useTranslations("products");
+  const tFilters = useTranslations("filters");
+  const tControls = useTranslations("controls");
   const prefetchProduct = usePrefetchProduct();
 
   // Use nuqs to manage URL search params
@@ -302,6 +305,18 @@ function ProductsContent() {
             supplierCountries={supplierCountries}
             onFilterChange={handleFilterChange}
             onReset={handleReset}
+            translations={{
+              title: tFilters("title"),
+              reset: tFilters("reset"),
+              priceRange: tFilters("priceRange"),
+              min: tFilters("min"),
+              max: tFilters("max"),
+              inStockOnly: tFilters("inStockOnly"),
+              category: tFilters("category"),
+              altCategory: tFilters("altCategory"),
+              productType: tFilters("productType"),
+              supplierCountry: tFilters("supplierCountry"),
+            }}
           />
         </aside>
 
@@ -327,6 +342,16 @@ function ProductsContent() {
               }}
               sortBy={params.sort}
               onSortChange={(sort) => setParams({ sort })}
+              translations={{
+                view: tControls("view"),
+                sortBy: tControls("sortBy"),
+                newest: tControls("sort.newest"),
+                nameAsc: tControls("sort.nameAsc"),
+                nameDesc: tControls("sort.nameDesc"),
+                priceAsc: tControls("sort.priceAsc"),
+                priceDesc: tControls("sort.priceDesc"),
+                stockDesc: tControls("sort.stockDesc"),
+              }}
             />
           </div>
 

@@ -40,7 +40,7 @@ function HomeContent() {
           { text: t("buttons.viewProducts"), variant: "default", href: productsLink("Ferrit") },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
-        imageSrc="/products/feritte-core.png"
+        imageSrc="/products/core.png"
         imageAlt="Ferrite Core"
         imageClassName="max-w-lg"
       />

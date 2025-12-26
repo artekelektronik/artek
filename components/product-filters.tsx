@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,18 @@ interface ProductFiltersProps {
   supplierCountries: string[];
   onFilterChange: (filters: FilterState) => void;
   onReset: () => void;
+  translations: {
+    title: string;
+    reset: string;
+    priceRange: string;
+    min: string;
+    max: string;
+    inStockOnly: string;
+    category: string;
+    altCategory: string;
+    productType: string;
+    supplierCountry: string;
+  };
 }
 
 export interface FilterState {
@@ -32,9 +43,9 @@ export function ProductFilters({
   productTypes,
   supplierCountries,
   onFilterChange,
-  onReset 
+  onReset,
+  translations: t
 }: ProductFiltersProps) {
-  const t = useTranslations("filters");
   const [priceMin, setPriceMin] = useState(0);
   const [priceMax, setPriceMax] = useState(10000);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -107,24 +118,24 @@ export function ProductFilters({
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t("title")}</h2>
+        <h2 className="text-lg font-semibold">{t.title}</h2>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleReset}
           className="text-xs"
         >
-          {t("reset")}
+          {t.reset}
         </Button>
       </div>
 
       {/* Price Range */}
       <div className="space-y-3">
-        <h3 className="font-medium text-sm">{t("priceRange")}</h3>
+        <h3 className="font-medium text-sm">{t.priceRange}</h3>
         <div className="flex items-center gap-3">
           <div className="space-y-1">
             <Label htmlFor="price-min" className="text-xs text-muted-foreground">
-              {t("min")}
+              {t.min}
             </Label>
             <Input
               id="price-min"
@@ -138,7 +149,7 @@ export function ProductFilters({
           <span className="text-muted-foreground mt-5">-</span>
           <div className="space-y-1">
             <Label htmlFor="price-max" className="text-xs text-muted-foreground">
-              {t("max")}
+              {t.max}
             </Label>
             <Input
               id="price-max"
@@ -166,7 +177,7 @@ export function ProductFilters({
             htmlFor="in-stock"
             className="text-sm font-medium cursor-pointer"
           >
-            {t("inStockOnly")}
+            {t.inStockOnly}
           </Label>
         </div>
       </div>
@@ -177,7 +188,7 @@ export function ProductFilters({
       {categories.length > 0 && (
         <>
           <div className="space-y-3">
-            <h3 className="font-medium text-sm">{t("category")}</h3>
+            <h3 className="font-medium text-sm">{t.category}</h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {categories.map((category) => (
                 <div key={category} className="flex items-center space-x-2">
@@ -204,7 +215,7 @@ export function ProductFilters({
       {altCategories.length > 0 && (
         <>
           <div className="space-y-3">
-            <h3 className="font-medium text-sm">{t("altCategory")}</h3>
+            <h3 className="font-medium text-sm">{t.altCategory}</h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {altCategories.map((category) => (
                 <div key={category} className="flex items-center space-x-2">
@@ -231,7 +242,7 @@ export function ProductFilters({
       {productTypes.length > 0 && (
         <>
           <div className="space-y-3">
-            <h3 className="font-medium text-sm">{t("productType")}</h3>
+            <h3 className="font-medium text-sm">{t.productType}</h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {productTypes.map((type) => (
                 <div key={type} className="flex items-center space-x-2">
@@ -258,7 +269,7 @@ export function ProductFilters({
       {supplierCountries.length > 0 && (
         <>
           <div className="space-y-3">
-            <h3 className="font-medium text-sm">{t("supplierCountry")}</h3>
+            <h3 className="font-medium text-sm">{t.supplierCountry}</h3>
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {supplierCountries.map((country) => (
                 <div key={country} className="flex items-center space-x-2">
