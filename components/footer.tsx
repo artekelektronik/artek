@@ -1,6 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+
+interface SubSection {
+  title: string;
+  links: {
+    text: string;
+    url: string;
+  }[];
+}
 
 interface MenuItem {
   title: string;
@@ -8,6 +17,7 @@ interface MenuItem {
     text: string;
     url: string;
   }[];
+  subsections?: SubSection[];
 }
 
 interface Footer2Props {
@@ -59,12 +69,27 @@ const Footer = ({
         { text: t("links.contact"), url: "/contact" },
         { text: t("links.products"), url: "/products" },
       ],
+      subsections: [
+        {
+          title: t("sections.certificates"),
+          links: [
+            { text: t("links.iso9001"), url: "/certificates" },
+            { text: t("links.iso45001"), url: "/certificates" },
+            { text: t("links.iso10002"), url: "/certificates" },
+          ],
+        },
+      ],
     },
     {
-      title: t("sections.resources"),
+      title: "İletişim",
       links: [
-        { text: t("links.whatsapp"), url: "https://wa.me/905555551470" },
-        { text: t("links.email"), url: "mailto:sales@artek-elektronik.com" },
+        { text: "0212 252 11 68", url: "tel:+902122521168" },
+        { text: "0532 718 33 64", url: "tel:+905327183364" },
+        { text: "artek@ferritnuve.com", url: "mailto:artek@ferritnuve.com" },
+        {
+          text: "Ferrit Nüve Erişteci Sokak Abed Han No: 7/1 Karaköy - İstanbul",
+          url: "https://maps.google.com/?q=Ferrit%20N%C3%BCve%20Eri%C5%9Fteci%20Sokak%20Abed%20Han%20No%3A%207%2F1%20Karak%C3%B6y%20-%20%C4%B0stanbul",
+        },
       ],
     },
     {
@@ -88,8 +113,8 @@ const Footer = ({
   const finalBottomLinks = bottomLinks || defaultBottomLinks;
 
   return (
-    <section className="py-32 px-4">
-      <div className="w-full">
+    <section className="py-32">
+      <div className="mx-auto max-w-6xl px-6">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
             <div className="col-span-2 mb-8 lg:mb-0">
@@ -107,10 +132,26 @@ const Footer = ({
                       key={linkIdx}
                       className="hover:text-primary font-medium"
                     >
-                      <a href={link.url}>{link.text}</a>
+                      <Link href={link.url}>{link.text}</Link>
                     </li>
                   ))}
                 </ul>
+                {section.subsections && section.subsections.map((subsection, subIdx) => (
+                  <div key={subIdx} className="mt-6">
+                    <h4 className="mb-3 font-bold text-sm">{subsection.title}</h4>
+                    <ul className="text-muted-foreground space-y-2 ml-0">
+                      {subsection.links.map((link, linkIdx) => (
+                        <li
+                          key={linkIdx}
+                          className="hover:text-primary font-medium text-sm flex items-center"
+                        >
+                          <span className="mr-2">•</span>
+                          <Link href={link.url}>{link.text}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

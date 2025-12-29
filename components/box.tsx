@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface BoxProps {
   backgroundColor?: string;
+  backgroundGradient?: string;
   height?: string;
   title?: string;
   subtitle?: string;
@@ -68,7 +69,8 @@ const imageVariants = {
 };
 
 export const Box: React.FC<BoxProps> = ({
-  backgroundColor = "bg-white",
+  backgroundColor,
+  backgroundGradient,
   height = "h-[700px]",
   title,
   subtitle,
@@ -80,14 +82,18 @@ export const Box: React.FC<BoxProps> = ({
   className = "",
   children,
 }) => {
-  const isDark = backgroundColor === "bg-black";
+  // Determine if dark based on background color
+  const isDark = backgroundColor === "bg-black" || backgroundColor?.includes("bg-slate") || backgroundColor?.includes("bg-zinc");
+  
+  // Apply gradient if provided, otherwise use backgroundColor
+  const bgClass = backgroundGradient || backgroundColor || "bg-muted";
 
   return (
     <motion.div
       className={cn(
         height,
-        "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 pt-8 md:pt-12",
-        backgroundColor,
+        "w-full grid grid-rows-[auto_1fr] items-center px-4 py-8 md:py-12",
+        bgClass,
         className
       )}
       variants={containerVariants}
@@ -95,57 +101,52 @@ export const Box: React.FC<BoxProps> = ({
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
     >
-      {title && (
-        <motion.h1
-          variants={itemVariants}
-          className={cn(
-            "text-3xl sm:text-4xl md:text-5xl  font-semibold text-center",
-            isDark ? "text-white" : "text-black"
-          )}
-        >
-          {title}
-        </motion.h1>
-      )}
+      {/* Content Area - Fixed height allocation */}
+      <div className="flex flex-col items-center justify-start gap-3 md:gap-4 min-h-[240px] md:min-h-[280px]">
+        {title && (
+          <motion.h1
+            variants={itemVariants}
+            className={cn(
+              "text-3xl sm:text-4xl md:text-5xl font-semibold text-center",
+              isDark ? "text-white" : "text-black"
+            )}
+          >
+            {title}
+          </motion.h1>
+        )}
 
-      {subtitle && (
-        <motion.p
-          variants={itemVariants}
-          className={cn(
-            "text-lg sm:text-xl font-thin text-center max-w-2xl",
-            isDark ? "text-white" : "text-gray-600"
-          )}
-        >
-          {subtitle}
-        </motion.p>
-      )}
+        {subtitle && (
+          <motion.p
+            variants={itemVariants}
+            className={cn(
+              "text-lg sm:text-xl font-thin text-center max-w-2xl",
+              isDark ? "text-white" : "text-muted-foreground"
+            )}
+          >
+            {subtitle}
+          </motion.p>
+        )}
 
-      {description && (
-        <motion.p
-          variants={itemVariants}
-          className={cn(
-            "text-sm sm:text-base font-light text-center max-w-xl",
-            isDark ? "text-white" : "text-gray-600"
-          )}
-        >
-          {description}
-        </motion.p>
-      )}
+        {description && (
+          <motion.p
+            variants={itemVariants}
+            className={cn(
+              "text-sm sm:text-base font-light text-center max-w-xl",
+              isDark ? "text-white" : "text-muted-foreground"
+            )}
+          >
+            {description}
+          </motion.p>
+        )}
 
-      {buttons.length > 0 && (
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-wrap justify-center gap-2 md:gap-3"
-        >
-          {buttons.map((button, index) => {
-            const isOutline = button.variant === "outline" || index === 1;
-            const blueClasses = isOutline
-              ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent"
-              : "bg-blue-600 hover:bg-blue-700 text-white";
-
-            const buttonElement = (
+        {buttons.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-wrap justify-center gap-2 md:gap-3"
+          >
+            {buttons.map((button, index) => (
               <Button
                 key={index}
-                className={cn("rounded-full text-sm md:text-base", blueClasses)}
                 variant={button.variant || "default"}
                 size="lg"
                 onClick={button.onClick}
@@ -157,27 +158,28 @@ export const Box: React.FC<BoxProps> = ({
                   button.text
                 )}
               </Button>
-            );
+            ))}
+          </motion.div>
+        )}
 
-            return buttonElement;
-          })}
-        </motion.div>
-      )}
+        {children}
+      </div>
 
-      {children}
-
+      {/* Image Area - Flexible with consistent constraints */}
       {imageSrc && (
-        <motion.img
-          variants={imageVariants}
-          src={imageSrc}
-          alt={imageAlt}
-          className={cn(
-            "object-contain w-auto max-h-full max-w-full flex-shrink",
-            isDark &&
-              "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)] drop-shadow-[0_0_120px_rgba(255,255,255,0.9)]",
-            imageClassName
-          )}
-        />
+        <div className="flex items-center justify-center w-full">
+          <motion.img
+            variants={imageVariants}
+            src={imageSrc}
+            alt={imageAlt}
+            className={cn(
+              "object-contain w-auto max-h-[280px] md:max-h-[360px] max-w-full",
+              isDark &&
+                "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)]",
+              imageClassName
+            )}
+          />
+        </div>
       )}
     </motion.div>
   );

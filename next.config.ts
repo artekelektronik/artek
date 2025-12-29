@@ -26,6 +26,11 @@ const nextConfig: NextConfig = {
         hostname: "dl.airtable.com",
         pathname: "/.attachmentThumbnails/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
 };

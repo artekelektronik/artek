@@ -22,7 +22,7 @@
     "@tailark-pro": {
       "url": "https://pro.tailark.com/registry/{name}",
       "headers": {
-        "Authorization": "Bearer $TAILARK_API_KEY"
+        "Authorization": "Bearer ${TAILARK_API_KEY}"
       }
     }
   }

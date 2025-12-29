@@ -11,6 +11,12 @@
     "whatsappMessage": "Hello, I would like to get information about your products.",
     "products": "Products"
   },
+  "hero": {
+    "title": "Technical Excellence in Your Energy Solutions",
+    "subtitle": "Leveraging our manufacturing strength in Turkey, we deliver ferrite core, bobbin, transformer, and inductor solutions that elevate your project's performance to the highest level.",
+    "viewDetails": "View Technical Details",
+    "requestQuote": "Request a Quote for Your Project"
+  },
   "home": {
     "hero1": {
       "title": "Ferrite Cores",
@@ -107,13 +113,14 @@
   },
   "footer": {
     "brand": "ARTEK TEKNOLOJİ",
-    "tagline": "Precision engineering meets uncompromising quality standards.",
+    "tagline": "Leading manufacturer of high-frequency transformers and electronic components.",
     "copyright": "© 2025 Artek Teknoloji. All rights reserved.",
     "sections": {
       "product": "Product",
       "company": "Company",
       "resources": "Resources",
-      "social": "Social"
+      "social": "Social",
+      "certificates": "Certificates"
     },
     "links": {
       "overview": "Overview",
@@ -132,7 +139,16 @@
       "advertise": "Advertise",
       "twitter": "Twitter",
       "instagram": "Instagram",
-      "linkedin": "LinkedIn"
+      "linkedin": "LinkedIn",
+      "ferriteCores": "Ferrite Cores",
+      "bobbins": "Bobbins",
+      "transformers": "Transformers",
+      "laminated": "Laminated",
+      "products": "Products",
+      "iso9001": "ISO 9001:2015",
+      "iso45001": "ISO 45001:2018",
+      "iso10002": "ISO 10002:2018",
+      "viewCertificates": "View Certificates"
     },
     "terms": "Terms and Conditions",
     "privacyPolicy": "Privacy Policy"
@@ -160,6 +176,7 @@
     "notFoundDescription": "This product does not exist or has been removed.",
     "inStock": "In Stock",
     "outOfStock": "Out of Stock",
+    "code": "Code:",
     "unitPrice": "Unit Price:",
     "retailPrice": "Retail Price:",
     "wholesalePrice": "Wholesale Price:",
@@ -171,7 +188,11 @@
     "productTypes": "Product Types:",
     "supplierCountries": "Supplier Countries:",
     "addToCart": "Add to Cart",
-    "outOfStockButton": "Out of Stock"
+    "outOfStockButton": "Out of Stock",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "chatNow": "Chat on WhatsApp",
+    "share": "Share"
   },
   "filters": {
     "title": "Filters",
@@ -200,6 +221,8 @@
   "productNav": {
     "title": "Products",
     "trigger": "Products",
+    "categories": "Categories",
+    "featured": "Featured",
     "ourProducts": "Our Products",
     "ourProductsDesc": "High-quality electronic components for demanding applications.",
     "description": "High-quality electronic components for demanding applications.",
@@ -254,32 +277,6 @@
       }
     }
   },
-  "footer": {
-    "brand": "Artek Elektronik",
-    "tagline": "Leading manufacturer of high-frequency transformers and electronic components.",
-    "copyright": "© 2025 Artek Elektronik. All rights reserved.",
-    "terms": "Terms of Service",
-    "privacyPolicy": "Privacy Policy",
-    "sections": {
-      "product": "Products",
-      "company": "Company",
-      "resources": "Resources",
-      "social": "Follow Us"
-    },
-    "links": {
-      "ferriteCores": "Ferrite Cores",
-      "bobbins": "Bobbins",
-      "transformers": "Transformers",
-      "laminated": "Laminated Transformers",
-      "about": "About Us",
-      "contact": "Contact",
-      "products": "Products",
-      "whatsapp": "WhatsApp",
-      "email": "Email",
-      "instagram": "Instagram",
-      "linkedin": "LinkedIn"
-    }
-  },
   "language": {
     "switchTo": "Switch language"
   },
@@ -289,5 +286,31 @@
     "products": "Products",
     "noResults": "No results found.",
     "pressEsc": "Press ESC to close"
+  },
+  "certificates": {
+    "title": "Our Certifications",
+    "subtitle": "ARTEK ELEKTRONIK is committed to maintaining the highest international standards in quality, safety, and customer satisfaction.",
+    "viewCertificate": "View Certificate",
+    "downloadPDF": "Download PDF",
+    "viewFullSize": "View Full Size",
+    "close": "Close",
+    "certificationDetails": "International Certifications",
+    "certificationDesc": "Our certifications demonstrate our commitment to excellence and continuous improvement in all areas of our operations.",
+    "commitment": "Our Quality Commitment",
+    "commitmentDesc": "We maintain rigorous standards across all our operations to ensure the highest quality products and services for our customers.",
+    "commitmentItem1": "ISO 9001:2015 certified quality management system",
+    "commitmentItem2": "ISO 45001:2018 occupational health and safety standards",
+    "commitmentItem3": "ISO 10002:2018 customer satisfaction management",
+    "certificates": {
+      "iso9001": {
+        "description": "Quality Management System Certification"
+      },
+      "iso45001": {
+        "description": "Occupational Health and Safety Management System"
+      },
+      "iso10002": {
+        "description": "Customer Satisfaction and Complaint Management"
+      }
+    }
   }
 }

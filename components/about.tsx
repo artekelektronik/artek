@@ -12,8 +12,8 @@ const About = ({ className }: About1Props) => {
   const t = useTranslations("about");
 
   return (
-    <section className={cn("py-32 mx-auto max-w-7xl", className)}>
-      <div className="container flex flex-col gap-16 lg:gap-28">
+    <section className={cn("py-32", className)}>
+      <div className="mx-auto max-w-6xl px-6 flex flex-col gap-16 lg:gap-28">
         <div className="flex flex-col gap-4 lg:gap-8">
           <h1 className="text-4xl font-semibold tracking-tighter lg:text-7xl">
             {t("mainHeading").split(":").map((part, index) => (

@@ -86,56 +86,8 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* Spacer to push pricing to bottom */}
+        {/* Spacer to push button to bottom */}
         <div className="flex-1" />
-
-        {/* Pricing Section - Fixed height structure */}
-        <div className="space-y-1 pt-2 border-t">
-          {/* Birim Fiyat - Always show (required) */}
-          <div className="flex justify-between items-center min-h-5">
-            {fields["Unit Price"] && (
-              <>
-                <span className="text-xs text-muted-foreground">{t("unitPrice")}</span>
-                <span className="font-semibold text-sm">
-                  ₺{fields["Unit Price"].toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </>
-            )}
-          </div>
-          
-          {/* Perakende - Fixed height slot */}
-          <div className="flex justify-between items-center min-h-5">
-            {fields["Parakende Fiyatı"] && (
-              <>
-                <span className="text-xs text-muted-foreground">{t("retailPrice")}</span>
-                <span className="text-xs">
-                  ₺{fields["Parakende Fiyatı"].toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </>
-            )}
-          </div>
-          
-          {/* Toptan - Fixed height slot */}
-          <div className="flex justify-between items-center min-h-5">
-            {fields["Toptan Fiyatı"] && (
-              <>
-                <span className="text-xs text-muted-foreground">{t("wholesalePrice")}</span>
-                <span className="text-xs">
-                  ₺{fields["Toptan Fiyatı"].toLocaleString("tr-TR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Action Button - Fixed position */}
         <Button asChild variant="default" size="sm" className="w-full mt-4">
