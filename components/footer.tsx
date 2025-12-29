@@ -1,6 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
+
+interface SubSection {
+  title: string;
+  links: {
+    text: string;
+    url: string;
+  }[];
+}
 
 interface MenuItem {
   title: string;
@@ -8,6 +17,7 @@ interface MenuItem {
     text: string;
     url: string;
   }[];
+  subsections?: SubSection[];
 }
 
 interface Footer2Props {
@@ -58,6 +68,16 @@ const Footer = ({
         { text: t("links.about"), url: "/about" },
         { text: t("links.contact"), url: "/contact" },
         { text: t("links.products"), url: "/products" },
+      ],
+      subsections: [
+        {
+          title: t("sections.certificates"),
+          links: [
+            { text: t("links.iso9001"), url: "/certificates" },
+            { text: t("links.iso45001"), url: "/certificates" },
+            { text: t("links.iso10002"), url: "/certificates" },
+          ],
+        },
       ],
     },
     {
@@ -112,10 +132,26 @@ const Footer = ({
                       key={linkIdx}
                       className="hover:text-primary font-medium"
                     >
-                      <a href={link.url}>{link.text}</a>
+                      <Link href={link.url}>{link.text}</Link>
                     </li>
                   ))}
                 </ul>
+                {section.subsections && section.subsections.map((subsection, subIdx) => (
+                  <div key={subIdx} className="mt-6">
+                    <h4 className="mb-3 font-bold text-sm">{subsection.title}</h4>
+                    <ul className="text-muted-foreground space-y-2 ml-0">
+                      {subsection.links.map((link, linkIdx) => (
+                        <li
+                          key={linkIdx}
+                          className="hover:text-primary font-medium text-sm flex items-center"
+                        >
+                          <span className="mr-2">•</span>
+                          <Link href={link.url}>{link.text}</Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

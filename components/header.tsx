@@ -147,7 +147,7 @@ const Header = () => {
               )}
 
               <div
-                className="max-lg:data-[state=active]:mt-6 data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-3 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent"
+                className="max-lg:data-[state=active]:mt-6 data-[state=active]:flex hidden w-full flex-nowrap items-center justify-end gap-2 lg:m-0 lg:flex lg:w-fit lg:gap-3 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent"
                 data-state={isMobileMenuOpen ? "active" : "inactive"}
               >
                 <LanguageSwitcher pathname={pathname} />

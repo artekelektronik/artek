@@ -113,13 +113,14 @@
   },
   "footer": {
     "brand": "ARTEK TEKNOLOJİ",
-    "tagline": "Hassas mühendislik, ödün vermeyen kalite standartlarıyla buluşuyor.",
+    "tagline": "Yüksek frekanslı transformatör ve elektronik bileşenlerin önde gelen üreticisi.",
     "copyright": "© 2025 Artek Teknoloji. Tüm hakları saklıdır.",
     "sections": {
       "product": "Ürün",
       "company": "Şirket",
       "resources": "Kaynaklar",
-      "social": "Sosyal"
+      "social": "Sosyal",
+      "certificates": "Sertifikalar"
     },
     "links": {
       "overview": "Genel Bakış",
@@ -138,7 +139,16 @@
       "advertise": "Reklam",
       "twitter": "Twitter",
       "instagram": "Instagram",
-      "linkedin": "LinkedIn"
+      "linkedin": "LinkedIn",
+      "ferriteCores": "Ferrit Nüveler",
+      "bobbins": "Karkaslar",
+      "transformers": "Transformatörler",
+      "laminated": "Saclı Transformatörler",
+      "products": "Ürünler",
+      "iso9001": "ISO 9001:2015",
+      "iso45001": "ISO 45001:2018",
+      "iso10002": "ISO 10002:2018",
+      "viewCertificates": "Sertifikaları Görüntüle"
     },
     "terms": "Şartlar ve Koşullar",
     "privacyPolicy": "Gizlilik Politikası"
@@ -166,6 +176,7 @@
     "notFoundDescription": "Bu ürün mevcut değil veya kaldırılmış olabilir.",
     "inStock": "Stokta Var",
     "outOfStock": "Stokta Yok",
+    "code": "Kod:",
     "unitPrice": "Birim Fiyat:",
     "retailPrice": "Perakende Fiyatı:",
     "wholesalePrice": "Toptan Fiyatı:",
@@ -177,7 +188,11 @@
     "productTypes": "Ürün Tipleri:",
     "supplierCountries": "Tedarikçi Ülkeler:",
     "addToCart": "Sepete Ekle",
-    "outOfStockButton": "Stokta Yok"
+    "outOfStockButton": "Stokta Yok",
+    "copyLink": "Bağlantıyı Kopyala",
+    "copied": "Kopyalandı!",
+    "chatNow": "WhatsApp'ta Sohbet Et",
+    "share": "Paylaş"
   },
   "filters": {
     "title": "Filtreler",
@@ -262,32 +277,6 @@
       }
     }
   },
-  "footer": {
-    "brand": "Artek Elektronik",
-    "tagline": "Yüksek frekans transformatörleri ve elektronik bileşenlerin lider üreticisi.",
-    "copyright": "© 2025 Artek Elektronik. Tüm hakları saklıdır.",
-    "terms": "Hizmet Şartları",
-    "privacyPolicy": "Gizlilik Politikası",
-    "sections": {
-      "product": "Ürünler",
-      "company": "Şirket",
-      "resources": "Kaynaklar",
-      "social": "Bizi Takip Edin"
-    },
-    "links": {
-      "ferriteCores": "Ferrit Nüveler",
-      "bobbins": "Karkaslar",
-      "transformers": "Transformatörler",
-      "laminated": "Sac Transformatörler",
-      "about": "Hakkımızda",
-      "contact": "İletişim",
-      "products": "Ürünler",
-      "whatsapp": "WhatsApp",
-      "email": "E-posta",
-      "instagram": "Instagram",
-      "linkedin": "LinkedIn"
-    }
-  },
   "language": {
     "switchTo": "Dili değiştir"
   },
@@ -297,5 +286,31 @@
     "products": "Ürünler",
     "noResults": "Sonuç bulunamadı.",
     "pressEsc": "Kapatmak için ESC tuşuna basın"
+  },
+  "certificates": {
+    "title": "Sertifikalarımız",
+    "subtitle": "ARTEK ELEKTRONIK, kalite, güvenlik ve müşteri memnuniyetinde en yüksek uluslararası standartları korumaya kararlıdır.",
+    "viewCertificate": "Sertifikayı Görüntüle",
+    "downloadPDF": "PDF İndir",
+    "viewFullSize": "Tam Boyutunu Görüntüle",
+    "close": "Kapat",
+    "certificationDetails": "Uluslararası Sertifikalar",
+    "certificationDesc": "Sertifikalarımız, operasyonlarımızın tüm alanlarında mükemmeliyete ve sürekli iyileştirilmeye olan taahhüdümüzü göstermektedir.",
+    "commitment": "Kalite Taahhüdümüz",
+    "commitmentDesc": "Müşterilerimize en yüksek kaliteli ürün ve hizmetleri sağlamak için operasyonlarımızın tüm alanlarında titiz standartları koruyoruz.",
+    "commitmentItem1": "ISO 9001:2015 sertifikalı kalite yönetim sistemi",
+    "commitmentItem2": "ISO 45001:2018 işçi sağlığı ve güvenliği standartları",
+    "commitmentItem3": "ISO 10002:2018 müşteri memnuniyeti yönetimi",
+    "certificates": {
+      "iso9001": {
+        "description": "Kalite Yönetim Sistemi Sertifikası"
+      },
+      "iso45001": {
+        "description": "İş Sağlığı ve Güvenliği Yönetim Sistemi"
+      },
+      "iso10002": {
+        "description": "Müşteri Memnuniyeti ve Şikayet Yönetimi"
+      }
+    }
   }
 }

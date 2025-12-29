@@ -92,7 +92,7 @@ export const Box: React.FC<BoxProps> = ({
     <motion.div
       className={cn(
         height,
-        "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 pt-8 md:pt-12",
+        "w-full grid grid-rows-[auto_1fr] items-center px-4 py-8 md:py-12",
         bgClass,
         className
       )}
@@ -101,79 +101,85 @@ export const Box: React.FC<BoxProps> = ({
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
     >
-      {title && (
-        <motion.h1
-          variants={itemVariants}
-          className={cn(
-            "text-3xl sm:text-4xl md:text-5xl  font-semibold text-center",
-            isDark ? "text-white" : "text-black"
-          )}
-        >
-          {title}
-        </motion.h1>
-      )}
+      {/* Content Area - Fixed height allocation */}
+      <div className="flex flex-col items-center justify-start gap-3 md:gap-4 min-h-[240px] md:min-h-[280px]">
+        {title && (
+          <motion.h1
+            variants={itemVariants}
+            className={cn(
+              "text-3xl sm:text-4xl md:text-5xl font-semibold text-center",
+              isDark ? "text-white" : "text-black"
+            )}
+          >
+            {title}
+          </motion.h1>
+        )}
 
-      {subtitle && (
-        <motion.p
-          variants={itemVariants}
-          className={cn(
-            "text-lg sm:text-xl font-thin text-center max-w-2xl",
-            isDark ? "text-white" : "text-muted-foreground"
-          )}
-        >
-          {subtitle}
-        </motion.p>
-      )}
+        {subtitle && (
+          <motion.p
+            variants={itemVariants}
+            className={cn(
+              "text-lg sm:text-xl font-thin text-center max-w-2xl",
+              isDark ? "text-white" : "text-muted-foreground"
+            )}
+          >
+            {subtitle}
+          </motion.p>
+        )}
 
-      {description && (
-        <motion.p
-          variants={itemVariants}
-          className={cn(
-            "text-sm sm:text-base font-light text-center max-w-xl",
-            isDark ? "text-white" : "text-muted-foreground"
-          )}
-        >
-          {description}
-        </motion.p>
-      )}
+        {description && (
+          <motion.p
+            variants={itemVariants}
+            className={cn(
+              "text-sm sm:text-base font-light text-center max-w-xl",
+              isDark ? "text-white" : "text-muted-foreground"
+            )}
+          >
+            {description}
+          </motion.p>
+        )}
 
-      {buttons.length > 0 && (
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-wrap justify-center gap-2 md:gap-3"
-        >
-          {buttons.map((button, index) => (
-            <Button
-              key={index}
-              variant={button.variant || "default"}
-              size="lg"
-              onClick={button.onClick}
-              asChild={!!button.href}
-            >
-              {button.href ? (
-                <Link href={button.href}>{button.text}</Link>
-              ) : (
-                button.text
-              )}
-            </Button>
-          ))}
-        </motion.div>
-      )}
+        {buttons.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-wrap justify-center gap-2 md:gap-3"
+          >
+            {buttons.map((button, index) => (
+              <Button
+                key={index}
+                variant={button.variant || "default"}
+                size="lg"
+                onClick={button.onClick}
+                asChild={!!button.href}
+              >
+                {button.href ? (
+                  <Link href={button.href}>{button.text}</Link>
+                ) : (
+                  button.text
+                )}
+              </Button>
+            ))}
+          </motion.div>
+        )}
 
-      {children}
+        {children}
+      </div>
 
+      {/* Image Area - Flexible with consistent constraints */}
       {imageSrc && (
-        <motion.img
-          variants={imageVariants}
-          src={imageSrc}
-          alt={imageAlt}
-          className={cn(
-            "object-contain w-auto max-h-full max-w-full shrink-0",
-            isDark &&
-              "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)]",
-            imageClassName
-          )}
-        />
+        <div className="flex items-center justify-center w-full">
+          <motion.img
+            variants={imageVariants}
+            src={imageSrc}
+            alt={imageAlt}
+            className={cn(
+              "object-contain w-auto max-h-[280px] md:max-h-[360px] max-w-full",
+              isDark &&
+                "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)]",
+              imageClassName
+            )}
+          />
+        </div>
       )}
     </motion.div>
   );

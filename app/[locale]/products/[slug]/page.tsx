@@ -9,13 +9,30 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Package, ShoppingCart, AlertCircle } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { ArrowLeft, Package, Copy, Share2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Link, usePathname } from "@/i18n/navigation";
 import Image from "next/image";
+import { useState } from "react";
 
-function ProductDetailContent({ slug }: { slug: string }) {
+const WHATSAPP_PHONE = "905551234567";
+
+const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+  </svg>
+);
+
+function ProductDetailContent({ slug, locale }: { slug: string; locale: string }) {
   const t = useTranslations("productDetail");
+  const pathname = usePathname();
   const { data: product, isLoading, error } = useProduct(slug);
+  const [copied, setCopied] = useState(false);
 
   if (isLoading) {
     return (
@@ -168,58 +185,66 @@ function ProductDetailContent({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Pricing Section */}
-          <Card>
-            <CardContent className="pt-6 space-y-3">
-              {unitPrice && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t("unitPrice")}</span>
-                  <span className="text-2xl font-bold">
-                    ₺{unitPrice.toLocaleString("tr-TR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
+          {/* Action Buttons */}
+          <div className="flex gap-2 w-full">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="flex-1 gap-2"
+              title={t("copyLink")}
+            >
+              {copied ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("copied")}</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("copyLink")}</span>
+                </>
               )}
-              
-              {retailPrice && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t("retailPrice")}</span>
-                  <span className="text-lg font-semibold">
-                    ₺{retailPrice.toLocaleString("tr-TR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
-
-              {wholesalePrice && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t("wholesalePrice")}</span>
-                  <span className="text-lg">
-                    ₺{wholesalePrice.toLocaleString("tr-TR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
-
-              {wholesaleBase && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t("wholesaleBase")}</span>
-                  <span className="text-lg">
-                    ₺{wholesaleBase.toLocaleString("tr-TR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const text = locale === "tr" 
+                  ? `"${name}" ürününe ilgileniyorum. Bilgi alabilir miyim?`
+                  : `I'm interested in "${name}". Can you provide more information?`;
+                const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(text)}`;
+                window.open(whatsappUrl, "_blank");
+              }}
+              className="flex-1 gap-2"
+              title={t("chatNow")}
+            >
+              <WhatsAppIcon size={16} />
+              <span className="hidden sm:inline">{t("chatNow")}</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: name,
+                    url: window.location.href,
+                  });
+                }
+              }}
+              className="flex-1 gap-2"
+              title={t("share")}
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("share")}</span>
+            </Button>
+          </div>
 
           {/* AI Summary */}
           {aiSummary?.value && aiSummary.state === "generated" && (
@@ -299,11 +324,6 @@ function ProductDetailContent({ slug }: { slug: string }) {
             </>
           )}
 
-          {/* Action Button */}
-          <Button size="lg" className="w-full" disabled={!inStock}>
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            {inStock ? t("addToCart") : t("outOfStockButton")}
-          </Button>
         </div>
       </div>
     </div>
@@ -313,9 +333,9 @@ function ProductDetailContent({ slug }: { slug: string }) {
 export default function ProductDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = use(params);
+  const { slug, locale } = use(params);
 
   return (
     <Suspense
@@ -342,7 +362,7 @@ export default function ProductDetailPage({
         </div>
       }
     >
-      <ProductDetailContent slug={slug} />
+      <ProductDetailContent slug={slug} locale={locale} />
     </Suspense>
   );
 }
