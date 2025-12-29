@@ -61,10 +61,15 @@ const Footer = ({
       ],
     },
     {
-      title: t("sections.resources"),
+      title: "İletişim",
       links: [
-        { text: t("links.whatsapp"), url: "https://wa.me/905555551470" },
-        { text: t("links.email"), url: "mailto:sales@artek-elektronik.com" },
+        { text: "0212 252 11 68", url: "tel:+902122521168" },
+        { text: "0532 718 33 64", url: "tel:+905327183364" },
+        { text: "artek@ferritnuve.com", url: "mailto:artek@ferritnuve.com" },
+        {
+          text: "Ferrit Nüve Erişteci Sokak Abed Han No: 7/1 Karaköy - İstanbul",
+          url: "https://maps.google.com/?q=Ferrit%20N%C3%BCve%20Eri%C5%9Fteci%20Sokak%20Abed%20Han%20No%3A%207%2F1%20Karak%C3%B6y%20-%20%C4%B0stanbul",
+        },
       ],
     },
     {
@@ -88,8 +93,8 @@ const Footer = ({
   const finalBottomLinks = bottomLinks || defaultBottomLinks;
 
   return (
-    <section className="py-32 px-4">
-      <div className="w-full">
+    <section className="py-32">
+      <div className="mx-auto max-w-6xl px-6">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
             <div className="col-span-2 mb-8 lg:mb-0">
