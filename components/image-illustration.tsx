@@ -534,14 +534,15 @@ export const ImageIllustration = () => {
           </div>
         </div>
       </div>
-      <div className="aspect-72/41 lg:hidden">
-        <Image
-          src="https://res.cloudinary.com/dohqjvu9k/image/upload/v1757917121/hero-illustration_nl1gdn.png"
-          alt="Artek Electronics hero section"
-          width={2304}
-          height={1298}
-          className="size-full object-cover"
-        />
+      <div className="lg:hidden">
+        <div className="aspect-72/41 overflow-hidden rounded-xl  shadow-lg">
+          <img
+            src="/hero.webp"
+            alt="Artek Electronics hero section"
+            className="size-full object-cover"
+            loading="lazy"
+          />
+        </div>
       </div>
     </>
   );
