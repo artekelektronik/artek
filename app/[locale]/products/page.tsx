@@ -17,7 +17,6 @@ import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
 import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
 import { generateProductSlug } from "@/lib/utils";
-import { useLocale } from "next-intl";
 
 // Define search params parsers
 const searchParamsParser = {

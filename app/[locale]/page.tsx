@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { useTranslations, useLocale } from "next-intl";
 import { Box } from "@/components/box";
 import { Feature } from "@/components/feature";
+import HeroSection from "@/components/hero-section";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -31,6 +32,7 @@ function HomeContent() {
 
   return (
     <div>
+      <HeroSection />
       {/* Row 1 - Ferrit Nüve / Ferrite Core */}
       <Box
         backgroundColor="bg-gray-100"
@@ -47,7 +49,7 @@ function HomeContent() {
 
       {/* Row 2 - Karkaslar / Bobbins */}
       <Box
-        backgroundColor="bg-white"
+        backgroundColor="bg-background"
         title={t("home.hero2.title")}
         subtitle={t("home.hero2.subtitle")}
         description={t("home.hero2.description")}
@@ -62,7 +64,7 @@ function HomeContent() {
 
       {/* Row 3 - Ferrit Trafolar / Ferrite Transformers */}
       <Box
-        backgroundColor="bg-gray-200"
+        backgroundColor="bg-muted"
         title={t("home.hero3.title")}
         subtitle={t("home.hero3.subtitle")}
         description={t("home.hero3.description")}
@@ -77,7 +79,7 @@ function HomeContent() {
 
       {/* Row 4 - Saclı Trafolar / Laminated Transformers */}
       <Box
-        backgroundColor="bg-white"
+        backgroundColor="bg-background"
         title={t("home.hero4.title")}
         subtitle={t("home.hero4.subtitle")}
         description={t("home.hero4.description")}
@@ -94,7 +96,7 @@ function HomeContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
         {/* 5. İndüktörler - Inductors */}
         <Box
-          backgroundColor="bg-gray-100"
+          backgroundGradient="bg-gradient-to-br from-muted to-muted/60"
           height="h-[600px]"
           title={t("home.grid.inductors.title")}
           subtitle={t("home.grid.inductors.subtitle")}
@@ -110,7 +112,7 @@ function HomeContent() {
 
         {/* 6. Güç İndüktörleri - Power Inductors */}
         <Box
-          backgroundColor="bg-black"
+          backgroundGradient="bg-gradient-to-br from-emerald-50 to-teal-50"
           height="h-[600px]"
           title={t("home.grid.powerInductors.title")}
           subtitle={t("home.grid.powerInductors.subtitle")}
@@ -126,7 +128,7 @@ function HomeContent() {
 
         {/* 7. EMI/EMC Filtreler - EMC Filters */}
         <Box
-          backgroundColor="bg-blue-100"
+          backgroundGradient="bg-gradient-to-br from-blue-50 to-slate-100"
           height="h-[600px]"
           title={t("home.grid.emcFilters.title")}
           subtitle={t("home.grid.emcFilters.subtitle")}
@@ -142,7 +144,7 @@ function HomeContent() {
 
         {/* 8. Hava Nüveli Bobinler - Air Core Coils */}
         <Box
-          backgroundColor="bg-gray-200"
+          backgroundGradient="bg-gradient-to-br from-muted/70 to-muted/40"
           height="h-[600px]"
           title={t("home.grid.airCoreCoils.title")}
           subtitle={t("home.grid.airCoreCoils.subtitle")}

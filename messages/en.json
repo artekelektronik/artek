@@ -11,6 +11,12 @@
     "whatsappMessage": "Hello, I would like to get information about your products.",
     "products": "Products"
   },
+  "hero": {
+    "title": "Technical Excellence in Your Energy Solutions",
+    "subtitle": "Leveraging our manufacturing strength in Turkey, we deliver ferrite core, bobbin, transformer, and inductor solutions that elevate your project's performance to the highest level.",
+    "viewDetails": "View Technical Details",
+    "requestQuote": "Request a Quote for Your Project"
+  },
   "home": {
     "hero1": {
       "title": "Ferrite Cores",
@@ -200,6 +206,8 @@
   "productNav": {
     "title": "Products",
     "trigger": "Products",
+    "categories": "Categories",
+    "featured": "Featured",
     "ourProducts": "Our Products",
     "ourProductsDesc": "High-quality electronic components for demanding applications.",
     "description": "High-quality electronic components for demanding applications.",

@@ -11,6 +11,12 @@
     "whatsappMessage": "Merhaba, ürünleriniz hakkında bilgi almak istiyorum.",
     "products": "Ürünler"
   },
+  "hero": {
+    "title": "Enerji Çözümlerinizde Teknik Mükemmellik",
+    "subtitle": "Türkiye'deki üretim gücümüzü kullanarak, projenizin performansını en üst seviyeye taşıyan ferrit nüve, bobin, transformatör ve indüktör çözümleri sunuyoruz.",
+    "viewDetails": "Teknik Detayları İncele",
+    "requestQuote": "Projeniz İçin Teklif Alın"
+  },
   "home": {
     "hero1": {
       "title": "Ferrit Nüveler",
@@ -200,6 +206,8 @@
   "productNav": {
     "title": "Ürünler",
     "trigger": "Ürünler",
+    "categories": "Kategoriler",
+    "featured": "Öne Çıkanlar",
     "ourProducts": "Ürünlerimiz",
     "ourProductsDesc": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",
     "description": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",

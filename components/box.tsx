@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface BoxProps {
   backgroundColor?: string;
+  backgroundGradient?: string;
   height?: string;
   title?: string;
   subtitle?: string;
@@ -68,7 +69,8 @@ const imageVariants = {
 };
 
 export const Box: React.FC<BoxProps> = ({
-  backgroundColor = "bg-white",
+  backgroundColor,
+  backgroundGradient,
   height = "h-[700px]",
   title,
   subtitle,
@@ -80,14 +82,18 @@ export const Box: React.FC<BoxProps> = ({
   className = "",
   children,
 }) => {
-  const isDark = backgroundColor === "bg-black";
+  // Determine if dark based on background color
+  const isDark = backgroundColor === "bg-black" || backgroundColor?.includes("bg-slate") || backgroundColor?.includes("bg-zinc");
+  
+  // Apply gradient if provided, otherwise use backgroundColor
+  const bgClass = backgroundGradient || backgroundColor || "bg-muted";
 
   return (
     <motion.div
       className={cn(
         height,
         "w-full flex flex-col items-center justify-center gap-3 md:gap-4 px-4 pt-8 md:pt-12",
-        backgroundColor,
+        bgClass,
         className
       )}
       variants={containerVariants}
@@ -112,7 +118,7 @@ export const Box: React.FC<BoxProps> = ({
           variants={itemVariants}
           className={cn(
             "text-lg sm:text-xl font-thin text-center max-w-2xl",
-            isDark ? "text-white" : "text-gray-600"
+            isDark ? "text-white" : "text-muted-foreground"
           )}
         >
           {subtitle}
@@ -124,7 +130,7 @@ export const Box: React.FC<BoxProps> = ({
           variants={itemVariants}
           className={cn(
             "text-sm sm:text-base font-light text-center max-w-xl",
-            isDark ? "text-white" : "text-gray-600"
+            isDark ? "text-white" : "text-muted-foreground"
           )}
         >
           {description}
@@ -136,31 +142,21 @@ export const Box: React.FC<BoxProps> = ({
           variants={itemVariants}
           className="flex flex-wrap justify-center gap-2 md:gap-3"
         >
-          {buttons.map((button, index) => {
-            const isOutline = button.variant === "outline" || index === 1;
-            const blueClasses = isOutline
-              ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent"
-              : "bg-blue-600 hover:bg-blue-700 text-white";
-
-            const buttonElement = (
-              <Button
-                key={index}
-                className={cn("rounded-full text-sm md:text-base", blueClasses)}
-                variant={button.variant || "default"}
-                size="lg"
-                onClick={button.onClick}
-                asChild={!!button.href}
-              >
-                {button.href ? (
-                  <Link href={button.href}>{button.text}</Link>
-                ) : (
-                  button.text
-                )}
-              </Button>
-            );
-
-            return buttonElement;
-          })}
+          {buttons.map((button, index) => (
+            <Button
+              key={index}
+              variant={button.variant || "default"}
+              size="lg"
+              onClick={button.onClick}
+              asChild={!!button.href}
+            >
+              {button.href ? (
+                <Link href={button.href}>{button.text}</Link>
+              ) : (
+                button.text
+              )}
+            </Button>
+          ))}
         </motion.div>
       )}
 
@@ -172,9 +168,9 @@ export const Box: React.FC<BoxProps> = ({
           src={imageSrc}
           alt={imageAlt}
           className={cn(
-            "object-contain w-auto max-h-full max-w-full flex-shrink",
+            "object-contain w-auto max-h-full max-w-full shrink-0",
             isDark &&
-              "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)] drop-shadow-[0_0_120px_rgba(255,255,255,0.9)]",
+              "drop-shadow-[0_0_60px_rgba(255,255,255,0.9)]",
             imageClassName
           )}
         />
