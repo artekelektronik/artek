@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -32,10 +33,47 @@ export async function generateMetadata({
   const { locale } = await params;
   const messages = await getMessages({ locale });
   const metadata = messages.metadata as { title: string; description: string };
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+  const localePrefix = locale === "tr" ? "" : `/${locale}`;
 
   return {
     title: metadata.title,
     description: metadata.description,
+    metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: `${siteUrl}${localePrefix}`,
+      languages: {
+        tr: `${siteUrl}`,
+        en: `${siteUrl}/en`,
+      },
+    },
+    openGraph: {
+      title: metadata.title,
+      description: metadata.description,
+      url: `${siteUrl}${localePrefix}`,
+      siteName: metadata.title,
+      locale: locale === "tr" ? "tr_TR" : "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metadata.title,
+      description: metadata.description,
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
   };
 }
 
@@ -64,6 +102,27 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Google Analytics */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                  page_path: window.location.pathname,
+                  locale: '${locale}'
+                });
+              `}
+            </Script>
+          </>
+        )}
+
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <Header />
