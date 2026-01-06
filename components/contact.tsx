@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { CornerDownRight } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 
@@ -22,6 +24,55 @@ interface Contact20Props {
 
 const Contact20 = ({ className }: Contact20Props) => {
   const t = useTranslations("contact");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      service: formData.get("service") as string,
+      message: formData.get("message") as string,
+    };
+
+    // Show loading toast
+    const toastId = toast.loading(t("form.submitting"));
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        toast.success(t("form.success"), {
+          id: toastId,
+          description: t("form.successDescription"),
+        });
+        e.currentTarget.reset();
+      } else {
+        const errorData = await response.json();
+        toast.error(t("form.error"), {
+          id: toastId,
+          description: errorData.error || t("form.errorDescription"),
+        });
+      }
+    } catch (error) {
+      toast.error(t("form.error"), {
+        id: toastId,
+        description: t("form.errorDescription"),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section className={cn("py-32", className)}>
@@ -65,23 +116,30 @@ const Contact20 = ({ className }: Contact20Props) => {
                 Ferrit Nüve Erişteci Sokak Abed Han No : 7/1 Karaköy - İstanbul
               </a>
             </div>
-            <form className="mt-10 grid grid-cols-2 gap-5 lg:col-span-3 lg:grid-cols-3">
+            
+            <form onSubmit={handleSubmit} className="mt-10 grid grid-cols-2 gap-5 lg:col-span-3 lg:grid-cols-3">
               <Input
                 type="text"
+                name="name"
                 placeholder={t("form.name")}
+                required
                 className="mt-10 rounded-none border-0 border-b border-b-foreground/10 bg-transparent! p-0 uppercase shadow-none placeholder:text-foreground/20 focus-visible:ring-0 lg:text-base"
               />
               <Input
-                type="text"
+                type="email"
+                name="email"
                 placeholder={t("form.email")}
+                required
                 className="mt-10 rounded-none border-0 border-b border-b-foreground/10 bg-transparent! p-0 uppercase shadow-none placeholder:text-foreground/20 focus-visible:ring-0 lg:text-base"
               />
               <Input
-                type="text"
+                type="tel"
+                name="phone"
                 placeholder={t("form.phone")}
+                required
                 className="mt-10 rounded-none border-0 border-b border-b-foreground/10 bg-transparent! p-0 uppercase shadow-none placeholder:text-foreground/20 focus-visible:ring-0 lg:text-base"
               />
-              <Select>
+              <Select name="service" required>
                 <SelectTrigger className="mt-10 w-full rounded-none border-0 border-b border-b-foreground/10 bg-transparent! p-0 uppercase shadow-none focus-visible:ring-0 data-placeholder:text-foreground/20 lg:text-base">
                   <SelectValue
                     placeholder={t("form.service")}
@@ -107,10 +165,17 @@ const Contact20 = ({ className }: Contact20Props) => {
                 </SelectContent>
               </Select>
               <Textarea
+                name="message"
                 placeholder={t("form.message")}
+                required
                 className="col-span-2 mt-10 min-h-42 rounded-none border-0 border-b border-b-foreground/10 bg-transparent! p-0 uppercase shadow-none placeholder:text-foreground/20 focus-visible:ring-0 lg:col-span-3 lg:text-base"
               />
-              <Button variant="ghost" className="w-fit rounded-none uppercase">
+              <Button 
+                type="submit" 
+                variant="ghost" 
+                className="w-fit rounded-none uppercase"
+                disabled={isSubmitting}
+              >
                 <CornerDownRight className="size-5" />
                 {t("form.submit")}
               </Button>

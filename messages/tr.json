@@ -269,6 +269,11 @@
       "service": "İlgilendiğiniz Ürün*",
       "message": "Talep ve İhtiyaçlarınızı Yazınız*",
       "submit": "Gönder",
+      "submitting": "Mesajınız gönderiliyor...",
+      "success": "Mesajınız başarıyla gönderildi!",
+      "successDescription": "En kısa sürede size geri dönüş yapacağız.",
+      "error": "Mesaj gönderilemedi",
+      "errorDescription": "Lütfen tekrar deneyin veya doğrudan bizimle iletişime geçin.",
       "services": {
         "general": "Genel Bilgilendirme",
         "ferriteCore": "Ferrit Nüveler",

@@ -269,6 +269,11 @@
       "service": "Service interested in*",
       "message": "Describe your requirements*",
       "submit": "Submit now",
+      "submitting": "Sending your message...",
+      "success": "Message sent successfully!",
+      "successDescription": "We'll get back to you as soon as possible.",
+      "error": "Failed to send message",
+      "errorDescription": "Please try again or contact us directly.",
       "services": {
         "general": "General Inquiry",
         "ferriteCore": "Ferrite Core",
