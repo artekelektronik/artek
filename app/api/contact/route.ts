@@ -24,18 +24,25 @@ interface TallyWebhookPayload {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json() as TallyWebhookPayload;
+    const body = await request.json();
 
-    // Log the full payload for debugging
-    console.log("🔔 Tally webhook received:", {
-      eventType: body.eventType,
-      submissionId: body.data?.submissionId,
-      formName: body.data?.formName,
+    // Log the raw payload for debugging
+    console.log("🔔 Raw webhook payload received:", JSON.stringify(body, null, 2));
+
+    // Check if it's a Tally webhook or form submission
+    const eventType = (body as any).eventType;
+    const submissionId = (body as any).data?.submissionId;
+    const formName = (body as any).data?.formName;
+
+    console.log("🔔 Parsed webhook data:", {
+      eventType,
+      submissionId,
+      formName,
     });
 
     // Return 200 immediately (Tally requires response within 10 seconds)
     // Process the data asynchronously
-    processWebhookAsync(body).catch(err => 
+    processWebhookAsync(body as TallyWebhookPayload).catch(err => 
       console.error("Error processing webhook in background:", err)
     );
 
