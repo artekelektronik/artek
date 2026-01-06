@@ -45,7 +45,7 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-const WHATSAPP_PHONE = "905551234567";
+const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905327183364";
 
 const Header = () => {
   const t = useTranslations("nav");
@@ -129,7 +129,7 @@ const Header = () => {
 
               {isLarge && (
                 <div className="absolute inset-0 m-auto size-fit">
-                  <NavMenu tProduct={tProduct} />
+                  <NavMenu t={t} tProduct={tProduct} />
                 </div>
               )}
 
@@ -164,7 +164,7 @@ const Header = () => {
                   className="h-8"
                 >
                   <Search size={12} />
-                  <span className="hidden sm:inline">Search</span>
+                  <span className="hidden sm:inline">{t("search")}</span>
                 </Button>
                 <Button asChild variant="outline" size="sm">
                   <a
@@ -339,7 +339,7 @@ function MobileMenu({
   );
 }
 
-const NavMenu = ({ tProduct }: { tProduct: (key: string) => string }) => {
+const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: string) => string }) => {
   const menuRef = React.useRef<React.ElementRef<typeof NavigationMenu>>(null);
 
   const handleViewportHeight = () => {
@@ -454,7 +454,7 @@ const NavMenu = ({ tProduct }: { tProduct: (key: string) => string }) => {
               "hover:bg-muted hover:text-foreground"
             )}
           >
-            <Link href="/about">About</Link>
+            <Link href="/about">{t("about")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem value="contact">
@@ -465,7 +465,7 @@ const NavMenu = ({ tProduct }: { tProduct: (key: string) => string }) => {
               "hover:bg-muted hover:text-foreground"
             )}
           >
-            <Link href="/contact">Contact</Link>
+            <Link href="/contact">{t("contact")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

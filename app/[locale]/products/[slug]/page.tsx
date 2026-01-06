@@ -9,8 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Package, Copy, Share2, CheckCircle2, AlertCircle } from "lucide-react";
-import { Link, usePathname } from "@/i18n/navigation";
+import {
+  ArrowLeft,
+  Package,
+  Copy,
+  Share2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -28,9 +35,14 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-function ProductDetailContent({ slug, locale }: { slug: string; locale: string }) {
+function ProductDetailContent({
+  slug,
+  locale,
+}: {
+  slug: string;
+  locale: string;
+}) {
   const t = useTranslations("productDetail");
-  const pathname = usePathname();
   const { data: product, isLoading, error } = useProduct(slug);
   const [copied, setCopied] = useState(false);
 
@@ -132,7 +144,7 @@ function ProductDetailContent({ slug, locale }: { slug: string; locale: string }
                 <Package className="h-32 w-32 text-muted-foreground" />
               </div>
             )}
-            
+
             {/* Stock Badge Overlay */}
             <Badge
               variant={inStock ? "default" : "destructive"}
@@ -170,7 +182,7 @@ function ProductDetailContent({ slug, locale }: { slug: string; locale: string }
             <div className="flex items-start justify-between gap-4 mb-3">
               <h1 className="text-3xl lg:text-4xl font-bold">{name}</h1>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {category && (
                 <Badge variant="secondary" className="text-sm">
@@ -215,10 +227,13 @@ function ProductDetailContent({ slug, locale }: { slug: string; locale: string }
               size="sm"
               variant="outline"
               onClick={() => {
-                const text = locale === "tr" 
-                  ? `"${name}" ürününe ilgileniyorum. Bilgi alabilir miyim?`
-                  : `I'm interested in "${name}". Can you provide more information?`;
-                const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(text)}`;
+                const text =
+                  locale === "tr"
+                    ? `"${name}" ürününe ilgileniyorum. Bilgi alabilir miyim?`
+                    : `I'm interested in "${name}". Can you provide more information?`;
+                const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(
+                  text
+                )}`;
                 window.open(whatsappUrl, "_blank");
               }}
               className="flex-1 gap-2"
@@ -265,17 +280,21 @@ function ProductDetailContent({ slug, locale }: { slug: string; locale: string }
           {description && (
             <div>
               <h3 className="font-semibold mb-2">{t("description")}</h3>
-              <p className="text-muted-foreground leading-relaxed">{description}</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {description}
+              </p>
             </div>
           )}
 
           {/* Additional Information */}
-          {(altCategories?.length || productTypes?.length || supplierCountries?.length) && (
+          {(altCategories?.length ||
+            productTypes?.length ||
+            supplierCountries?.length) && (
             <>
               <Separator />
               <div className="space-y-3">
                 <h3 className="font-semibold">{t("additionalInfo")}</h3>
-                
+
                 {altCategories && altCategories.length > 0 && (
                   <div>
                     <span className="text-sm text-muted-foreground block mb-2">
@@ -323,7 +342,6 @@ function ProductDetailContent({ slug, locale }: { slug: string; locale: string }
               </div>
             </>
           )}
-
         </div>
       </div>
     </div>
