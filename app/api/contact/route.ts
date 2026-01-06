@@ -29,22 +29,23 @@ export async function POST(request: Request) {
     // Log the raw payload for debugging
     console.log("🔔 Raw webhook payload received:", JSON.stringify(body, null, 2));
 
-    // Check if it's a Tally webhook or form submission
+    // Check if it's a Tally webhook event or a form submission from our website
     const eventType = (body as any).eventType;
-    const submissionId = (body as any).data?.submissionId;
-    const formName = (body as any).data?.formName;
+    const isWebsiteForm = !eventType && (body as any).name && (body as any).email;
 
-    console.log("🔔 Parsed webhook data:", {
-      eventType,
-      submissionId,
-      formName,
-    });
-
-    // Return 200 immediately (Tally requires response within 10 seconds)
-    // Process the data asynchronously
-    processWebhookAsync(body as TallyWebhookPayload).catch(err => 
-      console.error("Error processing webhook in background:", err)
-    );
+    if (isWebsiteForm) {
+      // Handle website form submission
+      console.log("📝 Website form submission received");
+      await handleWebsiteFormSubmission(body);
+    } else if (eventType === "FORM_RESPONSE") {
+      // Handle Tally webhook event
+      console.log("🔔 Tally webhook event received");
+      processWebhookAsync(body as TallyWebhookPayload).catch(err => 
+        console.error("Error processing webhook in background:", err)
+      );
+    } else {
+      console.log("⚠️ Unknown payload type received");
+    }
 
     return NextResponse.json(
       { 
@@ -55,11 +56,41 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("❌ Webhook parsing error:", error);
-    // Still return 200 so Tally doesn't retry
+    // Still return 200 so requests don't fail
     return NextResponse.json(
       { success: false },
       { status: 200 }
     );
+  }
+}
+
+// Handle website form submission
+async function handleWebsiteFormSubmission(body: any) {
+  try {
+    const { name, email, phone, service, message } = body;
+
+    console.log("✅ Website form data extracted:", {
+      name,
+      email,
+      phone,
+      service,
+      messageLength: message?.length || 0,
+    });
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.error("❌ Invalid email format:", email);
+      return;
+    }
+
+    // TODO: Save to database, send email, or integrate with Tally here
+    // Example: await saveToDatabase({ name, email, phone, service, message });
+    // Example: await sendEmailNotification({ name, email, phone, service, message });
+    
+    console.log("✅ Website form submission processed successfully");
+  } catch (error) {
+    console.error("❌ Error processing website form:", error);
   }
 }
 
