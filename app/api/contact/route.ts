@@ -24,14 +24,45 @@ interface TallyWebhookPayload {
 
 export async function POST(request: Request) {
   try {
-    const body: TallyWebhookPayload = await request.json();
+    const body = await request.json() as TallyWebhookPayload;
 
-    // Validate that this is a form response event
+    // Log the full payload for debugging
+    console.log("🔔 Tally webhook received:", {
+      eventType: body.eventType,
+      submissionId: body.data?.submissionId,
+      formName: body.data?.formName,
+    });
+
+    // Return 200 immediately (Tally requires response within 10 seconds)
+    // Process the data asynchronously
+    processWebhookAsync(body).catch(err => 
+      console.error("Error processing webhook in background:", err)
+    );
+
+    return NextResponse.json(
+      { 
+        success: true, 
+        message: "Webhook received"
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("❌ Webhook parsing error:", error);
+    // Still return 200 so Tally doesn't retry
+    return NextResponse.json(
+      { success: false },
+      { status: 200 }
+    );
+  }
+}
+
+// Process webhook data asynchronously
+async function processWebhookAsync(body: TallyWebhookPayload) {
+  try {
+    // Only process FORM_RESPONSE events
     if (body.eventType !== "FORM_RESPONSE") {
-      return NextResponse.json(
-        { error: "Invalid event type" },
-        { status: 400 }
-      );
+      console.log("⏭️ Skipping non-FORM_RESPONSE event:", body.eventType);
+      return;
     }
 
     // Extract field values from Tally's structure
@@ -39,59 +70,46 @@ export async function POST(request: Request) {
     const extractedData: Record<string, string | string[]> = {};
 
     for (const field of fields) {
-      const label = field.label.toLowerCase();
+      const label = field.label.toLowerCase().trim();
       
-      // Map Tally field labels to our field names
+      // Map Tally field labels to our field names (Turkish and English)
       if (label.includes("ad") || label.includes("name")) {
-        extractedData.name = field.value as string;
+        extractedData.name = String(field.value);
       } else if (label.includes("email") || label.includes("e-mail")) {
-        extractedData.email = field.value as string;
+        extractedData.email = String(field.value);
       } else if (label.includes("telefon") || label.includes("phone")) {
-        extractedData.phone = field.value as string;
-      } else if (label.includes("kategori") || label.includes("service") || label.includes("product")) {
-        // For dropdown fields, Tally sends an array of IDs
-        if (Array.isArray(field.value)) {
-          extractedData.service = field.value[0] || "";
+        extractedData.phone = String(field.value);
+      } else if (label.includes("kategori") || label.includes("service") || label.includes("product") || label.includes("ürün")) {
+        // For dropdown fields, Tally sends an array of IDs or strings
+        if (Array.isArray(field.value) && field.value.length > 0) {
+          // Try to get the text from options
+          const firstValue = field.value[0];
+          const selectedOption = (field as any).options?.find((opt: any) => 
+            opt.id === firstValue
+          );
+          extractedData.service = selectedOption?.text || String(firstValue);
         } else {
-          extractedData.service = field.value as string;
+          extractedData.service = String(field.value);
         }
-      } else if (label.includes("talep") || label.includes("message") || label.includes("description")) {
-        extractedData.message = field.value as string;
+      } else if (label.includes("talep") || label.includes("message") || label.includes("description") || label.includes("ihtiyaç")) {
+        extractedData.message = String(field.value);
       }
     }
 
-    console.log("Received Tally submission:", {
+    console.log("✅ Extracted Tally submission:", {
       submissionId: body.data.submissionId,
-      extractedData,
+      name: extractedData.name,
+      email: extractedData.email,
+      phone: extractedData.phone,
+      service: extractedData.service,
+      message: typeof extractedData.message === "string" ? extractedData.message.substring(0, 50) + "..." : String(extractedData.message).substring(0, 50) + "...",
       timestamp: body.createdAt,
     });
-
-    // Validate required fields
-    if (!extractedData.name || !extractedData.email || !extractedData.phone || !extractedData.service || !extractedData.message) {
-      console.error("Missing required fields:", extractedData);
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
 
     // TODO: Save to database or send email notification here
     // Example: await saveToDatabase(extractedData);
     // Example: await sendEmailNotification(extractedData);
-
-    return NextResponse.json(
-      { 
-        success: true, 
-        message: "Webhook processed successfully",
-        submissionId: body.data.submissionId
-      },
-      { status: 200 }
-    );
   } catch (error) {
-    console.error("Webhook processing error:", error);
-    return NextResponse.json(
-      { error: "Failed to process webhook" },
-      { status: 500 }
-    );
+    console.error("❌ Error processing webhook data:", error);
   }
 }
