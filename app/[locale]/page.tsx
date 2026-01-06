@@ -1,4 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
+import { getMessages } from "next-intl/server";
+import type { Metadata } from "next";
 import { useTranslations, useLocale } from "next-intl";
 import { Box } from "@/components/box";
 import { Feature } from "@/components/feature";
@@ -7,6 +9,31 @@ import HeroSection from "@/components/hero-section";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const messages = await getMessages({ locale });
+  const allMetadata = messages.metadata as Record<string, { title: string; description: string }>;
+  const metadata = allMetadata.home;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
+  const localePrefix = locale === "tr" ? "" : `/${locale}`;
+
+  return {
+    title: metadata.title,
+    description: metadata.description,
+    alternates: {
+      canonical: `${siteUrl}${localePrefix}`,
+    },
+    openGraph: {
+      title: metadata.title,
+      description: metadata.description,
+      url: `${siteUrl}${localePrefix}`,
+      type: "website",
+    },
+  };
+}
 
 export default async function Home({ params }: Props) {
   const { locale } = await params;

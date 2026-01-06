@@ -1,7 +1,25 @@
 {
   "metadata": {
-    "title": "Artek - Ürünler",
-    "description": "Artek ürün kataloğu"
+    "home": {
+      "title": "Artek Elektronik | Premium Ferrit Nüveler, Transformatörler ve İndüktörler",
+      "description": "SMPS, RF ve endüstriyel uygulamalar için yüksek kaliteli ferrit nüve, bobin, transformatör ve indüktör üreten Türk üreticisi."
+    },
+    "products": {
+      "title": "Ürünler | Artek Elektronik | Ferrit Nüveler ve Transformatörler",
+      "description": "Ferrit nüveler, bobinler, SMPS transformatörleri ve sac transformatörlerin tam katalogunu inceleyin."
+    },
+    "about": {
+      "title": "Hakkımızda | Artek Elektronik | Türk Elektronik Üreticisi",
+      "description": "20 yılı aşkın sektör tecrübesiyle manyetik bileşenlerin önde gelen Türk üreticisi Artek Elektronik hakkında bilgi alın."
+    },
+    "contact": {
+      "title": "İletişim | Artek Elektronik",
+      "description": "Özel teklifler, teknik destek ve iş ortaklığı fırsatları için ekibimizle iletişime geçin."
+    },
+    "certificates": {
+      "title": "Sertifikalar | Artek Elektronik | Kalite Standartları",
+      "description": "Ürün mükemmelliği ve güvenilirliğini garanti eden ISO sertifikalarımız ve kalite standartlarımızı görüntüleyin."
+    }
   },
   "nav": {
     "brand": "Artek Elektronik",

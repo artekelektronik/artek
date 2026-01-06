@@ -32,8 +32,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const messages = await getMessages({ locale });
-  const metadata = messages.metadata as { title: string; description: string };
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+  const allMetadata = messages.metadata as Record<string, { title: string; description: string }>;
+  // Default to home metadata
+  const metadata = allMetadata.home || { title: "Artek Elektronik", description: "Premium magnetic components manufacturer" };
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
   const localePrefix = locale === "tr" ? "" : `/${locale}`;
 
   return {
@@ -51,14 +53,23 @@ export async function generateMetadata({
       title: metadata.title,
       description: metadata.description,
       url: `${siteUrl}${localePrefix}`,
-      siteName: metadata.title,
+      siteName: "Artek Elektronik",
       locale: locale === "tr" ? "tr_TR" : "en_US",
       type: "website",
+      images: [
+        {
+          url: `${siteUrl}/og-image.png`,
+          width: 1200,
+          height: 630,
+          alt: "Artek Elektronik",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: metadata.title,
       description: metadata.description,
+      images: [`${siteUrl}/og-image.png`],
     },
     verification: {
       google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,

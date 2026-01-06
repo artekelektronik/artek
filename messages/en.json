@@ -1,7 +1,25 @@
 {
   "metadata": {
-    "title": "Artek - Products",
-    "description": "Artek product catalog"
+    "home": {
+      "title": "Artek Elektronik | Premium Ferrite Cores, Transformers & Inductors",
+      "description": "Turkish manufacturer of high-quality ferrite cores, bobbins, transformers, and inductors for SMPS, RF, and industrial applications."
+    },
+    "products": {
+      "title": "Products | Artek Elektronik | Ferrite Cores & Transformers",
+      "description": "Browse our complete catalog of ferrite cores, bobbins, SMPS transformers, and laminated transformers for your electronic projects."
+    },
+    "about": {
+      "title": "About Us | Artek Elektronik | Turkish Electronics Manufacturer",
+      "description": "Learn about Artek Elektronik, a leading Turkish manufacturer of magnetic components with over 20 years of industry expertise."
+    },
+    "contact": {
+      "title": "Contact Us | Artek Elektronik",
+      "description": "Get in touch with our team for custom quotes, technical support, and partnership opportunities."
+    },
+    "certificates": {
+      "title": "Certifications | Artek Elektronik | Quality Standards",
+      "description": "View our ISO certifications and quality standards that guarantee product excellence and reliability."
+    }
   },
   "nav": {
     "brand": "Artek Elektronik",

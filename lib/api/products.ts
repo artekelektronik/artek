@@ -28,7 +28,8 @@ export async function fetchProducts(
 }
 
 export async function fetchProduct(slug: string): Promise<AirtableProduct> {
-  const response = await fetch(`/api/products/${slug}`);
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const response = await fetch(`${baseUrl}/api/products/${slug}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch product");
