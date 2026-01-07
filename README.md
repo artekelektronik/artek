@@ -1,6 +1,6 @@
 # Artek - Product Catalog Platform
 
-A modern, high-performance product catalog platform built with Next.js 15, featuring advanced filtering, caching, and URL-based state management.
+A modern, high-performance product catalog platform built with Next.js 16, featuring advanced filtering, caching, and URL-based state management.
 
 ## 🚀 Features
 
@@ -22,7 +22,7 @@ A modern, high-performance product catalog platform built with Next.js 15, featu
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
@@ -31,6 +31,7 @@ A modern, high-performance product catalog platform built with Next.js 15, featu
   - [nuqs](https://nuqs.47ng.com/) - URL state management
 - **Database:** Airtable
 - **Package Manager:** pnpm
+- **Internationalization:** next-intl (Turkish `tr`, English `en`)
 
 ## 📦 Installation
 
@@ -57,42 +58,59 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 Create a `.env.local` file with the following:
 
 ```env
+# Airtable
 AIRTABLE_API_KEY=your_airtable_api_key
 AIRTABLE_BASE_ID=your_base_id
+
+# Public site URL (used in metadata and sitemap)
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+
+# Optional analytics (PostHog)
+NEXT_PUBLIC_POSTHOG_KEY=phc_your_key
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 ```
+
+Notes:
+- `NEXT_PUBLIC_SITE_URL` is used in sitemap generation and Open Graph tags.
+- PostHog variables are optional; analytics is enabled only when both are set.
 
 ## 📁 Project Structure
 
 ```
 artek/
 ├── app/
-│   ├── layout.tsx              # Root layout with providers
-│   ├── page.tsx                # Homepage
-│   ├── products/
-│   │   ├── page.tsx           # Products list with filters
-│   │   └── [id]/
-│   │       └── page.tsx       # Product detail page
+│   ├── layout.tsx                     # Root layout with providers
+│   ├── globals.css                    # Global styles
+│   ├── [locale]/                      # Locale-prefixed routes (tr, en)
+│   │   ├── page.tsx                  # Homepage (per locale)
+│   │   ├── products/                 # Product listing (per locale)
+│   │   │   ├── page.tsx
+│   │   │   └── [slug]/
+│   │   │       └── page.tsx          # Product detail page
+│   │   └── api/                      # API routes (per locale where applicable)
 │   └── api/
 │       └── products/
-│           └── route.ts       # Products API endpoint
+│           └── route.ts              # Products API endpoint
 ├── components/
-│   ├── ui/                    # shadcn/ui components
-│   ├── product-card.tsx       # Product card component
-│   ├── product-filters.tsx    # Filter sidebar
-│   ├── product-controls.tsx   # Sort & grid controls
-│   ├── product-navigation.tsx # Navigation menu
-│   └── providers.tsx          # React Query & nuqs providers
+│   ├── ui/                           # shadcn/ui components
+│   ├── product-card.tsx              # Product card component
+│   ├── product-filters.tsx           # Filter sidebar
+│   ├── product-controls.tsx          # Sort & grid controls
+│   ├── product-navigation.tsx        # Navigation menu
+│   ├── analytics-provider.tsx        # Optional PostHog analytics
+│   └── providers.tsx                 # React Query & nuqs providers
 ├── hooks/
-│   ├── use-products.ts        # Product queries
-│   ├── use-product-mutations.ts # Product mutations
-│   └── use-infinite-products.ts # Infinite scroll
+│   ├── use-products.ts               # Product queries
+│   ├── use-product-mutations.ts      # Product mutations
+│   └── use-infinite-products.ts      # Infinite scroll
 ├── lib/
 │   ├── api/
-│   │   └── products.ts        # API functions
-│   ├── airtable.ts            # Airtable client
-│   └── utils.ts               # Utility functions
+│   │   └── products.ts               # API functions
+│   ├── airtable.ts                   # Airtable client
+│   └── utils.ts                      # Utility functions
+├── i18n/                             # next-intl helpers and routing
 └── types/
-    └── airtable.ts            # TypeScript types
+  └── airtable.ts                   # TypeScript types
 ```
 
 ## 🎯 Key Features
@@ -102,6 +120,10 @@ All filters are stored in the URL for easy sharing:
 
 ```
 /products?categories=PEM&inStock=true&sort=price-asc&page=2
+
+With locales:
+
+/en/products?categories=PEM&inStock=true
 ```
 
 ### **TanStack Query Integration**
@@ -142,12 +164,18 @@ pnpm lint         # Run ESLint
 
 Navigate directly to filtered product views:
 
+**Turkish (default):**
 - All Products: `/products`
 - PEM Category: `/products?categories=PEM`
 - Ferrit Category: `/products?categories=Ferrit`
 - In Stock Items: `/products?inStock=true`
 - Price Range: `/products?minPrice=100&maxPrice=500`
 - Sorted by Price: `/products?sort=price-asc`
+
+**English:**
+- All Products: `/en/products`
+- PEM Category: `/en/products?categories=PEM`
+- In Stock Items: `/en/products?inStock=true`
 
 ## 🎨 UI Features
 
@@ -156,6 +184,15 @@ Navigate directly to filtered product views:
 - **Responsive Grid** - 2 or 3 column layouts
 - **Loading States** - Skeleton screens for better UX
 - **Error Handling** - Graceful error messages
+
+## 🌐 Internationalization
+- Locale-aware routing with next-intl (`/` → Turkish, `/en` → English)
+- Automatic metadata and sitemap alternates for both locales
+- Language-specific content via message catalogs in `messages/`
+
+## 📊 Analytics (Optional)
+- PostHog client is initialized only if `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` are present
+- Page views and route changes are captured with locale information
 
 ## 🔄 Performance Optimizations
 
