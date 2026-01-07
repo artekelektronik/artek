@@ -86,7 +86,7 @@ function HomeContent() {
         ]}
         imageSrc="/products/bobbins.png"
         imageAlt="Bobbins"
-        imageClassName="max-w-lg"
+        imageClassName="max-w-sm md:max-w-lg"
       />
 
       {/* Row 3 - Ferrit Trafolar / Ferrite Transformers */}
