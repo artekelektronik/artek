@@ -18,7 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import Image from "next/image";
+
 import { useState } from "react";
 
 const WHATSAPP_PHONE = "905551234567";
@@ -131,13 +131,10 @@ function ProductDetailContent({
         <div className="space-y-4">
           <div className="aspect-square bg-muted rounded-lg overflow-hidden relative">
             {hasImages ? (
-              <Image
+              <img
                 src={photos[0].thumbnails?.large.url || photos[0].url}
                 alt={name}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
               <div className="flex items-center justify-center h-full">
@@ -162,12 +159,10 @@ function ProductDetailContent({
                   key={photo.id}
                   className="aspect-square bg-muted rounded-md overflow-hidden relative cursor-pointer hover:opacity-80 transition-opacity"
                 >
-                  <Image
+                  <img
                     src={photo.thumbnails?.small.url || photo.url}
                     alt={`${name} - ${idx + 2}`}
-                    fill
-                    className="object-cover"
-                    sizes="25vw"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
               ))}
@@ -290,58 +285,58 @@ function ProductDetailContent({
           {(altCategories?.length ||
             productTypes?.length ||
             supplierCountries?.length) && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <h3 className="font-semibold">{t("additionalInfo")}</h3>
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <h3 className="font-semibold">{t("additionalInfo")}</h3>
 
-                {altCategories && altCategories.length > 0 && (
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">
-                      {t("altCategories")}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {altCategories.map((cat) => (
-                        <Badge key={cat} variant="outline">
-                          {cat}
-                        </Badge>
-                      ))}
+                  {altCategories && altCategories.length > 0 && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-2">
+                        {t("altCategories")}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {altCategories.map((cat) => (
+                          <Badge key={cat} variant="outline">
+                            {cat}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {productTypes && productTypes.length > 0 && (
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">
-                      {t("productTypes")}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {productTypes.map((type) => (
-                        <Badge key={type} variant="outline">
-                          {type}
-                        </Badge>
-                      ))}
+                  {productTypes && productTypes.length > 0 && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-2">
+                        {t("productTypes")}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {productTypes.map((type) => (
+                          <Badge key={type} variant="outline">
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {supplierCountries && supplierCountries.length > 0 && (
-                  <div>
-                    <span className="text-sm text-muted-foreground block mb-2">
-                      {t("supplierCountries")}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {supplierCountries.map((country) => (
-                        <Badge key={country} variant="outline">
-                          {country}
-                        </Badge>
-                      ))}
+                  {supplierCountries && supplierCountries.length > 0 && (
+                    <div>
+                      <span className="text-sm text-muted-foreground block mb-2">
+                        {t("supplierCountries")}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {supplierCountries.map((country) => (
+                          <Badge key={country} variant="outline">
+                            {country}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+                  )}
+                </div>
+              </>
+            )}
         </div>
       </div>
     </div>

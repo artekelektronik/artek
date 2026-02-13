@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Link } from "@/i18n/navigation";
-import Image from "next/image";
+
 import { useTranslations } from "next-intl";
 
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -60,7 +60,7 @@ export function ProductNavigation() {
                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-linear-to-b from-muted/50 to-muted p-6 no-underline outline-none transition-colors hover:from-muted/70 hover:to-muted hover:text-foreground focus:shadow-md focus:text-foreground"
                     href="/products"
                   >
-                    <Image
+                    <img
                       src="/emc_filter.png"
                       alt="Featured Product"
                       width={200}

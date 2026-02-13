@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { SearchDialog } from "./search-dialog";
 import { PemIcon, FerritIcon, EeIcon } from "./icons";
-import Image from "next/image";
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -421,7 +421,7 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
                 <div className="relative mt-3 grid overflow-hidden bg-muted/30 p-1 transition-colors duration-200 hover:bg-muted/50">
                   <div className="absolute inset-0 px-6">
                     <div className="relative h-full w-full overflow-hidden p-4">
-                      <Image
+                      <img
                         src="/emc_filter.png"
                         alt={tProduct("ourProducts")}
                         width={200}

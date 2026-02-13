@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 import { MapPin, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -24,19 +24,17 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Image Section - Fixed aspect ratio */}
       <Link href={`/products/${productSlug}`} className="block relative aspect-square bg-muted">
         {fields.Photo && fields.Photo[0] ? (
-          <Image
+          <img
             src={fields.Photo[0].thumbnails?.large.url || fields.Photo[0].url}
             alt={fields["Product Name"]}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div className="flex items-center justify-center h-full">
             <Package className="h-16 w-16 text-muted-foreground" />
           </div>
         )}
-        
+
         {/* Stock Badge */}
         <Badge
           variant={hasStock ? "default" : "destructive"}

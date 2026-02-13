@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
-import Image from "next/image";
 
 export const ImageIllustration = () => {
   return (
@@ -557,18 +556,18 @@ const Card = () => {
         viewBox="0 0 200 120"
         preserveAspectRatio="none"
       >
-        <path d="M0 20 H60 L70 30 H130 L140 20 H200" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-        <path d="M0 60 H80 L90 70 H110 L120 60 H200" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-        <path d="M0 100 H70 L80 90 H120 L130 100 H200" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-        <path d="M30 0 V40 L40 50 V120" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-        <path d="M120 0 V50 L130 60 V120" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-        <path d="M170 0 V70 L160 80 V120" stroke="currentColor" strokeWidth="0.5" fill="none"/>
+        <path d="M0 20 H60 L70 30 H130 L140 20 H200" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <path d="M0 60 H80 L90 70 H110 L120 60 H200" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <path d="M0 100 H70 L80 90 H120 L130 100 H200" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <path d="M30 0 V40 L40 50 V120" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <path d="M120 0 V50 L130 60 V120" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <path d="M170 0 V70 L160 80 V120" stroke="currentColor" strokeWidth="0.5" fill="none" />
         {/* Connection dots */}
-        <circle cx="70" cy="30" r="2" fill="currentColor"/>
-        <circle cx="140" cy="20" r="2" fill="currentColor"/>
-        <circle cx="90" cy="70" r="2" fill="currentColor"/>
-        <circle cx="40" cy="50" r="2" fill="currentColor"/>
-        <circle cx="130" cy="60" r="2" fill="currentColor"/>
+        <circle cx="70" cy="30" r="2" fill="currentColor" />
+        <circle cx="140" cy="20" r="2" fill="currentColor" />
+        <circle cx="90" cy="70" r="2" fill="currentColor" />
+        <circle cx="40" cy="50" r="2" fill="currentColor" />
+        <circle cx="130" cy="60" r="2" fill="currentColor" />
       </svg>
 
       {/* Top row - Small components */}
@@ -591,10 +590,10 @@ const Card = () => {
       <div className="relative z-10 flex items-center justify-center gap-3">
         {/* Bobbin/Coil illustration */}
         <BobbinSVG />
-        
+
         {/* Ferrite Core E-Shape */}
         <FerriteCoreEE />
-        
+
         {/* Inductor/Toroid */}
         <ToroidSVG />
       </div>
@@ -625,20 +624,20 @@ const Card = () => {
 const FerriteCoreEE = () => (
   <svg width="40" height="32" viewBox="0 0 40 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm">
     {/* Outer E-core frame */}
-    <rect x="1" y="1" width="38" height="30" rx="2" className="fill-muted stroke-border" strokeWidth="1"/>
+    <rect x="1" y="1" width="38" height="30" rx="2" className="fill-muted stroke-border" strokeWidth="1" />
     {/* Top window */}
-    <rect x="6" y="4" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5"/>
-    <rect x="22" y="4" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5"/>
+    <rect x="6" y="4" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5" />
+    <rect x="22" y="4" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5" />
     {/* Bottom window */}
-    <rect x="6" y="20" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5"/>
-    <rect x="22" y="20" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5"/>
+    <rect x="6" y="20" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5" />
+    <rect x="22" y="20" width="12" height="8" rx="1" className="fill-background stroke-border" strokeWidth="0.5" />
     {/* Center post */}
-    <rect x="17" y="4" width="6" height="24" rx="1" className="fill-muted stroke-border" strokeWidth="0.5"/>
+    <rect x="17" y="4" width="6" height="24" rx="1" className="fill-muted stroke-border" strokeWidth="0.5" />
     {/* Winding indication lines */}
-    <path d="M8 6 H16 M8 8 H16 M8 10 H16" className="stroke-foreground/20" strokeWidth="0.5"/>
-    <path d="M24 6 H32 M24 8 H32 M24 10 H32" className="stroke-foreground/20" strokeWidth="0.5"/>
-    <path d="M8 22 H16 M8 24 H16 M8 26 H16" className="stroke-foreground/20" strokeWidth="0.5"/>
-    <path d="M24 22 H32 M24 24 H32 M24 26 H32" className="stroke-foreground/20" strokeWidth="0.5"/>
+    <path d="M8 6 H16 M8 8 H16 M8 10 H16" className="stroke-foreground/20" strokeWidth="0.5" />
+    <path d="M24 6 H32 M24 8 H32 M24 10 H32" className="stroke-foreground/20" strokeWidth="0.5" />
+    <path d="M8 22 H16 M8 24 H16 M8 26 H16" className="stroke-foreground/20" strokeWidth="0.5" />
+    <path d="M24 22 H32 M24 24 H32 M24 26 H32" className="stroke-foreground/20" strokeWidth="0.5" />
   </svg>
 );
 
@@ -646,16 +645,16 @@ const FerriteCoreEE = () => (
 const BobbinSVG = () => (
   <svg width="24" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm">
     {/* Top flange */}
-    <rect x="2" y="1" width="20" height="4" rx="1" className="fill-muted stroke-border" strokeWidth="0.5"/>
+    <rect x="2" y="1" width="20" height="4" rx="1" className="fill-muted stroke-border" strokeWidth="0.5" />
     {/* Bottom flange */}
-    <rect x="2" y="27" width="20" height="4" rx="1" className="fill-muted stroke-border" strokeWidth="0.5"/>
+    <rect x="2" y="27" width="20" height="4" rx="1" className="fill-muted stroke-border" strokeWidth="0.5" />
     {/* Core tube */}
-    <rect x="6" y="5" width="12" height="22" rx="1" className="fill-background stroke-border" strokeWidth="0.5"/>
+    <rect x="6" y="5" width="12" height="22" rx="1" className="fill-background stroke-border" strokeWidth="0.5" />
     {/* Winding lines */}
-    <path d="M7 8 H17 M7 11 H17 M7 14 H17 M7 17 H17 M7 20 H17 M7 23 H17" className="stroke-foreground/25" strokeWidth="1" strokeLinecap="round"/>
+    <path d="M7 8 H17 M7 11 H17 M7 14 H17 M7 17 H17 M7 20 H17 M7 23 H17" className="stroke-foreground/25" strokeWidth="1" strokeLinecap="round" />
     {/* Pins */}
-    <rect x="4" y="31" width="2" height="1" className="fill-foreground/30"/>
-    <rect x="18" y="31" width="2" height="1" className="fill-foreground/30"/>
+    <rect x="4" y="31" width="2" height="1" className="fill-foreground/30" />
+    <rect x="18" y="31" width="2" height="1" className="fill-foreground/30" />
   </svg>
 );
 
@@ -663,10 +662,10 @@ const BobbinSVG = () => (
 const ToroidSVG = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-sm">
     {/* Outer ring */}
-    <circle cx="14" cy="14" r="12" className="fill-muted stroke-border" strokeWidth="1"/>
+    <circle cx="14" cy="14" r="12" className="fill-muted stroke-border" strokeWidth="1" />
     {/* Inner hole */}
-    <circle cx="14" cy="14" r="5" className="fill-background stroke-border" strokeWidth="0.5"/>
+    <circle cx="14" cy="14" r="5" className="fill-background stroke-border" strokeWidth="0.5" />
     {/* Winding segments */}
-    <path d="M14 2 L14 5 M20.5 3.5 L18.5 6 M25 8 L22 9.5 M26 14 L23 14 M25 20 L22 18.5 M20.5 24.5 L18.5 22 M14 26 L14 23 M7.5 24.5 L9.5 22 M3 20 L6 18.5 M2 14 L5 14 M3 8 L6 9.5 M7.5 3.5 L9.5 6" className="stroke-foreground/30" strokeWidth="1.5" strokeLinecap="round"/>
+    <path d="M14 2 L14 5 M20.5 3.5 L18.5 6 M25 8 L22 9.5 M26 14 L23 14 M25 20 L22 18.5 M20.5 24.5 L18.5 22 M14 26 L14 23 M7.5 24.5 L9.5 22 M3 20 L6 18.5 M2 14 L5 14 M3 8 L6 9.5 M7.5 3.5 L9.5 6" className="stroke-foreground/30" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
