@@ -56,20 +56,11 @@ export async function generateMetadata({
       siteName: "Artek Elektronik",
       locale: locale === "tr" ? "tr_TR" : "en_US",
       type: "website",
-      images: [
-        {
-          url: `${siteUrl}/og-image.png`,
-          width: 1200,
-          height: 630,
-          alt: "Artek Elektronik",
-        },
-      ],
     },
     twitter: {
       card: "summary_large_image",
       title: metadata.title,
       description: metadata.description,
-      images: [`${siteUrl}/og-image.png`],
     },
     verification: {
       google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
