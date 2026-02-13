@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Award, CheckCircle2, Shield } from "lucide-react";
-import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 interface CertificatesProps {
@@ -60,7 +60,7 @@ const Certificates = ({ className }: CertificatesProps) => {
               >
                 {/* Certificate Image */}
                 <div className="relative w-full h-auto rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                  <Image
+                  <img
                     src={cert.image}
                     alt={cert.name}
                     width={400}
