@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import base from "@/lib/airtable";
-import type { AirtableProduct, AirtableSelectOptions, AirtableApiError, ProductFields } from "@/types/airtable";
+import { getProductsFromCSV } from "@/lib/csv-products";
 
 export async function GET(request: Request) {
   try {
@@ -8,46 +7,25 @@ export async function GET(request: Request) {
     const category = searchParams.get("category");
     const productType = searchParams.get("type");
 
-    console.log("Fetching products from Airtable...");
+    let products = getProductsFromCSV();
 
-    const selectOptions: AirtableSelectOptions = {
-      sort: [{ field: "Product Name", direction: "asc" }],
-    };
-
-    // Add filters if provided
-    if (category || productType) {
-      const filters = [];
-      if (category) {
-        filters.push(`{Category} = '${category}'`);
-      }
-      if (productType) {
-        filters.push(`FIND('${productType}', ARRAYJOIN({Ürün Tipi}, ','))`);
-      }
-      selectOptions.filterByFormula =
-        filters.length > 1 ? `AND(${filters.join(", ")})` : filters[0];
+    // Apply optional filters
+    if (category) {
+      products = products.filter((p) => p.fields.Category === category);
+    }
+    if (productType) {
+      products = products.filter((p) =>
+        (p.fields["Ürün Tipi"] ?? []).includes(productType)
+      );
     }
 
-    const records = await base("Ürünler").select(selectOptions).all();
-
-    console.log(`Successfully fetched ${records.length} products`);
-
-    const products: AirtableProduct[] = records.map((record) => ({
-      id: record.id,
-      fields: record.fields as unknown as ProductFields,
-      createdTime: record._rawJson.createdTime,
-    }));
-
+    console.log(`[CSV] Returning ${products.length} products`);
     return NextResponse.json({ products, count: products.length });
   } catch (error: unknown) {
-    console.error("Error fetching products:", error);
-    const apiError = error as AirtableApiError;
+    console.error("[CSV] Error reading products:", error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch products",
-        message: apiError.message,
-        statusCode: apiError.statusCode,
-      },
-      { status: apiError.statusCode || 500 }
+      { error: "Failed to load products", message: String(error) },
+      { status: 500 }
     );
   }
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import base from "@/lib/airtable";
+import { getProductsFromCSV } from "@/lib/csv-products";
 import { extractIdFromSlug } from "@/lib/utils";
-import type { AirtableProduct, AirtableApiError, ProductFields } from "@/types/airtable";
 
 export async function GET(
   request: Request,
@@ -9,47 +8,23 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    
-    console.log("Fetching product with slug:", slug);
-
-    // Extract the short ID from the slug
     const shortId = extractIdFromSlug(slug);
-    
-    // Fetch all products and find the matching one
-    const records = await base("Ürünler").select().all();
-    
-    const product = records.find((record) => {
-      const recordShortId = record.id.slice(-6);
-      return recordShortId === shortId;
-    });
+
+    const products = getProductsFromCSV();
+    const product = products.find((p) => p.id.slice(-6) === shortId);
 
     if (!product) {
-      console.error("Product not found for slug:", slug);
-      return NextResponse.json(
-        { error: "Product not found" },
-        { status: 404 }
-      );
+      console.error("[CSV] Product not found for slug:", slug);
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    console.log("Successfully fetched product:", product.fields["Product Name"]);
-
-    const result: AirtableProduct = {
-      id: product.id,
-      fields: product.fields as unknown as ProductFields,
-      createdTime: product._rawJson.createdTime,
-    };
-
-    return NextResponse.json(result);
+    console.log("[CSV] Returning product:", product.fields["Product Name"]);
+    return NextResponse.json(product);
   } catch (error: unknown) {
-    console.error("Error fetching product:", error);
-    const apiError = error as AirtableApiError;
+    console.error("[CSV] Error reading product:", error);
     return NextResponse.json(
-      {
-        error: "Failed to fetch product",
-        message: apiError.message,
-        statusCode: apiError.statusCode,
-      },
-      { status: apiError.statusCode || 500 }
+      { error: "Failed to load product", message: String(error) },
+      { status: 500 }
     );
   }
 }
