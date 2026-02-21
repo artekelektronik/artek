@@ -2,10 +2,11 @@ import { MetadataRoute } from "next";
 import base from "@/lib/airtable";
 import { generateProductSlug } from "@/lib/utils";
 
+export const dynamic = "force-dynamic"; // Generate at request time, not build time
 export const revalidate = 3600; // Regenerate sitemap every hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ferritnuve.com/";
 
   // Static pages for both locales
   const staticPages = [
@@ -71,13 +72,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Fetch all products from Airtable
+  // Fetch all products from Airtable (with 30 second timeout)
   try {
-    const records = await base("Ürünler")
+    const fetchPromise = base("Ürünler")
       .select({
         fields: ["Product Name"],
       })
       .all();
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Airtable fetch timeout")), 30000)
+    );
+
+    const records = await Promise.race([fetchPromise, timeoutPromise]);
 
     const productUrls = records
       .filter((record) => record.fields["Product Name"])
