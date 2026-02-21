@@ -5,6 +5,19 @@ import { generateProductSlug } from "@/lib/utils";
 export const dynamic = "force-dynamic"; // Generate at request time, not build time
 export const revalidate = 3600; // Regenerate sitemap every hour
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<T>((_, reject) =>
+    setTimeout(() => reject(new Error(`Timed out after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+type AirtableProductRecord = {
+  id: string;
+  fields: { "Product Name"?: string };
+  _rawJson?: { createdTime?: string };
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ferritnuve.com/";
 
@@ -74,17 +87,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch all products from Airtable (with 30 second timeout)
   try {
-    const fetchPromise = base("Ürünler")
-      .select({
-        fields: ["Product Name"],
-      })
-      .all();
-
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Airtable fetch timeout")), 30000)
-    );
-
-    const records = await Promise.race([fetchPromise, timeoutPromise]);
+    const records = (await withTimeout(
+      base("Ürünler").select({ fields: ["Product Name"] }).all(),
+      30000
+    )) as unknown as AirtableProductRecord[];
 
     const productUrls = records
       .filter((record) => record.fields["Product Name"])

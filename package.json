@@ -50,7 +50,6 @@
     "motion": "^12.23.26",
     "next": "16.0.10",
     "next-intl": "^4.6.1",
-    "next-sitemap": "^4.2.3",
     "next-themes": "^0.4.6",
     "nuqs": "^2.7.3",
     "posthog-js": "^1.310.2",
