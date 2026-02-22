@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
@@ -17,9 +16,6 @@ interface ProductFiltersProps {
   translations: {
     title: string;
     reset: string;
-    priceRange: string;
-    min: string;
-    max: string;
     inStockOnly: string;
     category: string;
     altCategory: string;
@@ -29,7 +25,6 @@ interface ProductFiltersProps {
 }
 
 export interface FilterState {
-  priceRange: { min: number; max: number };
   selectedCategories: string[];
   selectedAltCategories: string[];
   selectedProductTypes: string[];
@@ -46,8 +41,6 @@ export function ProductFilters({
   onReset,
   translations: t
 }: ProductFiltersProps) {
-  const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(10000);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedAltCategories, setSelectedAltCategories] = useState<string[]>([]);
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
@@ -55,7 +48,6 @@ export function ProductFilters({
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const buildFilterState = (): FilterState => ({
-    priceRange: { min: priceMin, max: priceMax },
     selectedCategories,
     selectedAltCategories,
     selectedProductTypes,
@@ -95,18 +87,12 @@ export function ProductFilters({
     onFilterChange({ ...buildFilterState(), selectedSupplierCountries: updated });
   };
 
-  const handlePriceChange = () => {
-    onFilterChange({ ...buildFilterState(), priceRange: { min: priceMin, max: priceMax } });
-  };
-
   const handleInStockToggle = (checked: boolean) => {
     setInStockOnly(checked);
     onFilterChange({ ...buildFilterState(), inStockOnly: checked });
   };
 
   const handleReset = () => {
-    setPriceMin(0);
-    setPriceMax(10000);
     setSelectedCategories([]);
     setSelectedAltCategories([]);
     setSelectedProductTypes([]);
@@ -128,42 +114,6 @@ export function ProductFilters({
           {t.reset}
         </Button>
       </div>
-
-      {/* Price Range */}
-      <div className="space-y-3">
-        <h3 className="font-medium text-sm">{t.priceRange}</h3>
-        <div className="flex items-center gap-3">
-          <div className="space-y-1">
-            <Label htmlFor="price-min" className="text-xs text-muted-foreground">
-              {t.min}
-            </Label>
-            <Input
-              id="price-min"
-              type="number"
-              value={priceMin}
-              onChange={(e) => setPriceMin(Number(e.target.value))}
-              onBlur={handlePriceChange}
-              className="h-9"
-            />
-          </div>
-          <span className="text-muted-foreground mt-5">-</span>
-          <div className="space-y-1">
-            <Label htmlFor="price-max" className="text-xs text-muted-foreground">
-              {t.max}
-            </Label>
-            <Input
-              id="price-max"
-              type="number"
-              value={priceMax}
-              onChange={(e) => setPriceMax(Number(e.target.value))}
-              onBlur={handlePriceChange}
-              className="h-9"
-            />
-          </div>
-        </div>
-      </div>
-
-      <Separator />
 
       {/* Stock Status */}
       <div className="space-y-3">
