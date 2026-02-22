@@ -25,8 +25,6 @@ const searchParamsParser = {
   altCategories: parseAsArrayOf(parseAsString).withDefault([]),
   productTypes: parseAsArrayOf(parseAsString).withDefault([]),
   supplierCountries: parseAsArrayOf(parseAsString).withDefault([]),
-  minPrice: parseAsInteger.withDefault(0),
-  maxPrice: parseAsInteger.withDefault(10000),
   inStock: parseAsBoolean.withDefault(false),
 
   // UI state
@@ -56,7 +54,6 @@ function ProductsContent() {
   // Convert URL params to FilterState
   const filters: FilterState = useMemo(
     () => ({
-      priceRange: { min: params.minPrice, max: params.maxPrice },
       selectedCategories: params.categories,
       selectedAltCategories: params.altCategories,
       selectedProductTypes: params.productTypes,
@@ -113,13 +110,6 @@ function ProductsContent() {
         );
       });
     }
-
-    // Price filter
-    filtered = filtered.filter((product) => {
-      const price =
-        product.fields["Unit Price"] || product.fields["Parakende Fiyatı"] || 0;
-      return price >= filters.priceRange.min && price <= filters.priceRange.max;
-    });
 
     // Sort products
     filtered.sort((a, b) => {
@@ -220,10 +210,6 @@ function ProductsContent() {
         newFilters.selectedSupplierCountries.length > 0
           ? newFilters.selectedSupplierCountries
           : null,
-      minPrice:
-        newFilters.priceRange.min !== 0 ? newFilters.priceRange.min : null,
-      maxPrice:
-        newFilters.priceRange.max !== 10000 ? newFilters.priceRange.max : null,
       inStock: newFilters.inStockOnly ? newFilters.inStockOnly : null,
       page: 1, // Reset to first page when filters change
     });
@@ -235,8 +221,6 @@ function ProductsContent() {
       altCategories: null,
       productTypes: null,
       supplierCountries: null,
-      minPrice: null,
-      maxPrice: null,
       inStock: null,
       sort: null,
       page: null,
@@ -307,9 +291,6 @@ function ProductsContent() {
             translations={{
               title: tFilters("title"),
               reset: tFilters("reset"),
-              priceRange: tFilters("priceRange"),
-              min: tFilters("min"),
-              max: tFilters("max"),
               inStockOnly: tFilters("inStockOnly"),
               category: tFilters("category"),
               altCategory: tFilters("altCategory"),
