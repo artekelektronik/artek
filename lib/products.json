@@ -1,0 +1,1940 @@
+[
+  {
+    "id": "product-1",
+    "name": "POWER FILTER",
+    "productCode": "03GENG3U-R",
+    "category": "PEM",
+    "description": "(3A) 03GENG3E-R (032173R) EMİ FİLTER 3A 115/250V Power Line Filter (Made in Thailand)",
+    "image": "/products-images/screenshot-2025-10-31-at-9.10.59-am.png",
+    "pricing": {
+      "unitPrice": 1
+    },
+    "stock": {
+      "total": 81900,
+      "cekmekoy": 81900
+    },
+    "manufacturer": "Delta Electronics",
+    "totalStockValue": 81900
+  },
+  {
+    "id": "product-2",
+    "name": "Power Filter",
+    "productCode": "IH-0342-H",
+    "category": "PEM",
+    "description": "IH-0342-H, 3A 250V AC tek fazlı EMI güç filtresidir. \nAC şebeke hattındaki elektriksel parazitleri bastırmak için kullanılır. \nMetal kasalı, panel tipi montajlı bir filtredir ve genellikle güç kaynakları, monitörler ve endüstriyel cihazlarda kullanılır. 50–60 Hz frekansta çalışır, 3 A akım kapasitesine sahiptir ve CQC, TÜV, VDE, UL gibi uluslararası güvenlik sertifikalarına sahiptir.",
+    "image": "/products-images/screenshot-2025-10-31-at-9.40.07-am.png",
+    "pricing": {
+      "unitPrice": 1
+    },
+    "stock": {
+      "total": 186800,
+      "cekmekoy": 186800
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 186800
+  },
+  {
+    "id": "product-3",
+    "name": "6 A EMI Filter",
+    "productCode": "6ET1‑F7003",
+    "category": "PEM",
+    "description": "Ürün Markası:\tCorcom\nModel:\t6ET1-F7003\nAkım Kapasitesi:\t6A\nGerilim Aralığı\t: 120-250V\nFrekans Aralığı:\t50/60Hz\nMontaj Türü:\tPanel Montaj\nBoyutlar:\t52 x 44 x 29\nAğırlık:\t150g\nSertifikasyon:\tUL, CSA, VDE",
+    "image": "/products-images/screenshot-2025-10-31-at-12.35.05-pm.png",
+    "pricing": {
+      "unitPrice": 9
+    },
+    "stock": {
+      "total": 20000,
+      "cekmekoy": 20000
+    },
+    "manufacturer": "Corcom",
+    "totalStockValue": 180000
+  },
+  {
+    "id": "product-4",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 6mm",
+    "productCode": "ZCAT - 2035-0630",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "6 mm\nParazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor.",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 0.8,
+      "purchasePrice": 0.35,
+      "wholesalePrice": 0.8,
+      "retailPrice": 1,
+      "wholesaleBase": 0.7
+    },
+    "stock": {
+      "total": 2450,
+      "karakoy": 2450
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 1960
+  },
+  {
+    "id": "product-5",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 7mm",
+    "productCode": "ZCAT - 2035 - 0730",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma: Çin Firma Adı Bilinmiyor\nÜrün Açıklaması: 7 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları:Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 7 mm\nManufacturer : TDK Corporation",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 0.85,
+      "purchasePrice": 0.3,
+      "wholesalePrice": 0.9,
+      "retailPrice": 1,
+      "wholesaleBase": 0.8
+    },
+    "stock": {
+      "total": 65,
+      "karakoy": 65
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 55.25
+  },
+  {
+    "id": "product-6",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 9mm",
+    "productCode": "ZCAT - 2035 - 0930",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 0.95,
+      "purchasePrice": 0.4,
+      "wholesalePrice": 0.95,
+      "retailPrice": 1.1,
+      "wholesaleBase": 0.85
+    },
+    "stock": {
+      "total": 3500,
+      "karakoy": 3500
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 3325
+  },
+  {
+    "id": "product-7",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 10mm",
+    "productCode": "ZCAT - 2035 - 1030",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 10 mm Parazit Önleyici Kablo Filtresi\n\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor.\n \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\n\nİç çap: 10 mm",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 0.9,
+      "purchasePrice": 0.5,
+      "wholesalePrice": 1.75,
+      "retailPrice": 2.5,
+      "wholesaleBase": 0.9
+    },
+    "stock": {
+      "total": 15,
+      "karakoy": 15
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 13.5
+  },
+  {
+    "id": "product-8",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 11mm",
+    "productCode": "ZCAT - 2035 - 1130",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 11 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\nİç çap: 11 mm",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 1,
+      "purchasePrice": 0.45,
+      "wholesalePrice": 1.2,
+      "retailPrice": 1.4,
+      "wholesaleBase": 1
+    },
+    "stock": {
+      "total": 500,
+      "karakoy": 500
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 500
+  },
+  {
+    "id": "product-9",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 13mm",
+    "productCode": "ZCAT - 2035 - 1330",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 13 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\nİç çap: 13 mm",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 1.2,
+      "purchasePrice": 0.4,
+      "wholesalePrice": 1.15,
+      "retailPrice": 1.5,
+      "wholesaleBase": 1
+    },
+    "stock": {
+      "total": 530,
+      "karakoy": 530
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 636
+  },
+  {
+    "id": "product-10",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 13.5mm",
+    "productCode": "ZCAT - 2035 - 1330",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 13.5 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 13.5 mm",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 1.35,
+      "purchasePrice": 0.65,
+      "wholesalePrice": 1.25,
+      "retailPrice": 1.5,
+      "wholesaleBase": 1.1
+    },
+    "stock": {
+      "total": 48,
+      "karakoy": 48
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 64.8
+  },
+  {
+    "id": "product-11",
+    "name": "Yuvarlak Plastik Kablo Çekirdekleri 14.5mm",
+    "productCode": "ZCAT - 2035 - 1430",
+    "category": "Ferrit",
+    "productType": "YUVARLAK",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 11 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 11 mm",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "pricing": {
+      "unitPrice": 1.5,
+      "purchasePrice": 0.65,
+      "wholesalePrice": 1.5,
+      "retailPrice": 1.75,
+      "wholesaleBase": 1.15
+    },
+    "stock": {
+      "total": 115,
+      "karakoy": 115
+    },
+    "manufacturer": "TDK Corporation",
+    "totalStockValue": 172.5
+  },
+  {
+    "id": "product-12",
+    "name": "ROD 5 x 20",
+    "productCode": "R630JF40",
+    "category": "Ferrit",
+    "productType": "CUBUK",
+    "subCategory": "Cekirdekler",
+    "description": "Ürün tipi: Silindirik mıknatıslı ferrit çekirdek (örnek ölçü: R5 × 20)\n\nÖlçüler: Dış çap ~ 5,0 mm, uzunluk ~ 20 ±0,3 mm. \n\nAğırlık: \n\nKullanım alanı: Yüksek frekanslı indüktörler, filtreler, trafo çekirdekleri gibi manyetik uygulamalarda.\n\nÜretici: Wuxi Spinel Co., Ltd. — Çin, Jiangsu eyaleti, Wuxi kenti.",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "pricing": {
+      "unitPrice": 1,
+      "purchasePrice": 0.1,
+      "wholesalePrice": 0.9,
+      "retailPrice": 1,
+      "wholesaleBase": 0.4
+    },
+    "stock": {
+      "total": 0
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-13",
+    "name": "ROD 14 x 7",
+    "productCode": "R630JF40",
+    "category": "Ferrit",
+    "productType": "CUBUK",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "pricing": {
+      "unitPrice": 1
+    },
+    "stock": {
+      "total": 0
+    },
+    "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-14",
+    "name": "ROD 6 x 30 DELİKLİ",
+    "productCode": "R630JF40",
+    "category": "Ferrit",
+    "productType": "CUBUK",
+    "subCategory": "Cekirdekler",
+    "description": "Ürün tipi: Silindirik mıknatıslı ferrit çekirdek (örnek ölçü: R6 × 30)\n\nÖlçüler: Dış çap ~ 6,0 mm, uzunluk ~ 30 ±0,3 mm. \nwudumfg.com\n+2\nspinel.cn\n+2\n\nAğırlık: Örneğin R6 × 30 varyantı ~ 4,05 g.\n\nKullanım alanı: Yüksek frekanslı indüktörler, filtreler, trafo çekirdekleri gibi manyetik uygulamalarda.\n\nÜretici: Wuxi Spinel Co., Ltd. — Çin, Jiangsu eyaleti, Wuxi kenti",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "pricing": {
+      "unitPrice": 1,
+      "purchasePrice": 0.15,
+      "wholesalePrice": 0.8,
+      "retailPrice": 1,
+      "wholesaleBase": 0.4
+    },
+    "stock": {
+      "total": 3000,
+      "karakoy": 3000
+    },
+    "manufacturer": "Wuxi Spinel Magnetics Co ltd",
+    "totalStockValue": 3000
+  },
+  {
+    "id": "product-15",
+    "name": "ROD 18 x 28",
+    "productCode": "R630JF40",
+    "category": "Ferrit",
+    "productType": "CUBUK",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "pricing": {
+      "unitPrice": 0.8,
+      "purchasePrice": 0.2,
+      "wholesalePrice": 0.5,
+      "retailPrice": 0.7,
+      "wholesaleBase": 0.4
+    },
+    "stock": {
+      "total": 5000,
+      "karakoy": 5000
+    },
+    "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+    "totalStockValue": 4000
+  },
+  {
+    "id": "product-16",
+    "name": "ROD 28 x 20",
+    "productCode": "R630JF40",
+    "category": "Ferrit",
+    "productType": "CUBUK",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "pricing": {
+      "unitPrice": 1
+    },
+    "stock": {
+      "total": 0
+    },
+    "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-17",
+    "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 3 mm",
+    "productCode": "Würth 74272475",
+    "category": "Ferrit",
+    "productType": "YASSI",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "description": "3 mm Yassı Parazit Önleyici Flex Kablo Filtresi",
+    "image": "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png",
+    "pricing": {
+      "unitPrice": 3,
+      "wholesalePrice": 2.35,
+      "retailPrice": 3.5,
+      "wholesaleBase": 2
+    },
+    "stock": {
+      "total": 2700,
+      "karakoy": 2700
+    },
+    "supplier": "Würth",
+    "manufacturer": "Würth",
+    "supplierCountry": "Germany",
+    "totalStockValue": 8100
+  },
+  {
+    "id": "product-18",
+    "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 1.5 mm",
+    "category": "Ferrit",
+    "productType": "YASSI",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "image": "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png",
+    "pricing": {
+      "unitPrice": 1,
+      "wholesalePrice": 0.75,
+      "retailPrice": 0.9,
+      "wholesaleBase": 0.65
+    },
+    "stock": {
+      "total": 0
+    },
+    "supplier": "Würth",
+    "manufacturer": "Würth",
+    "supplierCountry": "Germany",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-19",
+    "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 3.5 mm",
+    "category": "Ferrit",
+    "productType": "YASSI",
+    "subCategory": "ferrit kablo çekirdekleri",
+    "image": "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png",
+    "pricing": {
+      "unitPrice": 1.25,
+      "purchasePrice": 0.45,
+      "wholesalePrice": 0.9,
+      "retailPrice": 1.5,
+      "wholesaleBase": 0.75
+    },
+    "stock": {
+      "total": 5,
+      "karakoy": 5
+    },
+    "totalStockValue": 6.25
+  },
+  {
+    "id": "product-20",
+    "name": "ETD 39 / 20 / 13- CF139",
+    "productCode": "B66363 G000 X187",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 0.65,
+      "purchasePrice": 0.13,
+      "wholesalePrice": 0.8,
+      "retailPrice": 3,
+      "wholesaleBase": 0.45
+    },
+    "stock": {
+      "total": 0
+    },
+    "supplier": "Ferriwo",
+    "manufacturer": "Ferriwo,TDK Corporation,Ferrox Cube,Wuxi Spinel Magnetics Co ltd,\"XUYI OUGE ELECTRONIC CO.,LTD\",COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-21",
+    "name": "ETD 29 / 16 / 10 - CF139",
+    "productCode": "B66358 G000 X187",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 0.35,
+      "purchasePrice": 0.11,
+      "wholesalePrice": 0.45,
+      "retailPrice": 0.9,
+      "wholesaleBase": 0.3
+    },
+    "stock": {
+      "total": 0
+    },
+    "manufacturer": "Ferriwo",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-22",
+    "name": "ETD 44 / 22 / 15 - CF139",
+    "productCode": "B66365 G000 X187",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 1.5,
+      "purchasePrice": 0.55,
+      "wholesalePrice": 0.85,
+      "retailPrice": 2,
+      "wholesaleBase": 0.7
+    },
+    "stock": {
+      "total": 0
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-23",
+    "name": "ETD 49 25 / 16 - CF139",
+    "productCode": "B66367 G000 X187",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 0.8,
+      "purchasePrice": 0.55,
+      "wholesalePrice": 0.95,
+      "retailPrice": 2,
+      "wholesaleBase": 0.75
+    },
+    "stock": {
+      "total": 0
+    },
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-24",
+    "name": "ETD 54 28 / 19 - CF139",
+    "productCode": "B66395 G000 X187",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 2,
+      "purchasePrice": 0.85,
+      "wholesalePrice": 1.9,
+      "retailPrice": 2.5,
+      "wholesaleBase": 1.5
+    },
+    "stock": {
+      "total": 42,
+      "karakoy": 42,
+      "cekmekoy": 0
+    },
+    "totalStockValue": 84
+  },
+  {
+    "id": "product-25",
+    "name": "ETD 59 31 / 21.5 - CF297",
+    "category": "Ferrit",
+    "productType": "ETD",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "pricing": {
+      "unitPrice": 3.5,
+      "purchasePrice": 1.1,
+      "wholesalePrice": 3,
+      "retailPrice": 4,
+      "wholesaleBase": 2.15
+    },
+    "stock": {
+      "total": 52,
+      "karakoy": 52
+    },
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 182
+  },
+  {
+    "id": "product-26",
+    "name": "EE 13 9 / 6.5 - CF139",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.15,
+      "wholesalePrice": 0.15,
+      "retailPrice": 0.2,
+      "wholesaleBase": 0.1
+    },
+    "stock": {
+      "total": 1070,
+      "karakoy": 1070
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 160.5
+  },
+  {
+    "id": "product-27",
+    "name": "EE 16 / 8 / 5 - CF139",
+    "productCode": "EE 1605",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.17,
+      "wholesalePrice": 0.2,
+      "retailPrice": 0.25,
+      "wholesaleBase": 0.15
+    },
+    "stock": {
+      "total": 800,
+      "karakoy": 800
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 136
+  },
+  {
+    "id": "product-28",
+    "name": "EE 19 / 8 / 6.5 - CF139",
+    "productCode": "EE 1906A",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.2,
+      "wholesalePrice": 0.26,
+      "retailPrice": 0.3,
+      "wholesaleBase": 0.2
+    },
+    "stock": {
+      "total": 8260,
+      "karakoy": 8260
+    },
+    "supplier": "COSMO FERRITES",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 1652
+  },
+  {
+    "id": "product-29",
+    "name": "EE 20 / 10 / 5.3 - CF139",
+    "productCode": "EE 2005",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.3,
+      "wholesalePrice": 0.35,
+      "retailPrice": 0.4,
+      "wholesaleBase": 0.25
+    },
+    "stock": {
+      "total": 11580,
+      "karakoy": 11580
+    },
+    "supplier": "COSMO FERRITES",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 3474
+  },
+  {
+    "id": "product-30",
+    "name": "EE 25 / 13 / 7 - CF139",
+    "productCode": "EE 2507",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.85,
+      "purchasePrice": 0.25,
+      "wholesalePrice": 0.7,
+      "retailPrice": 1,
+      "wholesaleBase": 0.55
+    },
+    "stock": {
+      "total": 105480,
+      "karakoy": 1080,
+      "cekmekoy": 104400
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 89658
+  },
+  {
+    "id": "product-31",
+    "name": "EE 33",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 1.9
+    },
+    "stock": {
+      "total": 120,
+      "karakoy": 120
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 228
+  },
+  {
+    "id": "product-32",
+    "name": "EE 42 / 21 / 15 - CF139",
+    "productCode": "CF139EE4215",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 1.5,
+      "wholesalePrice": 1.75,
+      "retailPrice": 2,
+      "wholesaleBase": 1.3
+    },
+    "stock": {
+      "total": 5055,
+      "karakoy": 255,
+      "cekmekoy": 4800
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 7582.5
+  },
+  {
+    "id": "product-33",
+    "name": "EE 42 / 21 / 20 - CF139",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 1.15,
+      "wholesalePrice": 1.25,
+      "retailPrice": 2,
+      "wholesaleBase": 0.9
+    },
+    "stock": {
+      "total": 394,
+      "karakoy": 94,
+      "cekmekoy": 300
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 453.1
+  },
+  {
+    "id": "product-34",
+    "name": "EE 55 / 28 / 21 - CF139",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 2.5,
+      "wholesalePrice": 2.75,
+      "retailPrice": 3,
+      "wholesaleBase": 2.2
+    },
+    "stock": {
+      "total": 1380,
+      "karakoy": 120,
+      "cekmekoy": 1260
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 3450
+  },
+  {
+    "id": "product-35",
+    "name": "EE 55 / 28 / 25 - CF139",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 2.65,
+      "wholesalePrice": 2.95,
+      "retailPrice": 3.15,
+      "wholesaleBase": 2.75
+    },
+    "stock": {
+      "total": 2250,
+      "karakoy": 150,
+      "cekmekoy": 2100
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 5962.5
+  },
+  {
+    "id": "product-36",
+    "name": "EE 65 / 32 / 27 - CF139",
+    "productCode": "ART-6527",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 3.15,
+      "wholesalePrice": 3,
+      "retailPrice": 4,
+      "wholesaleBase": 2.85
+    },
+    "stock": {
+      "total": 3504,
+      "karakoy": 228,
+      "cekmekoy": 3276
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 11037.6
+  },
+  {
+    "id": "product-37",
+    "name": "EE 70 / 33 / 32 - CF 139",
+    "productCode": "ART- 7032",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 3.15,
+      "wholesalePrice": 3.5,
+      "retailPrice": 4,
+      "wholesaleBase": 3.2
+    },
+    "stock": {
+      "total": 2468,
+      "karakoy": 240,
+      "cekmekoy": 2228
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 7774.2
+  },
+  {
+    "id": "product-38",
+    "name": "EE 80 / 38 / 20 - CF139",
+    "productCode": "ART-8020",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 1.5,
+      "wholesalePrice": 2.2,
+      "retailPrice": 3,
+      "wholesaleBase": 1.8
+    },
+    "stock": {
+      "total": 3432,
+      "karakoy": 192,
+      "cekmekoy": 3240
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 5148
+  },
+  {
+    "id": "product-39",
+    "name": "EE 80 / 38 / 40 - CF139",
+    "productCode": "ART-8040",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 3.7,
+      "wholesalePrice": 3.7,
+      "retailPrice": 5,
+      "wholesaleBase": 2.8
+    },
+    "stock": {
+      "total": 477,
+      "karakoy": 45,
+      "cekmekoy": 432
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1764.9
+  },
+  {
+    "id": "product-40",
+    "name": "EE 110 / 56 / 36 -CF139",
+    "productCode": "ART-11036",
+    "category": "Ferrit",
+    "productType": "EE",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ee-cores.jpg",
+    "pricing": {
+      "unitPrice": 9,
+      "wholesalePrice": 8,
+      "retailPrice": 12,
+      "wholesaleBase": 7
+    },
+    "stock": {
+      "total": 1240,
+      "karakoy": 32,
+      "cekmekoy": 1208
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 11160
+  },
+  {
+    "id": "product-41",
+    "name": "T 13 / 7 / 5 - CF139",
+    "productCode": "ART-T1305",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.1,
+      "purchasePrice": 0.08,
+      "wholesalePrice": 0.15,
+      "retailPrice": 1,
+      "wholesaleBase": 0.12
+    },
+    "stock": {
+      "total": 500,
+      "karakoy": 500
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 50
+  },
+  {
+    "id": "product-42",
+    "name": "T 14 / 9 / 5 CT-G",
+    "productCode": "ART-T1405",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.16,
+      "wholesalePrice": 0.15,
+      "retailPrice": 1,
+      "wholesaleBase": 0.13
+    },
+    "stock": {
+      "total": 5000,
+      "karakoy": 5000
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 800
+  },
+  {
+    "id": "product-43",
+    "name": "T 15 / 7 / 5 - CF139",
+    "productCode": "ART-T1505",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.18,
+      "purchasePrice": 0.1,
+      "wholesalePrice": 0.18,
+      "retailPrice": 1,
+      "wholesaleBase": 0.16
+    },
+    "stock": {
+      "total": 440,
+      "karakoy": 440
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 79.2
+  },
+  {
+    "id": "product-44",
+    "name": "T 16 / 9.5 / 6 - CF139",
+    "productCode": "ART-T1606",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.18,
+      "purchasePrice": 0.1,
+      "wholesalePrice": 0.18,
+      "retailPrice": 1,
+      "wholesaleBase": 0.16
+    },
+    "stock": {
+      "total": 7400,
+      "karakoy": 4200,
+      "cekmekoy": 3200
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1332
+  },
+  {
+    "id": "product-45",
+    "name": "T 18 / 11 / 8 - CF139",
+    "productCode": "ART-T1808",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.35,
+      "purchasePrice": 0.2,
+      "wholesalePrice": 0.3,
+      "retailPrice": 1,
+      "wholesaleBase": 0.25
+    },
+    "stock": {
+      "total": 870,
+      "karakoy": 870
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 304.5
+  },
+  {
+    "id": "product-46",
+    "name": "T 18 / 11 / 10 - CF139",
+    "productCode": "ART-T1810",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.36,
+      "purchasePrice": 0.2,
+      "wholesalePrice": 0.36,
+      "retailPrice": 1,
+      "wholesaleBase": 0.3
+    },
+    "stock": {
+      "total": 1620,
+      "karakoy": 1620
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 583.2
+  },
+  {
+    "id": "product-47",
+    "name": "T 25 / 15 / 10 - CF139",
+    "productCode": "ART-T2510",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 0.43,
+      "purchasePrice": 0.3,
+      "wholesalePrice": 0.43,
+      "retailPrice": 1,
+      "wholesaleBase": 0.39
+    },
+    "stock": {
+      "total": 17520,
+      "karakoy": 520,
+      "cekmekoy": 17000
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 7533.6
+  },
+  {
+    "id": "product-48",
+    "name": "T 36 / 23 / 15 - CF199",
+    "productCode": "ART-T3615",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 1,
+      "purchasePrice": 0.49,
+      "wholesalePrice": 0.9,
+      "retailPrice": 2,
+      "wholesaleBase": 0.78
+    },
+    "stock": {
+      "total": 3120,
+      "karakoy": 20,
+      "cekmekoy": 3100
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 3120
+  },
+  {
+    "id": "product-49",
+    "name": "T 42 / 26 / 18 - CF197",
+    "productCode": "ART-T4215",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 2.43,
+      "purchasePrice": 1.62,
+      "wholesalePrice": 2.43,
+      "retailPrice": 4,
+      "wholesaleBase": 2
+    },
+    "stock": {
+      "total": 5440,
+      "karakoy": 260,
+      "cekmekoy": 5180
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 13219.2
+  },
+  {
+    "id": "product-50",
+    "name": "T 38 / 29 / 22",
+    "productCode": "ART-3822",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 2.7,
+      "purchasePrice": 2,
+      "wholesalePrice": 2.7,
+      "retailPrice": 5,
+      "wholesaleBase": 2.5
+    },
+    "stock": {
+      "total": 1500,
+      "cekmekoy": 1500
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 4050
+  },
+  {
+    "id": "product-51",
+    "name": "T 49 / 32 / 19 - CF199",
+    "productCode": "ART-T4919",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 2,
+      "purchasePrice": 1.2,
+      "wholesalePrice": 2,
+      "retailPrice": 5,
+      "wholesaleBase": 1.8
+    },
+    "stock": {
+      "total": 230,
+      "karakoy": 230
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 460
+  },
+  {
+    "id": "product-52",
+    "name": "T 63 / 38 / 25 - CF195",
+    "productCode": "ART-T6325-195",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 5,
+      "purchasePrice": 3.56,
+      "wholesalePrice": 5,
+      "retailPrice": 7,
+      "wholesaleBase": 4.3
+    },
+    "stock": {
+      "total": 900,
+      "karakoy": 120,
+      "cekmekoy": 780
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 4500
+  },
+  {
+    "id": "product-53",
+    "name": "T 63 / 38 / 25 - CF199",
+    "productCode": "ART-T6325-199",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 6,
+      "purchasePrice": 4,
+      "wholesalePrice": 5.8,
+      "retailPrice": 7,
+      "wholesaleBase": 5
+    },
+    "stock": {
+      "total": 1620,
+      "cekmekoy": 1620
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 9720
+  },
+  {
+    "id": "product-54",
+    "name": "T 85 / 62 / 15 - CF199",
+    "productCode": "ART-T8515",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 6,
+      "purchasePrice": 3.48,
+      "wholesalePrice": 6,
+      "retailPrice": 8,
+      "wholesaleBase": 5
+    },
+    "stock": {
+      "total": 752,
+      "karakoy": 32,
+      "cekmekoy": 720
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 4512
+  },
+  {
+    "id": "product-55",
+    "name": "T 85 / 62 / 30 - CF199",
+    "productCode": "ART-8530",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 6,
+      "purchasePrice": 3.92,
+      "wholesalePrice": 6,
+      "retailPrice": 8,
+      "wholesaleBase": 5
+    },
+    "stock": {
+      "total": 2718,
+      "karakoy": 78,
+      "cekmekoy": 2640
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 16308
+  },
+  {
+    "id": "product-56",
+    "name": "T 100 / 55 / 20 - CF199",
+    "productCode": "ART-10050",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "pricing": {
+      "unitPrice": 12,
+      "purchasePrice": 7,
+      "wholesalePrice": 10,
+      "retailPrice": 20,
+      "wholesaleBase": 8
+    },
+    "stock": {
+      "total": 170,
+      "karakoy": 20,
+      "cekmekoy": 150
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 2040
+  },
+  {
+    "id": "product-57",
+    "name": "T 13 - 05",
+    "category": "Ferrit",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 1000,
+      "karakoy": 1000
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-58",
+    "name": "T 13 - 07",
+    "category": "Ferrit",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 9000,
+      "karakoy": 9000
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-59",
+    "name": "T 18 - 06",
+    "category": "Ferrit",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 550,
+      "karakoy": 550
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-60",
+    "name": "T 60 - 26",
+    "productCode": "T60-26",
+    "category": "IRON-POWDER",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.2,
+      "purchasePrice": 0.08,
+      "wholesalePrice": 0.2,
+      "retailPrice": 0.8,
+      "wholesaleBase": 0.15
+    },
+    "stock": {
+      "total": 14250,
+      "karakoy": 14250
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 2850
+  },
+  {
+    "id": "product-61",
+    "name": "T 80 - 26",
+    "productCode": "T80-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.25,
+      "purchasePrice": 0.1,
+      "wholesalePrice": 0.25,
+      "retailPrice": 0.8,
+      "wholesaleBase": 0.2
+    },
+    "stock": {
+      "total": 1930,
+      "karakoy": 230,
+      "cekmekoy": 1700
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 482.5
+  },
+  {
+    "id": "product-62",
+    "name": "T 94 - 26",
+    "productCode": "T94-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.3,
+      "purchasePrice": 0.12,
+      "wholesalePrice": 0.4,
+      "retailPrice": 0.9,
+      "wholesaleBase": 0.25
+    },
+    "stock": {
+      "total": 24800,
+      "karakoy": 3400,
+      "cekmekoy": 21400
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 7440
+  },
+  {
+    "id": "product-63",
+    "name": "T 106 - 26",
+    "productCode": "T106-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.42,
+      "purchasePrice": 0.18,
+      "wholesalePrice": 0.4,
+      "retailPrice": 1,
+      "wholesaleBase": 0.35
+    },
+    "stock": {
+      "total": 12500,
+      "karakoy": 1000,
+      "cekmekoy": 11500
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 5250
+  },
+  {
+    "id": "product-64",
+    "name": "T 130 - 26",
+    "productCode": "T130-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.55,
+      "purchasePrice": 0.25,
+      "wholesalePrice": 0.6,
+      "retailPrice": 1.2,
+      "wholesaleBase": 0.5
+    },
+    "stock": {
+      "total": 19750,
+      "karakoy": 550,
+      "cekmekoy": 19200
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 10862.5
+  },
+  {
+    "id": "product-65",
+    "name": "T 150 -26",
+    "productCode": "T150-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 0.8,
+      "purchasePrice": 0.38,
+      "wholesalePrice": 0.7,
+      "retailPrice": 1.5,
+      "wholesaleBase": 0.6
+    },
+    "stock": {
+      "total": 8900,
+      "karakoy": 900,
+      "cekmekoy": 8000
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 7120
+  },
+  {
+    "id": "product-66",
+    "name": "T 184 -26",
+    "productCode": "T184-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 1.4,
+      "purchasePrice": 0.68,
+      "wholesalePrice": 1.4,
+      "retailPrice": 2.5,
+      "wholesaleBase": 1.25
+    },
+    "stock": {
+      "total": 744,
+      "karakoy": 24,
+      "cekmekoy": 720
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1041.6
+  },
+  {
+    "id": "product-67",
+    "name": "T 200 - 26",
+    "productCode": "T200-26",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/ir184.jpg",
+    "pricing": {
+      "unitPrice": 1.6,
+      "purchasePrice": 0.8,
+      "wholesalePrice": 1.6,
+      "retailPrice": 2.5,
+      "wholesaleBase": 1.2
+    },
+    "stock": {
+      "total": 10104,
+      "karakoy": 104,
+      "cekmekoy": 10000
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 16166.4
+  },
+  {
+    "id": "product-68",
+    "name": "T 94 - 52",
+    "productCode": "T94-52",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/kt106-52-tr.jpg.webp",
+    "pricing": {
+      "unitPrice": 0.3,
+      "purchasePrice": 0.12,
+      "wholesalePrice": 0.4,
+      "retailPrice": 0.9,
+      "wholesaleBase": 0.25
+    },
+    "stock": {
+      "total": 9100,
+      "karakoy": 1200,
+      "cekmekoy": 7900
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 2730
+  },
+  {
+    "id": "product-69",
+    "name": "T 106 - 52",
+    "productCode": "T106-52",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/kt106-52-tr.jpg.webp",
+    "pricing": {
+      "unitPrice": 0.42,
+      "purchasePrice": 0.18,
+      "wholesalePrice": 0.4,
+      "retailPrice": 1,
+      "wholesaleBase": 0.35
+    },
+    "stock": {
+      "total": 36780,
+      "karakoy": 840,
+      "cekmekoy": 35940
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 15447.6
+  },
+  {
+    "id": "product-70",
+    "name": "T 130 - 52",
+    "productCode": "T130-52",
+    "category": "IRON-POWDER",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/kt106-52-tr.jpg.webp",
+    "pricing": {
+      "unitPrice": 0.55,
+      "purchasePrice": 0.25,
+      "wholesalePrice": 0.6,
+      "retailPrice": 1.2,
+      "wholesaleBase": 0.5
+    },
+    "stock": {
+      "total": 3000,
+      "karakoy": 300,
+      "cekmekoy": 2700
+    },
+    "supplier": "MEGASAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1650
+  },
+  {
+    "id": "product-71",
+    "name": "T 42 / 26 / 12.5 -F000",
+    "productCode": "B64290L",
+    "category": "Ferrit",
+    "productType": "IRON POWDER",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/f2906219-02.webp",
+    "pricing": {
+      "unitPrice": 5,
+      "purchasePrice": 3.5,
+      "wholesalePrice": 5,
+      "retailPrice": 7,
+      "wholesaleBase": 4
+    },
+    "stock": {
+      "total": 270,
+      "karakoy": 270
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1350
+  },
+  {
+    "id": "product-72",
+    "name": "T 57 / 35 / 15 - F000",
+    "productCode": "B65790L",
+    "category": "Ferrit",
+    "productType": "TOROID",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/f2906219-02.webp",
+    "pricing": {
+      "unitPrice": 13,
+      "wholesalePrice": 13,
+      "retailPrice": 17,
+      "wholesaleBase": 10
+    },
+    "stock": {
+      "total": 102,
+      "karakoy": 102
+    },
+    "supplier": "TEMSAN",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 1326
+  },
+  {
+    "id": "product-73",
+    "name": "MAKARA 9X12",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/dr2w10x16.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 15000,
+      "karakoy": 15000
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-74",
+    "name": "MAKARA 8X10",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/dr2w10x16.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 7000,
+      "karakoy": 7000
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-75",
+    "name": "MAKARA 22X19",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/dr2w10x16.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 420,
+      "karakoy": 420
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-76",
+    "name": "UU 20 / 16 / 8",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 2400,
+      "karakoy": 2400
+    },
+    "supplier": "TERMAL ELK",
+    "manufacturer": "SAMWHA CORE",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-77",
+    "name": "UU 9.8",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.15,
+      "purchasePrice": 0.03,
+      "wholesalePrice": 0.12,
+      "retailPrice": 0.25,
+      "wholesaleBase": 0.1
+    },
+    "stock": {
+      "total": 104000,
+      "cekmekoy": 104000
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 15600
+  },
+  {
+    "id": "product-78",
+    "name": "UU 10.5",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {
+      "unitPrice": 0.15,
+      "purchasePrice": 0.04,
+      "wholesalePrice": 0.12,
+      "retailPrice": 0.25,
+      "wholesaleBase": 0.1
+    },
+    "stock": {
+      "total": 35640,
+      "cekmekoy": 35640
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 5346
+  },
+  {
+    "id": "product-79",
+    "name": "UU 16",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 0
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-80",
+    "name": "UU 25 / 19 / 7.5",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 1100,
+      "karakoy": 120,
+      "cekmekoy": 980
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-81",
+    "name": "UU 46 / 28",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 720,
+      "cekmekoy": 720
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-82",
+    "name": "UUR 55",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uur-cores-soft-ferrite-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 1260,
+      "cekmekoy": 1260
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-83",
+    "name": "UUR 64 / 40",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uur-cores-soft-ferrite-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 3620,
+      "karakoy": 300,
+      "cekmekoy": 3320
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-84",
+    "name": "UU 57",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores-soft-ferrite-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 320,
+      "karakoy": 320
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-85",
+    "name": "UY 5858",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores-soft-ferrite-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 849,
+      "karakoy": 230,
+      "cekmekoy": 619
+    },
+    "supplier": "G&G Hi-Tech (Çin)",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "supplierCountry": "China",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-86",
+    "name": "UU 93 / 76 / 30 - CF139",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {
+      "unitPrice": 12,
+      "purchasePrice": 7,
+      "wholesalePrice": 12,
+      "retailPrice": 18,
+      "wholesaleBase": 9.5
+    },
+    "stock": {
+      "total": 720,
+      "karakoy": 30,
+      "cekmekoy": 690
+    },
+    "supplier": "COSMO FERRITES",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 8640
+  },
+  {
+    "id": "product-87",
+    "name": "UU 93 / 76 / 30 EPCOS",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {
+      "unitPrice": 12,
+      "purchasePrice": 6.38,
+      "wholesalePrice": 12,
+      "retailPrice": 18,
+      "wholesaleBase": 9.5
+    },
+    "stock": {
+      "total": 1112,
+      "cekmekoy": 1112
+    },
+    "supplier": "EPCOS",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 13344
+  },
+  {
+    "id": "product-88",
+    "name": "UU 60 / 55 / 15 - CF139",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 140,
+      "karakoy": 20,
+      "cekmekoy": 120
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-89",
+    "name": "UU 101 / 76 / 30",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 1535,
+      "karakoy": 140,
+      "cekmekoy": 1395
+    },
+    "supplier": "EPCOS",
+    "manufacturer": "G&G Hi-Tech (Çin)",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-90",
+    "name": "UU 126 / 40 / 20",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 8,
+      "karakoy": 8
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-91",
+    "name": "UU 126 / 45 / 20",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/uu-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 35,
+      "karakoy": 35
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  },
+  {
+    "id": "product-92",
+    "name": "I 93 / 27 / 30 - CF139",
+    "category": "Ferrit",
+    "subCategory": "Cekirdekler",
+    "image": "/products-images/i-bar-cores.jpg",
+    "pricing": {},
+    "stock": {
+      "total": 1694,
+      "karakoy": 14,
+      "cekmekoy": 1680
+    },
+    "supplier": "Ozdisan",
+    "manufacturer": "COSMO FERRITES",
+    "totalStockValue": 0
+  }
+]
