@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { fetchProduct } from "@/lib/api/products";
+import { getLanguageAlternates, getLocalizedPath, getSiteUrl } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -7,9 +8,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
-  const localePrefix = locale === "tr" ? "" : `/${locale}`;
+  const siteUrl = await getSiteUrl();
+  const localizedPath = getLocalizedPath(locale, `/products/${slug}`);
 
   try {
     const product = await fetchProduct(slug);
@@ -31,12 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${productName} | Artek Elektronik`,
       description: description,
       alternates: {
-        canonical: `${siteUrl}${localePrefix}/products/${slug}`,
+        canonical: `${siteUrl}${localizedPath}`,
+        languages: getLanguageAlternates(siteUrl, `/products/${slug}`),
       },
       openGraph: {
         title: `${productName} | Artek Elektronik`,
         description: description,
-        url: `${siteUrl}${localePrefix}/products/${slug}`,
+        url: `${siteUrl}${localizedPath}`,
         type: "website",
         images: product.fields.Photo
           ? [
@@ -59,7 +60,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: "Product | Artek Elektronik",
       description: "High quality electronic components from Artek Elektronik",
       alternates: {
-        canonical: `${siteUrl}${localePrefix}/products/${slug}`,
+        canonical: `${siteUrl}${localizedPath}`,
+        languages: getLanguageAlternates(siteUrl, `/products/${slug}`),
       },
     };
   }

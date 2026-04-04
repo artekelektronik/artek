@@ -1,10 +1,17 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Box } from "@/components/box";
 import { Feature } from "@/components/feature";
 import HeroSection from "@/components/hero-section";
+import Link from "next/link";
+import {
+  getLanguageAlternates,
+  getLocalizedPath,
+  getOgImageUrl,
+  getSiteUrl,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -17,20 +24,29 @@ export async function generateMetadata({
   const messages = await getMessages({ locale });
   const allMetadata = messages.metadata as Record<string, { title: string; description: string }>;
   const metadata = allMetadata.home;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
-  const localePrefix = locale === "tr" ? "" : `/${locale}`;
+  const siteUrl = await getSiteUrl();
+  const localizedPath = getLocalizedPath(locale);
 
   return {
     title: metadata.title,
     description: metadata.description,
     alternates: {
-      canonical: `${siteUrl}${localePrefix}`,
+      canonical: `${siteUrl}${localizedPath}`,
+      languages: getLanguageAlternates(siteUrl),
     },
     openGraph: {
       title: metadata.title,
       description: metadata.description,
-      url: `${siteUrl}${localePrefix}`,
+      url: `${siteUrl}${localizedPath}`,
       type: "website",
+      images: [
+        {
+          url: getOgImageUrl(siteUrl, locale),
+          width: 1200,
+          height: 630,
+          alt: "Artek Elektronik - Premium Magnetic Components",
+        },
+      ],
     },
   };
 }
@@ -44,22 +60,58 @@ export default async function Home({ params }: Props) {
 
 function HomeContent() {
   const t = useTranslations();
-  const locale = useLocale();
 
   // Helper to create product links with category filter
   const productsLink = (category?: string) => {
-    const base = `/${locale}/products`;
+    const base = `/products`;
     if (category) {
       return `${base}?categories=${encodeURIComponent(category)}`;
     }
     return base;
   };
 
-  const contactLink = `/${locale}/contact`;
+  const contactLink = `/contact`;
 
   return (
     <div>
       <HeroSection />
+
+      {/* Keyword-rich category overview section for SEO */}
+      <section className="bg-background py-16 px-6">
+        <div className="max-w-5xl mx-auto space-y-8">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-bold tracking-tight">
+              {t("homeKeywords.sectionTitle")}
+            </h2>
+            <p className="text-muted-foreground max-w-3xl mx-auto text-base leading-relaxed">
+              {t("homeKeywords.sectionSubtitle")}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="rounded-lg border bg-card p-6 space-y-3">
+              <h3 className="font-semibold text-lg">{t("homeKeywords.ferritNuveTitle")}</h3>
+              <p className="text-sm text-muted-foreground">{t("homeKeywords.ferritNuveDesc")}</p>
+              <Link href="/ferrit-nuve" className="text-sm font-medium text-primary hover:underline">
+                {t("homeKeywords.learnMore")} →
+              </Link>
+            </div>
+            <div className="rounded-lg border bg-card p-6 space-y-3">
+              <h3 className="font-semibold text-lg">{t("homeKeywords.bobinTitle")}</h3>
+              <p className="text-sm text-muted-foreground">{t("homeKeywords.bobinDesc")}</p>
+              <Link href="/bobin" className="text-sm font-medium text-primary hover:underline">
+                {t("homeKeywords.learnMore")} →
+              </Link>
+            </div>
+            <div className="rounded-lg border bg-card p-6 space-y-3">
+              <h3 className="font-semibold text-lg">{t("homeKeywords.transformatorTitle")}</h3>
+              <p className="text-sm text-muted-foreground">{t("homeKeywords.transformatorDesc")}</p>
+              <Link href="/transformator" className="text-sm font-medium text-primary hover:underline">
+                {t("homeKeywords.learnMore")} →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
       {/* Row 1 - Ferrit Nüve / Ferrite Core */}
       <Box
         backgroundColor="bg-gray-100"

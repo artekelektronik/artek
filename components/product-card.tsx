@@ -1,7 +1,7 @@
 "use client";
 
 
-import { MapPin, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,6 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const t = useTranslations("productCard");
   const { fields } = product;
-  const hasStock = (fields["Stock Quantity"] ?? 0) > 0;
   const productSlug = generateProductSlug(fields["Product Name"], product.id);
 
   return (
@@ -34,14 +33,6 @@ export function ProductCard({ product }: ProductCardProps) {
             <Package className="h-16 w-16 text-muted-foreground" />
           </div>
         )}
-
-        {/* Stock Badge */}
-        <Badge
-          variant={hasStock ? "default" : "destructive"}
-          className="absolute top-3 right-3"
-        >
-          {hasStock ? t("inStock") : t("outOfStock")}
-        </Badge>
       </Link>
 
       {/* Content Section - Fixed structure */}
@@ -66,14 +57,6 @@ export function ProductCard({ product }: ProductCardProps) {
             {fields["Product Name"]}
           </h3>
         </Link>
-
-        {/* Location Info - Fixed height */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-          <MapPin className="h-3.5 w-3.5" />
-          <span>
-            {t("locationKarakoy")} {fields["Stock (Karakoy)"] ?? 0}
-          </span>
-        </div>
 
         {/* Product Code - Fixed height */}
         <div className="min-h-5 mb-3">

@@ -102,7 +102,6 @@ function ProductDetailContent({
     "Parakende Fiyatı": retailPrice,
     "Toptan Fiyatı": wholesalePrice,
     "Toptan Taban ": wholesaleBase,
-    "Stock Quantity": totalStock,
     Description: description,
     "Alt Kategori": altCategories,
     "Ürün Tipi": productTypes,
@@ -112,7 +111,6 @@ function ProductDetailContent({
     "Product Summary (AI)": aiSummary,
   } = product.fields;
 
-  const inStock = (totalStock || 0) > 0;
   const hasImages = photos && photos.length > 0;
 
   return (
@@ -141,14 +139,6 @@ function ProductDetailContent({
                 <Package className="h-32 w-32 text-muted-foreground" />
               </div>
             )}
-
-            {/* Stock Badge Overlay */}
-            <Badge
-              variant={inStock ? "default" : "destructive"}
-              className="absolute top-4 right-4 text-sm"
-            >
-              {inStock ? t("inStock") : t("outOfStock")}
-            </Badge>
           </div>
 
           {/* Thumbnail Gallery */}

@@ -1,5 +1,11 @@
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
+import {
+  getLanguageAlternates,
+  getLocalizedPath,
+  getOgImageUrl,
+  getSiteUrl,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -12,20 +18,29 @@ export async function generateMetadata({
   const messages = await getMessages({ locale });
   const allMetadata = messages.metadata as Record<string, { title: string; description: string }>;
   const metadata = allMetadata.products;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
-  const localePrefix = locale === "tr" ? "" : `/${locale}`;
+  const siteUrl = await getSiteUrl();
+  const localizedPath = getLocalizedPath(locale, "/products");
 
   return {
     title: metadata.title,
     description: metadata.description,
     alternates: {
-      canonical: `${siteUrl}${localePrefix}/products`,
+      canonical: `${siteUrl}${localizedPath}`,
+      languages: getLanguageAlternates(siteUrl, "/products"),
     },
     openGraph: {
       title: metadata.title,
       description: metadata.description,
-      url: `${siteUrl}${localePrefix}/products`,
+      url: `${siteUrl}${localizedPath}`,
       type: "website",
+      images: [
+        {
+          url: getOgImageUrl(siteUrl, locale),
+          width: 1200,
+          height: 630,
+          alt: "Artek Elektronik - Premium Magnetic Components",
+        },
+      ],
     },
   };
 }
