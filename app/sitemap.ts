@@ -69,6 +69,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
         },
       },
     },
+    {
+      url: `${siteUrl}/ferrit-nuve`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/ferrit-nuve`,
+          en: `${siteUrl}/en/ferrit-nuve`,
+        },
+      },
+    },
+    {
+      url: `${siteUrl}/bobin`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/bobin`,
+          en: `${siteUrl}/en/bobin`,
+        },
+      },
+    },
+    {
+      url: `${siteUrl}/transformator`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/transformator`,
+          en: `${siteUrl}/en/transformator`,
+        },
+      },
+    },
   ];
 
   const products = getProductsFromJSON();

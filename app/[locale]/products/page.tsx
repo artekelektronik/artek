@@ -6,7 +6,6 @@ import {
   parseAsString,
   parseAsArrayOf,
   parseAsInteger,
-  parseAsBoolean,
   useQueryStates,
 } from "nuqs";
 import { useTranslations } from "next-intl";
@@ -25,7 +24,6 @@ const searchParamsParser = {
   altCategories: parseAsArrayOf(parseAsString).withDefault([]),
   productTypes: parseAsArrayOf(parseAsString).withDefault([]),
   supplierCountries: parseAsArrayOf(parseAsString).withDefault([]),
-  inStock: parseAsBoolean.withDefault(false),
 
   // UI state
   page: parseAsInteger.withDefault(1),
@@ -58,7 +56,6 @@ function ProductsContent() {
       selectedAltCategories: params.altCategories,
       selectedProductTypes: params.productTypes,
       selectedSupplierCountries: params.supplierCountries,
-      inStockOnly: params.inStock,
     }),
     [params]
   );
@@ -66,13 +63,6 @@ function ProductsContent() {
   // Memoized filtered and sorted products
   const filteredProducts = useMemo(() => {
     let filtered = [...products];
-
-    // Stock filter
-    if (filters.inStockOnly) {
-      filtered = filtered.filter(
-        (product) => (product.fields["Stock Quantity"] || 0) > 0
-      );
-    }
 
     // Category filter
     if (filters.selectedCategories.length > 0) {
@@ -136,11 +126,6 @@ function ProductsContent() {
             b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
           return priceB - priceA;
         }
-        case "stock-desc":
-          return (
-            (b.fields["Stock Quantity"] || 0) -
-            (a.fields["Stock Quantity"] || 0)
-          );
         case "newest":
         default:
           return 0;
@@ -210,7 +195,6 @@ function ProductsContent() {
         newFilters.selectedSupplierCountries.length > 0
           ? newFilters.selectedSupplierCountries
           : null,
-      inStock: newFilters.inStockOnly ? newFilters.inStockOnly : null,
       page: 1, // Reset to first page when filters change
     });
   };
@@ -221,7 +205,6 @@ function ProductsContent() {
       altCategories: null,
       productTypes: null,
       supplierCountries: null,
-      inStock: null,
       sort: null,
       page: null,
       grid: null,
@@ -291,7 +274,6 @@ function ProductsContent() {
             translations={{
               title: tFilters("title"),
               reset: tFilters("reset"),
-              inStockOnly: tFilters("inStockOnly"),
               category: tFilters("category"),
               altCategory: tFilters("altCategory"),
               productType: tFilters("productType"),
@@ -330,7 +312,6 @@ function ProductsContent() {
                 nameDesc: tControls("sort.nameDesc"),
                 priceAsc: tControls("sort.priceAsc"),
                 priceDesc: tControls("sort.priceDesc"),
-                stockDesc: tControls("sort.stockDesc"),
               }}
             />
           </div>
@@ -386,35 +367,40 @@ function ProductsContent() {
 }
 
 export default function ProductsPage() {
+  const t = useTranslations("products");
+
   return (
-    <Suspense
-      fallback={
-        <div className="container mx-auto px-4 py-8 mt-16">
-          <div className="mb-8">
-            <Skeleton className="h-10 w-48 mb-4" />
-            <Skeleton className="h-6 w-96" />
-          </div>
-          <div className="flex gap-8">
-            <div className="w-64 hidden lg:block">
-              <Skeleton className="h-96 w-full" />
+    <>
+      <h1 className="sr-only">{t("title")}</h1>
+      <Suspense
+        fallback={
+          <div className="container mx-auto px-4 py-8 mt-16">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+              <Skeleton className="h-6 w-96" />
             </div>
-            <div className="flex-1">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(9)].map((_, i) => (
-                  <div key={i} className="space-y-4">
-                    <Skeleton className="aspect-square w-full rounded-md" />
-                    <Skeleton className="h-6 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-20 w-full" />
-                  </div>
-                ))}
+            <div className="flex gap-8">
+              <div className="w-64 hidden lg:block">
+                <Skeleton className="h-96 w-full" />
+              </div>
+              <div className="flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[...Array(9)].map((_, i) => (
+                    <div key={i} className="space-y-4">
+                      <Skeleton className="aspect-square w-full rounded-md" />
+                      <Skeleton className="h-6 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-20 w-full" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      }
-    >
+        }
+      >
       <ProductsContent />
-    </Suspense>
+      </Suspense>
+    </>
   );
 }

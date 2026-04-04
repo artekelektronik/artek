@@ -1,24 +1,46 @@
 {
   "metadata": {
     "home": {
-      "title": "Artek Elektronik | Premium Ferrite Cores, Transformers & Inductors",
-      "description": "Turkish manufacturer of high-quality ferrite cores, bobbins, transformers, and inductors for SMPS, RF, and industrial applications."
+      "title": "Artek Elektronik | Ferrite Cores, Transformers, Inductors",
+      "description": "Turkish manufacturer of ferrite cores, bobbins, transformers, and inductors for SMPS, RF, and industrial use. ISO certified, custom solutions available."
     },
     "products": {
-      "title": "Products | Artek Elektronik | Ferrite Cores & Transformers",
-      "description": "Browse our complete catalog of ferrite cores, bobbins, SMPS transformers, and laminated transformers for your electronic projects."
+      "title": "Products | Artek Elektronik Ferrite & Magnetic Components",
+      "description": "Browse our catalog of ferrite cores, bobbins, SMPS transformers, and laminated transformers. Custom designs and fast delivery from Turkey for your projects."
     },
     "about": {
-      "title": "About Us | Artek Elektronik | Turkish Electronics Manufacturer",
-      "description": "Learn about Artek Elektronik, a leading Turkish manufacturer of magnetic components with over 20 years of industry expertise."
+      "title": "About Us | Artek Elektronik | Electronics Manufacturer",
+      "description": "Learn about Artek Elektronik, a leading Turkish manufacturer of magnetic components with over 20 years of expertise in ferrite cores, bobbins, and transformers."
     },
     "contact": {
-      "title": "Contact Us | Artek Elektronik",
-      "description": "Get in touch with our team for custom quotes, technical support, and partnership opportunities."
+      "title": "Contact Us | Artek Elektronik | Ferrite & Transformer Experts",
+      "description": "Contact Artek Elektronik for custom quotes, technical support, and partnership opportunities in ferrite cores, bobbins, and transformers. Worldwide supply."
     },
     "certificates": {
       "title": "Certifications | Artek Elektronik | Quality Standards",
-      "description": "View our ISO certifications and quality standards that guarantee product excellence and reliability."
+      "description": "View our ISO 9001, ISO 45001, and ISO 10002 certifications guaranteeing product excellence, occupational safety, and customer satisfaction in each component."
+    },
+  "homeKeywords": {
+    "sectionTitle": "Ferrite Core, Bobbin and Transformer Solutions",
+    "sectionSubtitle": "Artek Elektronik has been Turkey's leading manufacturer of ferrite cores, bobbins, and transformers since 1987. With ISO 9001 certified production we manufacture EE, ETD, UU, Toroid ferrite cores; EE, ETD, EFD, PQ series bobbins; and SMPS ferrite and laminated transformers.",
+    "ferritNuveTitle": "Ferrite Cores",
+    "ferritNuveDesc": "High-frequency ferrite cores in EE, ETD, UU, PQ, RM and Toroid geometries.",
+    "bobinTitle": "Bobbins",
+    "bobinDesc": "EE, ETD, EFD, PQ, RM series; standard and custom-size transformer bobbins.",
+    "transformatorTitle": "Transformers",
+    "transformatorDesc": "SMPS ferrite transformers, laminated power transformers and custom designs.",
+    "learnMore": "Learn More"
+  },
+      "title": "Ferrite Core Manufacturer | EE ETD Toroid | Artek Elektronik",
+      "description": "EE, ETD, UU, RM, PQ and Toroid ferrite cores for SMPS, LED drivers and industrial power electronics. Made in Turkey with custom design and fast delivery."
+    },
+    "bobin": {
+      "title": "Bobbin Manufacturer | EE ETD EFD PQ Series | Artek Elektronik",
+      "description": "EE, ETD, EFD, PQ, RM series transformer and inductor bobbins. High-temperature resistant, PCB compatible, UL94 V-0. Custom sizes and fast delivery from Turkey."
+    },
+    "transformator": {
+      "title": "Transformer Manufacturer | SMPS Ferrite Laminated | Artek",
+      "description": "SMPS ferrite transformers, laminated steel transformers, toroid and custom designs. ISO 9001 certified manufacturing since 1987. Fast worldwide delivery from Turkey."
     }
   },
   "nav": {
@@ -303,6 +325,126 @@
   },
   "language": {
     "switchTo": "Switch language"
+  },
+  "ferritNuve": {
+    "heroTitle": "Ferrite Cores",
+    "heroSubtitle": "High-Quality Ferrite Cores Manufactured in Turkey",
+    "heroDescription": "Custom ferrite core solutions for high-frequency SMPS, LED drivers and industrial power electronics — EE, ETD, UU, RM and Toroid geometries available.",
+    "whatIsTitle": "What is a Ferrite Core?",
+    "whatIsText": "A ferrite core is a ceramic magnetic material produced by sintering iron oxide (Fe₂O₃) with metal oxides such as zinc, nickel, or manganese at high temperatures. Its low-loss characteristic at high frequencies makes it widely used in SMPS transformers, EMI filters, inductors, and bobbin assemblies.",
+    "whyTitle": "Why Choose Artek Ferrite Cores?",
+    "why1Title": "High Permeability",
+    "why1Text": "High magnetic permeability values enable maximum energy transfer in compact designs.",
+    "why2Title": "Low Core Loss",
+    "why2Text": "Core losses are minimized across the optimal operating frequency range of 100 kHz to 3 MHz.",
+    "why3Title": "Thermal Stability",
+    "why3Text": "Stable magnetic performance from -40°C to +125°C — ideal for critical industrial applications.",
+    "why4Title": "Custom Design",
+    "why4Text": "Production with custom dimensions and material composition alongside standard geometries.",
+    "typesTitle": "Ferrite Core Types",
+    "type1Name": "EE Core",
+    "type1Desc": "The most commonly used geometry. Standard solution for SMPS transformers and EMI filters.",
+    "type2Name": "ETD Core",
+    "type2Desc": "Round center-leg design optimized for high power density.",
+    "type3Name": "UU / UI Core",
+    "type3Desc": "Preferred form for large cross-section applications and power inductors.",
+    "type4Name": "RM Core",
+    "type4Desc": "Excellent space optimization for compact PCB-mounted transformers.",
+    "type5Name": "Toroid Core",
+    "type5Desc": "Lowest EMI emission and highest efficiency thanks to the closed magnetic circuit.",
+    "type6Name": "PQ Core",
+    "type6Desc": "Wide window area for high-current inductors and power transformers.",
+    "applicationsTitle": "Application Areas",
+    "app1": "SMPS and Switched-Mode Power Supplies",
+    "app2": "LED Driver Transformers",
+    "app3": "EMI / RFI Suppression Filters",
+    "app4": "Telecom Power Systems",
+    "app5": "Automotive Electronic Systems",
+    "app6": "Renewable Energy Inverters",
+    "ctaTitle": "Get a Ferrite Core Quote for Your Project",
+    "ctaText": "Browse our standard product catalog or share your custom design requirements with our technical team.",
+    "ctaProducts": "Ferrite Core Products",
+    "ctaContact": "Request a Quote"
+  },
+  "bobin": {
+    "heroTitle": "Bobbins",
+    "heroSubtitle": "Precision Transformer and Inductor Bobbins",
+    "heroDescription": "High-temperature and high-voltage resistant plastic and polyamide bobbins in EE, ETD, EFD, PQ and RM series — standard and custom sizes. Fast delivery from Turkey.",
+    "whatIsTitle": "What is a Bobbin?",
+    "whatIsText": "A bobbin is an insulating body onto which copper windings are wound around a ferrite core. It mechanically fixes the winding arrangement in transformer and inductor production and can be directly mounted to a PCB via pins. Material selection is made based on operating temperature and voltage insulation requirements.",
+    "whyTitle": "Advantages of Artek Bobbins",
+    "why1Title": "High Heat Resistance",
+    "why1Text": "UL94 V-0 approved material options suitable for 155°C and 180°C operating temperatures.",
+    "why2Title": "Wide Geometry Range",
+    "why2Text": "50+ standard geometries from EE13 to ETD59; EFD, PQ, RM, EP and toroidal forms.",
+    "why3Title": "PCB Compatibility",
+    "why3Text": "Horizontal and vertical mounting options, SMD-compatible variants, and various pin pitch configurations.",
+    "why4Title": "Custom Manufacturing",
+    "why4Text": "Custom order production with non-standard window sizes, pin placement, or flange geometry.",
+    "typesTitle": "Bobbin Series",
+    "type1Name": "EE Series Bobbins",
+    "type1Desc": "EE13, EE16, EE19, EE25, EE30, EE42, EE55 — Most common series for SMPS and LED transformers.",
+    "type2Name": "ETD Series Bobbins",
+    "type2Desc": "ETD29, ETD34, ETD39, ETD44, ETD49, ETD59 — High power density applications.",
+    "type3Name": "EFD Series Bobbins",
+    "type3Desc": "EFD15, EFD20, EFD25, EFD30 — Thin profile, high power density.",
+    "type4Name": "PQ Series Bobbins",
+    "type4Desc": "PQ20, PQ26, PQ32, PQ35, PQ40, PQ50 — Suitable for power transformers with large window area.",
+    "type5Name": "RM / EP Series",
+    "type5Desc": "RM4, RM5, RM6, RM8, RM10, RM12 — Space-optimized for compact PCB designs.",
+    "type6Name": "UU / UI Series",
+    "type6Desc": "Open geometry for high-power industrial transformers and reactance coils.",
+    "applicationsTitle": "Application Areas",
+    "app1": "Switched-Mode Power Supply (SMPS) Transformers",
+    "app2": "LED Driver and Ballast Circuits",
+    "app3": "Power Inductors and Choke Coils",
+    "app4": "EMI / EMC Line Filters",
+    "app5": "DC-DC Converters",
+    "app6": "UPS and Chargers",
+    "ctaTitle": "Contact Us for a Bobbin Quote",
+    "ctaText": "Choose from the standard catalog or discuss custom size and winding configurations with our technical team.",
+    "ctaProducts": "Browse All Bobbins",
+    "ctaContact": "Get a Quote"
+  },
+  "transformator": {
+    "heroTitle": "Transformers",
+    "heroSubtitle": "Ferrite and Laminated Transformer Manufacturing — Turkey",
+    "heroDescription": "SMPS ferrite transformers, laminated power transformers, and custom-designed transformers. Artek Elektronik has been manufacturing transformers to industrial quality standards since 1987.",
+    "whatIsTitle": "What is a Transformer?",
+    "whatIsText": "A transformer is a power electronics component that transfers energy between two or more windings through electromagnetic induction. High-frequency ferrite core transformers are used in SMPS circuits, while laminated (silicon steel) transformers are used in industrial 50/60 Hz systems.",
+    "whyTitle": "Why Artek Transformers?",
+    "why1Title": "High Efficiency",
+    "why1Text": "Efficiency rates of 96% and above through optimal core selection and winding geometry.",
+    "why2Title": "Wide Power Range",
+    "why2Text": "Wide power range from 1 W SMPS pulsers to 10 kVA laminated transformer applications.",
+    "why3Title": "Custom Design",
+    "why3Text": "Frequency, voltage, current, and dimension optimization according to customer specifications.",
+    "why4Title": "ISO Certified Production",
+    "why4Text": "Consistent quality in every batch with ISO 9001:2015 certified processes, test and verification protocols.",
+    "typesTitle": "Transformer Types",
+    "type1Name": "SMPS Ferrite Transformers",
+    "type1Desc": "Compact size and high efficiency in switched-mode power supply transformers operating between 20 kHz – 3 MHz.",
+    "type2Name": "Laminated (Silicon Steel) Transformers",
+    "type2Desc": "Silicon steel laminated transformers for 50/60 Hz industrial power systems. High power and long service life.",
+    "type3Name": "Toroid Transformers",
+    "type3Desc": "Minimum stray field with closed magnetic circuit — ideal for audio systems, medical, and precision measurement devices.",
+    "type4Name": "Automotive Transformers",
+    "type4Desc": "AEC-Q200 compliant in-vehicle power conversion transformers providing reliable operation across wide temperature ranges.",
+    "type5Name": "Gate Drive Transformers",
+    "type5Desc": "Isolated gate signal transfer for driving IGBTs and MOSFETs; frequency and load independence.",
+    "type6Name": "Current Measurement Transformers",
+    "type6Desc": "High-accuracy current transformers for precise and isolated measurement of line current.",
+    "applicationsTitle": "Application Areas",
+    "app1": "Industrial SMPS and UPS Power Supplies",
+    "app2": "LED Lighting Drivers",
+    "app3": "Solar Energy Inverters",
+    "app4": "Factory Automation Systems",
+    "app5": "Medical Device Power Supplies",
+    "app6": "Automotive Charging and Power Conversion",
+    "ctaTitle": "Get Your Transformer Quote",
+    "ctaText": "Browse our product catalog or contact our technical team for custom transformer design.",
+    "ctaProducts": "Transformer Products",
+    "ctaContact": "Request a Quote"
   },
   "search": {
     "placeholder": "Search products, pages...",

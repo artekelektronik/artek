@@ -1,24 +1,46 @@
 {
   "metadata": {
     "home": {
-      "title": "Artek Elektronik | Premium Ferrit Nüveler, Transformatörler ve İndüktörler",
-      "description": "SMPS, RF ve endüstriyel uygulamalar için yüksek kaliteli ferrit nüve, bobin, transformatör ve indüktör üreten Türk üreticisi."
+      "title": "Ferrit Nüve, Bobin ve Transformatör | Artek Elektronik",
+      "description": "Türkiye'nin ferrit nüve, bobin, SMPS transformatör ve indüktör üreticisi. ISO sertifikalı, 20+ yıllık tecrübe. Karaköy, İstanbul'dan dünyaya hızlı teslimat."
     },
     "products": {
-      "title": "Ürünler | Artek Elektronik | Ferrit Nüveler ve Transformatörler",
-      "description": "Ferrit nüveler, bobinler, SMPS transformatörleri ve sac transformatörlerin tam katalogunu inceleyin."
+      "title": "Ferrit Nüve ve Bobin Ürün Kataloğu | Artek Elektronik",
+      "description": "EE, ETD, UU, Toroid ferrit nüveler; EE, ETD bobinler; SMPS ve sac transformatörler. Tüm katalog burada. Türkiye'den hızlı teslimat ve özel tasarım imkanı."
     },
     "about": {
-      "title": "Hakkımızda | Artek Elektronik | Türk Elektronik Üreticisi",
-      "description": "20 yılı aşkın sektör tecrübesiyle manyetik bileşenlerin önde gelen Türk üreticisi Artek Elektronik hakkında bilgi alın."
+      "title": "Hakkımızda | Artek Elektronik | Ferrit Nüve Üreticisi",
+      "description": "1987'den beri ferrit nüve, bobin ve transformatör üretiminde lider Türk firma. 2008'den itibaren kendi tesisimizde özel tasarım ve seri üretim yapıyoruz."
     },
     "contact": {
-      "title": "İletişim | Artek Elektronik",
-      "description": "Özel teklifler, teknik destek ve iş ortaklığı fırsatları için ekibimizle iletişime geçin."
+      "title": "İletişim | Artek Elektronik | Ferrit Nüve ve Bobin",
+      "description": "Ferrit nüve, bobin ve transformatör için teklif alın. Karaköy, İstanbul adresimizden veya telefon ve e-posta ile teknik destek ve fiyat bilgisi alabilirsiniz."
     },
     "certificates": {
-      "title": "Sertifikalar | Artek Elektronik | Kalite Standartları",
-      "description": "Ürün mükemmelliği ve güvenilirliğini garanti eden ISO sertifikalarımız ve kalite standartlarımızı görüntüleyin."
+      "title": "Sertifikalar | Artek Elektronik | ISO Kalite Belgesi",
+      "description": "ISO 9001, ISO 45001 ve ISO 10002 sertifikalı ferrit nüve ve bobin üreticisi. Kalite yönetimi, iş güvenliği ve müşteri memnuniyetinde uluslararası standartlar."
+    },
+  "homeKeywords": {
+    "sectionTitle": "Ferrit Nüve, Bobin ve Transformatör Çözümleri",
+    "sectionSubtitle": "Artek Elektronik, 1987'den bu yana Türkiye'nin önde gelen ferrit nüve, bobin karkas ve transformatör üreticisidir. ISO 9001 belgeli üretimimiz ile EE, ETD, UU, Toroid ferrit nüveler; EE, ETD, EFD, PQ serisi bobin karkasları; SMPS ferrit ve sac nüveli transformatörler üretiyoruz.",
+    "ferritNuveTitle": "Ferrit Nüve",
+    "ferritNuveDesc": "EE, ETD, UU, PQ, RM ve Toroid geometrilerde yüksek frekanslı ferrit nüveler.",
+    "bobinTitle": "Bobin Karkasları",
+    "bobinDesc": "EE, ETD, EFD, PQ, RM serisi; standart ve özel boyutlarda trafo karkasları.",
+    "transformatorTitle": "Transformatörler",
+    "transformatorDesc": "SMPS ferrit trafolar, sac nüveli güç transformatörleri ve özel tasarım.",
+    "learnMore": "Detaylı Bilgi"
+  },
+      "title": "Ferrit Nüve Üreticisi | EE ETD Toroid | Artek Elektronik",
+      "description": "EE, ETD, UU, RM, PQ ve Toroid ferrit nüveler. SMPS, LED sürücü ve endüstriyel güç elektroniği için Türkiye üretimi. Özel tasarım, hızlı teslimat, ISO sertifikalı."
+    },
+    "bobin": {
+      "title": "Bobin Karkas Üreticisi | EE ETD EFD PQ | Artek Elektronik",
+      "description": "EE, ETD, EFD, PQ, RM serisi trafo ve indüktör karkasları. Yüksek sıcaklık dayanımlı, PCB uyumlu, UL94 V-0. Türkiye'den özel boyut ve hızlı teslimat."
+    },
+    "transformator": {
+      "title": "Transformatör Üreticisi | SMPS Ferrit Sac Trafo | Artek",
+      "description": "SMPS ferrit transformatörler, sac nüveli lamine trafolar, toroid ve özel tasarım. 1987'den bu yana ISO 9001 belgeli üretim. Türkiye'den dünyaya hızlı teslimat."
     }
   },
   "nav": {
@@ -303,6 +325,126 @@
   },
   "language": {
     "switchTo": "Dili değiştir"
+  },
+  "ferritNuve": {
+    "heroTitle": "Ferrit Nüve",
+    "heroSubtitle": "Türkiye'de Üretilen Yüksek Kaliteli Ferrit Nüveler",
+    "heroDescription": "EE, ETD, UU, RM ve Toroid tipler dahil geniş geometri yelpazesiyle, yüksek frekans SMPS, LED sürücü ve endüstriyel güç elektroniği uygulamalarına özel ferrit nüve çözümleri.",
+    "whatIsTitle": "Ferrit Nüve Nedir?",
+    "whatIsText": "Ferrit nüve, demir oksit (Fe₂O₃) ve çinko, nikel ya da manganez gibi metal oksitlerin yüksek sıcaklıkta sinterlenmesiyle üretilen seramik manyetik malzemedir. Yüksek frekanslarda düşük kayıp özelliği sayesinde SMPS transformatörler, EMI filtreleri, indüktörler ve bobin karkaslarında yaygın olarak kullanılır.",
+    "whyTitle": "Neden Artek'in Ferrit Nüvelerini Tercih Etmelisiniz?",
+    "why1Title": "Yüksek Geçirgenlik",
+    "why1Text": "Yüksek manyetik geçirgenlik değerleri ile kompakt tasarımda maksimum enerji transferi sağlar.",
+    "why2Title": "Düşük Kayıp",
+    "why2Text": "100 kHz ile 3 MHz arasında optimum çalışma frekansı aralığında çekirdek kaybı minimumda tutulur.",
+    "why3Title": "Sıcaklık Kararlılığı",
+    "why3Text": "-40°C ile +125°C arasında kararlı manyetik performans; kritik endüstriyel uygulamalar için idealdir.",
+    "why4Title": "Özel Tasarım",
+    "why4Text": "Standart geometrilerin yanı sıra müşteriye özel boyut ve malzeme bileşimi ile üretim yapılabilir.",
+    "typesTitle": "Ferrit Nüve Tipleri",
+    "type1Name": "EE Nüve",
+    "type1Desc": "En yaygın kullanılan geometri. SMPS trafo ve EMI filtrelerinde standart çözüm.",
+    "type2Name": "ETD Nüve",
+    "type2Desc": "Yüksek güç yoğunluğu için optimize edilmiş yuvarlak orta bacak tasarımı.",
+    "type3Name": "UU / UI Nüve",
+    "type3Desc": "Büyük kesit alanlı uygulamalar ve güç indüktörleri için tercih edilen form.",
+    "type4Name": "RM Nüve",
+    "type4Desc": "Kompakt PCB montajlı transformatörler için mükemmel yer optimizasyonu.",
+    "type5Name": "Toroid Nüve",
+    "type5Desc": "Kapalı manyetik devre sayesinde en düşük EMI emisyonu ve en yüksek verimlilik.",
+    "type6Name": "PQ Nüve",
+    "type6Desc": "Yüksek akım indüktörleri ve güç trafoları için geniş pencere alanı.",
+    "applicationsTitle": "Uygulama Alanları",
+    "app1": "SMPS ve Anahtarlamalı Güç Kaynakları",
+    "app2": "LED Sürücü Transformatörleri",
+    "app3": "EMI / RFI Bastırma Filtreleri",
+    "app4": "Telekomünikasyon Güç Sistemleri",
+    "app5": "Otomotiv Elektronik Sistemleri",
+    "app6": "Yenilenebilir Enerji İnvertörleri",
+    "ctaTitle": "Projeniz İçin Ferrit Nüve Teklifi Alın",
+    "ctaText": "Standart ürün kataloğumuzu inceleyin ya da teknik ekibimizle özel tasarım ihtiyaçlarınızı paylaşın.",
+    "ctaProducts": "Ferrit Nüve Ürünleri",
+    "ctaContact": "Teklif İste"
+  },
+  "bobin": {
+    "heroTitle": "Bobin Karkasları",
+    "heroSubtitle": "Hassas Üretim Trafo ve İndüktör Karkasları",
+    "heroDescription": "EE, ETD, EFD, PQ ve RM serisi dahil standart ve özel ölçülerde, yüksek sıcaklık ve gerilime dayanıklı plastik ve poliamid bobin karkasları. Türkiye'den hızlı teslimat.",
+    "whatIsTitle": "Bobin (Karkas) Nedir?",
+    "whatIsText": "Bobin karkas, ferrit nüve üzerine bakır sargıların sarıldığı yalıtım gövdesidir. Trafo ve indüktör üretiminde sarım düzenini mekanik olarak sabitler; pimler aracılığıyla PCB'ye doğrudan monte edilebilir. Malzeme seçimi, çalışma sıcaklığı ve voltaj yalıtım gereksinimine göre yapılır.",
+    "whyTitle": "Artek Bobin Karkaslarının Avantajları",
+    "why1Title": "Yüksek Isı Direnci",
+    "why1Text": "UL94 V-0 onaylı, 155°C ve 180°C çalışma sıcaklığına uygun malzeme seçenekleri.",
+    "why2Title": "Geniş Geometri Yelpazesi",
+    "why2Text": "EE13'ten ETD59'a kadar 50+ standart geometri; EFD, PQ, RM, EP ve toridal formlar.",
+    "why3Title": "PCB Uyumluluğu",
+    "why3Text": "Yatay ve dikey montaj seçenekleri, SMD uyumlu varyantlar ve farklı pim aralık konfigürasyonları.",
+    "why4Title": "Özel Üretim",
+    "why4Text": "Standart dışı pencere boyutu, pim yerleşimi veya flanş geometrisi ile özel sipariş üretimi.",
+    "typesTitle": "Karkas Serileri",
+    "type1Name": "EE Serisi Karkaslar",
+    "type1Desc": "EE13, EE16, EE19, EE25, EE30, EE42, EE55 — SMPS ve LED trafo için en yaygın seri.",
+    "type2Name": "ETD Serisi Karkaslar",
+    "type2Desc": "ETD29, ETD34, ETD39, ETD44, ETD49, ETD59 — Yüksek güç yoğunluklu uygulamalar.",
+    "type3Name": "EFD Serisi Karkaslar",
+    "type3Desc": "EFD15, EFD20, EFD25, EFD30 — İnce profil, yüksek güç yoğunluğu.",
+    "type4Name": "PQ Serisi Karkaslar",
+    "type4Desc": "PQ20, PQ26, PQ32, PQ35, PQ40, PQ50 — Büyük pencere alanlı güç trafolarına uygun.",
+    "type5Name": "RM / EP Serisi",
+    "type5Desc": "RM4, RM5, RM6, RM8, RM10, RM12 — Kompakt PCB tasarımları için yer optimize edilmiş.",
+    "type6Name": "UU / UI Serisi",
+    "type6Desc": "Yüksek güç endüstriyel transformatör ve reaktans bobinleri için açık geometri.",
+    "applicationsTitle": "Uygulama Alanları",
+    "app1": "Anahtarlamalı Güç Kaynağı (SMPS) Transformatörleri",
+    "app2": "LED Sürücü ve Balast Devreleri",
+    "app3": "Güç İndüktörleri ve Boğma Bobinleri",
+    "app4": "EMI / EMC Hat Filtreleri",
+    "app5": "DC-DC Dönüştürücüler",
+    "app6": "UPS ve Şarj Cihazları",
+    "ctaTitle": "Karkas Teklifi İçin Bizimle İletişime Geçin",
+    "ctaText": "Standart katalogdan seçin veya özel boyut ve sarım konfigürasyonu için teknik ekibimizle görüşün.",
+    "ctaProducts": "Tüm Karkasları İncele",
+    "ctaContact": "Teklif Al"
+  },
+  "transformator": {
+    "heroTitle": "Transformatörler",
+    "heroSubtitle": "Ferrit ve Sac Nüveli Transformatör Üretimi — Türkiye",
+    "heroDescription": "SMPS ferrit transformatörler, sac nüveli (laminated) güç transformatörleri ve özel tasarım trafolar. Artek Elektronik, 1987'den bu yana endüstriyel kalite standartlarında transformatör üretmektedir.",
+    "whatIsTitle": "Transformatör Nedir?",
+    "whatIsText": "Transformatör, iki ya da daha fazla sargı arasında elektromanyetik indüksiyon yoluyla enerji aktaran bir güç elektroniği bileşenidir. Ferrit nüveli yüksek frekanslı trafolar SMPS devrelerinde, sac nüveli (lamine) trafolar ise endüstriyel 50/60 Hz sistemlerde kullanılır.",
+    "whyTitle": "Neden Artek Transformatörü?",
+    "why1Title": "Yüksek Verimlilik",
+    "why1Text": "Optimum nüve seçimi ve sargı geometrisiyle %96 ve üzeri verimlilik oranları.",
+    "why2Title": "Geniş Güç Aralığı",
+    "why2Text": "1 W SMPS pulsörden 10 kVA sac trafo uygulamalarına kadar geniş güç yelpazesi.",
+    "why3Title": "Özel Tasarım",
+    "why3Text": "Müşteri şartnamesine göre frekans, voltaj, akım ve boyut optimizasyonu.",
+    "why4Title": "ISO Sertifikalı Üretim",
+    "why4Text": "ISO 9001:2015 belgeli süreçler, test ve doğrulama protokolleri ile her partide tutarlı kalite.",
+    "typesTitle": "Transformatör Tipleri",
+    "type1Name": "SMPS Ferrit Transformatörler",
+    "type1Desc": "20 kHz – 3 MHz arasında çalışan anahtarlamalı güç kaynağı trafolarında kompakt boyut ve yüksek verimlilik.",
+    "type2Name": "Sac Nüveli (Laminated) Transformatörler",
+    "type2Desc": "50/60 Hz endüstriyel güç sistemleri için silikon çelik laminasyonlu trafolar. Yüksek güç ve uzun ömür.",
+    "type3Name": "Toroid Transformatörler",
+    "type3Desc": "Kapalı manyetik devre ile minimum stray alan; ses sistemleri, medikal ve hassas ölçüm cihazları için ideal.",
+    "type4Name": "Otomotiv Transformatörleri",
+    "type4Desc": "AEC-Q200 uyumlu, geniş sıcaklık aralığında güvenilir çalışma sağlayan araç içi güç dönüşüm trafolarıdır.",
+    "type5Name": "Gate Drive Transformatörler",
+    "type5Desc": "IGBT ve MOSFET sürmek için izolasyonlu gate sinyali aktarımı; frekans ve yük bağımsızlığı.",
+    "type6Name": "Akım Ölçüm Transformatörleri",
+    "type6Desc": "Hat akımının hassas ve izolasyonlu ölçümü için yüksek doğruluklu akım trafolarıdır.",
+    "applicationsTitle": "Uygulama Alanları",
+    "app1": "Endüstriyel SMPS ve UPS Güç Kaynakları",
+    "app2": "LED Aydınlatma Sürücüleri",
+    "app3": "Güneş Enerjisi İnvertörleri",
+    "app4": "Fabrika Otomasyon Sistemleri",
+    "app5": "Medikal Cihaz Güç Kaynakları",
+    "app6": "Otomotiv Yükleme ve Güç Dönüşümü",
+    "ctaTitle": "Transformatör Teklifinizi Alın",
+    "ctaText": "Ürün kataloğumuzu inceleyin veya özel transformatör tasarımı için teknik ekibimizle iletişime geçin.",
+    "ctaProducts": "Transformatör Ürünleri",
+    "ctaContact": "Teklif İste"
   },
   "search": {
     "placeholder": "Ürünlerde, sayfalarda ara...",

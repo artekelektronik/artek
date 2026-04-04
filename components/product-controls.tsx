@@ -25,7 +25,6 @@ interface ProductControlsProps {
     nameDesc: string;
     priceAsc: string;
     priceDesc: string;
-    stockDesc: string;
   };
 }
 
@@ -94,7 +93,6 @@ export function ProductControls({
             <SelectItem value="name-desc">{t.nameDesc}</SelectItem>
             <SelectItem value="price-asc">{t.priceAsc}</SelectItem>
             <SelectItem value="price-desc">{t.priceDesc}</SelectItem>
-            <SelectItem value="stock-desc">{t.stockDesc}</SelectItem>
           </SelectContent>
         </Select>
 

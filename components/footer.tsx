@@ -56,9 +56,9 @@ const Footer = ({
     {
       title: t("sections.product"),
       links: [
-        { text: t("links.ferriteCores"), url: "/products" },
-        { text: t("links.bobbins"), url: "/products" },
-        { text: t("links.transformers"), url: "/products" },
+        { text: t("links.ferriteCores"), url: "/ferrit-nuve" },
+        { text: t("links.bobbins"), url: "/bobin" },
+        { text: t("links.transformers"), url: "/transformator" },
         { text: t("links.laminated"), url: "/products" },
       ],
     },

@@ -16,7 +16,6 @@ interface ProductFiltersProps {
   translations: {
     title: string;
     reset: string;
-    inStockOnly: string;
     category: string;
     altCategory: string;
     productType: string;
@@ -29,7 +28,6 @@ export interface FilterState {
   selectedAltCategories: string[];
   selectedProductTypes: string[];
   selectedSupplierCountries: string[];
-  inStockOnly: boolean;
 }
 
 export function ProductFilters({ 
@@ -45,14 +43,12 @@ export function ProductFilters({
   const [selectedAltCategories, setSelectedAltCategories] = useState<string[]>([]);
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
   const [selectedSupplierCountries, setSelectedSupplierCountries] = useState<string[]>([]);
-  const [inStockOnly, setInStockOnly] = useState(false);
 
   const buildFilterState = (): FilterState => ({
     selectedCategories,
     selectedAltCategories,
     selectedProductTypes,
     selectedSupplierCountries,
-    inStockOnly,
   });
 
   const handleCategoryToggle = (category: string) => {
@@ -87,17 +83,11 @@ export function ProductFilters({
     onFilterChange({ ...buildFilterState(), selectedSupplierCountries: updated });
   };
 
-  const handleInStockToggle = (checked: boolean) => {
-    setInStockOnly(checked);
-    onFilterChange({ ...buildFilterState(), inStockOnly: checked });
-  };
-
   const handleReset = () => {
     setSelectedCategories([]);
     setSelectedAltCategories([]);
     setSelectedProductTypes([]);
     setSelectedSupplierCountries([]);
-    setInStockOnly(false);
     onReset();
   };
 
@@ -114,25 +104,6 @@ export function ProductFilters({
           {t.reset}
         </Button>
       </div>
-
-      {/* Stock Status */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="in-stock"
-            checked={inStockOnly}
-            onCheckedChange={handleInStockToggle}
-          />
-          <Label
-            htmlFor="in-stock"
-            className="text-sm font-medium cursor-pointer"
-          >
-            {t.inStockOnly}
-          </Label>
-        </div>
-      </div>
-
-      <Separator />
 
       {/* Category */}
       {categories.length > 0 && (

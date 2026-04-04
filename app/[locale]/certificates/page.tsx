@@ -2,6 +2,12 @@ import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
 import { Certificates } from "@/components/certificates";
+import {
+  getLanguageAlternates,
+  getLocalizedPath,
+  getOgImageUrl,
+  getSiteUrl,
+} from "@/lib/seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -14,20 +20,29 @@ export async function generateMetadata({
   const messages = await getMessages({ locale });
   const allMetadata = messages.metadata as Record<string, { title: string; description: string }>;
   const metadata = allMetadata.certificates;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://artek-elektronik.vercel.app";
-  const localePrefix = locale === "tr" ? "" : `/${locale}`;
+  const siteUrl = await getSiteUrl();
+  const localizedPath = getLocalizedPath(locale, "/certificates");
 
   return {
     title: metadata.title,
     description: metadata.description,
     alternates: {
-      canonical: `${siteUrl}${localePrefix}/certificates`,
+      canonical: `${siteUrl}${localizedPath}`,
+      languages: getLanguageAlternates(siteUrl, "/certificates"),
     },
     openGraph: {
       title: metadata.title,
       description: metadata.description,
-      url: `${siteUrl}${localePrefix}/certificates`,
+      url: `${siteUrl}${localizedPath}`,
       type: "website",
+      images: [
+        {
+          url: getOgImageUrl(siteUrl, locale),
+          width: 1200,
+          height: 630,
+          alt: "Artek Elektronik - Premium Magnetic Components",
+        },
+      ],
     },
   };
 }
