@@ -20,17 +20,7 @@
       "title": "Certifications | Artek Elektronik | Quality Standards",
       "description": "View our ISO 9001, ISO 45001, and ISO 10002 certifications guaranteeing product excellence, occupational safety, and customer satisfaction in each component."
     },
-  "homeKeywords": {
-    "sectionTitle": "Ferrite Core, Bobbin and Transformer Solutions",
-    "sectionSubtitle": "Artek Elektronik has been Turkey's leading manufacturer of ferrite cores, bobbins, and transformers since 1987. With ISO 9001 certified production we manufacture EE, ETD, UU, Toroid ferrite cores; EE, ETD, EFD, PQ series bobbins; and SMPS ferrite and laminated transformers.",
-    "ferritNuveTitle": "Ferrite Cores",
-    "ferritNuveDesc": "High-frequency ferrite cores in EE, ETD, UU, PQ, RM and Toroid geometries.",
-    "bobinTitle": "Bobbins",
-    "bobinDesc": "EE, ETD, EFD, PQ, RM series; standard and custom-size transformer bobbins.",
-    "transformatorTitle": "Transformers",
-    "transformatorDesc": "SMPS ferrite transformers, laminated power transformers and custom designs.",
-    "learnMore": "Learn More"
-  },
+    "ferritNuve": {
       "title": "Ferrite Core Manufacturer | EE ETD Toroid | Artek Elektronik",
       "description": "EE, ETD, UU, RM, PQ and Toroid ferrite cores for SMPS, LED drivers and industrial power electronics. Made in Turkey with custom design and fast delivery."
     },
@@ -42,6 +32,17 @@
       "title": "Transformer Manufacturer | SMPS Ferrite Laminated | Artek",
       "description": "SMPS ferrite transformers, laminated steel transformers, toroid and custom designs. ISO 9001 certified manufacturing since 1987. Fast worldwide delivery from Turkey."
     }
+  },
+  "homeKeywords": {
+    "sectionTitle": "Ferrite Core, Bobbin and Transformer Solutions",
+    "sectionSubtitle": "Artek Elektronik has been Turkey's leading manufacturer of ferrite cores, bobbins, and transformers since 1987. With ISO 9001 certified production we manufacture EE, ETD, UU, Toroid ferrite cores; EE, ETD, EFD, PQ series bobbins; and SMPS ferrite and laminated transformers.",
+    "ferritNuveTitle": "Ferrite Cores",
+    "ferritNuveDesc": "High-frequency ferrite cores in EE, ETD, UU, PQ, RM and Toroid geometries.",
+    "bobinTitle": "Bobbins",
+    "bobinDesc": "EE, ETD, EFD, PQ, RM series; standard and custom-size transformer bobbins.",
+    "transformatorTitle": "Transformers",
+    "transformatorDesc": "SMPS ferrite transformers, laminated power transformers and custom designs.",
+    "learnMore": "Learn More"
   },
   "nav": {
     "brand": "Artek Elektronik",

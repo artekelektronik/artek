@@ -20,17 +20,7 @@
       "title": "Sertifikalar | Artek Elektronik | ISO Kalite Belgesi",
       "description": "ISO 9001, ISO 45001 ve ISO 10002 sertifikalı ferrit nüve ve bobin üreticisi. Kalite yönetimi, iş güvenliği ve müşteri memnuniyetinde uluslararası standartlar."
     },
-  "homeKeywords": {
-    "sectionTitle": "Ferrit Nüve, Bobin ve Transformatör Çözümleri",
-    "sectionSubtitle": "Artek Elektronik, 1987'den bu yana Türkiye'nin önde gelen ferrit nüve, bobin karkas ve transformatör üreticisidir. ISO 9001 belgeli üretimimiz ile EE, ETD, UU, Toroid ferrit nüveler; EE, ETD, EFD, PQ serisi bobin karkasları; SMPS ferrit ve sac nüveli transformatörler üretiyoruz.",
-    "ferritNuveTitle": "Ferrit Nüve",
-    "ferritNuveDesc": "EE, ETD, UU, PQ, RM ve Toroid geometrilerde yüksek frekanslı ferrit nüveler.",
-    "bobinTitle": "Bobin Karkasları",
-    "bobinDesc": "EE, ETD, EFD, PQ, RM serisi; standart ve özel boyutlarda trafo karkasları.",
-    "transformatorTitle": "Transformatörler",
-    "transformatorDesc": "SMPS ferrit trafolar, sac nüveli güç transformatörleri ve özel tasarım.",
-    "learnMore": "Detaylı Bilgi"
-  },
+    "ferritNuve": {
       "title": "Ferrit Nüve Üreticisi | EE ETD Toroid | Artek Elektronik",
       "description": "EE, ETD, UU, RM, PQ ve Toroid ferrit nüveler. SMPS, LED sürücü ve endüstriyel güç elektroniği için Türkiye üretimi. Özel tasarım, hızlı teslimat, ISO sertifikalı."
     },
@@ -42,6 +32,17 @@
       "title": "Transformatör Üreticisi | SMPS Ferrit Sac Trafo | Artek",
       "description": "SMPS ferrit transformatörler, sac nüveli lamine trafolar, toroid ve özel tasarım. 1987'den bu yana ISO 9001 belgeli üretim. Türkiye'den dünyaya hızlı teslimat."
     }
+  },
+  "homeKeywords": {
+    "sectionTitle": "Ferrit Nüve, Bobin ve Transformatör Çözümleri",
+    "sectionSubtitle": "Artek Elektronik, 1987'den bu yana Türkiye'nin önde gelen ferrit nüve, bobin karkas ve transformatör üreticisidir. ISO 9001 belgeli üretimimiz ile EE, ETD, UU, Toroid ferrit nüveler; EE, ETD, EFD, PQ serisi bobin karkasları; SMPS ferrit ve sac nüveli transformatörler üretiyoruz.",
+    "ferritNuveTitle": "Ferrit Nüve",
+    "ferritNuveDesc": "EE, ETD, UU, PQ, RM ve Toroid geometrilerde yüksek frekanslı ferrit nüveler.",
+    "bobinTitle": "Bobin Karkasları",
+    "bobinDesc": "EE, ETD, EFD, PQ, RM serisi; standart ve özel boyutlarda trafo karkasları.",
+    "transformatorTitle": "Transformatörler",
+    "transformatorDesc": "SMPS ferrit trafolar, sac nüveli güç transformatörleri ve özel tasarım.",
+    "learnMore": "Detaylı Bilgi"
   },
   "nav": {
     "brand": "Artek Elektronik",
