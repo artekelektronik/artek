@@ -11,6 +11,7 @@ interface ProductFiltersProps {
   altCategories: string[];
   productTypes: string[];
   supplierCountries: string[];
+  value?: FilterState;
   onFilterChange: (filters: FilterState) => void;
   onReset: () => void;
   translations: {
@@ -35,14 +36,20 @@ export function ProductFilters({
   altCategories,
   productTypes,
   supplierCountries,
+  value,
   onFilterChange,
   onReset,
   translations: t
 }: ProductFiltersProps) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedAltCategories, setSelectedAltCategories] = useState<string[]>([]);
-  const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
-  const [selectedSupplierCountries, setSelectedSupplierCountries] = useState<string[]>([]);
+  const [localSelectedCategories, setLocalSelectedCategories] = useState<string[]>([]);
+  const [localSelectedAltCategories, setLocalSelectedAltCategories] = useState<string[]>([]);
+  const [localSelectedProductTypes, setLocalSelectedProductTypes] = useState<string[]>([]);
+  const [localSelectedSupplierCountries, setLocalSelectedSupplierCountries] = useState<string[]>([]);
+
+  const selectedCategories = value?.selectedCategories ?? localSelectedCategories;
+  const selectedAltCategories = value?.selectedAltCategories ?? localSelectedAltCategories;
+  const selectedProductTypes = value?.selectedProductTypes ?? localSelectedProductTypes;
+  const selectedSupplierCountries = value?.selectedSupplierCountries ?? localSelectedSupplierCountries;
 
   const buildFilterState = (): FilterState => ({
     selectedCategories,
@@ -55,7 +62,7 @@ export function ProductFilters({
     const updated = selectedCategories.includes(category)
       ? selectedCategories.filter((c) => c !== category)
       : [...selectedCategories, category];
-    setSelectedCategories(updated);
+    setLocalSelectedCategories(updated);
     onFilterChange({ ...buildFilterState(), selectedCategories: updated });
   };
 
@@ -63,7 +70,7 @@ export function ProductFilters({
     const updated = selectedAltCategories.includes(category)
       ? selectedAltCategories.filter((c) => c !== category)
       : [...selectedAltCategories, category];
-    setSelectedAltCategories(updated);
+    setLocalSelectedAltCategories(updated);
     onFilterChange({ ...buildFilterState(), selectedAltCategories: updated });
   };
 
@@ -71,7 +78,7 @@ export function ProductFilters({
     const updated = selectedProductTypes.includes(type)
       ? selectedProductTypes.filter((t) => t !== type)
       : [...selectedProductTypes, type];
-    setSelectedProductTypes(updated);
+    setLocalSelectedProductTypes(updated);
     onFilterChange({ ...buildFilterState(), selectedProductTypes: updated });
   };
 
@@ -79,15 +86,15 @@ export function ProductFilters({
     const updated = selectedSupplierCountries.includes(country)
       ? selectedSupplierCountries.filter((c) => c !== country)
       : [...selectedSupplierCountries, country];
-    setSelectedSupplierCountries(updated);
+    setLocalSelectedSupplierCountries(updated);
     onFilterChange({ ...buildFilterState(), selectedSupplierCountries: updated });
   };
 
   const handleReset = () => {
-    setSelectedCategories([]);
-    setSelectedAltCategories([]);
-    setSelectedProductTypes([]);
-    setSelectedSupplierCountries([]);
+    setLocalSelectedCategories([]);
+    setLocalSelectedAltCategories([]);
+    setLocalSelectedProductTypes([]);
+    setLocalSelectedSupplierCountries([]);
     onReset();
   };
 

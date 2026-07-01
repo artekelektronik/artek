@@ -269,6 +269,7 @@ function ProductsContent() {
             altCategories={altCategories}
             productTypes={productTypes}
             supplierCountries={supplierCountries}
+            value={filters}
             onFilterChange={handleFilterChange}
             onReset={handleReset}
             translations={{

@@ -270,9 +270,12 @@
     "description": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",
     "allProducts": "Tüm Ürünler",
     "allProductsDesc": "Tüm ürün kataloğumuzu görüntüleyin ve filtreleyin.",
-    "pemDesc": "PEM kategorisindeki ürünleri görüntüleyin.",
-    "ferritDesc": "Ferrit kategorisindeki ürünleri görüntüleyin.",
-    "eeDesc": "EE kategorisindeki ürünleri görüntüleyin."
+    "pemTitle": "PEM Filtre ve Bobinler",
+    "pemDesc": "PEM ürün grubundaki filtre ve bobinleri görüntüleyin.",
+    "ferritTitle": "Ferrit Nüveler",
+    "ferritDesc": "Ferrit nüve ürünlerini görüntüleyin.",
+    "eeTitle": "EE Ferrit Nüveler",
+    "eeDesc": "EE tipindeki ferrit nüveleri görüntüleyin."
   },
   "about": {
     "title": "Hakkımızda",
