@@ -12,6 +12,7 @@ import {
   getOgImageUrl,
   getSiteUrl,
 } from "@/lib/seo";
+import { productCatalogPaths } from "@/lib/product-taxonomy";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -61,15 +62,6 @@ export default async function Home({ params }: Props) {
 function HomeContent() {
   const t = useTranslations();
 
-  // Helper to create product links with category filter
-  const productsLink = (category?: string) => {
-    const base = `/products`;
-    if (category) {
-      return `${base}?categories=${encodeURIComponent(category)}`;
-    }
-    return base;
-  };
-
   const contactLink = `/contact`;
 
   return (
@@ -118,7 +110,7 @@ function HomeContent() {
         title={t("home.hero1.title")}
         subtitle={t("home.hero1.subtitle")}
         buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productsLink("Ferrit") },
+          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.ferrit },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
         imageSrc="/products/core.png"
@@ -133,7 +125,7 @@ function HomeContent() {
         subtitle={t("home.hero2.subtitle")}
         description={t("home.hero2.description")}
         buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productsLink("PEM") },
+          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.pem },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
         imageSrc="/products/bobbins.png"
@@ -148,7 +140,7 @@ function HomeContent() {
         subtitle={t("home.hero3.subtitle")}
         description={t("home.hero3.description")}
         buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productsLink("IRON-POWDER") },
+          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.ferrit },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
         imageSrc="/products/feritte-transformers.png"
@@ -163,7 +155,7 @@ function HomeContent() {
         subtitle={t("home.hero4.subtitle")}
         description={t("home.hero4.description")}
         buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productsLink("Saclı Trafo") },
+          { text: t("buttons.viewProducts"), variant: "default", href: "/transformator" },
           { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
         ]}
         imageSrc="/products/laminated-transformers.png"
@@ -181,7 +173,7 @@ function HomeContent() {
           subtitle={t("home.grid.inductors.subtitle")}
           description={t("home.grid.inductors.description")}
           buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productsLink("İndüktör") },
+            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.ironPowder },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
           imageSrc="/products/inductors.png"
@@ -197,7 +189,7 @@ function HomeContent() {
           subtitle={t("home.grid.powerInductors.subtitle")}
           description={t("home.grid.powerInductors.description")}
           buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productsLink("Güç İndüktörü") },
+            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.ironPowder },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
           imageSrc="/products/power-inductors.png"
@@ -213,7 +205,7 @@ function HomeContent() {
           subtitle={t("home.grid.emcFilters.subtitle")}
           description={t("home.grid.emcFilters.description")}
           buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productsLink("EMC Filtre") },
+            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.pem },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
           imageSrc="/products/emc-filters.png"
@@ -229,7 +221,7 @@ function HomeContent() {
           subtitle={t("home.grid.airCoreCoils.subtitle")}
           description={t("home.grid.airCoreCoils.description")}
           buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productsLink("Hava Nüveli Bobin") },
+            { text: t("buttons.learnMore"), variant: "default", href: "/contact" },
             { text: t("buttons.buy"), variant: "outline", href: contactLink },
           ]}
           imageSrc="/products/air-core-coils.png"

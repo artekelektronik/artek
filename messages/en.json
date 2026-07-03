@@ -270,9 +270,12 @@
     "description": "High-quality electronic components for demanding applications.",
     "allProducts": "All Products",
     "allProductsDesc": "Browse and filter our complete product catalog.",
-    "pemDesc": "View products in the PEM category.",
-    "ferritDesc": "View products in the Ferrite category.",
-    "eeDesc": "View products in the EE category."
+    "pemTitle": "PEM Filters and Coils",
+    "pemDesc": "View filters and coils in the PEM product group.",
+    "ferritTitle": "Ferrite Cores",
+    "ferritDesc": "View ferrite core products.",
+    "eeTitle": "EE Ferrite Cores",
+    "eeDesc": "View EE-type ferrite cores."
   },
   "about": {
     "title": "About Us",

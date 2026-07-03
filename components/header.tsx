@@ -28,10 +28,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { FlagIcon } from "react-flag-kit";
 import { Button } from "@/components/ui/button";
 import { useMedia } from "@/hooks/use-media";
 import { cn } from "@/lib/utils";
+import { productCatalogPaths } from "@/lib/product-taxonomy";
 
 const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   <svg
@@ -202,7 +202,7 @@ function LanguageSwitcher({ pathname }: { pathname: string }) {
             locale="tr"
             className="flex items-center gap-2 cursor-pointer"
           >
-            <FlagIcon code="TR" size={20} />
+            <span aria-hidden className="text-base leading-none">TR</span>
             <span>Türkçe</span>
           </Link>
         </DropdownMenuItem>
@@ -212,7 +212,7 @@ function LanguageSwitcher({ pathname }: { pathname: string }) {
             locale="en"
             className="flex items-center gap-2 cursor-pointer"
           >
-            <FlagIcon code="GB" size={20} />
+            <span aria-hidden className="text-base leading-none">EN</span>
             <span>English</span>
           </Link>
         </DropdownMenuItem>
@@ -239,22 +239,22 @@ function MobileMenu({
   const productCategories = [
     {
       title: tProduct("allProducts"),
-      href: "/products",
+      href: productCatalogPaths.all,
       icon: <Grid3x3 className="stroke-foreground fill-blue-500/15" />,
     },
     {
-      title: "PEM",
-      href: "/products?categories=PEM",
+      title: tProduct("pemTitle"),
+      href: productCatalogPaths.pem,
       icon: <PemIcon className="stroke-foreground fill-green-500/15" />,
     },
     {
-      title: "Ferrit",
-      href: "/products?categories=Ferrit",
+      title: tProduct("ferritTitle"),
+      href: productCatalogPaths.ferrit,
       icon: <FerritIcon className="stroke-foreground fill-indigo-500/15" />,
     },
     {
-      title: "EE",
-      href: "/products?categories=EE",
+      title: tProduct("eeTitle"),
+      href: productCatalogPaths.eeFerrit,
       icon: <EeIcon className="stroke-foreground fill-blue-500/15" />,
     },
   ];
@@ -367,20 +367,20 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
 
   const mainProducts = [
     {
-      href: "/products?categories=PEM",
-      title: "PEM",
+      href: productCatalogPaths.pem,
+      title: tProduct("pemTitle"),
       description: tProduct("pemDesc"),
       icon: <PemIcon className="stroke-foreground fill-green-500/15" />,
     },
     {
-      href: "/products?categories=Ferrit",
-      title: "Ferrit",
+      href: productCatalogPaths.ferrit,
+      title: tProduct("ferritTitle"),
       description: tProduct("ferritDesc"),
       icon: <FerritIcon className="stroke-foreground fill-indigo-500/15" />,
     },
     {
-      href: "/products?categories=EE",
-      title: "EE",
+      href: productCatalogPaths.eeFerrit,
+      title: tProduct("eeTitle"),
       description: tProduct("eeDesc"),
       icon: <EeIcon className="stroke-foreground fill-blue-500/15" />,
     },

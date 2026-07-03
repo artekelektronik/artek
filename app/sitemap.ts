@@ -5,7 +5,9 @@ import { generateProductSlug } from "@/lib/utils";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.ferritnuve.com/";
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.ferritnuve.com"
+  ).replace(/\/+$/, "");
 
   // Static pages for both locales
   const staticPages = [

@@ -9,6 +9,7 @@ import {
   getOgImageUrl,
   getSiteUrl,
 } from "@/lib/seo";
+import { productCatalogPaths } from "@/lib/product-taxonomy";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -92,7 +93,7 @@ export default async function FerritNuvePage({ params }: Props) {
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
-            href="/products?categories=Ferrit"
+            href={productCatalogPaths.ferrit}
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             {t("ctaProducts")}
@@ -163,7 +164,7 @@ export default async function FerritNuvePage({ params }: Props) {
         <p className="text-muted-foreground">{t("ctaText")}</p>
         <div className="flex flex-wrap gap-3">
           <Link
-            href="/products?categories=Ferrit"
+            href={productCatalogPaths.ferrit}
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             {t("ctaProducts")}

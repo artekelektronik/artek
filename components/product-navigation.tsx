@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { productCatalogPaths } from "@/lib/product-taxonomy";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -22,22 +23,22 @@ export function ProductNavigation() {
   const products = [
     {
       title: t("allProducts"),
-      href: "/products",
+      href: productCatalogPaths.all,
       description: t("allProductsDesc"),
     },
     {
-      title: "PEM",
-      href: "/products?categories=PEM",
+      title: t("pemTitle"),
+      href: productCatalogPaths.pem,
       description: t("pemDesc"),
     },
     {
-      title: "Ferrit",
-      href: "/products?categories=Ferrit",
+      title: t("ferritTitle"),
+      href: productCatalogPaths.ferrit,
       description: t("ferritDesc"),
     },
     {
-      title: "EE",
-      href: "/products?categories=EE",
+      title: t("eeTitle"),
+      href: productCatalogPaths.eeFerrit,
       description: t("eeDesc"),
     },
   ];
@@ -58,7 +59,7 @@ export function ProductNavigation() {
                 <NavigationMenuLink asChild>
                   <Link
                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-linear-to-b from-muted/50 to-muted p-6 no-underline outline-none transition-colors hover:from-muted/70 hover:to-muted hover:text-foreground focus:shadow-md focus:text-foreground"
-                    href="/products"
+                    href={productCatalogPaths.all}
                   >
                     <img
                       src="/emc_filter.png"
