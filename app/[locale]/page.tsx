@@ -80,14 +80,14 @@ function HomeContent() {
     <div className="bg-[#f4f6f8]">
       <HeroSection />
 
-      <section className="px-6 py-20 sm:py-28">
+      <section className="px-6 pb-20 pt-8 sm:pb-28 sm:pt-12">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 border-b border-slate-200 pb-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <div>
               <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">
                 {t("homeKeywords.learnMore")}
               </p>
-              <h2 className="max-w-xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+              <h2 className="max-w-2xl text-pretty text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
                 {t("homeKeywords.sectionTitle")}
               </h2>
             </div>
