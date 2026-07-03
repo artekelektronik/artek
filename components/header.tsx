@@ -84,8 +84,8 @@ const Header = () => {
       >
         <div
           className={cn(
-            "border-border-illustration absolute inset-x-0 top-0 z-50 h-14 border-b ring-1 ring-transparent transition-all duration-300",
-            "data-[scrolled]:ring-border-illustration data-[scrolled]:border-transparent data-[scrolled]:bg-background/75 data-[scrolled]:backdrop-blur",
+            "absolute inset-x-0 top-0 z-50 h-14 border-b border-white/15 bg-[#142d42] text-white ring-1 ring-transparent transition-all duration-300",
+            "data-[scrolled]:border-white/10 data-[scrolled]:bg-[#142d42]/95 data-[scrolled]:shadow-lg data-[scrolled]:shadow-slate-950/15 data-[scrolled]:backdrop-blur-xl",
             "has-data-[state=open]:ring-foreground/5 has-data-[state=open]:border-transparent has-data-[state=open]:bg-card/75 has-data-[state=open]:shadow-lg has-data-[state=open]:backdrop-blur has-data-[state=open]:border-b has-data-[state=open]:shadow-black/10 has-data-[state=open]:h-[calc(var(--navigation-menu-viewport-height)+3.4rem)]",
             "max-lg:data-[state=active]:h-screen max-lg:data-[state=active]:bg-background/75 max-lg:data-[state=active]:backdrop-blur max-lg:h-14 max-lg:overflow-hidden max-lg:border-b"
           )}
@@ -104,7 +104,7 @@ const Header = () => {
                 <Link
                   href="/"
                   aria-label="home"
-                  className="text-lg font-semibold tracking-tight"
+                  className="text-lg font-semibold tracking-tight text-white"
                 >
                   {t("brand")}
                 </Link>
@@ -161,12 +161,12 @@ const Header = () => {
                   }}
                   variant="outline"
                   title="Search (Cmd+K)"
-                  className="h-8"
+                  className="h-8 border-white/20 bg-white text-[#142d42] hover:bg-emerald-400 hover:text-[#142d42]"
                 >
                   <Search size={12} />
                   <span className="hidden sm:inline">{t("search")}</span>
                 </Button>
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="border-white/20 bg-white text-[#142d42] hover:bg-emerald-400 hover:text-[#142d42]">
                   <a
                     href={whatsappUrl}
                     target="_blank"
@@ -191,7 +191,7 @@ function LanguageSwitcher({ pathname }: { pathname: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="size-8">
+        <Button variant="outline" size="icon" className="size-8 border-white/20 bg-white text-[#142d42] hover:bg-emerald-400 hover:text-[#142d42]">
           <Globe size={12} />
         </Button>
       </DropdownMenuTrigger>
@@ -390,11 +390,11 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
     <NavigationMenu
       ref={menuRef}
       onValueChange={handleViewportHeight}
-      className="**:data-[slot=navigation-menu-viewport-parent]:max-w-268 **:data-[slot=navigation-menu-viewport]:bg-background **:data-[slot=navigation-menu-viewport]:rounded-none **:data-[slot=navigation-menu-viewport]:ring-0 **:data-[slot=navigation-menu-viewport]:border-0 **:data-[slot=navigation-menu-viewport]:shadow-none [--color-muted:color-mix(in_oklch,var(--color-foreground)_5%,transparent)] [--viewport-outer-px:2rem] max-lg:hidden"
+      className="**:data-[slot=navigation-menu-viewport-parent]:max-w-268 **:data-[slot=navigation-menu-viewport]:bg-background **:data-[slot=navigation-menu-viewport]:text-foreground **:data-[slot=navigation-menu-viewport]:rounded-none **:data-[slot=navigation-menu-viewport]:ring-0 **:data-[slot=navigation-menu-viewport]:border-0 **:data-[slot=navigation-menu-viewport]:shadow-none [--color-muted:color-mix(in_oklch,var(--color-foreground)_5%,transparent)] [--viewport-outer-px:2rem] max-lg:hidden"
     >
       <NavigationMenuList className="gap-3">
         <NavigationMenuItem value="product">
-          <NavigationMenuTrigger>{tProduct("title")}</NavigationMenuTrigger>
+          <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/10 hover:text-white data-[state=open]:bg-white/10 data-[state=open]:text-white">{tProduct("title")}</NavigationMenuTrigger>
           <NavigationMenuContent className="mt-4.5 origin-top pb-14 pt-5">
             <div className="min-w-5xl divide-foreground/10 grid w-full grid-cols-3 gap-4 divide-x pr-12">
               <div className="row-span-2 -mr-2 grid grid-rows-subgrid gap-1 pr-2">
@@ -451,7 +451,7 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
             asChild
             className={cn(
               navigationMenuTriggerStyle(),
-              "hover:bg-muted hover:text-foreground"
+              "bg-transparent text-white hover:bg-white/10 hover:text-white"
             )}
           >
             <Link href="/about">{t("about")}</Link>
@@ -462,7 +462,7 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
             asChild
             className={cn(
               navigationMenuTriggerStyle(),
-              "hover:bg-muted hover:text-foreground"
+              "bg-transparent text-white hover:bg-white/10 hover:text-white"
             )}
           >
             <Link href="/contact">{t("contact")}</Link>

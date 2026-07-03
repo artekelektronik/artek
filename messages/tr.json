@@ -54,10 +54,25 @@
     "search": "Ara"
   },
   "hero": {
-    "title": "Enerji Çözümlerinizde Teknik Mükemmellik",
-    "subtitle": "Türkiye'deki üretim gücümüzü kullanarak, projenizin performansını en üst seviyeye taşıyan ferrit nüve, bobin, transformatör ve indüktör çözümleri sunuyoruz.",
-    "viewDetails": "Teknik Detayları İncele",
-    "requestQuote": "Projeniz İçin Teklif Alın"
+    "eyebrow": "Manyetik komponent üreticisi",
+    "title": "Tasarımınız için doğru manyetik komponenti bulun.",
+    "subtitle": "Zorlu uygulamalar için Türkiye'de tasarlanan ve üretilen ferrit nüve, bobin, transformatör ve indüktör çözümleri.",
+    "searchPlaceholder": "Ürün, seri veya ürün kodu ile arayın…",
+    "announcement": "Mühendislik odağı",
+    "featureTitle": "Standart ferrit nüvelerden projenize özel çözümlere",
+    "featureDescription": "Üretime hazır ürün portföyümüzü keşfedin veya uygulamanızın ihtiyaç duyduğu geometri, malzeme ve sarım için mühendislerimizle çalışın.",
+    "featureImageAlt": "Artek ferrit nüve ürünü",
+    "madeIn": "Türkiye'de üretildi",
+    "since": "1987'den beri üretim",
+    "viewDetails": "Ürünleri Keşfet",
+    "requestQuote": "Özel Teklif Al",
+    "quickLinks": {
+      "cores": "Ferrit Nüveler",
+      "bobbins": "Bobin Karkasları",
+      "transformers": "Transformatörler",
+      "custom": "Özel Mühendislik",
+      "explore": "Çözümleri keşfet"
+    }
   },
   "home": {
     "hero1": {

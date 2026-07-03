@@ -54,10 +54,25 @@
     "search": "Search"
   },
   "hero": {
-    "title": "Technical Excellence in Your Energy Solutions",
-    "subtitle": "Leveraging our manufacturing strength in Turkey, we deliver ferrite core, bobbin, transformer, and inductor solutions that elevate your project's performance to the highest level.",
-    "viewDetails": "View Technical Details",
-    "requestQuote": "Request a Quote for Your Project"
+    "eyebrow": "Magnetic component manufacturer",
+    "title": "Find the right magnetic component for your design.",
+    "subtitle": "Ferrite cores, bobbins, transformers and inductors—engineered and manufactured in Turkey for demanding applications.",
+    "searchPlaceholder": "Search by product, series or product code…",
+    "announcement": "Engineering spotlight",
+    "featureTitle": "From standard ferrite cores to project-specific solutions",
+    "featureDescription": "Explore our production-ready portfolio or work directly with our engineers on the geometry, material and winding your application requires.",
+    "featureImageAlt": "Artek ferrite core product",
+    "madeIn": "Made in Turkey",
+    "since": "Manufacturing since 1987",
+    "viewDetails": "Explore Products",
+    "requestQuote": "Request a Custom Quote",
+    "quickLinks": {
+      "cores": "Ferrite Cores",
+      "bobbins": "Bobbins",
+      "transformers": "Transformers",
+      "custom": "Custom Engineering",
+      "explore": "Explore solutions"
+    }
   },
   "home": {
     "hero1": {
