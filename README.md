@@ -1,219 +1,136 @@
-# Artek - Product Catalog Platform
+# Artek Elektronik
 
-A modern, high-performance product catalog platform built with Next.js 16, featuring advanced filtering, caching, and URL-based state management.
+The bilingual website and product catalog for Artek Elektronik, a Turkish
+manufacturer of ferrite cores, bobbins, transformers, inductors, and custom
+magnetic components.
 
-## 🚀 Features
+## Website
 
-### **Core Functionality**
-- 📦 **Product Catalog** - Browse and search through products with advanced filtering
-- 🔍 **Smart Filtering** - Filter by category, price, stock status, supplier country, and more
-- 🔗 **Deep Linking** - Shareable URLs with all filters preserved (`/products?categories=PEM&inStock=true`)
-- ⚡ **Performance Optimized** - TanStack Query for caching, prefetching, and background updates
-- 📱 **Responsive Design** - Mobile-first design with adaptive grid layouts
-- 🎨 **Modern UI** - Built with shadcn/ui components and Tailwind CSS
+The landing page is designed around product discovery and qualified customer
+inquiries:
 
-### **Advanced Features**
-- **URL State Management** - nuqs for shareable and bookmarkable filtered views
-- **Automatic Caching** - Smart data caching with automatic invalidation
-- **Hover Prefetching** - Instant navigation with prefetched product details
-- **Background Refetching** - Real-time stock updates every 5 minutes
-- **Optimistic Updates** - Instant UI feedback for mutations
-- **Type-Safe** - Full TypeScript support throughout
+- Prominent product, series, and product-code search
+- Direct access to the main magnetic-component categories
+- Responsive product and capability sections
+- Custom engineering and quotation calls to action
+- Sticky, high-contrast navigation
+- Turkish and English content
+- Search-engine metadata, sitemap, robots directives, and structured data
 
-## 🛠️ Tech Stack
+The product catalog also supports filtering, sorting, pagination, shareable URL
+state, and localized product detail pages.
 
-- **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS
-- **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
-- **State Management:** 
-  - [TanStack Query](https://tanstack.com/query) - Server state & caching
-  - [nuqs](https://nuqs.47ng.com/) - URL state management
-- **Database:** Airtable
-- **Package Manager:** pnpm
-- **Internationalization:** next-intl (Turkish `tr`, English `en`)
+## Technology
 
-## 📦 Installation
+- Next.js 16 with the App Router
+- React 19 and TypeScript
+- Tailwind CSS and shadcn/ui
+- next-intl for Turkish and English localization
+- TanStack Query for product data
+- nuqs for URL-based catalog state
+- Motion for interface animation
+- Vercel Analytics and Speed Insights
+
+## Local development
+
+Requirements:
+
+- Node.js
+- pnpm
 
 ```bash
-# Clone the repository
-git clone https://github.com/hasanharman/artek.git
+git clone https://github.com/artekelektronik/artek.git
 cd artek
-
-# Install dependencies
 pnpm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Add your Airtable credentials
-
-# Run development server
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
+Open [http://localhost:3000](http://localhost:3000). Turkish is the default
+locale; the English site is available at `/en`.
 
-## 🔧 Environment Variables
+## Environment variables
 
-Create a `.env.local` file with the following:
+Create `.env.local` as needed:
 
 ```env
-# Airtable
+# Canonical production URL used by metadata and sitemap generation
+NEXT_PUBLIC_SITE_URL=https://your-domain.com
+
+# Product data source
 AIRTABLE_API_KEY=your_airtable_api_key
-AIRTABLE_BASE_ID=your_base_id
+AIRTABLE_BASE_ID=your_airtable_base_id
 
-# Public site URL (used in metadata and sitemap)
-NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+# Customer contact
+NEXT_PUBLIC_WHATSAPP_PHONE=905327183364
 
-# Optional analytics (PostHog)
+# Optional analytics
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 NEXT_PUBLIC_POSTHOG_KEY=phc_your_key
 NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+
+# Optional Google Search Console verification
+NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=verification_token
 ```
 
-Notes:
-- `NEXT_PUBLIC_SITE_URL` is used in sitemap generation and Open Graph tags.
-- PostHog variables are optional; analytics is enabled only when both are set.
+Never commit `.env.local` or production credentials.
 
-## 📁 Project Structure
-
-```
-artek/
-├── app/
-│   ├── layout.tsx                     # Root layout with providers
-│   ├── globals.css                    # Global styles
-│   ├── [locale]/                      # Locale-prefixed routes (tr, en)
-│   │   ├── page.tsx                  # Homepage (per locale)
-│   │   ├── products/                 # Product listing (per locale)
-│   │   │   ├── page.tsx
-│   │   │   └── [slug]/
-│   │   │       └── page.tsx          # Product detail page
-│   │   └── api/                      # API routes (per locale where applicable)
-│   └── api/
-│       └── products/
-│           └── route.ts              # Products API endpoint
-├── components/
-│   ├── ui/                           # shadcn/ui components
-│   ├── product-card.tsx              # Product card component
-│   ├── product-filters.tsx           # Filter sidebar
-│   ├── product-controls.tsx          # Sort & grid controls
-│   ├── product-navigation.tsx        # Navigation menu
-│   ├── analytics-provider.tsx        # Optional PostHog analytics
-│   └── providers.tsx                 # React Query & nuqs providers
-├── hooks/
-│   ├── use-products.ts               # Product queries
-│   ├── use-product-mutations.ts      # Product mutations
-│   └── use-infinite-products.ts      # Infinite scroll
-├── lib/
-│   ├── api/
-│   │   └── products.ts               # API functions
-│   ├── airtable.ts                   # Airtable client
-│   └── utils.ts                      # Utility functions
-├── i18n/                             # next-intl helpers and routing
-└── types/
-  └── airtable.ts                   # TypeScript types
-```
-
-## 🎯 Key Features
-
-### **URL-Based Filtering**
-All filters are stored in the URL for easy sharing:
-
-```
-/products?categories=PEM&inStock=true&sort=price-asc&page=2
-
-With locales:
-
-/en/products?categories=PEM&inStock=true
-```
-
-### **TanStack Query Integration**
-- Automatic request deduplication
-- Smart caching (5min stale time, 10min garbage collection)
-- Background refetching every 5 minutes
-- Hover prefetching for instant navigation
-- Optimistic updates for mutations
-
-### **Product Filtering**
-- Category, Alt Category, Product Type
-- Price range slider
-- Stock availability
-- Supplier country
-- Multiple sorting options
-
-## 🚀 Scripts
+## Commands
 
 ```bash
-# Development
-pnpm dev          # Start dev server
-
-# Building
-pnpm build        # Build for production
-pnpm start        # Start production server
-
-# Linting
-pnpm lint         # Run ESLint
+pnpm dev       # Start the development server
+pnpm lint      # Run ESLint
+pnpm build     # Create a production build
+pnpm start     # Serve the production build
 ```
 
-## 📖 Documentation
+Before opening a pull request, run:
 
-- [TanStack Query Implementation](./TANSTACK_QUERY_IMPLEMENTATION.md)
-- [nuqs URL State Management](./NUQS_IMPLEMENTATION.md)
-- [Implementation Summary](./IMPLEMENTATION_SUMMARY.md)
+```bash
+pnpm lint
+pnpm build
+```
 
-## 🔗 Deep Linking Examples
+## Project structure
 
-Navigate directly to filtered product views:
+```text
+app/
+  [locale]/                 Localized pages
+  api/products/             Product API routes
+  sitemap.ts                Generated sitemap
+  robots.ts                 Search crawler rules
+components/
+  hero-section.tsx          Product-discovery homepage hero
+  header.tsx                Responsive navigation and search
+  search-dialog.tsx         Site and product search
+  product-*.tsx             Catalog interface
+  ui/                       Shared UI primitives
+i18n/                       Locale routing and navigation
+lib/                        Product data, taxonomy, and SEO helpers
+messages/
+  tr.json                   Turkish content
+  en.json                   English content
+public/                     Product imagery and certificates
+```
 
-**Turkish (default):**
-- All Products: `/products`
-- PEM Category: `/products?categories=PEM`
-- Ferrit Category: `/products?categories=Ferrit`
-- In Stock Items: `/products?inStock=true`
-- Price Range: `/products?minPrice=100&maxPrice=500`
-- Sorted by Price: `/products?sort=price-asc`
+## Main routes
 
-**English:**
-- All Products: `/en/products`
-- PEM Category: `/en/products?categories=PEM`
-- In Stock Items: `/en/products?inStock=true`
+| Route | Purpose |
+| --- | --- |
+| `/` | Turkish homepage |
+| `/en` | English homepage |
+| `/products` | Product catalog |
+| `/products/[slug]` | Product details |
+| `/ferrit-nuve` | Ferrite core landing page |
+| `/bobin` | Bobbin landing page |
+| `/transformator` | Transformer landing page |
+| `/about` | Company information |
+| `/contact` | Contact and quotation requests |
 
-## 🎨 UI Features
+Localized navigation is handled automatically by next-intl.
 
-- **Equal Height Cards** - Consistent product card sizes across the grid
-- **Sticky Filters** - Filter sidebar stays visible while scrolling
-- **Responsive Grid** - 2 or 3 column layouts
-- **Loading States** - Skeleton screens for better UX
-- **Error Handling** - Graceful error messages
+## Repository workflow
 
-## 🌐 Internationalization
-- Locale-aware routing with next-intl (`/` → Turkish, `/en` → English)
-- Automatic metadata and sitemap alternates for both locales
-- Language-specific content via message catalogs in `messages/`
+Create feature branches with the `codex/` prefix, keep unrelated local files
+out of commits, and submit changes through pull requests.
 
-## 📊 Analytics (Optional)
-- PostHog client is initialized only if `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` are present
-- Page views and route changes are captured with locale information
-
-## 🔄 Performance Optimizations
-
-- **Memoization** - useMemo for expensive computations
-- **Code Splitting** - Automatic route-based splitting
-- **Image Optimization** - Next.js Image component
-- **Font Optimization** - Geist font family with next/font
-- **Request Caching** - TanStack Query cache layer
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-
-This project is private and proprietary.
-
-## 🆘 Support
-
-For support, email support@artek.com or open an issue on GitHub.
-
----
-
-Built with ❤️ by Artek Team
+This repository is private and proprietary to Artek Elektronik.
