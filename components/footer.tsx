@@ -113,7 +113,7 @@ const Footer = ({
   const finalBottomLinks = bottomLinks || defaultBottomLinks;
 
   return (
-    <section className="py-32">
+    <section className="bg-artek-ink py-20 text-white sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
@@ -121,12 +121,12 @@ const Footer = ({
               <div className="flex items-center gap-2 lg:justify-start">
                 <h2 className="text-2xl font-bold">{finalLogo.title}</h2>
               </div>
-              <p className="mt-4 font-medium text-gray-600">{finalTagline}</p>
+              <p className="mt-4 max-w-sm font-medium leading-7 text-slate-300">{finalTagline}</p>
             </div>
             {finalMenuItems.map((section, sectionIdx) => (
               <div key={sectionIdx}>
                 <h3 className="mb-4 font-bold">{section.title}</h3>
-                <ul className="text-muted-foreground space-y-4">
+                <ul className="space-y-4 text-slate-300">
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
@@ -139,7 +139,7 @@ const Footer = ({
                 {section.subsections && section.subsections.map((subsection, subIdx) => (
                   <div key={subIdx} className="mt-6">
                     <h4 className="mb-3 font-bold text-sm">{subsection.title}</h4>
-                    <ul className="text-muted-foreground space-y-2 ml-0">
+                    <ul className="ml-0 space-y-2 text-slate-300">
                       {subsection.links.map((link, linkIdx) => (
                         <li
                           key={linkIdx}
@@ -155,7 +155,7 @@ const Footer = ({
               </div>
             ))}
           </div>
-          <div className="text-muted-foreground mt-24 flex flex-col justify-between gap-4 border-t pt-8 text-sm font-medium md:flex-row md:items-center">
+          <div className="mt-20 flex flex-col justify-between gap-4 border-t border-white/15 pt-8 text-sm font-medium text-slate-400 md:flex-row md:items-center">
             <p>{finalCopyright}</p>
             <ul className="flex gap-4">
               {finalBottomLinks.map((link, linkIdx) => (

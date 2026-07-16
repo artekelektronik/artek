@@ -1,8 +1,9 @@
 "use client";
 
-import { Factory, Zap, Target, Award, CircleArrowRight, Files } from "lucide-react";
+import { ArrowRight, Factory, Zap, Target, Award } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
 interface About1Props {
   className?: string;
@@ -120,6 +121,15 @@ const About = ({ className }: About1Props) => {
               className="rounded-2xl object-cover w-full h-96"
             />
           </div>
+        </div>
+        <div className="flex flex-col justify-between gap-6 rounded-3xl bg-artek-navy p-8 text-white sm:flex-row sm:items-center sm:p-12">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight">{t("cta.title")}</h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">{t("cta.description")}</p>
+          </div>
+          <Link href="/contact" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-artek-electric px-6 text-sm font-bold text-artek-ink transition hover:bg-artek-sky">
+            {t("cta.button")} <ArrowRight className="size-4" />
+          </Link>
         </div>
       </div>
     </section>

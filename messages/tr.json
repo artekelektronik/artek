@@ -54,10 +54,25 @@
     "search": "Ara"
   },
   "hero": {
-    "title": "Enerji Çözümlerinizde Teknik Mükemmellik",
-    "subtitle": "Türkiye'deki üretim gücümüzü kullanarak, projenizin performansını en üst seviyeye taşıyan ferrit nüve, bobin, transformatör ve indüktör çözümleri sunuyoruz.",
-    "viewDetails": "Teknik Detayları İncele",
-    "requestQuote": "Projeniz İçin Teklif Alın"
+    "eyebrow": "Manyetik komponent üreticisi",
+    "title": "Tasarımınız için doğru manyetik komponenti bulun.",
+    "subtitle": "Zorlu uygulamalar için Türkiye'de tasarlanan ve üretilen ferrit nüve, bobin, transformatör ve indüktör çözümleri.",
+    "searchPlaceholder": "Ürün, seri veya ürün kodu ile arayın…",
+    "announcement": "Mühendislik odağı",
+    "featureTitle": "Standart ferrit nüvelerden projenize özel çözümlere",
+    "featureDescription": "Üretime hazır ürün portföyümüzü keşfedin veya uygulamanızın ihtiyaç duyduğu geometri, malzeme ve sarım için mühendislerimizle çalışın.",
+    "featureImageAlt": "Artek ferrit nüve ürünü",
+    "madeIn": "Türkiye'de üretildi",
+    "since": "1987'den beri üretim",
+    "viewDetails": "Ürünleri Keşfet",
+    "requestQuote": "Özel Teklif Al",
+    "quickLinks": {
+      "cores": "Ferrit Nüveler",
+      "bobbins": "Bobin Karkasları",
+      "transformers": "Transformatörler",
+      "custom": "Özel Mühendislik",
+      "explore": "Çözümleri keşfet"
+    }
   },
   "home": {
     "hero1": {
@@ -197,6 +212,13 @@
   },
   "products": {
     "title": "Ürünler",
+    "eyebrow": "Ürün kataloğu",
+    "description": "Ferrit nüve, bobin, transformatör ve özel manyetik komponent çözümlerimizi inceleyin. Uygulamanız için doğru ürünü bulamazsanız mühendislerimizle birlikte tasarlayalım.",
+    "quality": "Kontrollü üretim",
+    "support": "Teknik seçim desteği",
+    "ctaTitle": "Aradığınız ölçü veya değer katalogda yok mu?",
+    "ctaDescription": "Teknik gereksinimlerinizi paylaşın; uygun standart ürünü bulalım veya uygulamanıza özel çözüm geliştirelim.",
+    "ctaButton": "Teklif ve teknik destek",
     "error": "Hata",
     "errorOccurred": "Bir hata oluştu",
     "noProducts": "Ürün bulunamadı",
@@ -297,12 +319,26 @@
     "vision": {
       "content": "Artek Elektronik, Türkiye'nin imalat ve ihracat gücünü temsil ederek Türkiye'nin 1 numaralı yüksek frekans trafo ve bobin ihracatçısı olmayı hedeflemektedir. Bu hedef doğrultusunda, teknolojiye ve insan kaynağına yatırım yapmaya devam ediyor, her geçen gün küresel pazardaki etkimizi artırıyoruz.",
       "closing": "Artek Elektronik, dünden bugüne birikimiyle, yarının enerji çözümlerini şekillendirmeye devam edecektir."
+    },
+    "cta": {
+      "title": "Projenizi birlikte üretime taşıyalım.",
+      "description": "Standart ürün seçimi, numune veya özel üretim ihtiyacınız için doğrudan teknik ekibimizle görüşün.",
+      "button": "Bizimle iletişime geçin"
     }
   },
   "contact": {
     "title": "İletişim",
     "heading": "Bize Ulaşın",
-    "description": "Mesajınızı gönderin ve mümkün olan en kısa sürede geri dönüş alalım",
+    "eyebrow": "Satış ve mühendislik ekibi",
+    "description": "Ürün seçimi, numune, fiyat veya özel üretim talebinizi paylaşın. İhtiyacınızı anlayıp doğru kişiyle hızlıca buluşturalım.",
+    "responseTime": "Taleplere genellikle aynı iş günü içinde dönüş yapıyoruz",
+    "directTitle": "Doğrudan ulaşın",
+    "directDescription": "Acil talepler ve hızlı ürün soruları için telefon, e-posta veya WhatsApp üzerinden bize ulaşabilirsiniz.",
+    "phoneLabel": "Telefon",
+    "emailLabel": "E-posta",
+    "whatsapp": "WhatsApp'tan yazın",
+    "formTitle": "Projenizi anlatın",
+    "formDescription": "Teknik değerleri, adet bilgisini veya ürün kodunu eklemeniz daha hızlı yanıt vermemizi sağlar.",
     "addressLabel": "Adres",
     "address": "İstanbul, Türkiye",
     "phone": "+90 (212) 555-0147",

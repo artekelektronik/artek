@@ -54,10 +54,25 @@
     "search": "Search"
   },
   "hero": {
-    "title": "Technical Excellence in Your Energy Solutions",
-    "subtitle": "Leveraging our manufacturing strength in Turkey, we deliver ferrite core, bobbin, transformer, and inductor solutions that elevate your project's performance to the highest level.",
-    "viewDetails": "View Technical Details",
-    "requestQuote": "Request a Quote for Your Project"
+    "eyebrow": "Magnetic component manufacturer",
+    "title": "Find the right magnetic component for your design.",
+    "subtitle": "Ferrite cores, bobbins, transformers and inductors—engineered and manufactured in Turkey for demanding applications.",
+    "searchPlaceholder": "Search by product, series or product code…",
+    "announcement": "Engineering spotlight",
+    "featureTitle": "From standard ferrite cores to project-specific solutions",
+    "featureDescription": "Explore our production-ready portfolio or work directly with our engineers on the geometry, material and winding your application requires.",
+    "featureImageAlt": "Artek ferrite core product",
+    "madeIn": "Made in Turkey",
+    "since": "Manufacturing since 1987",
+    "viewDetails": "Explore Products",
+    "requestQuote": "Request a Custom Quote",
+    "quickLinks": {
+      "cores": "Ferrite Cores",
+      "bobbins": "Bobbins",
+      "transformers": "Transformers",
+      "custom": "Custom Engineering",
+      "explore": "Explore solutions"
+    }
   },
   "home": {
     "hero1": {
@@ -197,6 +212,13 @@
   },
   "products": {
     "title": "Products",
+    "eyebrow": "Product catalog",
+    "description": "Explore our ferrite cores, bobbins, transformers and custom magnetic component solutions. If the right part is not in the catalog, our engineers can help design it.",
+    "quality": "Controlled production",
+    "support": "Technical selection support",
+    "ctaTitle": "Cannot find the dimensions or rating you need?",
+    "ctaDescription": "Share your technical requirements and we will identify a standard product or develop a solution for your application.",
+    "ctaButton": "Request technical support",
     "error": "Error",
     "errorOccurred": "An error occurred",
     "noProducts": "No products found",
@@ -297,12 +319,26 @@
     "vision": {
       "content": "Our Vision is clear: Representing Turkey's manufacturing and export power, Artek Elektronik aims to become Turkey's number one exporter of high-frequency transformers and bobbins in the near future. In line with this goal, we continue to invest in technology and human resources, increasing our impact on the global market every day.",
       "closing": "With the accumulation of experience from yesterday to today, Artek Elektronik will continue to shape the energy solutions of tomorrow."
+    },
+    "cta": {
+      "title": "Let’s move your project into production.",
+      "description": "Speak directly with our technical team about standard product selection, samples, or custom manufacturing.",
+      "button": "Contact our team"
     }
   },
   "contact": {
     "title": "Contact",
     "heading": "Contact us",
-    "description": "Leave your message and we will get back to you ASAP",
+    "eyebrow": "Sales and engineering team",
+    "description": "Tell us about your product selection, sample, pricing or custom manufacturing request. We will understand the requirement and connect you with the right person quickly.",
+    "responseTime": "We typically respond within the same business day",
+    "directTitle": "Reach us directly",
+    "directDescription": "For urgent requests and quick product questions, contact us by phone, email or WhatsApp.",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "whatsapp": "Message us on WhatsApp",
+    "formTitle": "Tell us about your project",
+    "formDescription": "Including technical values, quantities or a product code helps us respond faster.",
     "addressLabel": "Address",
     "address": "Istanbul, Turkey",
     "phone": "+90 (212) 555-0147",

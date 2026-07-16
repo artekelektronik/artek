@@ -2,10 +2,10 @@ import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { Box } from "@/components/box";
-import { Feature } from "@/components/feature";
 import HeroSection from "@/components/hero-section";
-import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, BadgeCheck, Factory, Globe2, Headphones, ShieldCheck } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import {
   getLanguageAlternates,
   getLocalizedPath,
@@ -62,175 +62,181 @@ export default async function Home({ params }: Props) {
 function HomeContent() {
   const t = useTranslations();
 
-  const contactLink = `/contact`;
+  const products = [
+    { key: "hero1", image: "/products/core.png", href: productCatalogPaths.ferrit },
+    { key: "hero2", image: "/products/bobbins.png", href: productCatalogPaths.pem },
+    { key: "hero3", image: "/products/feritte-transformers.png", href: productCatalogPaths.ferrit },
+    { key: "hero4", image: "/products/laminated-transformers.png", href: "/transformator" },
+  ] as const;
+
+  const secondaryProducts = [
+    { key: "inductors", image: "/products/inductors.png", href: productCatalogPaths.ironPowder },
+    { key: "powerInductors", image: "/products/power-inductors.png", href: productCatalogPaths.ironPowder },
+    { key: "emcFilters", image: "/products/emc-filters.png", href: productCatalogPaths.pem },
+    { key: "airCoreCoils", image: "/products/air-core-coils.png", href: "/contact" },
+  ] as const;
 
   return (
-    <div>
+    <div className="bg-artek-porcelain">
       <HeroSection />
 
-      {/* Keyword-rich category overview section for SEO */}
-      <section className="bg-background py-16 px-6">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="text-center space-y-3">
-            <h2 className="text-3xl font-bold tracking-tight">
-              {t("homeKeywords.sectionTitle")}
-            </h2>
-            <p className="text-muted-foreground max-w-3xl mx-auto text-base leading-relaxed">
+      <section className="px-6 pb-20 pt-8 sm:pb-28 sm:pt-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-8 border-b border-slate-200 pb-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+            <div>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-electric">
+                {t("homeKeywords.learnMore")}
+              </p>
+              <h2 className="max-w-2xl text-pretty text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+                {t("homeKeywords.sectionTitle")}
+              </h2>
+            </div>
+            <p className="max-w-2xl text-base leading-7 text-slate-600 lg:justify-self-end">
               {t("homeKeywords.sectionSubtitle")}
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="rounded-lg border bg-card p-6 space-y-3">
-              <h3 className="font-semibold text-lg">{t("homeKeywords.ferritNuveTitle")}</h3>
-              <p className="text-sm text-muted-foreground">{t("homeKeywords.ferritNuveDesc")}</p>
-              <Link href="/ferrit-nuve" className="text-sm font-medium text-primary hover:underline">
-                {t("homeKeywords.learnMore")} →
+
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {products.map((product, index) => (
+              <Link
+                key={product.key}
+                href={product.href}
+                className="group relative isolate min-h-[460px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-10"
+              >
+                <div className="relative z-10 max-w-sm">
+                  <span className="text-xs font-bold text-artek-violet">0{index + 1}</span>
+                  <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+                    {t(`home.${product.key}.title`)}
+                  </h3>
+                  <p className="mt-3 text-base text-slate-600">
+                    {t(`home.${product.key}.subtitle`)}
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-artek-navy">
+                    {t("buttons.viewProducts")}
+                    <ArrowRight className="size-4 transition group-hover:translate-x-1" />
+                  </span>
+                </div>
+                <div className="absolute bottom-0 right-0 h-[58%] w-[72%]">
+                  <div className="absolute inset-0 rounded-tl-[6rem] bg-gradient-to-br from-artek-porcelain to-artek-mist" />
+                  <Image
+                    src={product.image}
+                    alt={t(`home.${product.key}.title`)}
+                    fill
+                    sizes="(max-width: 768px) 75vw, 35vw"
+                    className="object-contain p-8 transition duration-500 group-hover:scale-105"
+                  />
+                </div>
               </Link>
-            </div>
-            <div className="rounded-lg border bg-card p-6 space-y-3">
-              <h3 className="font-semibold text-lg">{t("homeKeywords.bobinTitle")}</h3>
-              <p className="text-sm text-muted-foreground">{t("homeKeywords.bobinDesc")}</p>
-              <Link href="/bobin" className="text-sm font-medium text-primary hover:underline">
-                {t("homeKeywords.learnMore")} →
-              </Link>
-            </div>
-            <div className="rounded-lg border bg-card p-6 space-y-3">
-              <h3 className="font-semibold text-lg">{t("homeKeywords.transformatorTitle")}</h3>
-              <p className="text-sm text-muted-foreground">{t("homeKeywords.transformatorDesc")}</p>
-              <Link href="/transformator" className="text-sm font-medium text-primary hover:underline">
-                {t("homeKeywords.learnMore")} →
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
-      {/* Row 1 - Ferrit Nüve / Ferrite Core */}
-      <Box
-        backgroundColor="bg-gray-100"
-        title={t("home.hero1.title")}
-        subtitle={t("home.hero1.subtitle")}
-        buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.ferrit },
-          { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
-        ]}
-        imageSrc="/products/core.png"
-        imageAlt="Ferrite Core"
-        imageClassName="max-w-lg"
-      />
 
-      {/* Row 2 - Karkaslar / Bobbins */}
-      <Box
-        backgroundColor="bg-background"
-        title={t("home.hero2.title")}
-        subtitle={t("home.hero2.subtitle")}
-        description={t("home.hero2.description")}
-        buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.pem },
-          { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
-        ]}
-        imageSrc="/products/bobbins.png"
-        imageAlt="Bobbins"
-        imageClassName="max-w-sm md:max-w-lg"
-      />
+      <section className="bg-artek-navy px-6 py-20 text-white sm:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
+            <div>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-sky">
+                {t("feature.performance.highlight")}
+              </p>
+              <h2 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
+                {t("feature.title")}
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-slate-300">{t("feature.subtitle")}</p>
+          </div>
+          <div className="mt-14 grid gap-px overflow-hidden rounded-3xl bg-white/15 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { key: "certified", icon: ShieldCheck },
+              { key: "performance", icon: BadgeCheck },
+              { key: "leading", icon: Globe2 },
+              { key: "support", icon: Headphones },
+            ].map(({ key, icon: Icon }) => (
+              <div key={key} className="bg-artek-blue p-7 lg:min-h-80">
+                <span className="grid size-12 place-items-center rounded-xl bg-artek-sky text-artek-ink">
+                  <Icon className="size-6" />
+                </span>
+                <h3 className="mt-8 text-xl font-semibold">{t(`feature.${key}.title`)}</h3>
+                <p className="mt-4 text-sm leading-6 text-slate-300">{t(`feature.${key}.description`)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Row 3 - Ferrit Trafolar / Ferrite Transformers */}
-      <Box
-        backgroundColor="bg-muted"
-        title={t("home.hero3.title")}
-        subtitle={t("home.hero3.subtitle")}
-        description={t("home.hero3.description")}
-        buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: productCatalogPaths.ferrit },
-          { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
-        ]}
-        imageSrc="/products/feritte-transformers.png"
-        imageAlt="Ferrite Transformers"
-        imageClassName="max-w-lg"
-      />
+      <section className="px-6 py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-electric">
+                {t("nav.products")}
+              </p>
+              <h2 className="text-4xl font-semibold tracking-tight text-slate-950">
+                {t("homeKeywords.sectionTitle")}
+              </h2>
+            </div>
+            <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-artek-navy">
+              {t("buttons.viewProducts")} <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {secondaryProducts.map((product) => (
+              <Link
+                key={product.key}
+                href={product.href}
+                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="relative aspect-[4/3] bg-gradient-to-br from-artek-porcelain to-artek-mist">
+                  <Image
+                    src={product.image}
+                    alt={t(`home.grid.${product.key}.title`)}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 25vw"
+                    className="object-contain p-8 transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    {t(`home.grid.${product.key}.title`)}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {t(`home.grid.${product.key}.description`)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* Row 4 - Saclı Trafolar / Laminated Transformers */}
-      <Box
-        backgroundColor="bg-background"
-        title={t("home.hero4.title")}
-        subtitle={t("home.hero4.subtitle")}
-        description={t("home.hero4.description")}
-        buttons={[
-          { text: t("buttons.viewProducts"), variant: "default", href: "/transformator" },
-          { text: t("buttons.contactUs"), variant: "outline", href: contactLink },
-        ]}
-        imageSrc="/products/laminated-transformers.png"
-        imageAlt="Laminated Transformers"
-        imageClassName="max-w-lg"
-      />
-
-      {/* 2x2 Grid Section - 4 Product Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-        {/* 5. İndüktörler - Inductors */}
-        <Box
-          backgroundGradient="bg-gradient-to-br from-muted to-muted/60"
-          height="h-[600px]"
-          title={t("home.grid.inductors.title")}
-          subtitle={t("home.grid.inductors.subtitle")}
-          description={t("home.grid.inductors.description")}
-          buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.ironPowder },
-            { text: t("buttons.buy"), variant: "outline", href: contactLink },
-          ]}
-          imageSrc="/products/inductors.png"
-          imageAlt="Inductors"
-          imageClassName="max-w-xs"
-        />
-
-        {/* 6. Güç İndüktörleri - Power Inductors */}
-        <Box
-          backgroundGradient="bg-gradient-to-br from-emerald-50 to-teal-50"
-          height="h-[600px]"
-          title={t("home.grid.powerInductors.title")}
-          subtitle={t("home.grid.powerInductors.subtitle")}
-          description={t("home.grid.powerInductors.description")}
-          buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.ironPowder },
-            { text: t("buttons.buy"), variant: "outline", href: contactLink },
-          ]}
-          imageSrc="/products/power-inductors.png"
-          imageAlt="Power Inductors"
-          imageClassName="max-w-xs"
-        />
-
-        {/* 7. EMI/EMC Filtreler - EMC Filters */}
-        <Box
-          backgroundGradient="bg-gradient-to-br from-blue-50 to-slate-100"
-          height="h-[600px]"
-          title={t("home.grid.emcFilters.title")}
-          subtitle={t("home.grid.emcFilters.subtitle")}
-          description={t("home.grid.emcFilters.description")}
-          buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: productCatalogPaths.pem },
-            { text: t("buttons.buy"), variant: "outline", href: contactLink },
-          ]}
-          imageSrc="/products/emc-filters.png"
-          imageAlt="EMC Filters"
-          imageClassName="max-w-xs"
-        />
-
-        {/* 8. Hava Nüveli Bobinler - Air Core Coils */}
-        <Box
-          backgroundGradient="bg-gradient-to-br from-muted/70 to-muted/40"
-          height="h-[600px]"
-          title={t("home.grid.airCoreCoils.title")}
-          subtitle={t("home.grid.airCoreCoils.subtitle")}
-          description={t("home.grid.airCoreCoils.description")}
-          buttons={[
-            { text: t("buttons.learnMore"), variant: "default", href: "/contact" },
-            { text: t("buttons.buy"), variant: "outline", href: contactLink },
-          ]}
-          imageSrc="/products/air-core-coils.png"
-          imageAlt="Air Core Coils"
-          imageClassName="max-w-xs"
-        />
-      </div>
-
-      <Feature />
+      <section className="px-6 pb-24">
+        <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-artek-sky lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="p-9 sm:p-14">
+            <Factory className="size-10 text-artek-navy" />
+            <h2 className="mt-8 max-w-xl text-4xl font-semibold tracking-tight text-artek-ink sm:text-5xl">
+              {t("feature.performance.title")}
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-artek-blue">
+              {t("feature.performance.description")}
+            </p>
+            <Link
+              href="/contact"
+              className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-artek-navy px-6 text-sm font-semibold text-white transition hover:bg-artek-ink"
+            >
+              {t("hero.requestQuote")} <ArrowRight className="size-4" />
+            </Link>
+          </div>
+          <div className="relative min-h-80 bg-artek-ink">
+            <Image
+              src="/products/feritte-transformers.png"
+              alt={t("home.hero3.title")}
+              fill
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-contain p-12 drop-shadow-2xl"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
