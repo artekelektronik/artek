@@ -7,6 +7,14 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-outer-space: var(--outer-space);
+  --color-artek-ink: var(--artek-ink);
+  --color-artek-navy: var(--artek-navy);
+  --color-artek-blue: var(--artek-blue);
+  --color-artek-electric: var(--artek-electric);
+  --color-artek-sky: var(--artek-sky);
+  --color-artek-violet: var(--artek-violet);
+  --color-artek-porcelain: var(--artek-porcelain);
+  --color-artek-mist: var(--artek-mist);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -45,26 +53,35 @@
 }
 
 :root {
+  /* Artek "Midnight Field" brand palette */
+  --artek-ink: #081b2c;
+  --artek-navy: #0d2942;
+  --artek-blue: #164766;
+  --artek-electric: #ff7043;
+  --artek-sky: #ffd4c6;
+  --artek-violet: #d95735;
+  --artek-porcelain: #f6f7f4;
+  --artek-mist: #e9edf5;
   --outer-space: #454545;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: var(--artek-porcelain);
+  --foreground: var(--artek-ink);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --primary: var(--artek-electric);
+  --primary-foreground: var(--artek-ink);
+  --secondary: var(--artek-mist);
+  --secondary-foreground: var(--artek-navy);
+  --muted: #edf0f5;
+  --muted-foreground: #5d6f80;
+  --accent: var(--artek-electric);
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #d8dfe9;
+  --input: #d8dfe9;
+  --ring: var(--artek-electric);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

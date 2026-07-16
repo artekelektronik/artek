@@ -43,8 +43,8 @@ export default function HeroSection() {
   };
 
   return (
-    <main className="overflow-hidden bg-[#f4f6f8] pt-14">
-      <section className="bg-[#142d42] pb-16 pt-12 text-white lg:pb-24 lg:pt-16">
+    <main className="overflow-hidden bg-artek-porcelain pt-14">
+      <section className="bg-artek-navy pb-16 pt-12 text-white lg:pb-24 lg:pt-16">
         <motion.div
           className="mx-auto max-w-6xl px-6"
           initial="hidden"
@@ -56,7 +56,7 @@ export default function HeroSection() {
             className="mb-7 flex flex-col justify-between gap-4 lg:flex-row lg:items-end"
           >
             <div className="max-w-3xl">
-              <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
+              <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-artek-sky">
                 <BadgeCheck className="size-4" />
                 {t("eyebrow")}
               </p>
@@ -80,7 +80,7 @@ export default function HeroSection() {
               <Search className="size-5 text-slate-400" />
               {t("searchPlaceholder")}
             </span>
-            <span className="grid size-12 place-items-center rounded-xl bg-emerald-500 text-white transition group-hover:bg-emerald-400 sm:size-14">
+            <span className="grid size-12 place-items-center rounded-xl bg-artek-electric text-white transition group-hover:bg-artek-violet sm:size-14">
               <ArrowRight className="size-5" />
             </span>
           </motion.button>
@@ -95,7 +95,7 @@ export default function HeroSection() {
           className="relative isolate grid min-h-[430px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,35,50,0.12)] lg:grid-cols-[1.05fr_0.95fr]"
         >
           <div className="relative z-10 flex flex-col items-start justify-center p-8 sm:p-12 lg:p-16">
-            <span className="mb-7 rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <span className="mb-7 rounded-full bg-artek-mist px-4 py-2 text-xs font-bold uppercase tracking-wider text-artek-blue">
               {t("announcement")}
             </span>
             <h2 className="max-w-xl text-balance text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
@@ -107,7 +107,7 @@ export default function HeroSection() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href={productCatalogPaths.all}
-                className="inline-flex h-12 items-center gap-2 rounded-full bg-[#142d42] px-6 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-artek-electric px-6 text-sm font-semibold text-white transition hover:bg-artek-violet"
               >
                 {t("viewDetails")}
                 <ArrowRight className="size-4" />
@@ -121,8 +121,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="relative min-h-[320px] overflow-hidden bg-[radial-gradient(circle_at_65%_45%,#d1fae5_0,transparent_42%),linear-gradient(145deg,#f8fafc,#e8eef2)] lg:min-h-full">
-            <div className="absolute -right-20 -top-20 size-64 rounded-full border border-emerald-300/50" />
+          <div className="relative min-h-[320px] overflow-hidden bg-[radial-gradient(circle_at_65%_45%,#dbe3ff_0,transparent_42%),linear-gradient(145deg,#f8fafc,#e8edf5)] lg:min-h-full">
+            <div className="absolute -right-20 -top-20 size-64 rounded-full border border-artek-sky/60" />
             <div className="absolute -bottom-24 -left-12 size-72 rounded-full border border-slate-300" />
             <Image
               src="/products/core.png"
@@ -139,7 +139,7 @@ export default function HeroSection() {
                 </p>
                 <p className="mt-1 text-sm font-bold text-slate-900">{t("since")}</p>
               </div>
-              <ShieldCheck className="size-8 text-emerald-600" />
+              <ShieldCheck className="size-8 text-artek-electric" />
             </div>
           </div>
         </motion.div>
@@ -149,9 +149,9 @@ export default function HeroSection() {
             <Link
               key={key}
               href={href}
-              className="group flex min-h-24 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 shadow-sm transition hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg"
+              className="group flex min-h-24 items-center gap-4 rounded-2xl border border-blue-100 bg-white px-5 shadow-sm transition hover:-translate-y-1 hover:border-artek-electric/40 hover:shadow-lg"
             >
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-slate-100 text-[#142d42] transition group-hover:bg-emerald-500 group-hover:text-white">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-artek-sky text-artek-blue transition group-hover:bg-artek-electric group-hover:text-white">
                 <Icon className="size-5" />
               </span>
               <span>

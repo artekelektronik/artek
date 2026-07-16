@@ -77,14 +77,14 @@ function HomeContent() {
   ] as const;
 
   return (
-    <div className="bg-[#f4f6f8]">
+    <div className="bg-artek-porcelain">
       <HeroSection />
 
       <section className="px-6 pb-20 pt-8 sm:pb-28 sm:pt-12">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 border-b border-slate-200 pb-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
             <div>
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-electric">
                 {t("homeKeywords.learnMore")}
               </p>
               <h2 className="max-w-2xl text-pretty text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
@@ -104,20 +104,20 @@ function HomeContent() {
                 className="group relative isolate min-h-[460px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-10"
               >
                 <div className="relative z-10 max-w-sm">
-                  <span className="text-xs font-bold text-emerald-600">0{index + 1}</span>
+                  <span className="text-xs font-bold text-artek-violet">0{index + 1}</span>
                   <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
                     {t(`home.${product.key}.title`)}
                   </h3>
                   <p className="mt-3 text-base text-slate-600">
                     {t(`home.${product.key}.subtitle`)}
                   </p>
-                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#142d42]">
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-artek-navy">
                     {t("buttons.viewProducts")}
                     <ArrowRight className="size-4 transition group-hover:translate-x-1" />
                   </span>
                 </div>
                 <div className="absolute bottom-0 right-0 h-[58%] w-[72%]">
-                  <div className="absolute inset-0 rounded-tl-[6rem] bg-gradient-to-br from-slate-50 to-emerald-50" />
+                  <div className="absolute inset-0 rounded-tl-[6rem] bg-gradient-to-br from-artek-porcelain to-artek-mist" />
                   <Image
                     src={product.image}
                     alt={t(`home.${product.key}.title`)}
@@ -132,11 +132,11 @@ function HomeContent() {
         </div>
       </section>
 
-      <section className="bg-[#142d42] px-6 py-20 text-white sm:py-28">
+      <section className="bg-artek-navy px-6 py-20 text-white sm:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-end">
             <div>
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-sky">
                 {t("feature.performance.highlight")}
               </p>
               <h2 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -152,8 +152,8 @@ function HomeContent() {
               { key: "leading", icon: Globe2 },
               { key: "support", icon: Headphones },
             ].map(({ key, icon: Icon }) => (
-              <div key={key} className="bg-[#19364d] p-7 lg:min-h-80">
-                <span className="grid size-12 place-items-center rounded-xl bg-emerald-400 text-[#142d42]">
+              <div key={key} className="bg-artek-blue p-7 lg:min-h-80">
+                <span className="grid size-12 place-items-center rounded-xl bg-artek-sky text-artek-ink">
                   <Icon className="size-6" />
                 </span>
                 <h3 className="mt-8 text-xl font-semibold">{t(`feature.${key}.title`)}</h3>
@@ -168,14 +168,14 @@ function HomeContent() {
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-artek-electric">
                 {t("nav.products")}
               </p>
               <h2 className="text-4xl font-semibold tracking-tight text-slate-950">
                 {t("homeKeywords.sectionTitle")}
               </h2>
             </div>
-            <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-[#142d42]">
+            <Link href="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-artek-navy">
               {t("buttons.viewProducts")} <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -186,7 +186,7 @@ function HomeContent() {
                 href={product.href}
                 className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-50 to-emerald-50">
+                <div className="relative aspect-[4/3] bg-gradient-to-br from-artek-porcelain to-artek-mist">
                   <Image
                     src={product.image}
                     alt={t(`home.grid.${product.key}.title`)}
@@ -210,23 +210,23 @@ function HomeContent() {
       </section>
 
       <section className="px-6 pb-24">
-        <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-emerald-400 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl bg-artek-sky lg:grid-cols-[1.1fr_0.9fr]">
           <div className="p-9 sm:p-14">
-            <Factory className="size-10 text-[#142d42]" />
-            <h2 className="mt-8 max-w-xl text-4xl font-semibold tracking-tight text-[#10293d] sm:text-5xl">
+            <Factory className="size-10 text-artek-navy" />
+            <h2 className="mt-8 max-w-xl text-4xl font-semibold tracking-tight text-artek-ink sm:text-5xl">
               {t("feature.performance.title")}
             </h2>
-            <p className="mt-5 max-w-xl text-base leading-7 text-[#19364d]">
+            <p className="mt-5 max-w-xl text-base leading-7 text-artek-blue">
               {t("feature.performance.description")}
             </p>
             <Link
               href="/contact"
-              className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-[#142d42] px-6 text-sm font-semibold text-white"
+              className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-artek-navy px-6 text-sm font-semibold text-white transition hover:bg-artek-ink"
             >
               {t("hero.requestQuote")} <ArrowRight className="size-4" />
             </Link>
           </div>
-          <div className="relative min-h-80 bg-[#10293d]">
+          <div className="relative min-h-80 bg-artek-ink">
             <Image
               src="/products/feritte-transformers.png"
               alt={t("home.hero3.title")}

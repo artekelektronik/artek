@@ -113,7 +113,7 @@ const Footer = ({
   const finalBottomLinks = bottomLinks || defaultBottomLinks;
 
   return (
-    <section className="bg-[#0f2638] py-20 text-white sm:py-24">
+    <section className="bg-artek-ink py-20 text-white sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <footer>
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">

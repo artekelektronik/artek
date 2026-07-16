@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, Suspense } from "react";
-import { Package } from "lucide-react";
+import { ArrowRight, BadgeCheck, Package, ShieldCheck } from "lucide-react";
 import {
   parseAsString,
   parseAsArrayOf,
@@ -16,6 +16,7 @@ import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
 import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
 import { generateProductSlug } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
 // Define search params parsers
 const searchParamsParser = {
@@ -254,14 +255,35 @@ function ProductsContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-16">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
-      </div>
+    <div className="bg-artek-porcelain pb-20 pt-14">
+      <section className="bg-artek-navy px-6 py-14 text-white sm:py-20">
+        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_0.7fr] lg:items-end">
+          <div>
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-artek-sky">
+              {t("eyebrow")}
+            </p>
+            <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
+              {t("title")}
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">
+              {t("description")}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
+              <BadgeCheck className="size-6 text-artek-electric" />
+              <p className="mt-3 text-sm font-semibold">{t("quality")}</p>
+            </div>
+            <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
+              <ShieldCheck className="size-6 text-artek-electric" />
+              <p className="mt-3 text-sm font-semibold">{t("support")}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Main Layout: Sidebar + Content */}
-      <div className="flex gap-8">
+      <div className="mx-auto mt-10 flex max-w-6xl gap-8 px-6">
         {/* Filters Sidebar - Sticky */}
         <aside className="w-64 hidden lg:block shrink-0 sticky top-24 h-fit max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
           <ProductFilters
@@ -363,6 +385,17 @@ function ProductsContent() {
           )}
         </div>
       </div>
+      <section className="mx-auto mt-16 max-w-6xl px-6">
+        <div className="flex flex-col justify-between gap-6 rounded-3xl bg-artek-navy p-8 text-white sm:flex-row sm:items-center sm:p-10">
+          <div>
+            <h2 className="text-2xl font-semibold">{t("ctaTitle")}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{t("ctaDescription")}</p>
+          </div>
+          <Link href="/contact" className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-artek-electric px-6 text-sm font-bold text-artek-ink transition hover:bg-artek-sky">
+            {t("ctaButton")} <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
