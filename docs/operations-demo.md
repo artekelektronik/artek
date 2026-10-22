@@ -7,7 +7,7 @@ Bağımsız, tarayıcı içinde çalışan Türkçe demo. Mevcut satış sitesi 
 Depoda kurulu Next.js sunucusu üzerinden `/yonetim-demo/index.html` adresi kullanılabilir. Ayrı önizleme için depo kökünde:
 
 ```sh
-python3 -m http.server 4173 --bind 127.0.0.1 --directory public/yonetim-demo
+python3 -m http.server 4173 --bind 127.0.0.1 --directory apps/ferritnuve/public/yonetim-demo
 ```
 
 Sonra `http://127.0.0.1:4173/` adresini açın. ES modülleri nedeniyle HTML dosyasını doğrudan `file://` ile açmayın.
@@ -32,6 +32,6 @@ Sunucu/veritabanı, gerçek kullanıcı yetkilendirmesi, çok kullanıcılı eş
 ## Kontrol
 
 ```sh
-node --test scripts/test-operations-demo.mjs
-node --check public/yonetim-demo/app.mjs
+node --test apps/ferritnuve/scripts/test-operations-demo.mjs
+node --check apps/ferritnuve/public/yonetim-demo/app.mjs
 ```

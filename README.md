@@ -51,7 +51,7 @@ locale; the English site is available at `/en`.
 
 ## Environment variables
 
-Create `.env.local` as needed:
+Create `apps/ferritnuve/.env.local` as needed:
 
 ```env
 # Canonical production URL used by metadata and sitemap generation
@@ -77,11 +77,14 @@ Never commit `.env.local` or production credentials.
 
 ## Commands
 
+The repository is a pnpm workspace run with Turborepo. From the repository root:
+
 ```bash
-pnpm dev       # Start the development server
-pnpm lint      # Run ESLint
-pnpm build     # Create a production build
-pnpm start     # Serve the production build
+pnpm dev                        # Start the development server
+pnpm lint                       # Run ESLint
+pnpm test                       # Run behaviour tests
+pnpm build                      # Create a production build
+pnpm --filter ferritnuve start  # Serve the production build
 ```
 
 Before opening a pull request, run:
@@ -94,23 +97,25 @@ pnpm build
 ## Project structure
 
 ```text
-app/
-  [locale]/                 Localized pages
-  api/products/             Product API routes
-  sitemap.ts                Generated sitemap
-  robots.ts                 Search crawler rules
-components/
-  hero-section.tsx          Product-discovery homepage hero
-  header.tsx                Responsive navigation and search
-  search-dialog.tsx         Site and product search
-  product-*.tsx             Catalog interface
-  ui/                       Shared UI primitives
-i18n/                       Locale routing and navigation
-lib/                        Product data, taxonomy, and SEO helpers
-messages/
-  tr.json                   Turkish content
-  en.json                   English content
-public/                     Product imagery and certificates
+apps/ferritnuve/            ferritnuve.com Vitrin (Next.js app)
+  app/
+    [locale]/               Localized pages
+    api/products/           Product API routes
+    sitemap.ts              Generated sitemap
+    robots.ts               Search crawler rules
+  components/
+    hero-section.tsx        Product-discovery homepage hero
+    header.tsx              Responsive navigation and search
+    search-dialog.tsx       Site and product search
+    product-*.tsx           Catalog interface
+    ui/                     Shared UI primitives
+  i18n/                     Locale routing and navigation
+  lib/                      Product data, taxonomy, and SEO helpers
+  messages/
+    tr.json                 Turkish content
+    en.json                 English content
+  public/                   Product imagery, certificates, operations demo
+docs/                       Plan, ADRs and agent docs
 ```
 
 ## Main routes
