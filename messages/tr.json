@@ -2,15 +2,15 @@
   "metadata": {
     "home": {
       "title": "Ferrit Nüve, Bobin ve Transformatör | Artek Elektronik",
-      "description": "Türkiye'nin ferrit nüve, bobin, SMPS transformatör ve indüktör üreticisi. ISO sertifikalı, 20+ yıllık tecrübe. Karaköy, İstanbul'dan dünyaya hızlı teslimat."
+      "description": "Artek Elektronik ürün kataloğu: ferrit nüveler, demir tozu nüveler ve güç / EMI filtreleri. Bobin ve transformatör talepleri için iletişime geçin."
     },
     "products": {
       "title": "Ferrit Nüve ve Bobin Ürün Kataloğu | Artek Elektronik",
-      "description": "EE, ETD, UU, Toroid ferrit nüveler; EE, ETD bobinler; SMPS ve sac transformatörler. Tüm katalog burada. Türkiye'den hızlı teslimat ve özel tasarım imkanı."
+      "description": "Ferrit nüve, demir tozu nüve ve güç / EMI filtrelerini inceleyin. Diğer ürün grupları için bizimle iletişime geçin."
     },
     "about": {
       "title": "Hakkımızda | Artek Elektronik | Ferrit Nüve Üreticisi",
-      "description": "1987'den beri ferrit nüve, bobin ve transformatör üretiminde lider Türk firma. 2008'den itibaren kendi tesisimizde özel tasarım ve seri üretim yapıyoruz."
+      "description": "Artek Elektronik şirket bilgileri ve iletişim."
     },
     "contact": {
       "title": "İletişim | Artek Elektronik | Ferrit Nüve ve Bobin",
@@ -18,24 +18,24 @@
     },
     "certificates": {
       "title": "Sertifikalar | Artek Elektronik | ISO Kalite Belgesi",
-      "description": "ISO 9001, ISO 45001 ve ISO 10002 sertifikalı ferrit nüve ve bobin üreticisi. Kalite yönetimi, iş güvenliği ve müşteri memnuniyetinde uluslararası standartlar."
+      "description": "Arşivdeki şirket sertifika dosyaları ve belgelerde belirtilen kapsam."
     },
     "ferritNuve": {
       "title": "Ferrit Nüve Üreticisi | EE ETD Toroid | Artek Elektronik",
-      "description": "EE, ETD, UU, RM, PQ ve Toroid ferrit nüveler. SMPS, LED sürücü ve endüstriyel güç elektroniği için Türkiye üretimi. Özel tasarım, hızlı teslimat, ISO sertifikalı."
+      "description": "Ferrit nüveler — ürün grubu tanıtımı ve iletişim."
     },
     "bobin": {
       "title": "Bobin Karkas Üreticisi | EE ETD EFD PQ | Artek Elektronik",
-      "description": "EE, ETD, EFD, PQ, RM serisi trafo ve indüktör karkasları. Yüksek sıcaklık dayanımlı, PCB uyumlu, UL94 V-0. Türkiye'den özel boyut ve hızlı teslimat."
+      "description": "Bobinler — ürün grubu tanıtımı ve iletişim."
     },
     "transformator": {
       "title": "Transformatör Üreticisi | SMPS Ferrit Sac Trafo | Artek",
-      "description": "SMPS ferrit transformatörler, sac nüveli lamine trafolar, toroid ve özel tasarım. 1987'den bu yana ISO 9001 belgeli üretim. Türkiye'den dünyaya hızlı teslimat."
+      "description": "Transformatörler — ürün grubu tanıtımı ve iletişim."
     }
   },
   "homeKeywords": {
     "sectionTitle": "Ferrit Nüve, Bobin ve Transformatör Çözümleri",
-    "sectionSubtitle": "Artek Elektronik, 1987'den bu yana Türkiye'nin önde gelen ferrit nüve, bobin karkas ve transformatör üreticisidir. ISO 9001 belgeli üretimimiz ile EE, ETD, UU, Toroid ferrit nüveler; EE, ETD, EFD, PQ serisi bobin karkasları; SMPS ferrit ve sac nüveli transformatörler üretiyoruz.",
+    "sectionSubtitle": "Ferrit nüveleri ve güç / EMI filtrelerini katalogda inceleyin; bobin ve transformatör grupları hakkında bilgi alın.",
     "ferritNuveTitle": "Ferrit Nüve",
     "ferritNuveDesc": "EE, ETD, UU, PQ, RM ve Toroid geometrilerde yüksek frekanslı ferrit nüveler.",
     "bobinTitle": "Bobin Karkasları",
@@ -51,19 +51,22 @@
     "whatsappLabel": "Hızlı İletişim",
     "whatsappMessage": "Merhaba, ürünleriniz hakkında bilgi almak istiyorum.",
     "products": "Ürünler",
-    "search": "Ara"
+    "search": "Ara",
+    "home": "Ana sayfa",
+    "openMenu": "Menüyü aç",
+    "closeMenu": "Menüyü kapat"
   },
   "hero": {
-    "eyebrow": "Manyetik komponent üreticisi",
+    "eyebrow": "Artek Elektronik",
     "title": "Tasarımınız için doğru manyetik komponenti bulun.",
-    "subtitle": "Zorlu uygulamalar için Türkiye'de tasarlanan ve üretilen ferrit nüve, bobin, transformatör ve indüktör çözümleri.",
+    "subtitle": "Ürün koduna, seriye veya kategoriye göre arayın; ihtiyacınız olan bileşen için bizimle iletişime geçin.",
     "searchPlaceholder": "Ürün, seri veya ürün kodu ile arayın…",
     "announcement": "Mühendislik odağı",
     "featureTitle": "Standart ferrit nüvelerden projenize özel çözümlere",
-    "featureDescription": "Üretime hazır ürün portföyümüzü keşfedin veya uygulamanızın ihtiyaç duyduğu geometri, malzeme ve sarım için mühendislerimizle çalışın.",
+    "featureDescription": "Ferrit nüve ve güç / EMI filtrelerini katalogda inceleyin. Bobin ve transformatör taleplerinizi bizimle paylaşın.",
     "featureImageAlt": "Artek ferrit nüve ürünü",
-    "madeIn": "Türkiye'de üretildi",
-    "since": "1987'den beri üretim",
+    "madeIn": "Manyetik bileşenler",
+    "since": "Ürünler ve teknik iletişim",
     "viewDetails": "Ürünleri Keşfet",
     "requestQuote": "Özel Teklif Al",
     "quickLinks": {
@@ -77,8 +80,8 @@
   "home": {
     "hero1": {
       "title": "Ferrit Nüveler",
-      "subtitle": "Garantili Manyetik Kararlılık.",
-      "description": "Yüksek frekans ve sıcaklık koşullarında dahi üstün manyetik kararlılık sağlayan, hassasiyetle üretilmiş ferrit nüveler."
+      "subtitle": "Ferrit nüve ürünleri ve serileri.",
+      "description": "Ferrit nüve kataloğunu ve mevcut ürün bilgilerini inceleyin."
     },
     "hero2": {
       "title": "Karkaslar (Bobinler)",
@@ -129,7 +132,7 @@
       "emcFilters": {
         "title": "EMI/EMC Filtreler",
         "subtitle": "Uluslararası Standartlarda Koruma.",
-        "description": "Cihazlarınızı elektromanyetik kirlilikten koruyan, uluslararası EMC standartlarına tam uyumlu filtreler."
+        "description": "Katalogda yer alan güç / EMI filtrelerini inceleyin."
       },
       "airCoreCoils": {
         "title": "Hava Nüveli Bobinler",
@@ -148,8 +151,8 @@
     "title": "Neden ARTEK ELEKTRONİK?",
     "subtitle": "Hassas mühendislik, ödün vermeyen kalite standartlarıyla buluşuyor.",
     "certified": {
-      "title": "Uluslararası Standartlarda Onaylanmış Kalite",
-      "description": "ISO 9001 sertifikalı süreçlerimiz ve titiz testlerimizle, her bir komponentin projenizin gerektirdiği en yüksek performansı sunmasını sağlıyoruz.",
+      "title": "Şirket sertifikaları",
+      "description": "Mevcut şirket sertifika dosyalarını sertifikalar sayfamızda inceleyin.",
       "highlight": "Kalite Güvencesi, Test Edilmiş Ürün"
     },
     "performance": {
@@ -160,7 +163,7 @@
     "leading": {
       "title": "Türkiye'den Hızlı ve Güvenilir Tedarik",
       "description": "Avrupa ve Asya pazarlarına stratejik konumumuz sayesinde, rekabetçi fiyatlarla hızlı ve kesintisiz lojistik çözümleri sunuyoruz.",
-      "highlight": "Lojistik Avantajı, Türkiye Üretimi"
+      "highlight": "Tedarik ve iletişim"
     },
     "support": {
       "title": "Çözüm Odaklı İletişim",
@@ -169,9 +172,9 @@
     }
   },
   "footer": {
-    "brand": "ARTEK TEKNOLOJİ",
-    "tagline": "Yüksek frekanslı transformatör ve elektronik bileşenlerin önde gelen üreticisi.",
-    "copyright": "© 2025 Artek Teknoloji. Tüm hakları saklıdır.",
+    "brand": "ARTEK ELEKTRONİK",
+    "tagline": "Elektronik ve manyetik bileşenler için ürün kataloğu ve iletişim.",
+    "copyright": "© Artek Elektronik. Tüm hakları saklıdır.",
     "sections": {
       "product": "Ürün",
       "company": "Şirket",
@@ -213,8 +216,8 @@
   "products": {
     "title": "Ürünler",
     "eyebrow": "Ürün kataloğu",
-    "description": "Ferrit nüve, bobin, transformatör ve özel manyetik komponent çözümlerimizi inceleyin. Uygulamanız için doğru ürünü bulamazsanız mühendislerimizle birlikte tasarlayalım.",
-    "quality": "Kontrollü üretim",
+    "description": "Ferrit nüve, demir tozu nüve ve güç / EMI filtrelerini inceleyin. Diğer ürün grupları için bizimle iletişime geçin.",
+    "quality": "Ürün kataloğu",
     "support": "Teknik seçim desteği",
     "ctaTitle": "Aradığınız ölçü veya değer katalogda yok mu?",
     "ctaDescription": "Teknik gereksinimlerinizi paylaşın; uygun standart ürünü bulalım veya uygulamanıza özel çözüm geliştirelim.",
@@ -222,7 +225,10 @@
     "error": "Hata",
     "errorOccurred": "Bir hata oluştu",
     "noProducts": "Ürün bulunamadı",
-    "tryChangingFilters": "Filtrelerinizi değiştirmeyi deneyin"
+    "tryChangingFilters": "Filtrelerinizi değiştirmeyi deneyin",
+    "contact": "İletişime geçin",
+    "retry": "Yeniden dene",
+    "loading": "Ürünler yükleniyor"
   },
   "productCard": {
     "inStock": "Stokta",
@@ -256,7 +262,14 @@
     "copyLink": "Bağlantıyı Kopyala",
     "copied": "Kopyalandı!",
     "chatNow": "WhatsApp'ta Sohbet Et",
-    "share": "Paylaş"
+    "share": "Paylaş",
+    "enquire": "Bu ürün hakkında bilgi alın",
+    "brand": "Marka / üretici",
+    "category": "Kategori",
+    "email": "E-posta ile bilgi alın",
+    "copyFailed": "Bağlantı kopyalanamadı. Tarayıcı adresini kopyalayabilirsiniz.",
+    "shareFailed": "Paylaşım açılamadı. Bağlantıyı kopyalayabilirsiniz.",
+    "reviewNote": "Kaynak kayıttaki bazı bilgiler doğrulama gerektiriyor. Seçim yapmadan önce ürün koduyla iletişime geçin."
   },
   "filters": {
     "title": "Filtreler",
@@ -280,7 +293,9 @@
       "priceAsc": "Fiyat: Düşükten Yükseğe",
       "priceDesc": "Fiyat: Yüksekten Düşüğe",
       "stockDesc": "Stok: Yüksekten Düşüğe"
-    }
+    },
+    "columns2": "2 sütun",
+    "columns3": "3 sütun"
   },
   "productNav": {
     "title": "Ürünler",
@@ -292,8 +307,8 @@
     "description": "Zorlu uygulamalar için yüksek kaliteli elektronik bileşenler.",
     "allProducts": "Tüm Ürünler",
     "allProductsDesc": "Tüm ürün kataloğumuzu görüntüleyin ve filtreleyin.",
-    "pemTitle": "PEM Filtre ve Bobinler",
-    "pemDesc": "PEM ürün grubundaki filtre ve bobinleri görüntüleyin.",
+    "pemTitle": "Güç / EMI Filtreleri",
+    "pemDesc": "PEM grubundaki güç ve EMI filtrelerini inceleyin.",
     "ferritTitle": "Ferrit Nüveler",
     "ferritDesc": "Ferrit nüve ürünlerini görüntüleyin.",
     "eeTitle": "EE Ferrit Nüveler",
@@ -318,57 +333,43 @@
     },
     "vision": {
       "content": "Artek Elektronik, Türkiye'nin imalat ve ihracat gücünü temsil ederek Türkiye'nin 1 numaralı yüksek frekans trafo ve bobin ihracatçısı olmayı hedeflemektedir. Bu hedef doğrultusunda, teknolojiye ve insan kaynağına yatırım yapmaya devam ediyor, her geçen gün küresel pazardaki etkimizi artırıyoruz.",
-      "closing": "Artek Elektronik, dünden bugüne birikimiyle, yarının enerji çözümlerini şekillendirmeye devam edecektir."
+      "closing": "Artek Elektronik, dünden bugüne birikimiyle, yarının enerji çözümlerini şekillendirmeye devam edecektir.",
+      "heading": "Vizyonumuz"
     },
     "cta": {
       "title": "Projenizi birlikte üretime taşıyalım.",
       "description": "Standart ürün seçimi, numune veya özel üretim ihtiyacınız için doğrudan teknik ekibimizle görüşün.",
       "button": "Bizimle iletişime geçin"
-    }
+    },
+    "imageAlt": "Elektronik bileşenler"
   },
   "contact": {
     "title": "İletişim",
     "heading": "Bize Ulaşın",
     "eyebrow": "Satış ve mühendislik ekibi",
-    "description": "Ürün seçimi, numune, fiyat veya özel üretim talebinizi paylaşın. İhtiyacınızı anlayıp doğru kişiyle hızlıca buluşturalım.",
-    "responseTime": "Taleplere genellikle aynı iş günü içinde dönüş yapıyoruz",
+    "description": "Ürün seçimi ve teknik talepleriniz için bizimle iletişime geçin.",
     "directTitle": "Doğrudan ulaşın",
-    "directDescription": "Acil talepler ve hızlı ürün soruları için telefon, e-posta veya WhatsApp üzerinden bize ulaşabilirsiniz.",
+    "directDescription": "Telefon, e-posta veya WhatsApp ile iletişime geçebilirsiniz.",
     "phoneLabel": "Telefon",
     "emailLabel": "E-posta",
     "whatsapp": "WhatsApp'tan yazın",
     "formTitle": "Projenizi anlatın",
-    "formDescription": "Teknik değerleri, adet bilgisini veya ürün kodunu eklemeniz daha hızlı yanıt vermemizi sağlar.",
+    "formDescription": "Teknik değerleri ve varsa ürün kodunu mesajınıza ekleyin.",
     "addressLabel": "Adres",
-    "address": "İstanbul, Türkiye",
-    "phone": "+90 (212) 555-0147",
-    "email": "sales@artek-elektronik.com",
-    "form": {
-      "name": "Ad Soyad*",
-      "email": "Email*",
-      "phone": "Telefon*",
-      "service": "İlgilendiğiniz Ürün*",
-      "message": "Talep ve İhtiyaçlarınızı Yazınız*",
-      "submit": "Gönder",
-      "submitting": "Mesajınız gönderiliyor...",
-      "success": "Mesajınız başarıyla gönderildi!",
-      "successDescription": "En kısa sürede size geri dönüş yapacağız.",
-      "error": "Mesaj gönderilemedi",
-      "errorDescription": "Lütfen tekrar deneyin veya doğrudan bizimle iletişime geçin.",
-      "services": {
-        "general": "Genel Bilgilendirme",
-        "ferriteCore": "Ferrit Nüveler",
-        "transformers": "Transformatörler",
-        "partnership": "İş Ortaklığı"
-      }
-    }
+    "selectedProduct": "İlgilendiğiniz ürün",
+    "viewProduct": "Ürüne dön",
+    "productFormNote": "WhatsApp ve e-posta bağlantıları ürün bilgilerini içerir. Formu kullanırsanız ürün kodunu mesajınıza ekleyin.",
+    "invalidProduct": "Ürün bulunamadı. Lütfen ürün kodunu mesajınıza ekleyin.",
+    "skipToForm": "Forma geç",
+    "formFallback": "Form açılmazsa telefon veya e-posta ile iletişime geçebilirsiniz.",
+    "externalLanguage": "Harici form Türkçedir. E-posta veya WhatsApp ile de iletişime geçebilirsiniz."
   },
   "language": {
     "switchTo": "Dili değiştir"
   },
   "ferritNuve": {
     "heroTitle": "Ferrit Nüve",
-    "heroSubtitle": "Türkiye'de Üretilen Yüksek Kaliteli Ferrit Nüveler",
+    "heroSubtitle": "Ferrit nüve ürünleri ve uygulamaları",
     "heroDescription": "EE, ETD, UU, RM ve Toroid tipler dahil geniş geometri yelpazesiyle, yüksek frekans SMPS, LED sürücü ve endüstriyel güç elektroniği uygulamalarına özel ferrit nüve çözümleri.",
     "whatIsTitle": "Ferrit Nüve Nedir?",
     "whatIsText": "Ferrit nüve, demir oksit (Fe₂O₃) ve çinko, nikel ya da manganez gibi metal oksitlerin yüksek sıcaklıkta sinterlenmesiyle üretilen seramik manyetik malzemedir. Yüksek frekanslarda düşük kayıp özelliği sayesinde SMPS transformatörler, EMI filtreleri, indüktörler ve bobin karkaslarında yaygın olarak kullanılır.",
@@ -443,13 +444,13 @@
     "app6": "UPS ve Şarj Cihazları",
     "ctaTitle": "Karkas Teklifi İçin Bizimle İletişime Geçin",
     "ctaText": "Standart katalogdan seçin veya özel boyut ve sarım konfigürasyonu için teknik ekibimizle görüşün.",
-    "ctaProducts": "Tüm Karkasları İncele",
+    "ctaProducts": "Bobinler hakkında bilgi alın",
     "ctaContact": "Teklif Al"
   },
   "transformator": {
     "heroTitle": "Transformatörler",
-    "heroSubtitle": "Ferrit ve Sac Nüveli Transformatör Üretimi — Türkiye",
-    "heroDescription": "SMPS ferrit transformatörler, sac nüveli (laminated) güç transformatörleri ve özel tasarım trafolar. Artek Elektronik, 1987'den bu yana endüstriyel kalite standartlarında transformatör üretmektedir.",
+    "heroSubtitle": "Ferrit ve sac nüveli transformatör grupları",
+    "heroDescription": "Ferrit, sac nüveli ve diğer transformatör gruplarını tanıyın. Uygulamanızın gereksinimleri için bizimle iletişime geçin.",
     "whatIsTitle": "Transformatör Nedir?",
     "whatIsText": "Transformatör, iki ya da daha fazla sargı arasında elektromanyetik indüksiyon yoluyla enerji aktaran bir güç elektroniği bileşenidir. Ferrit nüveli yüksek frekanslı trafolar SMPS devrelerinde, sac nüveli (lamine) trafolar ise endüstriyel 50/60 Hz sistemlerde kullanılır.",
     "whyTitle": "Neden Artek Transformatörü?",
@@ -459,8 +460,8 @@
     "why2Text": "1 W SMPS pulsörden 10 kVA sac trafo uygulamalarına kadar geniş güç yelpazesi.",
     "why3Title": "Özel Tasarım",
     "why3Text": "Müşteri şartnamesine göre frekans, voltaj, akım ve boyut optimizasyonu.",
-    "why4Title": "ISO Sertifikalı Üretim",
-    "why4Text": "ISO 9001:2015 belgeli süreçler, test ve doğrulama protokolleri ile her partide tutarlı kalite.",
+    "why4Title": "Sertifika belgeleri",
+    "why4Text": "Arşivdeki şirket sertifikaları toptan ticaret kapsamındadır. Uygulamanız için gereken belgeleri doğrulamak üzere bizimle iletişime geçin.",
     "typesTitle": "Transformatör Tipleri",
     "type1Name": "SMPS Ferrit Transformatörler",
     "type1Desc": "20 kHz – 3 MHz arasında çalışan anahtarlamalı güç kaynağı trafolarında kompakt boyut ve yüksek verimlilik.",
@@ -483,7 +484,7 @@
     "app6": "Otomotiv Yükleme ve Güç Dönüşümü",
     "ctaTitle": "Transformatör Teklifinizi Alın",
     "ctaText": "Ürün kataloğumuzu inceleyin veya özel transformatör tasarımı için teknik ekibimizle iletişime geçin.",
-    "ctaProducts": "Transformatör Ürünleri",
+    "ctaProducts": "Transformatörler hakkında bilgi alın",
     "ctaContact": "Teklif İste"
   },
   "search": {
@@ -495,18 +496,18 @@
   },
   "certificates": {
     "title": "Sertifikalarımız",
-    "subtitle": "ARTEK ELEKTRONIK, kalite, güvenlik ve müşteri memnuniyetinde en yüksek uluslararası standartları korumaya kararlıdır.",
+    "subtitle": "Arşivde bulunan sertifika dosyalarını görüntüleyebilir ve indirebilirsiniz.",
     "viewCertificate": "Sertifikayı Görüntüle",
     "downloadPDF": "PDF İndir",
     "viewFullSize": "Tam Boyutunu Görüntüle",
     "close": "Kapat",
     "certificationDetails": "Uluslararası Sertifikalar",
     "certificationDesc": "Sertifikalarımız, operasyonlarımızın tüm alanlarında mükemmeliyete ve sürekli iyileştirilmeye olan taahhüdümüzü göstermektedir.",
-    "commitment": "Kalite Taahhüdümüz",
-    "commitmentDesc": "Müşterilerimize en yüksek kaliteli ürün ve hizmetleri sağlamak için operasyonlarımızın tüm alanlarında titiz standartları koruyoruz.",
-    "commitmentItem1": "ISO 9001:2015 sertifikalı kalite yönetim sistemi",
-    "commitmentItem2": "ISO 45001:2018 işçi sağlığı ve güvenliği standartları",
-    "commitmentItem3": "ISO 10002:2018 müşteri memnuniyeti yönetimi",
+    "commitment": "Belgelerin kapsamı",
+    "commitmentDesc": "Arşiv belgelerinde kapsam, elektronik cihaz ve parçaların toptan ticareti olarak belirtilir. Belgeler her katalog ürününün veya üretim süreçlerinin sertifikalı olduğunu göstermez.",
+    "commitmentItem1": "ISO 9001:2015",
+    "commitmentItem2": "ISO 45001:2018",
+    "commitmentItem3": "ISO 10002:2018",
     "certificates": {
       "iso9001": {
         "description": "Kalite Yönetim Sistemi Sertifikası"
@@ -517,6 +518,14 @@
       "iso10002": {
         "description": "Müşteri Memnuniyeti ve Şikayet Yönetimi"
       }
-    }
+    },
+    "imageAlt": "Kalite belgeleri",
+    "archiveNote": "Bunlar arşiv belgeleridir. Dosyalarda geçerlilik tarihi 18 Mart 2022, sertifika dönemi bitiş tarihi 18 Mart 2024 olarak yer alır. Güncel geçerlilik şirketten doğrulanmalıdır; bu dosyalar güncel sertifikasyonu kanıtlamaz."
+  },
+  "pagination": {
+    "label": "Sayfalama",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "more": "Diğer sayfalar"
   }
 }

@@ -116,3 +116,8 @@ export function getProductsFromJSON(): AirtableProduct[] {
 
   return _cache;
 }
+
+export function getProductBySlug(slug: string) {
+  const id = slug.split("-").at(-1);
+  return getProductsFromJSON().find(product => product.id.slice(-6) === id);
+}

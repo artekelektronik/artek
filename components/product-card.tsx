@@ -1,4 +1,6 @@
 "use client";
+import { catalogLabel } from "@/lib/product-taxonomy";
+import { useLocale } from "next-intl";
 
 
 import { Package } from "lucide-react";
@@ -9,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { generateProductSlug } from "@/lib/utils";
 import type { AirtableProduct } from "@/types/airtable";
 
+import { productContent } from "@/lib/product-content";
+
 interface ProductCardProps {
   product: AirtableProduct;
 }
@@ -16,6 +20,8 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const t = useTranslations("productCard");
   const { fields } = product;
+  const locale = useLocale();
+  const {name} = productContent(product,locale);
   const productSlug = generateProductSlug(fields["Product Name"], product.id);
 
   return (
@@ -25,8 +31,9 @@ export function ProductCard({ product }: ProductCardProps) {
         {fields.Photo && fields.Photo[0] ? (
           <img
             src={fields.Photo[0].thumbnails?.large.url || fields.Photo[0].url}
-            alt={fields["Product Name"]}
-            className="absolute inset-0 w-full h-full object-cover"
+            alt={name}
+            loading="lazy" width={400} height={400}
+            className="absolute inset-0 w-full h-full object-contain"
           />
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -41,12 +48,12 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex flex-wrap gap-1.5 min-h-6 mb-3">
           {fields.Category && (
             <Badge variant="outline" className="text-xs">
-              {fields.Category}
+              {catalogLabel(fields.Category,locale)}
             </Badge>
           )}
           {fields["Ürün Tipi"]?.[0] && (
             <Badge variant="secondary" className="text-xs">
-              {fields["Ürün Tipi"][0]}
+              {catalogLabel(fields["Ürün Tipi"][0],locale)}
             </Badge>
           )}
         </div>
@@ -54,7 +61,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Product Name - Fixed 2 lines */}
         <Link href={`/products/${productSlug}`} className="mb-3">
           <h3 className="font-medium text-base line-clamp-2 min-h-12 hover:underline">
-            {fields["Product Name"]}
+            {name}
           </h3>
         </Link>
 

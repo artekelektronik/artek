@@ -1,8 +1,9 @@
 # Artek Elektronik
 
-The bilingual website and product catalog for Artek Elektronik, a Turkish
-manufacturer of ferrite cores, bobbins, transformers, inductors, and custom
-magnetic components.
+The bilingual website and product catalog for Artek Elektronik. The checked-in
+catalog contains ferrite cores, iron powder cores, and power/EMI filters from
+multiple manufacturers. Other product groups use introductory pages. Manufacturing
+scope and historical claims require company confirmation before they are published.
 
 ## Website
 

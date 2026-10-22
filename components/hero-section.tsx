@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
-import { productCatalogPaths } from "@/lib/product-taxonomy";
+import { productGroup, productCatalogPaths } from "@/lib/product-taxonomy";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 18 },
@@ -27,9 +27,9 @@ const itemVariants = {
 };
 
 const quickLinks = [
-  { key: "cores", href: productCatalogPaths.ferrit, icon: Boxes },
-  { key: "bobbins", href: productCatalogPaths.pem, icon: Cable },
-  { key: "transformers", href: "/transformator", icon: Zap },
+  { key: "cores", href: productGroup.ferrite.href, icon: Boxes },
+  { key: "bobbins", href: productGroup.bobbins.href, icon: Cable },
+  { key: "transformers", href: productGroup.transformers.href, icon: Zap },
   { key: "custom", href: "/contact", icon: Sparkles },
 ] as const;
 
@@ -128,7 +128,8 @@ export default function HeroSection() {
               src="/products/core.png"
               alt={t("featureImageAlt")}
               fill
-              priority
+              loading="eager"
+              preload
               sizes="(max-width: 1024px) 100vw, 45vw"
               className="object-contain p-12 drop-shadow-[0_28px_30px_rgba(15,35,50,0.28)] sm:p-16 lg:p-20"
             />

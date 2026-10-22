@@ -1,4 +1,6 @@
 "use client";
+import { catalogLabel } from "@/lib/product-taxonomy";
+import { useLocale } from "next-intl";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,7 @@ export function ProductFilters({
   onReset,
   translations: t
 }: ProductFiltersProps) {
+  const locale = useLocale();
   const [localSelectedCategories, setLocalSelectedCategories] = useState<string[]>([]);
   const [localSelectedAltCategories, setLocalSelectedAltCategories] = useState<string[]>([]);
   const [localSelectedProductTypes, setLocalSelectedProductTypes] = useState<string[]>([]);
@@ -127,9 +130,9 @@ export function ProductFilters({
                   />
                   <Label
                     htmlFor={`category-${category}`}
-                    className="text-sm font-normal cursor-pointer"
+                    className="text-sm font-normal cursor-pointer min-h-9 flex items-center flex-1"
                   >
-                    {category}
+                    {catalogLabel(category, locale)}
                   </Label>
                 </div>
               ))}
@@ -154,9 +157,9 @@ export function ProductFilters({
                   />
                   <Label
                     htmlFor={`alt-category-${category}`}
-                    className="text-sm font-normal cursor-pointer"
+                    className="text-sm font-normal cursor-pointer min-h-9 flex items-center flex-1"
                   >
-                    {category}
+                    {catalogLabel(category, locale)}
                   </Label>
                 </div>
               ))}
@@ -181,9 +184,9 @@ export function ProductFilters({
                   />
                   <Label
                     htmlFor={`product-type-${type}`}
-                    className="text-sm font-normal cursor-pointer"
+                    className="text-sm font-normal cursor-pointer min-h-9 flex items-center flex-1"
                   >
-                    {type}
+                    {catalogLabel(type, locale)}
                   </Label>
                 </div>
               ))}
@@ -208,9 +211,9 @@ export function ProductFilters({
                   />
                   <Label
                     htmlFor={`supplier-country-${country}`}
-                    className="text-sm font-normal cursor-pointer"
+                    className="text-sm font-normal cursor-pointer min-h-9 flex items-center flex-1"
                   >
-                    {country}
+                    {catalogLabel(country, locale)}
                   </Label>
                 </div>
               ))}

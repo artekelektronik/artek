@@ -2,10 +2,9 @@
 
 import React from "react";
 import { Search, Globe, Menu, X, Grid3x3 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { SearchDialog } from "./search-dialog";
-import { PemIcon, FerritIcon, EeIcon } from "./icons";
 
 import {
   NavigationMenu,
@@ -31,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useMedia } from "@/hooks/use-media";
 import { cn } from "@/lib/utils";
-import { productCatalogPaths } from "@/lib/product-taxonomy";
+import { productGroups, groupName, productCatalogPaths } from "@/lib/product-taxonomy";
 
 const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   <svg
@@ -45,7 +44,8 @@ const WhatsAppIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905327183364";
+import { company } from "@/lib/company";
+const WHATSAPP_PHONE = company.whatsapp;
 
 const Header = () => {
   const t = useTranslations("nav");
@@ -58,6 +58,9 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const isMobile = useMedia("(max-width: 1023px)");
   const isLarge = !isMobile;
+  const headerRef = React.useRef<HTMLElement>(null);
+  const menuButtonRef = React.useRef<HTMLButtonElement>(null);
+  const menuOpen = isMobile && isMobileMenuOpen;
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -67,16 +70,37 @@ const Header = () => {
 
   React.useEffect(() => {
     const originalOverflow = document.body.style.overflow;
-    if (isMobileMenuOpen) document.body.style.overflow = "hidden";
+    if (menuOpen) document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = originalOverflow;
     };
-  }, [isMobileMenuOpen]);
+  }, [menuOpen]);
+
+  React.useEffect(() => {
+    if (!menuOpen) return;
+    const content = document.getElementById("site-content");
+    content?.setAttribute("inert", "");
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Radix dialogs/dropdowns handle their own portalled focus.
+      if (!headerRef.current?.contains(document.activeElement)) return;
+      if (event.key === "Escape") {
+        setIsMobileMenuOpen(false); menuButtonRef.current?.focus();
+      }
+      if (event.key !== "Tab") return;
+      const items = Array.from(headerRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex="0"]')).filter(el => el.getClientRects().length > 0);
+      const first = items[0], last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) {event.preventDefault(); last?.focus();}
+      if (!event.shiftKey && document.activeElement === last) {event.preventDefault(); first?.focus();}
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {content?.removeAttribute("inert"); document.removeEventListener("keydown", onKeyDown);};
+  }, [menuOpen]);
 
   return (
     <>
       <SearchDialog />
       <header
+        ref={headerRef}
         role="banner"
         data-state={isMobileMenuOpen ? "active" : "inactive"}
         {...(isScrolled && { "data-scrolled": true })}
@@ -87,7 +111,7 @@ const Header = () => {
             "absolute inset-x-0 top-0 z-50 h-14 border-b border-white/15 bg-artek-navy text-white ring-1 ring-transparent transition-all duration-300",
             "data-[scrolled]:border-white/10 data-[scrolled]:bg-artek-navy/95 data-[scrolled]:shadow-lg data-[scrolled]:shadow-slate-950/15 data-[scrolled]:backdrop-blur-xl",
             "has-data-[state=open]:ring-foreground/5 has-data-[state=open]:border-transparent has-data-[state=open]:bg-card/75 has-data-[state=open]:shadow-lg has-data-[state=open]:backdrop-blur has-data-[state=open]:border-b has-data-[state=open]:shadow-black/10 has-data-[state=open]:h-[calc(var(--navigation-menu-viewport-height)+3.4rem)]",
-            "max-lg:data-[state=active]:h-screen max-lg:data-[state=active]:bg-background/75 max-lg:data-[state=active]:backdrop-blur max-lg:h-14 max-lg:overflow-hidden max-lg:border-b"
+            "max-lg:data-[state=active]:h-screen max-lg:data-[state=active]:bg-artek-navy max-lg:data-[state=active]:backdrop-blur max-lg:h-14 max-lg:overflow-y-auto max-lg:border-b"
           )}
           data-scrolled={isScrolled || undefined}
           data-state={isMobileMenuOpen ? "active" : "inactive"}
@@ -103,16 +127,19 @@ const Header = () => {
               <div className="flex items-center justify-between gap-8 max-lg:h-14 max-lg:w-full max-lg:border-b">
                 <Link
                   href="/"
-                  aria-label="home"
+                  aria-label={t("home")}
                   className="text-lg font-semibold tracking-tight text-white"
                 >
-                  {t("brand")}
+                  {company.name}
                 </Link>
 
                 {!isLarge && (
                   <button
+                    ref={menuButtonRef}
+                    aria-controls="mobile-navigation"
                     onClick={() => setIsMobileMenuOpen((p) => !p)}
-                    aria-label={isMobileMenuOpen ? "Close Menu" : "Open Menu"}
+                    aria-expanded={isMobileMenuOpen}
+                    aria-label={isMobileMenuOpen ? t("closeMenu") : t("openMenu")}
                     className="relative z-20 -m-2.5 -mr-3 block cursor-pointer p-2.5 lg:hidden"
                   >
                     <Menu
@@ -150,7 +177,7 @@ const Header = () => {
                 className="max-lg:data-[state=active]:mt-6 data-[state=active]:flex hidden w-full flex-nowrap items-center justify-end gap-2 lg:m-0 lg:flex lg:w-fit lg:gap-3 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent"
                 data-state={isMobileMenuOpen ? "active" : "inactive"}
               >
-                <LanguageSwitcher pathname={pathname} />
+                <LanguageSwitcher pathname={pathname} onNavigate={() => setIsMobileMenuOpen(false)} />
                 <Button
                   onClick={() => {
                     const event = new KeyboardEvent("keydown", {
@@ -160,14 +187,16 @@ const Header = () => {
                     document.dispatchEvent(event);
                   }}
                   variant="outline"
-                  title="Search (Cmd+K)"
-                  className="h-8 border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink"
+                  aria-label={t("search")}
+                  title={t("search")}
+                  className="h-11 lg:h-8 border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink"
                 >
                   <Search size={12} />
                   <span className="hidden sm:inline">{t("search")}</span>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink">
+                <Button asChild variant="outline" size="sm" className="min-h-11 lg:min-h-0 border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink">
                   <a
+                    aria-label={t("whatsappLabel")}
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -187,18 +216,21 @@ const Header = () => {
   );
 };
 
-function LanguageSwitcher({ pathname }: { pathname: string }) {
+function LanguageSwitcher({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) {
+  const t = useTranslations("language");
+  const [query, setQuery] = React.useState("");
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(open) => { if (open) setQuery(window.location.search + window.location.hash); }}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="size-8 border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink">
-          <Globe size={12} />
+        <Button variant="outline" size="icon" className="size-11 lg:size-8 border-white/20 bg-white text-artek-navy hover:bg-artek-sky hover:text-artek-ink">
+          <span className="sr-only">{t("switchTo")}</span><Globe size={12} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-32">
         <DropdownMenuItem asChild>
           <Link
-            href={pathname}
+            href={`${pathname}${query}`}
+            onClick={onNavigate}
             locale="tr"
             className="flex items-center gap-2 cursor-pointer"
           >
@@ -208,7 +240,8 @@ function LanguageSwitcher({ pathname }: { pathname: string }) {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href={pathname}
+            href={`${pathname}${query}`}
+            onClick={onNavigate}
             locale="en"
             className="flex items-center gap-2 cursor-pointer"
           >
@@ -236,28 +269,8 @@ function MobileMenu({
     whatsappLabel: string;
   };
 }) {
-  const productCategories = [
-    {
-      title: tProduct("allProducts"),
-      href: productCatalogPaths.all,
-      icon: <Grid3x3 className="stroke-foreground fill-blue-500/15" />,
-    },
-    {
-      title: tProduct("pemTitle"),
-      href: productCatalogPaths.pem,
-      icon: <PemIcon className="stroke-foreground fill-green-500/15" />,
-    },
-    {
-      title: tProduct("ferritTitle"),
-      href: productCatalogPaths.ferrit,
-      icon: <FerritIcon className="stroke-foreground fill-indigo-500/15" />,
-    },
-    {
-      title: tProduct("eeTitle"),
-      href: productCatalogPaths.eeFerrit,
-      icon: <EeIcon className="stroke-foreground fill-blue-500/15" />,
-    },
-  ];
+  const locale = useLocale();
+  const productCategories = [{title:tProduct("allProducts"), href:productCatalogPaths.all, icon:<Grid3x3 />}, ...productGroups.map(g => ({title:groupName(g,locale), href:g.href, icon:<Grid3x3 />}))];
 
   const mobileLinks = [
     {
@@ -269,7 +282,7 @@ function MobileMenu({
   ];
 
   return (
-    <nav role="navigation" className="w-full pb-6 pt-2">
+    <nav id="mobile-navigation" role="navigation" className="w-full pb-6 pt-2">
       <Accordion
         type="single"
         collapsible
@@ -365,26 +378,8 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
     });
   };
 
-  const mainProducts = [
-    {
-      href: productCatalogPaths.pem,
-      title: tProduct("pemTitle"),
-      description: tProduct("pemDesc"),
-      icon: <PemIcon className="stroke-foreground fill-green-500/15" />,
-    },
-    {
-      href: productCatalogPaths.ferrit,
-      title: tProduct("ferritTitle"),
-      description: tProduct("ferritDesc"),
-      icon: <FerritIcon className="stroke-foreground fill-indigo-500/15" />,
-    },
-    {
-      href: productCatalogPaths.eeFerrit,
-      title: tProduct("eeTitle"),
-      description: tProduct("eeDesc"),
-      icon: <EeIcon className="stroke-foreground fill-blue-500/15" />,
-    },
-  ];
+  const locale = useLocale();
+  const mainProducts = productGroups.map(g => ({title:groupName(g,locale), href:g.href, description:undefined, icon:<Grid3x3 />}));
 
   return (
     <NavigationMenu

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +22,11 @@ export function ProductPagination({
   totalPages,
   onPageChange,
 }: ProductPaginationProps) {
+  const t = useTranslations("pagination");
+  const pageHref = (page:number) => {
+    if (typeof window === "undefined") return `?page=${page}`;
+    const params = new URLSearchParams(window.location.search); params.set("page",String(page)); return `?${params}`;
+  };
   const getPageNumbers = () => {
     const pages: (number | "ellipsis")[] = [];
     const showEllipsisStart = currentPage > 3;
@@ -65,11 +71,12 @@ export function ProductPagination({
   const pages = getPageNumbers();
 
   return (
-    <Pagination className="mt-8">
+    <Pagination aria-label={t("label")} className="mt-8">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href="#"
+            aria-label={t("previous")} text={t("previous")} aria-disabled={currentPage <= 1}
+            href={pageHref(Math.max(1,currentPage-1))}
             onClick={(e) => {
               e.preventDefault();
               if (currentPage > 1) {
@@ -85,12 +92,12 @@ export function ProductPagination({
         {pages.map((page, index) =>
           page === "ellipsis" ? (
             <PaginationItem key={`ellipsis-${index}`}>
-              <PaginationEllipsis />
+              <PaginationEllipsis text={t("more")} />
             </PaginationItem>
           ) : (
             <PaginationItem key={page}>
               <PaginationLink
-                href="#"
+                href={pageHref(page)}
                 onClick={(e) => {
                   e.preventDefault();
                   onPageChange(page);
@@ -105,7 +112,8 @@ export function ProductPagination({
 
         <PaginationItem>
           <PaginationNext
-            href="#"
+            aria-label={t("next")} text={t("next")} aria-disabled={currentPage >= totalPages}
+            href={pageHref(Math.min(totalPages,currentPage+1))}
             onClick={(e) => {
               e.preventDefault();
               if (currentPage < totalPages) {

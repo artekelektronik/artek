@@ -1,10 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProducts,
   fetchProduct,
   type ProductFilters,
 } from "@/lib/api/products";
-import type { AirtableProduct } from "@/types/airtable";
 
 // Query Keys Factory
 export const productKeys = {
@@ -22,8 +21,6 @@ export function useProducts(filters?: ProductFilters) {
     queryKey: productKeys.list(filters),
     queryFn: () => fetchProducts(filters),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchInterval: 1000 * 60 * 5, // Auto-refetch every 5 minutes for real-time stock updates
-    refetchIntervalInBackground: true, // Continue refetching even when tab is not focused
   });
 }
 

@@ -2,15 +2,15 @@
   "metadata": {
     "home": {
       "title": "Artek Elektronik | Ferrite Cores, Transformers, Inductors",
-      "description": "Turkish manufacturer of ferrite cores, bobbins, transformers, and inductors for SMPS, RF, and industrial use. ISO certified, custom solutions available."
+      "description": "Artek Elektronik product catalog: ferrite cores, iron powder cores and power / EMI filters. Contact us about bobbins and transformers."
     },
     "products": {
       "title": "Products | Artek Elektronik Ferrite & Magnetic Components",
-      "description": "Browse our catalog of ferrite cores, bobbins, SMPS transformers, and laminated transformers. Custom designs and fast delivery from Turkey for your projects."
+      "description": "Explore ferrite cores, iron powder cores and power / EMI filters. Contact us about other product groups."
     },
     "about": {
       "title": "About Us | Artek Elektronik | Electronics Manufacturer",
-      "description": "Learn about Artek Elektronik, a leading Turkish manufacturer of magnetic components with over 20 years of expertise in ferrite cores, bobbins, and transformers."
+      "description": "Company information and contact details for Artek Elektronik."
     },
     "contact": {
       "title": "Contact Us | Artek Elektronik | Ferrite & Transformer Experts",
@@ -18,24 +18,24 @@
     },
     "certificates": {
       "title": "Certifications | Artek Elektronik | Quality Standards",
-      "description": "View our ISO 9001, ISO 45001, and ISO 10002 certifications guaranteeing product excellence, occupational safety, and customer satisfaction in each component."
+      "description": "Archived company certificate files and their stated scope."
     },
     "ferritNuve": {
       "title": "Ferrite Core Manufacturer | EE ETD Toroid | Artek Elektronik",
-      "description": "EE, ETD, UU, RM, PQ and Toroid ferrite cores for SMPS, LED drivers and industrial power electronics. Made in Turkey with custom design and fast delivery."
+      "description": "Ferrite cores — product group introduction and contact."
     },
     "bobin": {
       "title": "Bobbin Manufacturer | EE ETD EFD PQ Series | Artek Elektronik",
-      "description": "EE, ETD, EFD, PQ, RM series transformer and inductor bobbins. High-temperature resistant, PCB compatible, UL94 V-0. Custom sizes and fast delivery from Turkey."
+      "description": "Bobbins — product group introduction and contact."
     },
     "transformator": {
       "title": "Transformer Manufacturer | SMPS Ferrite Laminated | Artek",
-      "description": "SMPS ferrite transformers, laminated steel transformers, toroid and custom designs. ISO 9001 certified manufacturing since 1987. Fast worldwide delivery from Turkey."
+      "description": "Transformers — product group introduction and contact."
     }
   },
   "homeKeywords": {
     "sectionTitle": "Ferrite Core, Bobbin and Transformer Solutions",
-    "sectionSubtitle": "Artek Elektronik has been Turkey's leading manufacturer of ferrite cores, bobbins, and transformers since 1987. With ISO 9001 certified production we manufacture EE, ETD, UU, Toroid ferrite cores; EE, ETD, EFD, PQ series bobbins; and SMPS ferrite and laminated transformers.",
+    "sectionSubtitle": "Browse ferrite cores and power / EMI filters in the catalog; learn about bobbin and transformer groups.",
     "ferritNuveTitle": "Ferrite Cores",
     "ferritNuveDesc": "High-frequency ferrite cores in EE, ETD, UU, PQ, RM and Toroid geometries.",
     "bobinTitle": "Bobbins",
@@ -51,19 +51,22 @@
     "whatsappLabel": "Quick Contact",
     "whatsappMessage": "Hello, I would like to get information about your products.",
     "products": "Products",
-    "search": "Search"
+    "search": "Search",
+    "home": "Home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "hero": {
-    "eyebrow": "Magnetic component manufacturer",
+    "eyebrow": "Artek Elektronik",
     "title": "Find the right magnetic component for your design.",
-    "subtitle": "Ferrite cores, bobbins, transformers and inductors—engineered and manufactured in Turkey for demanding applications.",
+    "subtitle": "Search by product code, series or category; contact us about the component you need.",
     "searchPlaceholder": "Search by product, series or product code…",
     "announcement": "Engineering spotlight",
     "featureTitle": "From standard ferrite cores to project-specific solutions",
-    "featureDescription": "Explore our production-ready portfolio or work directly with our engineers on the geometry, material and winding your application requires.",
+    "featureDescription": "Explore ferrite cores and power / EMI filters in the catalog. Share your bobbin and transformer requirements with us.",
     "featureImageAlt": "Artek ferrite core product",
-    "madeIn": "Made in Turkey",
-    "since": "Manufacturing since 1987",
+    "madeIn": "Magnetic components",
+    "since": "Products and technical enquiries",
     "viewDetails": "Explore Products",
     "requestQuote": "Request a Custom Quote",
     "quickLinks": {
@@ -77,8 +80,8 @@
   "home": {
     "hero1": {
       "title": "Ferrite Cores",
-      "subtitle": "Guaranteed Magnetic Stability.",
-      "description": "SMPS and high-frequency applications optimized with thermal stability and superior ferrite core varieties."
+      "subtitle": "Ferrite core products and series.",
+      "description": "Explore the ferrite core catalog and available product information."
     },
     "hero2": {
       "title": "Bobbins",
@@ -129,7 +132,7 @@
       "emcFilters": {
         "title": "EMI/EMC Filters",
         "subtitle": "International Standards Protection.",
-        "description": "Industrial and military standards compliant EMI/EMC filter solutions."
+        "description": "Explore the power / EMI filters listed in the catalog."
       },
       "airCoreCoils": {
         "title": "Air Core Coils",
@@ -148,8 +151,8 @@
     "title": "Why ARTEK ELEKTRONİK?",
     "subtitle": "Precision engineering meets uncompromising quality standards.",
     "certified": {
-      "title": "Internationally Certified Quality",
-      "description": "With our ISO 9001 certified processes and rigorous testing, we ensure that every component delivers the highest performance your project requires.",
+      "title": "Company certificates",
+      "description": "View the available company certificate files on our certificates page.",
       "highlight": "Quality Assurance, Tested Products"
     },
     "performance": {
@@ -160,7 +163,7 @@
     "leading": {
       "title": "Fast and Reliable Supply from Turkey",
       "description": "Thanks to our strategic position for European and Asian markets, we offer fast and seamless logistics solutions at competitive prices.",
-      "highlight": "Logistics Advantage, Made in Turkey"
+      "highlight": "Supply and enquiries"
     },
     "support": {
       "title": "Solution-Focused Communication",
@@ -169,9 +172,9 @@
     }
   },
   "footer": {
-    "brand": "ARTEK TEKNOLOJİ",
-    "tagline": "Leading manufacturer of high-frequency transformers and electronic components.",
-    "copyright": "© 2025 Artek Teknoloji. All rights reserved.",
+    "brand": "ARTEK ELEKTRONİK",
+    "tagline": "Product catalog and enquiries for electronic and magnetic components.",
+    "copyright": "© Artek Elektronik. All rights reserved.",
     "sections": {
       "product": "Product",
       "company": "Company",
@@ -213,8 +216,8 @@
   "products": {
     "title": "Products",
     "eyebrow": "Product catalog",
-    "description": "Explore our ferrite cores, bobbins, transformers and custom magnetic component solutions. If the right part is not in the catalog, our engineers can help design it.",
-    "quality": "Controlled production",
+    "description": "Explore ferrite cores, iron powder cores and power / EMI filters. Contact us about other product groups.",
+    "quality": "Product catalog",
     "support": "Technical selection support",
     "ctaTitle": "Cannot find the dimensions or rating you need?",
     "ctaDescription": "Share your technical requirements and we will identify a standard product or develop a solution for your application.",
@@ -222,7 +225,10 @@
     "error": "Error",
     "errorOccurred": "An error occurred",
     "noProducts": "No products found",
-    "tryChangingFilters": "Try changing your filters"
+    "tryChangingFilters": "Try changing your filters",
+    "contact": "Contact us",
+    "retry": "Try again",
+    "loading": "Loading products"
   },
   "productCard": {
     "inStock": "In Stock",
@@ -256,7 +262,14 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "chatNow": "Chat on WhatsApp",
-    "share": "Share"
+    "share": "Share",
+    "enquire": "Enquire about this product",
+    "brand": "Brand / manufacturer",
+    "category": "Category",
+    "email": "Enquire by email",
+    "copyFailed": "Could not copy the link. You can copy the browser address.",
+    "shareFailed": "Could not open sharing. You can copy the link.",
+    "reviewNote": "Some information in the source record requires confirmation. Contact us with the product code before selecting this product."
   },
   "filters": {
     "title": "Filters",
@@ -280,7 +293,9 @@
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",
       "stockDesc": "Stock: High to Low"
-    }
+    },
+    "columns2": "2 columns",
+    "columns3": "3 columns"
   },
   "productNav": {
     "title": "Products",
@@ -292,8 +307,8 @@
     "description": "High-quality electronic components for demanding applications.",
     "allProducts": "All Products",
     "allProductsDesc": "Browse and filter our complete product catalog.",
-    "pemTitle": "PEM Filters and Coils",
-    "pemDesc": "View filters and coils in the PEM product group.",
+    "pemTitle": "Power / EMI Filters",
+    "pemDesc": "Explore power and EMI filters in the PEM group.",
     "ferritTitle": "Ferrite Cores",
     "ferritDesc": "View ferrite core products.",
     "eeTitle": "EE Ferrite Cores",
@@ -318,57 +333,43 @@
     },
     "vision": {
       "content": "Our Vision is clear: Representing Turkey's manufacturing and export power, Artek Elektronik aims to become Turkey's number one exporter of high-frequency transformers and bobbins in the near future. In line with this goal, we continue to invest in technology and human resources, increasing our impact on the global market every day.",
-      "closing": "With the accumulation of experience from yesterday to today, Artek Elektronik will continue to shape the energy solutions of tomorrow."
+      "closing": "With the accumulation of experience from yesterday to today, Artek Elektronik will continue to shape the energy solutions of tomorrow.",
+      "heading": "Our Vision"
     },
     "cta": {
       "title": "Let’s move your project into production.",
       "description": "Speak directly with our technical team about standard product selection, samples, or custom manufacturing.",
       "button": "Contact our team"
-    }
+    },
+    "imageAlt": "Electronic components"
   },
   "contact": {
     "title": "Contact",
     "heading": "Contact us",
     "eyebrow": "Sales and engineering team",
-    "description": "Tell us about your product selection, sample, pricing or custom manufacturing request. We will understand the requirement and connect you with the right person quickly.",
-    "responseTime": "We typically respond within the same business day",
+    "description": "Contact us about product selection and your technical requirements.",
     "directTitle": "Reach us directly",
-    "directDescription": "For urgent requests and quick product questions, contact us by phone, email or WhatsApp.",
+    "directDescription": "You can contact us by phone, email or WhatsApp.",
     "phoneLabel": "Phone",
     "emailLabel": "Email",
     "whatsapp": "Message us on WhatsApp",
     "formTitle": "Tell us about your project",
-    "formDescription": "Including technical values, quantities or a product code helps us respond faster.",
+    "formDescription": "Include technical values and the product code, if available, in your message.",
     "addressLabel": "Address",
-    "address": "Istanbul, Turkey",
-    "phone": "+90 (212) 555-0147",
-    "email": "sales@artek-elektronik.com",
-    "form": {
-      "name": "Name*",
-      "email": "Email*",
-      "phone": "Phone*",
-      "service": "Service interested in*",
-      "message": "Describe your requirements*",
-      "submit": "Submit now",
-      "submitting": "Sending your message...",
-      "success": "Message sent successfully!",
-      "successDescription": "We'll get back to you as soon as possible.",
-      "error": "Failed to send message",
-      "errorDescription": "Please try again or contact us directly.",
-      "services": {
-        "general": "General Inquiry",
-        "ferriteCore": "Ferrite Core",
-        "transformers": "Transformers",
-        "partnership": "Partnership"
-      }
-    }
+    "selectedProduct": "Your product enquiry",
+    "viewProduct": "Back to product",
+    "productFormNote": "WhatsApp and email links include the product details. If you use the form, include the product code in your message.",
+    "invalidProduct": "Product not found. Please include the product code in your message.",
+    "skipToForm": "Go to form",
+    "formFallback": "If the form does not load, you can contact us by phone or email.",
+    "externalLanguage": "The external form is currently in Turkish. You can also enquire in English by email or WhatsApp."
   },
   "language": {
     "switchTo": "Switch language"
   },
   "ferritNuve": {
     "heroTitle": "Ferrite Cores",
-    "heroSubtitle": "High-Quality Ferrite Cores Manufactured in Turkey",
+    "heroSubtitle": "Ferrite core products and applications",
     "heroDescription": "Custom ferrite core solutions for high-frequency SMPS, LED drivers and industrial power electronics — EE, ETD, UU, RM and Toroid geometries available.",
     "whatIsTitle": "What is a Ferrite Core?",
     "whatIsText": "A ferrite core is a ceramic magnetic material produced by sintering iron oxide (Fe₂O₃) with metal oxides such as zinc, nickel, or manganese at high temperatures. Its low-loss characteristic at high frequencies makes it widely used in SMPS transformers, EMI filters, inductors, and bobbin assemblies.",
@@ -443,13 +444,13 @@
     "app6": "UPS and Chargers",
     "ctaTitle": "Contact Us for a Bobbin Quote",
     "ctaText": "Choose from the standard catalog or discuss custom size and winding configurations with our technical team.",
-    "ctaProducts": "Browse All Bobbins",
+    "ctaProducts": "Enquire about bobbins",
     "ctaContact": "Get a Quote"
   },
   "transformator": {
     "heroTitle": "Transformers",
-    "heroSubtitle": "Ferrite and Laminated Transformer Manufacturing — Turkey",
-    "heroDescription": "SMPS ferrite transformers, laminated power transformers, and custom-designed transformers. Artek Elektronik has been manufacturing transformers to industrial quality standards since 1987.",
+    "heroSubtitle": "Ferrite and laminated transformer groups",
+    "heroDescription": "Learn about ferrite, laminated and other transformer groups. Contact us about the requirements of your application.",
     "whatIsTitle": "What is a Transformer?",
     "whatIsText": "A transformer is a power electronics component that transfers energy between two or more windings through electromagnetic induction. High-frequency ferrite core transformers are used in SMPS circuits, while laminated (silicon steel) transformers are used in industrial 50/60 Hz systems.",
     "whyTitle": "Why Artek Transformers?",
@@ -459,8 +460,8 @@
     "why2Text": "Wide power range from 1 W SMPS pulsers to 10 kVA laminated transformer applications.",
     "why3Title": "Custom Design",
     "why3Text": "Frequency, voltage, current, and dimension optimization according to customer specifications.",
-    "why4Title": "ISO Certified Production",
-    "why4Text": "Consistent quality in every batch with ISO 9001:2015 certified processes, test and verification protocols.",
+    "why4Title": "Certificate documents",
+    "why4Text": "The archived company certificates cover wholesale trade. Contact us to confirm the documentation required for your application.",
     "typesTitle": "Transformer Types",
     "type1Name": "SMPS Ferrite Transformers",
     "type1Desc": "Compact size and high efficiency in switched-mode power supply transformers operating between 20 kHz – 3 MHz.",
@@ -483,7 +484,7 @@
     "app6": "Automotive Charging and Power Conversion",
     "ctaTitle": "Get Your Transformer Quote",
     "ctaText": "Browse our product catalog or contact our technical team for custom transformer design.",
-    "ctaProducts": "Transformer Products",
+    "ctaProducts": "Enquire about transformers",
     "ctaContact": "Request a Quote"
   },
   "search": {
@@ -495,18 +496,18 @@
   },
   "certificates": {
     "title": "Our Certifications",
-    "subtitle": "ARTEK ELEKTRONIK is committed to maintaining the highest international standards in quality, safety, and customer satisfaction.",
+    "subtitle": "View and download the certificate files available in our archive.",
     "viewCertificate": "View Certificate",
     "downloadPDF": "Download PDF",
     "viewFullSize": "View Full Size",
     "close": "Close",
     "certificationDetails": "International Certifications",
     "certificationDesc": "Our certifications demonstrate our commitment to excellence and continuous improvement in all areas of our operations.",
-    "commitment": "Our Quality Commitment",
-    "commitmentDesc": "We maintain rigorous standards across all our operations to ensure the highest quality products and services for our customers.",
-    "commitmentItem1": "ISO 9001:2015 certified quality management system",
-    "commitmentItem2": "ISO 45001:2018 occupational health and safety standards",
-    "commitmentItem3": "ISO 10002:2018 customer satisfaction management",
+    "commitment": "Document scope",
+    "commitmentDesc": "The archived documents state the scope as wholesale trade of electronic devices and parts. They do not establish certification of every catalog product or of manufacturing processes.",
+    "commitmentItem1": "ISO 9001:2015",
+    "commitmentItem2": "ISO 45001:2018",
+    "commitmentItem3": "ISO 10002:2018",
     "certificates": {
       "iso9001": {
         "description": "Quality Management System Certification"
@@ -517,6 +518,14 @@
       "iso10002": {
         "description": "Customer Satisfaction and Complaint Management"
       }
-    }
+    },
+    "imageAlt": "Quality documents",
+    "archiveNote": "These are archived documents. The files show a validity date of 18 March 2022 and a certification cycle end date of 18 March 2024. Current validity must be confirmed with the company; these files do not establish current certification."
+  },
+  "pagination": {
+    "label": "Pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "more": "More pages"
   }
 }

@@ -8,5 +8,5 @@ export const config = {
   // - API routes (/api/...)
   // - Next.js internals (/_next/...)
   // - Static files (favicon.ico, etc.)
-  matcher: ["/((?!api|trpc|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/((?!api|trpc|_next|_vercel|icon(?:/|$)|apple-icon(?:/|$)|.*\\..*).*)"],
 };

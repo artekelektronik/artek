@@ -1,7 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
+import { company } from "@/lib/company";
+import { productGroups, groupName } from "@/lib/product-taxonomy";
 
 interface SubSection {
   title: string;
@@ -44,23 +47,19 @@ const Footer = ({
   bottomLinks,
 }: Footer2Props) => {
   const t = useTranslations("footer");
+  const locale = useLocale();
 
   const defaultLogo = {
     src: "",
-    alt: "Artek Teknoloji",
-    title: t("brand"),
-    url: "https://www.artekteknoloji.com",
+    alt: company.name,
+    title: company.name,
+    url: "/",
   };
 
   const defaultMenuItems = [
     {
       title: t("sections.product"),
-      links: [
-        { text: t("links.ferriteCores"), url: "/ferrit-nuve" },
-        { text: t("links.bobbins"), url: "/bobin" },
-        { text: t("links.transformers"), url: "/transformator" },
-        { text: t("links.laminated"), url: "/products" },
-      ],
+      links: productGroups.map(group => ({text: groupName(group, locale), url: group.href})),
     },
     {
       title: t("sections.company"),
@@ -81,30 +80,13 @@ const Footer = ({
       ],
     },
     {
-      title: "İletişim",
-      links: [
-        { text: "0212 252 11 68", url: "tel:+902122521168" },
-        { text: "0532 718 33 64", url: "tel:+905327183364" },
-        { text: "artek@ferritnuve.com", url: "mailto:artek@ferritnuve.com" },
-        {
-          text: "Ferrit Nüve Erişteci Sokak Abed Han No: 7/1 Karaköy - İstanbul",
-          url: "https://maps.google.com/?q=Ferrit%20N%C3%BCve%20Eri%C5%9Fteci%20Sokak%20Abed%20Han%20No%3A%207%2F1%20Karak%C3%B6y%20-%20%C4%B0stanbul",
-        },
-      ],
-    },
-    {
-      title: t("sections.social"),
-      links: [
-        { text: t("links.instagram"), url: "https://instagram.com" },
-        { text: t("links.linkedin"), url: "https://linkedin.com" },
-      ],
+      title: t("links.contact"),
+      links: [...company.phones.map(p => ({text:p.label, url:p.href})),
+        {text:company.email, url:`mailto:${company.email}`},
+        {text:company.address, url:company.map}],
     },
   ];
-
-  const defaultBottomLinks = [
-    { text: t("terms"), url: "#" },
-    { text: t("privacyPolicy"), url: "#" },
-  ];
+  const defaultBottomLinks: {text: string; url: string}[] = [];
 
   const finalLogo = logo || defaultLogo;
   const finalTagline = tagline || t("tagline");
@@ -116,7 +98,7 @@ const Footer = ({
     <section className="bg-artek-ink py-20 text-white sm:py-24">
       <div className="mx-auto max-w-6xl px-6">
         <footer>
-          <div className="grid grid-cols-2 gap-8 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-8 lg:grid-cols-5">
             <div className="col-span-2 mb-8 lg:mb-0">
               <div className="flex items-center gap-2 lg:justify-start">
                 <h2 className="text-2xl font-bold">{finalLogo.title}</h2>
@@ -130,7 +112,7 @@ const Footer = ({
                   {section.links.map((link, linkIdx) => (
                     <li
                       key={linkIdx}
-                      className="hover:text-primary font-medium"
+                      className="hover:text-primary font-medium break-words"
                     >
                       <Link href={link.url}>{link.text}</Link>
                     </li>
@@ -160,7 +142,7 @@ const Footer = ({
             <ul className="flex gap-4">
               {finalBottomLinks.map((link, linkIdx) => (
                 <li key={linkIdx} className="hover:text-primary underline">
-                  <a href={link.url}>{link.text}</a>
+                  <Link href={link.url}>{link.text}</Link>
                 </li>
               ))}
             </ul>
