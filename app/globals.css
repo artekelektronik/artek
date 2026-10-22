@@ -139,3 +139,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Consistent keyboard focus and anchor targets across localized pages. */
+:where(a, button, input, select, textarea, summary):focus-visible { outline: 3px solid #647bff; outline-offset: 4px; }
+html { scroll-padding-top: 5rem; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

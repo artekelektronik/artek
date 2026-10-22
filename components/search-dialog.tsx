@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/command";
 import { FileText, Package, Loader2 } from "lucide-react";
 import { generateProductSlug } from "@/lib/utils";
+import { productContent } from "@/lib/product-content";
 import type { AirtableProduct } from "@/types/airtable";
 import { DocumentAnalysisIllustration } from "@/components/illustrations/document-analysis";
 
@@ -287,7 +288,7 @@ export function SearchDialog() {
             );
             return {
               id: product.id,
-              title: product.fields["Product Name"],
+              title: productContent(product,locale).name,
               subtitle:
                 product.fields["Product Code"] ||
                 product.fields.Category ||
@@ -304,7 +305,7 @@ export function SearchDialog() {
 
       setSearchResults(results);
     });
-  }, [debouncedQuery, products, getDefaultPages]);
+  }, [debouncedQuery, products, getDefaultPages, locale]);
 
   const handleSelect = (href: string) => {
     setOpen(false);
@@ -315,11 +316,14 @@ export function SearchDialog() {
   return (
     <>
       <CommandDialog
+        title={t("nav.search")}
+        description={t("search.placeholder")}
         open={open}
         onOpenChange={setOpen}
         className="ring-4 ring-white/30"
       >
         <CommandInput
+          aria-label={t("search.placeholder")}
           placeholder={t("search.placeholder") || "Search products, pages..."}
           value={searchQuery}
           onValueChange={setSearchQuery}

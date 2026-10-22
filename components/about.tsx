@@ -31,7 +31,7 @@ const About = ({ className }: About1Props) => {
         <div className="grid gap-6 md:grid-cols-2">
           <img
             src="https://images.unsplash.com/photo-1716643863806-989dd76ae093?q=80&w=2274&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="Electronics Manufacturing"
+            alt={t("imageAlt")}
             className="size-full max-h-96 rounded-2xl object-cover"
           />
           <div className="flex flex-col justify-between gap-10 rounded-2xl bg-black bg-cover bg-center p-10 relative overflow-hidden" style={{backgroundImage: "url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')"}}>
@@ -106,7 +106,7 @@ const About = ({ className }: About1Props) => {
           <div className="grid gap-8 md:grid-cols-2 items-center">
             <div>
               <h2 className="mb-4 text-3xl font-semibold tracking-tight md:text-5xl">
-                {t("expertise.heading").includes("Vizyon") ? "Vizyonumuz" : "Our Vision"}
+                {t("vision.heading")}
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
                 {t("vision.content")}
@@ -117,7 +117,7 @@ const About = ({ className }: About1Props) => {
             </div>
             <img
               src="https://images.unsplash.com/photo-1655393001768-d946c97d6fd1?q=80&w=2676&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Industrial Technology"
+              alt={t("imageAlt")}
               className="rounded-2xl object-cover w-full h-96"
             />
           </div>

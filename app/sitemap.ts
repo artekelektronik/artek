@@ -13,7 +13,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     {
       url: siteUrl,
-      lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 1,
       alternates: {
@@ -25,7 +24,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/products`,
-      lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.9,
       alternates: {
@@ -37,7 +35,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/about`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
       alternates: {
@@ -49,7 +46,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/certificates`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,
       alternates: {
@@ -61,7 +57,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/contact`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.7,
       alternates: {
@@ -73,7 +68,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/ferrit-nuve`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.85,
       alternates: {
@@ -85,7 +79,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/bobin`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.85,
       alternates: {
@@ -97,7 +90,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${siteUrl}/transformator`,
-      lastModified: new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.85,
       alternates: {
@@ -119,7 +111,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     return {
       url: `${siteUrl}/products/${slug}`,
-      lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,
       alternates: {
@@ -131,5 +122,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     };
   });
 
-  return [...staticPages, ...productUrls];
+  const entries = [...staticPages, ...productUrls];
+  return entries.flatMap(entry => [entry, {...entry, url: entry.alternates.languages.en}]);
 }

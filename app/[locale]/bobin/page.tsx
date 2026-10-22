@@ -2,14 +2,13 @@ import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   getLanguageAlternates,
   getLocalizedPath,
   getOgImageUrl,
   getSiteUrl,
 } from "@/lib/seo";
-import { productCatalogPaths } from "@/lib/product-taxonomy";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -93,7 +92,7 @@ export default async function BobinPage({ params }: Props) {
         </p>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
-            href={productCatalogPaths.pem}
+            href="/contact"
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             {t("ctaProducts")}
@@ -146,7 +145,7 @@ export default async function BobinPage({ params }: Props) {
       </section>
 
       {/* Applications */}
-      <section className="space-y-4">
+      <section id="applications" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-bold">{t("applicationsTitle")}</h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {apps.map((app) => (
@@ -164,7 +163,7 @@ export default async function BobinPage({ params }: Props) {
         <p className="text-muted-foreground">{t("ctaText")}</p>
         <div className="flex flex-wrap gap-3">
           <Link
-            href={productCatalogPaths.pem}
+            href="/contact"
             className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-5 py-2.5 text-sm font-medium hover:bg-primary/90 transition-colors"
           >
             {t("ctaProducts")}

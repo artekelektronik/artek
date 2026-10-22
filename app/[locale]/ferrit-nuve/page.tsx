@@ -2,7 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   getLanguageAlternates,
   getLocalizedPath,

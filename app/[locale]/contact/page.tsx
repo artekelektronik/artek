@@ -1,6 +1,9 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
+import { getProductsFromJSON } from "@/lib/local-products";
+import { productContent } from "@/lib/product-content";
+import { generateProductSlug } from "@/lib/utils";
 import { Contact20 } from "@/components/contact";
 import {
   getLanguageAlternates,
@@ -11,6 +14,7 @@ import {
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{product?:string}>;
 };
 
 export async function generateMetadata({
@@ -47,9 +51,17 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <Contact20 />;
+  const {product: id} = await searchParams;
+  const product = getProductsFromJSON().find(p => p.id === id);
+  const context = product ? {
+    id:product.id,
+    name:productContent(product,locale).name,
+    code:product.fields["Product Code"],
+    url:`${await getSiteUrl()}${getLocalizedPath(locale, `/products/${generateProductSlug(product.fields["Product Name"],product.id)}`)}`,
+  } : undefined;
+  return <Contact20 product={context} invalidProduct={Boolean(id && !product)} />;
 }

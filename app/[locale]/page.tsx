@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import HeroSection from "@/components/hero-section";
 import Image from "next/image";
 import { ArrowRight, BadgeCheck, Factory, Globe2, Headphones, ShieldCheck } from "lucide-react";
@@ -12,7 +12,7 @@ import {
   getOgImageUrl,
   getSiteUrl,
 } from "@/lib/seo";
-import { productCatalogPaths } from "@/lib/product-taxonomy";
+import { productGroup, groupName, productCatalogPaths } from "@/lib/product-taxonomy";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -61,19 +61,20 @@ export default async function Home({ params }: Props) {
 
 function HomeContent() {
   const t = useTranslations();
+  const locale = useLocale();
 
   const products = [
-    { key: "hero1", image: "/products/core.png", href: productCatalogPaths.ferrit },
-    { key: "hero2", image: "/products/bobbins.png", href: productCatalogPaths.pem },
-    { key: "hero3", image: "/products/feritte-transformers.png", href: productCatalogPaths.ferrit },
-    { key: "hero4", image: "/products/laminated-transformers.png", href: "/transformator" },
+    { group: productGroup.ferrite, key: "hero1", image: "/products/core.png", href: productCatalogPaths.ferrit },
+    { group: productGroup.bobbins, key: "hero2", image: "/products/bobbins.png", href: "/bobin" },
+    { group: productGroup.transformers, key: "hero3", image: "/products/feritte-transformers.png", href: "/transformator" },
+    { group: productGroup.transformers, key: "hero4", image: "/products/laminated-transformers.png", href: "/transformator" },
   ] as const;
 
   const secondaryProducts = [
-    { key: "inductors", image: "/products/inductors.png", href: productCatalogPaths.ironPowder },
-    { key: "powerInductors", image: "/products/power-inductors.png", href: productCatalogPaths.ironPowder },
-    { key: "emcFilters", image: "/products/emc-filters.png", href: productCatalogPaths.pem },
-    { key: "airCoreCoils", image: "/products/air-core-coils.png", href: "/contact" },
+    { group: productGroup.inductors, key: "inductors", image: "/products/inductors.png", href: "/bobin#applications" },
+    { group: productGroup.inductors, key: "powerInductors", image: "/products/power-inductors.png", href: "/bobin#applications" },
+    { group: productGroup.emi, key: "emcFilters", image: "/products/emc-filters.png", href: productCatalogPaths.pem },
+    { group: productGroup.inductors, key: "airCoreCoils", image: "/products/air-core-coils.png", href: "/contact" },
   ] as const;
 
   return (
@@ -100,13 +101,13 @@ function HomeContent() {
             {products.map((product, index) => (
               <Link
                 key={product.key}
-                href={product.href}
+                href={product.group.href}
                 className="group relative isolate min-h-[460px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-10"
               >
                 <div className="relative z-10 max-w-sm">
                   <span className="text-xs font-bold text-artek-violet">0{index + 1}</span>
                   <h3 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
-                    {t(`home.${product.key}.title`)}
+                    {product.key === "hero1" || product.key === "hero2" ? groupName(product.group,locale) : t(`home.${product.key}.title`)}
                   </h3>
                   <p className="mt-3 text-base text-slate-600">
                     {t(`home.${product.key}.subtitle`)}
@@ -120,7 +121,7 @@ function HomeContent() {
                   <div className="absolute inset-0 rounded-tl-[6rem] bg-gradient-to-br from-artek-porcelain to-artek-mist" />
                   <Image
                     src={product.image}
-                    alt={t(`home.${product.key}.title`)}
+                    alt={product.key === "hero1" || product.key === "hero2" ? groupName(product.group,locale) : t(`home.${product.key}.title`)}
                     fill
                     sizes="(max-width: 768px) 75vw, 35vw"
                     className="object-contain p-8 transition duration-500 group-hover:scale-105"
@@ -183,7 +184,7 @@ function HomeContent() {
             {secondaryProducts.map((product) => (
               <Link
                 key={product.key}
-                href={product.href}
+                href={product.group.href}
                 className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative aspect-[4/3] bg-gradient-to-br from-artek-porcelain to-artek-mist">

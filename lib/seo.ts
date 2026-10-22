@@ -1,19 +1,8 @@
-import { headers } from "next/headers";
 
 const DEFAULT_SITE_URL = "https://www.ferritnuve.com";
 
 export async function getSiteUrl() {
-  const requestHeaders = await headers();
-  const forwardedHost = requestHeaders.get("x-forwarded-host");
-  const host = forwardedHost ?? requestHeaders.get("host");
-
-  if (host) {
-    const forwardedProto = requestHeaders.get("x-forwarded-proto");
-    const protocol = forwardedProto ?? (host.includes("localhost") ? "http" : "https");
-    return `${protocol}://${host}`;
-  }
-
-  return process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL;
+  return (process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL).replace(/\/+$/, "");
 }
 
 export function getLocalizedPath(locale: string, path = "") {

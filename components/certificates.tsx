@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Award, CheckCircle2, Shield } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -9,29 +9,7 @@ interface CertificatesProps {
   className?: string;
 }
 
-const CERTIFICATES = [
-  {
-    id: "iso9001",
-    name: "ISO 9001:2015",
-    file: "ARTEK-ELEKTRONİK 9001.pdf",
-    image: "/certificates/iso-9001.jpg",
-    icon: Award,
-  },
-  {
-    id: "iso45001",
-    name: "ISO 45001:2018",
-    file: "QUASER -ARTEK-ELEKTRONİK-45001.pdf",
-    image: "/certificates/ISO-45001.jpg",
-    icon: Shield,
-  },
-  {
-    id: "iso10002",
-    name: "ISO 10002:2018",
-    file: "QUASER-ARTEK-ELEKTRONİK-10002.pdf",
-    image: "/certificates/iso-10002-logo.png",
-    icon: CheckCircle2,
-  },
-];
+import { certificates as CERTIFICATES } from "@/lib/certificates";
 
 const Certificates = ({ className }: CertificatesProps) => {
   const t = useTranslations("certificates");
@@ -49,10 +27,10 @@ const Certificates = ({ className }: CertificatesProps) => {
           </p>
         </div>
 
+        <p className="rounded-lg border p-5 text-muted-foreground">{t("archiveNote")}</p>
         {/* Certificates Grid with Images */}
         <div className="grid gap-8 md:grid-cols-3">
           {CERTIFICATES.map((cert) => {
-            const Icon = cert.icon;
             return (
               <div
                 key={cert.id}
@@ -79,13 +57,14 @@ const Certificates = ({ className }: CertificatesProps) => {
 
                 {/* View PDF Button */}
                 <a
-                  href={`/certificates/${cert.file}`}
+                  href={`/certificates/${encodeURIComponent(cert.file)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto inline-flex items-center justify-center rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  {t("viewCertificate")}
+                  {t("viewCertificate")} — {cert.name} (PDF)
                 </a>
+                <a href={`/certificates/${encodeURIComponent(cert.file)}`} download className="underline py-2 text-sm">{t("downloadPDF")} — {cert.name}</a>
               </div>
             );
           })}
@@ -118,7 +97,7 @@ const Certificates = ({ className }: CertificatesProps) => {
             </div>
             <img
               src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Quality Assurance"
+              alt={t("imageAlt")}
               className="rounded-2xl object-cover w-full h-96"
             />
           </div>

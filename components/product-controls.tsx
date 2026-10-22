@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -57,10 +58,11 @@ export function ProductControls({
   onSortChange,
   translations: t,
 }: ProductControlsProps) {
+  const labels = useTranslations("controls");
   const viewOptions = getViewOptions(gridColumns);
 
   return (
-    <div className="flex items-center justify-between gap-4 pb-6">
+    <div className="flex flex-wrap items-center justify-between gap-4 pb-6">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">{t.view}</span>
@@ -68,7 +70,7 @@ export function ProductControls({
             value={itemsPerPage.toString()}
             onValueChange={(value) => onItemsPerPageChange(Number(value))}
           >
-            <SelectTrigger className="h-9 w-20">
+            <SelectTrigger aria-label={t.view} className="h-11 w-20">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -84,7 +86,7 @@ export function ProductControls({
 
       <div className="flex items-center gap-3">
         <Select value={sortBy} onValueChange={onSortChange}>
-          <SelectTrigger className="h-9 w-[180px]">
+          <SelectTrigger aria-label={t.sortBy} className="h-11 w-[180px]">
             <SelectValue placeholder={t.sortBy} />
           </SelectTrigger>
           <SelectContent>
@@ -102,10 +104,10 @@ export function ProductControls({
           onValueChange={(value) => value && onGridColumnsChange(Number(value))}
           className="hidden sm:flex"
         >
-          <ToggleGroupItem value="2" aria-label="2 columns" size="sm">
+          <ToggleGroupItem value="2" aria-label={labels("columns2")} size="sm">
             <Grid3x3 className="h-4 w-4" />
           </ToggleGroupItem>
-          <ToggleGroupItem value="3" aria-label="3 columns" size="sm">
+          <ToggleGroupItem value="3" aria-label={labels("columns3")} size="sm">
             <LayoutGrid className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>

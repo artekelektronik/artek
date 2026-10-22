@@ -3,10 +3,10 @@
 import * as React from "react";
 import { Link } from "@/i18n/navigation";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { productCatalogPaths } from "@/lib/product-taxonomy";
+import { productGroups, groupName, productCatalogPaths } from "@/lib/product-taxonomy";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -20,28 +20,8 @@ export function ProductNavigation() {
   const isMobile = useIsMobile();
   const t = useTranslations("productNav");
 
-  const products = [
-    {
-      title: t("allProducts"),
-      href: productCatalogPaths.all,
-      description: t("allProductsDesc"),
-    },
-    {
-      title: t("pemTitle"),
-      href: productCatalogPaths.pem,
-      description: t("pemDesc"),
-    },
-    {
-      title: t("ferritTitle"),
-      href: productCatalogPaths.ferrit,
-      description: t("ferritDesc"),
-    },
-    {
-      title: t("eeTitle"),
-      href: productCatalogPaths.eeFerrit,
-      description: t("eeDesc"),
-    },
-  ];
+  const locale = useLocale();
+  const products = [{title:t("allProducts"),href:productCatalogPaths.all,description:t("allProductsDesc")}, ...productGroups.map(group => ({title:groupName(group,locale), href:group.href, description:""}))];
 
   return (
     <NavigationMenu
@@ -63,7 +43,7 @@ export function ProductNavigation() {
                   >
                     <img
                       src="/emc_filter.png"
-                      alt="Featured Product"
+                      alt={t("ourProducts")}
                       width={200}
                       height={200}
                       className="mb-4 rounded-md"
