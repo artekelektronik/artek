@@ -131,6 +131,8 @@ export const product = pgTable(
     subCategory: text("sub_category"),
     manufacturer: text("manufacturer"),
     manufacturerCode: text("manufacturer_code"),
+    supplier: text("supplier"),
+    supplierCountry: text("supplier_country"),
     description: text("description"),
     images: text("images").array().notNull().default(sql`'{}'::text[]`),
     datasheets: jsonb("datasheets").$type<Datasheet[]>().notNull().default([]),

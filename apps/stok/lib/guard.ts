@@ -26,7 +26,7 @@ export async function loadActor(headers: Headers) {
     db.select({ role: userRole.role }).from(userRole).where(eq(userRole.userId, userId)),
     db.select({ id: userLokasyon.lokasyonId }).from(userLokasyon).where(eq(userLokasyon.userId, userId)),
   ]);
-  return { userId, name: session.user.name, roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
+  return { userId, roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
 }
 
 // The one server-side check every action runs before touching data.

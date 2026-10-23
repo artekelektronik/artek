@@ -23,6 +23,8 @@ describe("manual stock-out", { skip: skipWithoutDatabase }, () => {
   async function receive(productId: string, quantity: string, lokasyonName: keyof typeof lokasyon = "Karaköy Mağaza") {
     const admin = await signedInAs(["admin"]);
     await receipts.recordReceipt(admin.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon[lokasyonName],
       lines: [{ productId, quantity }],
       idempotencyKey: key(),

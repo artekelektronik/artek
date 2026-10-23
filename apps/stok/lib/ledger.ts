@@ -1,13 +1,13 @@
 import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../db";
+import { db, type Tx } from "../db";
 import { documentKind, lokasyon, movementType, product, stock, stockDocument, stockMovement, user } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { can, type Actor } from "./permissions";
 import { addQuantities, formatQuantity, parseQuantity, subtractQuantity, unitLabels } from "./quantity";
 
-export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type { Tx } from "../db";
 export type MovementType = (typeof movementType.enumValues)[number];
 
 export type NewDocument = {
@@ -67,9 +67,11 @@ async function applyLine(tx: Tx, documentId: string, userId: string, line: Movem
   if (!z.uuid().safeParse(line.productId).success) throw new UserError("Ürün bulunamadı; listeden bir ürün seçin.");
   const found = await tx.query.product.findFirst({
     where: eq(product.id, line.productId),
-    columns: { code: true, unit: true },
+    columns: { code: true, unit: true, archivedAt: true },
   });
   if (!found) throw new UserError("Ürün bulunamadı.");
+  // Archived products keep their history; only a reversal of a past movement may still touch them.
+  if (found.archivedAt && !line.reversesId) throw new UserError(`Arşivdeki ürün için hareket kaydedilemez: ${found.code}.`);
   const parsed = parseQuantity(line.quantity, found.unit);
   if (!parsed.ok) throw new UserError(`${found.code}: ${parsed.error}`);
   const signed = line.direction === "out" ? `-${parsed.value}` : parsed.value;
@@ -158,6 +160,8 @@ export async function getBalances(headers: Headers, productId: string) {
   }));
   return {
     lokasyon: lines,
+    // False when the user sees only some Lokasyon: the total is then theirs, not the company's.
+    isCompanyTotal: visible === undefined,
     // Totals cover only the Lokasyon shown, so they always equal the sum of the lines.
     total: {
       physical: addQuantities(...lines.map((l) => l.physical)),
@@ -180,7 +184,7 @@ export async function listMovements(headers: Headers, filters: MovementFilters) 
   const actor = await loadActor(headers);
   const visible = await visibleLokasyonIds(actor);
   const conditions: (SQL | undefined)[] = [
-    visible ? inArray(stockMovement.lokasyonId, visible.length ? visible : ["00000000-0000-0000-0000-000000000000"]) : undefined,
+    visible ? inArray(stockMovement.lokasyonId, visible) : undefined,
     filters.productId ? eq(stockMovement.productId, filters.productId) : undefined,
     filters.lokasyonId ? eq(stockMovement.lokasyonId, filters.lokasyonId) : undefined,
     filters.userId ? eq(stockMovement.userId, filters.userId) : undefined,
@@ -227,6 +231,9 @@ export async function reverseMovement(
   { reason, idempotencyKey }: { reason: string; idempotencyKey: string },
 ) {
   const actor = await requirePermission(headers, "stock.reverse");
+  // A retry of a reversal that already went through returns that result.
+  const done = await db.query.stockDocument.findFirst({ where: eq(stockDocument.idempotencyKey, idempotencyKey) });
+  if (done) return { documentId: done.id, created: false };
   if (!reason.trim()) throw new UserError("Ters kayıt için bir neden yazın.");
   const original = await db.query.stockMovement.findFirst({ where: eq(stockMovement.id, movementId) });
   if (!original) throw new UserError("Hareket bulunamadı.");

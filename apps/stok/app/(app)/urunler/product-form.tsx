@@ -22,6 +22,8 @@ type Product = {
   subCategory: string | null;
   manufacturer: string | null;
   manufacturerCode: string | null;
+  supplier: string | null;
+  supplierCountry: string | null;
   description: string | null;
   images: string[];
   datasheets: { label: string; url: string }[];
@@ -40,6 +42,8 @@ const empty: Product = {
   subCategory: null,
   manufacturer: null,
   manufacturerCode: null,
+  supplier: null,
+  supplierCountry: null,
   description: null,
   images: [],
   datasheets: [],
@@ -125,6 +129,12 @@ export function ProductForm({
         </Field>
         <Field label="Üretici kodu">
           <Input name="manufacturerCode" defaultValue={product.manufacturerCode ?? ""} className={input} />
+        </Field>
+        <Field label="Tedarikçi">
+          <Input name="supplier" defaultValue={product.supplier ?? ""} className={input} />
+        </Field>
+        <Field label="Tedarikçi ülkesi">
+          <Input name="supplierCountry" defaultValue={product.supplierCountry ?? ""} className={input} />
         </Field>
         <div className="sm:col-span-2">
           <Field label="Açıklama">

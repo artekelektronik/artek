@@ -63,6 +63,34 @@ describe("products", { skip: skipWithoutDatabase }, () => {
     );
   });
 
+  test("a product's unit can't change once it has movements", async () => {
+    const { lokasyonIdsByName } = await import("./test-database");
+    const lokasyon = await lokasyonIdsByName();
+    const created = await products.createProduct(muhendis, { ...ferrit, code: "ART-T007", unit: "kg" });
+    await products.updateProduct(muhendis, created.id, { ...ferrit, code: "ART-T007", unit: "metre" });
+
+    const { recordReceipt } = await import("./receipts");
+    await recordReceipt(muhendis, {
+      lokasyonId: lokasyon["Karaköy Mağaza"],
+      supplier: "TDK",
+      reference: "İrsaliye 1",
+      lines: [{ productId: created.id, quantity: "1,5" }],
+      idempotencyKey: crypto.randomUUID(),
+    });
+    await assert.rejects(
+      products.updateProduct(muhendis, created.id, { ...ferrit, code: "ART-T007", unit: "adet" }),
+      /birimi değiştirilemez/,
+    );
+    await products.updateProduct(muhendis, created.id, { ...ferrit, code: "ART-T007", unit: "metre", name: "Yeni ad" });
+  });
+
+  test("Raf kodu must belong to a Lokasyon", async () => {
+    await assert.rejects(
+      products.createProduct(muhendis, { ...ferrit, code: "ART-T008", shelves: { "not-a-lokasyon": "A-1" } }),
+      /Lokasyon/,
+    );
+  });
+
   test("Raf kodu is kept per Lokasyon", async () => {
     const { lokasyonIdsByName } = await import("./test-database");
     const lokasyon = await lokasyonIdsByName();

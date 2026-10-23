@@ -1,7 +1,7 @@
 import { and, asc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "../db";
-import { product, productShelf, unit } from "../db/schema";
+import { db, type Tx } from "../db";
+import { product, productShelf, stockMovement, unit } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { requirePermission } from "./guard";
 
@@ -24,11 +24,13 @@ const productInput = z
     subCategory: optionalText,
     manufacturer: optionalText,
     manufacturerCode: optionalText,
+    supplier: optionalText,
+    supplierCountry: optionalText,
     description: optionalText,
     images: z.array(z.string().trim().min(1)).default([]),
     datasheets: z.array(z.object({ label: z.string().trim().min(1), url: z.string().trim().min(1) })).default([]),
     // Raf kodu by Lokasyon id; an empty code removes it.
-    shelves: z.record(z.string(), z.string().trim()).default({}),
+    shelves: z.record(z.uuid(), z.string().trim(), { error: "Raf kodu bilinmeyen bir Lokasyon için girildi." }).default({}),
   })
   .refine((p) => p.isTradeGoods || p.isMaterial, { error: "Ürün Ticari mal veya Malzeme (ya da ikisi) olmalı." });
 
@@ -48,8 +50,6 @@ async function saveWith<T>(write: () => Promise<T>) {
     throw error;
   }
 }
-
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 async function replaceShelves(tx: Tx, productId: string, shelves: Record<string, string>) {
   await tx.delete(productShelf).where(eq(productShelf.productId, productId));
@@ -76,6 +76,12 @@ export async function updateProduct(headers: Headers, id: string, input: Product
   const { shelves, ...fields } = parse(input);
   await saveWith(() =>
     db.transaction(async (tx) => {
+      // One unit per product, no conversions: once stock has moved, the unit is fixed.
+      const current = await tx.query.product.findFirst({ where: eq(product.id, id), columns: { unit: true } });
+      if (current && current.unit !== fields.unit) {
+        const moved = await tx.query.stockMovement.findFirst({ where: eq(stockMovement.productId, id), columns: { id: true } });
+        if (moved) throw new UserError("Hareketi olan ürünün birimi değiştirilemez.");
+      }
       await tx.update(product).set({ ...fields, updatedAt: new Date() }).where(eq(product.id, id));
       await replaceShelves(tx, id, shelves);
     }),

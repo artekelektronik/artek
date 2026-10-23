@@ -70,7 +70,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell>Toplam ({unitLabels[product.unit]})</TableCell>
+              <TableCell>
+                {balances.isCompanyTotal ? "Şirket toplamı" : "Lokasyonlarınızın toplamı"} ({unitLabels[product.unit]})
+              </TableCell>
               <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.physical)}</TableCell>
               <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.reserved)}</TableCell>
               <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.available)}</TableCell>

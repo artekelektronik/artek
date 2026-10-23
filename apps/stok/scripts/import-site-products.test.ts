@@ -10,7 +10,7 @@ describe("site product import", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
   let schema: typeof import("../db/schema");
   let importSiteProducts: typeof import("./import-site-products").importSiteProducts;
-  const records = JSON.parse(readFileSync(siteJson, "utf8")) as { id: string; name: string; productCode?: string; description?: string; image?: string }[];
+  const records = JSON.parse(readFileSync(siteJson, "utf8")) as { id: string; name: string; productCode?: string; supplier?: string; supplierCountry?: string; description?: string; image?: string }[];
 
   before(async () => {
     db = await openTestDatabase();
@@ -30,6 +30,8 @@ describe("site product import", { skip: skipWithoutDatabase }, () => {
       assert.ok(row, record.id);
       assert.equal(row.name, record.name);
       assert.equal(row.manufacturerCode, record.productCode?.trim() || null);
+      assert.equal(row.supplier, record.supplier ?? null);
+      assert.equal(row.supplierCountry, record.supplierCountry ?? null);
       assert.equal(row.description, record.description || null);
       assert.deepEqual(row.images, record.image ? [record.image] : []);
       assert.equal(row.isTradeGoods, true);

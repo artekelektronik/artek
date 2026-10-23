@@ -1,5 +1,6 @@
 import { asc } from "drizzle-orm";
 import { headers } from "next/headers";
+import { z } from "zod";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { MovementTable } from "@/components/movement-table";
@@ -15,7 +16,12 @@ import { selectClassName } from "@/lib/ui";
 export const metadata = { title: "Stok hareketleri | Artek Stok" };
 
 // A date picked in the filter is a day in Istanbul (UTC+3, no daylight saving).
-const istanbulDay = (day: string | undefined, time: string) => (day ? new Date(`${day}T${time}+03:00`) : undefined);
+const istanbulDay = (day: string | undefined, time: string) =>
+  day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T${time}+03:00`) : undefined;
+// Filters come from the URL; anything malformed is ignored rather than sent to the database.
+const id = (value: string | undefined) => (value && z.uuid().safeParse(value).success ? value : undefined);
+const movementType = (value: string | undefined) =>
+  value && value in movementTypeLabels ? (value as MovementType) : undefined;
 
 export default async function MovementsPage({
   searchParams,
@@ -29,10 +35,10 @@ export default async function MovementsPage({
     listMovements(requestHeaders, {
       from: istanbulDay(params.baslangic, "00:00:00"),
       to: istanbulDay(params.bitis, "23:59:59.999"),
-      type: (params.tur || undefined) as MovementType | undefined,
+      type: movementType(params.tur),
       userId: params.kullanici || undefined,
-      lokasyonId: params.lokasyon || undefined,
-      productId: params.urun || undefined,
+      lokasyonId: id(params.lokasyon),
+      productId: id(params.urun),
     }),
     lokasyonFor(actor, "stock.view"),
     db.select({ id: user.id, name: user.name }).from(user).orderBy(asc(user.name)),

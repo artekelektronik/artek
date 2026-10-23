@@ -14,6 +14,8 @@ type SiteRecord = {
   productType?: string;
   subCategory?: string;
   manufacturer?: string;
+  supplier?: string;
+  supplierCountry?: string;
   description?: string;
   image?: string | null;
   // Stock and prices in the JSON are deliberately ignored: stock starts from the Açılış sayımı.
@@ -38,6 +40,8 @@ export async function importSiteProducts(records: SiteRecord[]) {
     subCategory: record.subCategory ?? null,
     manufacturer: record.manufacturer ?? null,
     manufacturerCode: record.productCode?.trim() || null,
+    supplier: record.supplier ?? null,
+    supplierCountry: record.supplierCountry ?? null,
     description: record.description || null,
     images: record.image ? [record.image] : [],
   }));

@@ -49,6 +49,8 @@ export function parseQuantity(raw: string, unit: Unit): ParsedQuantity {
   if (!/^\d+(\.\d+)?$/.test(text) || Number(text) <= 0) {
     return { ok: false, error: "Miktar sıfırdan büyük bir sayı olmalı." };
   }
+  // The ledger stores numeric(14, 3): at most 11 digits before the decimal point.
+  if (text.split(".")[0].replace(/^0+/, "").length > 11) return { ok: false, error: "Miktar çok büyük." };
   const fraction = text.split(".")[1] ?? "";
   if (fraction.length > decimals[unit]) {
     return {

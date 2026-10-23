@@ -75,6 +75,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
     const { Forbidden } = await import("./guard");
     await assert.rejects(
       receipts.recordReceipt(karakoyUser.headers, {
+        supplier: "Test tedarikçi",
+        reference: "T-1",
         lokasyonId: lokasyon["Çekmeköy İmalathane"],
         lines: [{ productId: core, quantity: "1" }],
         idempotencyKey: key(),
@@ -86,6 +88,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
   test("quantities follow the product's unit", async () => {
     await assert.rejects(
       receipts.recordReceipt(muhendis.headers, {
+        supplier: "Test tedarikçi",
+        reference: "T-1",
         lokasyonId: lokasyon["Karaköy Mağaza"],
         lines: [{ productId: core, quantity: "1,5" }],
         idempotencyKey: key(),
@@ -93,6 +97,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
       /tam sayı/,
     );
     await receipts.recordReceipt(muhendis.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon["Çekmeköy İmalathane"],
       lines: [{ productId: copper, quantity: "12,345" }],
       idempotencyKey: key(),
@@ -102,6 +108,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
 
   test("the database refuses to edit or delete a confirmed movement", async () => {
     await receipts.recordReceipt(muhendis.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon["Karaköy Mağaza"],
       lines: [{ productId: core, quantity: "5" }],
       idempotencyKey: key(),
@@ -116,6 +124,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
 
   test("a movement is corrected by a reversal with a reason, once", async () => {
     await receipts.recordReceipt(muhendis.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon["Karaköy Mağaza"],
       lines: [{ productId: core, quantity: "30" }],
       idempotencyKey: key(),
@@ -146,6 +156,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
   test("a failure part-way through a mal kabul leaves nothing behind", async () => {
     await assert.rejects(
       receipts.recordReceipt(muhendis.headers, {
+        supplier: "Test tedarikçi",
+        reference: "T-1",
         lokasyonId: lokasyon["Karaköy Mağaza"],
         lines: [
           { productId: core, quantity: "10" },
@@ -163,6 +175,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
   test("submitting the same mal kabul twice records it once", async () => {
     const receipt = {
       lokasyonId: lokasyon["Karaköy Mağaza"],
+      supplier: "TDK",
+      reference: "İrsaliye 7",
       lines: [{ productId: core, quantity: "7" }],
       idempotencyKey: key(),
     };
@@ -184,6 +198,8 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
       ["Karaköy Mağaza", core, "3"],
     ] as const) {
       await receipts.recordReceipt(muhendis.headers, {
+        supplier: "Test tedarikçi",
+        reference: "T-1",
         lokasyonId: lokasyon[lokasyonName],
         lines: [{ productId: product, quantity: qty }],
         idempotencyKey: key(),
@@ -198,11 +214,15 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
 
   test("movement history filters by date, type, user and Lokasyon, and hides Lokasyon the user can't see", async () => {
     await receipts.recordReceipt(karakoyUser.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon["Karaköy Mağaza"],
       lines: [{ productId: core, quantity: "1" }],
       idempotencyKey: key(),
     });
     await receipts.recordReceipt(muhendis.headers, {
+      supplier: "Test tedarikçi",
+      reference: "T-1",
       lokasyonId: lokasyon["Çekmeköy İmalathane"],
       lines: [{ productId: core, quantity: "2" }],
       idempotencyKey: key(),
@@ -226,5 +246,76 @@ describe("stock ledger: mal kabul, balances and history", { skip: skipWithoutDat
     const balances = await ledger.getBalances(karakoyUser.headers, core);
     assert.deepEqual(balances.lokasyon.map((b) => b.name), ["Karaköy Mağaza"]);
     assert.equal(balances.total.physical, "1");
+  });
+
+  test("a mal kabul needs a supplier and a document number", async () => {
+    for (const missing of ["supplier", "reference"] as const) {
+      await assert.rejects(
+        receipts.recordReceipt(muhendis.headers, {
+          lokasyonId: lokasyon["Karaköy Mağaza"],
+          supplier: "TDK",
+          reference: "İrsaliye 1",
+          [missing]: " ",
+          lines: [{ productId: core, quantity: "1" }],
+          idempotencyKey: key(),
+        }),
+        missing === "supplier" ? /Tedarikçi/ : /Belge no/,
+      );
+    }
+  });
+
+  test("an archived product takes no new movements, but its past ones can still be reversed", async () => {
+    await receipts.recordReceipt(muhendis.headers, {
+      lokasyonId: lokasyon["Karaköy Mağaza"],
+      supplier: "TDK",
+      reference: "İrsaliye 2",
+      lines: [{ productId: core, quantity: "4" }],
+      idempotencyKey: key(),
+    });
+    const [received] = await ledger.listMovements(muhendis.headers, { productId: core });
+    const { eq } = await import("drizzle-orm");
+    await db.update(schema.product).set({ archivedAt: new Date() }).where(eq(schema.product.id, core));
+
+    await assert.rejects(
+      receipts.recordReceipt(muhendis.headers, {
+        lokasyonId: lokasyon["Karaköy Mağaza"],
+        supplier: "TDK",
+        reference: "İrsaliye 3",
+        lines: [{ productId: core, quantity: "1" }],
+        idempotencyKey: key(),
+      }),
+      /Arşivdeki ürün/,
+    );
+    await ledger.reverseMovement(muhendis.headers, received.id, { reason: "Hatalı giriş", idempotencyKey: key() });
+    assert.equal((await ledger.getBalances(muhendis.headers, core)).total.physical, "0");
+  });
+
+  test("a quantity too large for the ledger is refused with a message", async () => {
+    await assert.rejects(
+      receipts.recordReceipt(muhendis.headers, {
+        lokasyonId: lokasyon["Karaköy Mağaza"],
+        supplier: "TDK",
+        reference: "İrsaliye 4",
+        lines: [{ productId: core, quantity: "1000000000000" }],
+        idempotencyKey: key(),
+      }),
+      /çok büyük/,
+    );
+  });
+
+  test("retrying a reversal with the same key returns the first result", async () => {
+    await receipts.recordReceipt(muhendis.headers, {
+      lokasyonId: lokasyon["Karaköy Mağaza"],
+      supplier: "TDK",
+      reference: "İrsaliye 5",
+      lines: [{ productId: core, quantity: "9" }],
+      idempotencyKey: key(),
+    });
+    const [received] = await ledger.listMovements(muhendis.headers, { productId: core });
+    const retryKey = key();
+    const first = await ledger.reverseMovement(muhendis.headers, received.id, { reason: "Hata", idempotencyKey: retryKey });
+    const again = await ledger.reverseMovement(muhendis.headers, received.id, { reason: "Hata", idempotencyKey: retryKey });
+    assert.equal(again.documentId, first.documentId);
+    assert.equal(again.created, false);
   });
 });

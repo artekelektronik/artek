@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { text } from "@/lib/form-data";
 import { archiveProduct, createProduct, restoreProduct, updateProduct, type ProductInput } from "@/lib/products";
 
 function lines(value: FormDataEntryValue | null) {
@@ -14,22 +15,23 @@ function lines(value: FormDataEntryValue | null) {
 }
 
 function productFrom(formData: FormData): ProductInput {
-  const text = (name: string) => String(formData.get(name) ?? "");
   const shelves: Record<string, string> = {};
   for (const [key, value] of formData) if (key.startsWith("raf:")) shelves[key.slice(4)] = String(value);
   return {
-    code: text("code"),
-    name: text("name"),
-    category: text("category"),
+    code: text(formData, "code"),
+    name: text(formData, "name"),
+    category: text(formData, "category"),
     isTradeGoods: formData.has("isTradeGoods"),
     isMaterial: formData.has("isMaterial"),
-    unit: text("unit") as ProductInput["unit"],
+    unit: text(formData, "unit") as ProductInput["unit"],
     showOnSite: formData.has("showOnSite"),
-    productType: text("productType"),
-    subCategory: text("subCategory"),
-    manufacturer: text("manufacturer"),
-    manufacturerCode: text("manufacturerCode"),
-    description: text("description"),
+    productType: text(formData, "productType"),
+    subCategory: text(formData, "subCategory"),
+    manufacturer: text(formData, "manufacturer"),
+    manufacturerCode: text(formData, "manufacturerCode"),
+    supplier: text(formData, "supplier"),
+    supplierCountry: text(formData, "supplierCountry"),
+    description: text(formData, "description"),
     images: lines(formData.get("images")),
     // "Etiket | https://…" per line
     datasheets: lines(formData.get("datasheets")).map((line) => {
