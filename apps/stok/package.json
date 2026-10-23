@@ -10,7 +10,8 @@
     "test": "tsx --env-file-if-exists=.env.local --test --test-concurrency=1 \"lib/*.test.ts\" \"scripts/*.test.ts\"",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "create-admin": "tsx --env-file-if-exists=.env.local scripts/create-admin.ts"
+    "create-admin": "tsx --env-file-if-exists=.env.local scripts/create-admin.ts",
+    "import-products": "tsx --env-file-if-exists=.env.local scripts/import-site-products.ts"
   },
   "dependencies": {
     "@artek/ui": "workspace:*",
@@ -19,7 +20,8 @@
     "next": "16.2.10",
     "pg": "^8.23.1",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",

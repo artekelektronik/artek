@@ -16,9 +16,8 @@ export class Forbidden extends Error {
   }
 }
 
-// The one server-side check every action runs before touching data. Roles and Lokasyon
-// come from the database on each call, never from the request.
-export async function requirePermission(headers: Headers, action: Action, lokasyonId?: string) {
+// The signed-in user with their roles and Lokasyon, read from the database, never from the request.
+export async function loadActor(headers: Headers) {
   const session = await auth.api.getSession({ headers });
   if (!session) throw new NotSignedIn();
 
@@ -27,8 +26,12 @@ export async function requirePermission(headers: Headers, action: Action, lokasy
     db.select({ role: userRole.role }).from(userRole).where(eq(userRole.userId, userId)),
     db.select({ id: userLokasyon.lokasyonId }).from(userLokasyon).where(eq(userLokasyon.userId, userId)),
   ]);
-  const actor = { roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
-  if (!can(actor, action, lokasyonId)) throw new Forbidden();
+  return { userId, name: session.user.name, roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
+}
 
-  return { userId, ...actor };
+// The one server-side check every action runs before touching data.
+export async function requirePermission(headers: Headers, action: Action, lokasyonId?: string) {
+  const actor = await loadActor(headers);
+  if (!can(actor, action, lokasyonId)) throw new Forbidden();
+  return actor;
 }

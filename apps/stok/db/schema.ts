@@ -1,4 +1,17 @@
-import { bigint, boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  bigint,
+  boolean,
+  check,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 // Better Auth core tables (user, session, account, verification).
 
@@ -91,4 +104,53 @@ export const userLokasyon = pgTable(
       .references(() => lokasyon.id),
   },
   (t) => [primaryKey({ columns: [t.userId, t.lokasyonId] })],
+);
+
+// Products. One unit per product, no conversions.
+
+export const unit = pgEnum("unit", ["adet", "takim", "rulo", "kg", "metre"]);
+
+export type Datasheet = { label: string; url: string };
+
+export const product = pgTable(
+  "product",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    code: text("code").notNull().unique(),
+    name: text("name").notNull(),
+    category: text("category").notNull(),
+    isTradeGoods: boolean("is_trade_goods").notNull(), // Ticari mal
+    isMaterial: boolean("is_material").notNull(), // Malzeme
+    unit: unit("unit").notNull(),
+    showOnSite: boolean("show_on_site").notNull(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    // Public details the Vitrin shows.
+    productType: text("product_type"),
+    subCategory: text("sub_category"),
+    manufacturer: text("manufacturer"),
+    manufacturerCode: text("manufacturer_code"),
+    description: text("description"),
+    images: text("images").array().notNull().default(sql`'{}'::text[]`),
+    datasheets: jsonb("datasheets").$type<Datasheet[]>().notNull().default([]),
+    // The site JSON record this product was imported from, so the import can run again safely.
+    importKey: text("import_key").unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [check("product_has_type", sql`${t.isTradeGoods} OR ${t.isMaterial}`)],
+);
+
+// Raf kodu: where a product sits inside a Lokasyon. Helps finding and counting; stock is never per shelf.
+export const productShelf = pgTable(
+  "product_shelf",
+  {
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    lokasyonId: uuid("lokasyon_id")
+      .notNull()
+      .references(() => lokasyon.id),
+    rafKodu: text("raf_kodu").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.productId, t.lokasyonId] })],
 );

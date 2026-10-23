@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
@@ -6,16 +7,16 @@ import { Separator } from "@artek/ui/components/separator";
 import { auth } from "@/lib/auth";
 import { signOut } from "./actions";
 
-// Phase 1 screens; each becomes a link when its ticket lands.
-const screens = [
-  "Stok durumu",
-  "Ürünler",
-  "Stok hareketleri",
-  "Mal kabul",
-  "Stok çıkışı",
-  "Transfer",
-  "Sayım",
-  "Açılış sayımı",
+// Phase 1 screens; each gets an href when its ticket lands.
+const screens: { label: string; href?: string }[] = [
+  { label: "Stok durumu" },
+  { label: "Ürünler", href: "/urunler" },
+  { label: "Stok hareketleri" },
+  { label: "Mal kabul" },
+  { label: "Stok çıkışı" },
+  { label: "Transfer" },
+  { label: "Sayım" },
+  { label: "Açılış sayımı" },
 ];
 
 export default async function AppLayout({
@@ -35,12 +36,18 @@ export default async function AppLayout({
         <Separator />
         <nav aria-label="Ana menü" className="p-2">
           <ul className="flex flex-col gap-1">
-            {screens.map((screen) => (
-              <li key={screen}>
-                <Button variant="ghost" disabled className="w-full justify-between">
-                  {screen}
-                  <Badge variant="outline">Yakında</Badge>
-                </Button>
+            {screens.map(({ label, href }) => (
+              <li key={label}>
+                {href ? (
+                  <Button variant="ghost" asChild className="w-full justify-start">
+                    <Link href={href}>{label}</Link>
+                  </Button>
+                ) : (
+                  <Button variant="ghost" disabled className="w-full justify-between">
+                    {label}
+                    <Badge variant="outline">Yakında</Badge>
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
