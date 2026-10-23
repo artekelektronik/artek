@@ -70,6 +70,11 @@ async function applyLine(tx: Tx, documentId: string, userId: string, line: Movem
   if (!found) throw new UserError("Ürün bulunamadı.");
   // Archived products keep their history; only a reversal of a past movement may still touch them.
   if (found.archivedAt && !line.reversesId) throw new UserError(`Arşivdeki ürün için hareket kaydedilemez: ${found.code}.`);
+  // Go-live: a Lokasyon's balances start from its Açılış sayımı; nothing else is recorded before it.
+  if (line.lokasyonId && line.type !== "acilis") {
+    const place = await tx.query.lokasyon.findFirst({ where: eq(lokasyon.id, line.lokasyonId) });
+    if (!place?.openedAt) throw new UserError(`${place?.name ?? "Lokasyon"} için açılış sayımı onaylanmadan hareket kaydedilemez.`);
+  }
   const parsed = parseQuantity(line.quantity, found.unit);
   if (!parsed.ok) throw new UserError(`${found.code}: ${parsed.error}`);
   const signed = line.direction === "out" ? `-${parsed.value}` : parsed.value;

@@ -19,6 +19,7 @@ export async function openTestDatabase() {
 }
 
 // Empties every table except the seeded Lokasyon, so each suite starts from a known state.
+// Both Lokasyon start opened (as after their Açılış sayımı); opening tests close one explicitly.
 export async function resetTestDatabase() {
   const { db } = await import("../db");
   const { rows } = await db.execute<{ tablename: string }>(
@@ -27,6 +28,7 @@ export async function resetTestDatabase() {
   if (rows.length) {
     await db.execute(sql.raw(`truncate ${rows.map((r) => `"${r.tablename}"`).join(", ")} cascade`));
   }
+  await db.execute(sql`update lokasyon set opened_at = now()`);
 }
 
 export async function lokasyonIdsByName() {

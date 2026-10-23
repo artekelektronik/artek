@@ -16,7 +16,7 @@ const screens: { label: string; href?: string }[] = [
   { label: "Stok çıkışı", href: "/stok-cikisi" },
   { label: "Transfer", href: "/transfer" },
   { label: "Sayım", href: "/sayim" },
-  { label: "Açılış sayımı" },
+  { label: "Açılış sayımı", href: "/acilis-sayimi" },
 ];
 
 export default async function AppLayout({

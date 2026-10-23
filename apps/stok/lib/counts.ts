@@ -3,7 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db } from "../db";
 import { countKind, lokasyon, product, productShelf, stock, stockCount, stockCountLine, user } from "../db/schema";
-import { UserError } from "./errors";
+import { isUniqueViolation, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { postDocument, visibleLokasyonIds, type MovementLine } from "./ledger";
 import { can } from "./permissions";
@@ -31,6 +31,9 @@ export async function openCount(
 ) {
   if (!z.uuid().safeParse(lokasyonId).success) throw new UserError("Lokasyon seçin.");
   const actor = await requirePermission(headers, "count.perform", lokasyonId);
+  const place = await db.query.lokasyon.findFirst({ where: eq(lokasyon.id, lokasyonId) });
+  if (kind === "acilis" && place?.openedAt) throw new UserError("Bu Lokasyonun açılış sayımı zaten onaylandı.");
+  if (kind === "sayim" && !place?.openedAt) throw new UserError("Önce bu Lokasyonun açılış sayımı onaylanmalı.");
 
   return db.transaction(async (tx) => {
     const [created] = await tx
@@ -84,42 +87,53 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
   });
 }
 
-// Applies each counted line's difference as a sayım düzeltmesi movement, exactly once.
+// Applies each counted line exactly once: a Sayım as its difference (sayım düzeltmesi), an
+// Açılış sayımı as the opening balance (açılış), which also opens the Lokasyon for other movements.
 export async function approveCount(headers: Headers, countId: string, { idempotencyKey }: { idempotencyKey: string }) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.approve", count.lokasyonId);
+  const opening = count.kind === "acilis";
 
-  return postDocument(
-    { kind: "sayim", lokasyonId: count.lokasyonId, userId: actor.userId, idempotencyKey },
-    async (tx, documentId) => {
-      const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("update");
-      if (current.status === "onaylandi") throw new UserError("Bu sayım zaten onaylandı.");
-      if (current.status === "iptal") throw new UserError("İptal edilen sayım onaylanamaz.");
+  try {
+    return await postDocument(
+      { kind: opening ? "acilis" : "sayim", lokasyonId: count.lokasyonId, userId: actor.userId, idempotencyKey },
+      async (tx, documentId) => {
+        const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("update");
+        if (current.status === "onaylandi") throw new UserError("Bu sayım zaten onaylandı.");
+        if (current.status === "iptal") throw new UserError("İptal edilen sayım onaylanamaz.");
 
-      const lines = await tx
-        .select()
-        .from(stockCountLine)
-        .where(and(eq(stockCountLine.countId, countId), isNotNull(stockCountLine.counted)));
-      const movements: MovementLine[] = [];
-      for (const line of lines) {
-        const difference = subtractQuantity(line.counted!, line.balanceAtCount!);
-        if (difference === "0") continue;
-        movements.push({
-          productId: line.productId,
-          lokasyonId: count.lokasyonId,
-          direction: difference.startsWith("-") ? "out" : "in",
-          quantity: difference.replace("-", ""),
-          type: "sayim_duzeltmesi",
-          reason: "Sayım farkı",
-        });
-      }
-      await tx
-        .update(stockCount)
-        .set({ status: "onaylandi", approvedBy: actor.userId, approvedAt: new Date(), approveDocumentId: documentId })
-        .where(eq(stockCount.id, countId));
-      return movements;
-    },
-  );
+        const lines = await tx
+          .select()
+          .from(stockCountLine)
+          .where(and(eq(stockCountLine.countId, countId), isNotNull(stockCountLine.counted)));
+        const movements: MovementLine[] = [];
+        for (const line of lines) {
+          // Before go-live every balance is zero, so the opening movement is the counted quantity.
+          const difference = opening ? formatQuantity(line.counted!) : subtractQuantity(line.counted!, line.balanceAtCount!);
+          if (difference === "0") continue;
+          movements.push({
+            productId: line.productId,
+            lokasyonId: count.lokasyonId,
+            direction: difference.startsWith("-") ? "out" : "in",
+            quantity: difference.replace("-", ""),
+            type: opening ? "acilis" : "sayim_duzeltmesi",
+            reason: opening ? "Açılış sayımı" : "Sayım farkı",
+          });
+        }
+        await tx
+          .update(stockCount)
+          .set({ status: "onaylandi", approvedBy: actor.userId, approvedAt: new Date(), approveDocumentId: documentId })
+          .where(eq(stockCount.id, countId));
+        if (opening) await tx.update(lokasyon).set({ openedAt: new Date() }).where(eq(lokasyon.id, count.lokasyonId));
+        return movements;
+      },
+    );
+  } catch (error) {
+    if (isUniqueViolation(error, "one_opening_per_lokasyon")) {
+      throw new UserError("Bu Lokasyonun açılış sayımı zaten onaylandı.");
+    }
+    throw error;
+  }
 }
 
 // An abandoned session is closed without touching stock.

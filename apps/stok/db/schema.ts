@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   index,
+  uniqueIndex,
   integer,
   numeric,
   jsonb,
@@ -82,6 +83,8 @@ export const role = pgEnum("role", ["admin", "muhendis", "magaza_sorumlusu", "de
 export const lokasyon = pgTable("lokasyon", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull().unique(),
+  // Set when the Açılış sayımı is approved; before that no other movement is recorded here.
+  openedAt: timestamp("opened_at", { withTimezone: true }),
 });
 
 export const userRole = pgTable(
@@ -305,7 +308,9 @@ export const transferLine = pgTable(
 export const countKind = pgEnum("count_kind", ["sayim", "acilis"]);
 export const countStatus = pgEnum("count_status", ["taslak", "onaylandi", "iptal"]);
 
-export const stockCount = pgTable("stock_count", {
+export const stockCount = pgTable(
+  "stock_count",
+  {
   id: uuid("id").primaryKey().defaultRandom(),
   lokasyonId: uuid("lokasyon_id")
     .notNull()
@@ -322,7 +327,14 @@ export const stockCount = pgTable("stock_count", {
   approveDocumentId: uuid("approve_document_id").references(() => stockDocument.id),
   cancelledBy: text("cancelled_by").references(() => user.id),
   cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
-});
+},
+  // Each Lokasyon has exactly one approved Açılış sayımı.
+  (t) => [
+    uniqueIndex("one_opening_per_lokasyon")
+      .on(t.lokasyonId)
+      .where(sql`${t.kind} = 'acilis' AND ${t.status} = 'onaylandi'`),
+  ],
+);
 
 export const stockCountLine = pgTable(
   "stock_count_line",

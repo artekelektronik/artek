@@ -64,6 +64,13 @@
       "when": 1792784926675,
       "tag": "0008_stock-count",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792785243290,
+      "tag": "0009_opening",
+      "breakpoints": true
     }
   ]
 }
