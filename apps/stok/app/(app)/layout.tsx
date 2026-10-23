@@ -9,7 +9,7 @@ import { signOut } from "./actions";
 
 // Phase 1 screens; each gets an href when its ticket lands.
 const screens: { label: string; href?: string }[] = [
-  { label: "Stok durumu" },
+  { label: "Stok durumu", href: "/stok-durumu" },
   { label: "Ürünler", href: "/urunler" },
   { label: "Stok hareketleri", href: "/hareketler" },
   { label: "Mal kabul", href: "/mal-kabul" },

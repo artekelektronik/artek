@@ -16,7 +16,8 @@ import { MovementTable } from "@/components/movement-table";
 import { loadActor } from "@/lib/guard";
 import { displayQuantity } from "@/lib/labels";
 import { getBalances, listMovements } from "@/lib/ledger";
-import { unitLabels } from "@/lib/quantity";
+import { addQuantities, unitLabels } from "@/lib/quantity";
+import { inTransit } from "@/lib/transfers";
 import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
@@ -33,10 +34,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     listCategories(requestHeaders),
   ]);
   if (!product) notFound();
-  const [balances, movements] = await Promise.all([
+  const [balances, movements, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
     listMovements(requestHeaders, { productId: product.id }),
+    inTransit(product.id),
   ]);
+  // Stock on the way belongs to no Lokasyon; it is part of the company total only.
+  const showTransit = balances.isCompanyTotal && transit !== "0";
   const canManage = can(actor, "products.manage");
 
   return (
@@ -67,13 +71,23 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <TableCell className="text-right tabular-nums">{displayQuantity(b.available)}</TableCell>
               </TableRow>
             ))}
+            {showTransit && (
+              <TableRow>
+                <TableCell>Yolda (transferde)</TableCell>
+                <TableCell className="text-right tabular-nums">{displayQuantity(transit)}</TableCell>
+                <TableCell className="text-muted-foreground text-right">—</TableCell>
+                <TableCell className="text-muted-foreground text-right">—</TableCell>
+              </TableRow>
+            )}
           </TableBody>
           <TableFooter>
             <TableRow>
               <TableCell>
                 {balances.isCompanyTotal ? "Şirket toplamı" : "Lokasyonlarınızın toplamı"} ({unitLabels[product.unit]})
               </TableCell>
-              <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.physical)}</TableCell>
+              <TableCell className="text-right tabular-nums">
+                {displayQuantity(showTransit ? addQuantities(balances.total.physical, transit) : balances.total.physical)}
+              </TableCell>
               <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.reserved)}</TableCell>
               <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.available)}</TableCell>
             </TableRow>
