@@ -80,6 +80,34 @@ describe("açılış sayımı: go-live per Lokasyon", { skip: skipWithoutDatabas
     });
   });
 
+  test("stock can't be sent to a Lokasyon that hasn't gone live", async () => {
+    const { sendTransfer } = await import("./transfers");
+    await receipts.recordReceipt(muhendis.headers, {
+      lokasyonId: lokasyon["Karaköy Mağaza"],
+      supplier: "TDK",
+      reference: "İrsaliye",
+      lines: [{ productId: products[0].id, quantity: "3" }],
+      idempotencyKey: key(),
+    });
+    await assert.rejects(
+      sendTransfer(muhendis.headers, {
+        fromLokasyonId: lokasyon["Karaköy Mağaza"],
+        toLokasyonId: cekmekoy(),
+        lines: [{ productId: products[0].id, quantity: "1" }],
+        idempotencyKey: key(),
+      }),
+      /açılış sayımı onaylanmadı/,
+    );
+  });
+
+  test("an opening count is refused where movements were recorded before go-live", async () => {
+    const { eq } = await import("drizzle-orm");
+    await db.update(schema.lokasyon).set({ openedAt: new Date() }).where(eq(schema.lokasyon.id, cekmekoy()));
+    await receiveAtCekmekoy();
+    await db.update(schema.lokasyon).set({ openedAt: null }).where(eq(schema.lokasyon.id, cekmekoy()));
+    await assert.rejects(approveOpening(["40"]), /açılıştan önce kaydedilmiş hareketler/);
+  });
+
   test("the opening sheet lists every active product, with its Raf kodu", async () => {
     await db.insert(schema.productShelf).values({ productId: products[1].id, lokasyonId: cekmekoy(), rafKodu: "C-4" });
     const { countId } = await counts.openCount(muhendis.headers, { lokasyonId: cekmekoy(), kind: "acilis" });

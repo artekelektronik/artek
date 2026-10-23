@@ -140,6 +140,29 @@ describe("transfer between Lokasyon", { skip: skipWithoutDatabase }, () => {
     assert.equal(await physicalAt("Karaköy Mağaza"), "5");
   });
 
+  test("transfer movements can't be reversed one by one", async () => {
+    const { transferId } = await send("10");
+    const [sevk] = (await ledger.listMovements(muhendis.headers, { type: "transfer_sevk" })).filter((m) => m.transferId === transferId);
+    await assert.rejects(
+      ledger.reverseMovement(muhendis.headers, sevk.id, { reason: "Yanlış", idempotencyKey: key() }),
+      /Transfer hareketleri ters kaydedilemez/,
+    );
+    assert.equal(await physicalAt("Çekmeköy İmalathane"), "20");
+  });
+
+  test("a product on the way can't be archived; a line that never arrived is received as 0,0", async () => {
+    const { archiveProduct } = await import("./products");
+    const { transferId } = await send("3");
+    await assert.rejects(archiveProduct(muhendis.headers, core), /yolda/);
+    await transfers.receiveTransfer(karakoyUser.headers, transferId, {
+      lines: [{ productId: core, received: "0,0", lossReason: "kayip" }],
+      idempotencyKey: key(),
+    });
+    assert.equal(await physicalAt("Karaköy Mağaza"), "0");
+    assert.equal(await transfers.inTransit(core), "0");
+    await archiveProduct(muhendis.headers, core);
+  });
+
   test("a shortfall needs a reason, and more than was sent can't arrive", async () => {
     const { transferId } = await send("10");
     await assert.rejects(

@@ -241,6 +241,9 @@ export async function reverseMovement(
   const original = await db.query.stockMovement.findFirst({ where: eq(stockMovement.id, movementId) });
   if (!original) throw new UserError("Hareket bulunamadı.");
   if (original.reversesId) throw new UserError("Bir ters kayıt yeniden ters kaydedilemez.");
+  // A transfer's movements belong together with its on-the-way stock; reversing one alone would
+  // create or lose stock. A wrong transfer is corrected by sending the stock back.
+  if (original.transferId) throw new UserError("Transfer hareketleri ters kaydedilemez; ürünleri geri gönderin.");
   // Checked first for a clear message; the unique reverses_id still settles a race between two requests.
   if (await db.query.stockMovement.findFirst({ where: eq(stockMovement.reversesId, movementId) })) {
     throw new UserError("Bu hareketin zaten ters kaydı var.");

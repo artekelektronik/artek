@@ -86,6 +86,29 @@ describe("sayım without locks", { skip: skipWithoutDatabase }, () => {
     assert.deepEqual(await ledger.findBalanceMismatches(), []);
   });
 
+  test("saving the sheet again keeps the moment of lines already counted", async () => {
+    const { countId } = await counts.openCount(karakoyUser.headers, { lokasyonId: lokasyon["Karaköy Mağaza"], kind: "sayim" });
+    await counts.recordCountLines(karakoyUser.headers, countId, [{ productId: core, counted: "11" }]);
+    const { recordStockOut } = await import("./stock-out");
+    await recordStockOut(karakoyUser.headers, {
+      type: "satis_teslimati",
+      lokasyonId: lokasyon["Karaköy Mağaza"],
+      reason: "Satış",
+      lines: [{ productId: core, quantity: "2" }],
+      idempotencyKey: key(),
+    });
+    // The sheet posts every input again, including the unchanged 11.
+    await counts.recordCountLines(karakoyUser.headers, countId, [
+      { productId: core, counted: "11" },
+      { productId: filter, counted: "5" },
+    ]);
+    const line = (await counts.getCount(muhendis.headers, countId))?.lines.find((l) => l.productId === core);
+    assert.equal(line?.balanceAtCount, "12");
+    assert.equal(line?.difference, "-1");
+    await counts.approveCount(muhendis.headers, countId, { idempotencyKey: key() });
+    assert.equal(await karakoyPhysical(), "9");
+  });
+
   test("a draft count changes no stock, and transfers keep working during it", async () => {
     const { countId } = await counts.openCount(karakoyUser.headers, { lokasyonId: lokasyon["Karaköy Mağaza"], kind: "sayim" });
     await counts.recordCountLines(karakoyUser.headers, countId, [

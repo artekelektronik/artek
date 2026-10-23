@@ -1,7 +1,7 @@
 import { and, asc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { db, type Tx } from "../db";
-import { product, productShelf, stockMovement, unit } from "../db/schema";
+import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { requirePermission } from "./guard";
 
@@ -91,6 +91,21 @@ export async function updateProduct(headers: Headers, id: string, input: Product
 // Products are never deleted: archiving hides them from everyday lists and keeps their history.
 export async function archiveProduct(headers: Headers, id: string) {
   await requirePermission(headers, "products.manage");
+  // Archived products take no new movements, so documents still in progress must finish first.
+  const [onTheWay] = await db
+    .select({ id: transferLine.transferId })
+    .from(transferLine)
+    .innerJoin(transfer, eq(transfer.id, transferLine.transferId))
+    .where(and(eq(transferLine.productId, id), eq(transfer.status, "yolda")))
+    .limit(1);
+  if (onTheWay) throw new UserError("Bu ürün yolda olan bir transferde; teslim alınmadan arşivlenemez.");
+  const [inCount] = await db
+    .select({ id: stockCountLine.countId })
+    .from(stockCountLine)
+    .innerJoin(stockCount, eq(stockCount.id, stockCountLine.countId))
+    .where(and(eq(stockCountLine.productId, id), eq(stockCount.status, "taslak")))
+    .limit(1);
+  if (inCount) throw new UserError("Bu ürün açık bir sayımda; sayım kapanmadan arşivlenemez.");
   await db.update(product).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(product.id, id));
 }
 

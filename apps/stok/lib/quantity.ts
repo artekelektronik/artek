@@ -43,6 +43,12 @@ export function subtractQuantity(a: string, b: string) {
   return fromThousandths(toThousandths(a) - toThousandths(b));
 }
 
+// Like parseQuantity, but zero is allowed: a count of nothing, or a transfer line that never arrived.
+export function parseQuantityOrZero(raw: string, unit: Unit): ParsedQuantity {
+  if (/^0+([.,]0*)?$/.test(raw.trim())) return { ok: true, value: "0" };
+  return parseQuantity(raw, unit);
+}
+
 // Parses a positive quantity typed by a user ("1,5" or "1.5") into the string the numeric column stores.
 export function parseQuantity(raw: string, unit: Unit): ParsedQuantity {
   const text = raw.trim().replace(",", ".");

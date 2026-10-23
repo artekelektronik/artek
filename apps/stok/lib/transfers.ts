@@ -7,12 +7,12 @@ import { UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { postDocument, visibleLokasyonIds, type MovementLine } from "./ledger";
 import { can } from "./permissions";
-import { formatQuantity, parseQuantity, subtractQuantity, unitLabels } from "./quantity";
+import { formatQuantity, parseQuantity, parseQuantityOrZero, subtractQuantity, unitLabels } from "./quantity";
 
 export type LossReason = (typeof lossReason.enumValues)[number];
 export const lossReasonLabels: Record<LossReason, string> = { kayip: "Kayıp", hasarli: "Hasarlı" };
 
-const lines = z
+const productLines = z
   .array(z.object({ productId: z.string(), quantity: z.string() }))
   .min(1, { error: "En az bir ürün satırı girin." })
   .refine((rows) => new Set(rows.map((r) => r.productId)).size === rows.length, {
@@ -24,7 +24,7 @@ const sendInput = z
     fromLokasyonId: z.uuid({ error: "Kaynak Lokasyonu seçin." }),
     toLokasyonId: z.uuid({ error: "Hedef Lokasyonu seçin." }),
     note: z.string().trim().nullish(),
-    lines,
+    lines: productLines,
     idempotencyKey: z.string().min(1),
   })
   .refine((t) => t.fromLokasyonId !== t.toLokasyonId, { error: "Kaynak ve hedef Lokasyon farklı olmalı." });
@@ -37,6 +37,10 @@ export async function sendTransfer(headers: Headers, input: SendInput) {
   if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
   const { fromLokasyonId, toLokasyonId, note, idempotencyKey } = parsed.data;
   const actor = await requirePermission(headers, "stock.transfer", fromLokasyonId);
+  // Stock sent to a Lokasyon that hasn't gone live could never be received there.
+  const target = await db.query.lokasyon.findFirst({ where: eq(lokasyon.id, toLokasyonId) });
+  if (!target) throw new UserError("Hedef Lokasyon bulunamadı.");
+  if (!target.openedAt) throw new UserError(`${target.name} için açılış sayımı onaylanmadı; oraya transfer gönderilemez.`);
   const transferId = crypto.randomUUID();
 
   const result = await postDocument(
@@ -110,12 +114,9 @@ export async function receiveTransfer(headers: Headers, transferId: string, inpu
       for (const line of sentLines) {
         const entry = parsed.data.lines.find((l) => l.productId === line.productId);
         if (!entry) throw new UserError(`${line.code} için gelen miktarı girin.`);
-        let received = "0";
-        if (entry.received.trim() !== "0") {
-          const quantity = parseQuantity(entry.received, line.unit);
-          if (!quantity.ok) throw new UserError(`${line.code}: ${quantity.error}`);
-          received = quantity.value;
-        }
+        const parsedReceived = parseQuantityOrZero(entry.received, line.unit);
+        if (!parsedReceived.ok) throw new UserError(`${line.code}: ${parsedReceived.error}`);
+        const received = parsedReceived.value;
         const lost = subtractQuantity(line.sent, received);
         if (lost.startsWith("-")) throw new UserError(`${line.code}: gönderilenden fazla teslim alınamaz.`);
         if (lost !== "0" && !entry.lossReason) {

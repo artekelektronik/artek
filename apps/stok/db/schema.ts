@@ -311,23 +311,23 @@ export const countStatus = pgEnum("count_status", ["taslak", "onaylandi", "iptal
 export const stockCount = pgTable(
   "stock_count",
   {
-  id: uuid("id").primaryKey().defaultRandom(),
-  lokasyonId: uuid("lokasyon_id")
-    .notNull()
-    .references(() => lokasyon.id),
-  kind: countKind("kind").notNull(),
-  status: countStatus("status").notNull().default("taslak"),
-  category: text("category"), // null: every active product
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => user.id),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  approvedBy: text("approved_by").references(() => user.id),
-  approvedAt: timestamp("approved_at", { withTimezone: true }),
-  approveDocumentId: uuid("approve_document_id").references(() => stockDocument.id),
-  cancelledBy: text("cancelled_by").references(() => user.id),
-  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
-},
+    id: uuid("id").primaryKey().defaultRandom(),
+    lokasyonId: uuid("lokasyon_id")
+      .notNull()
+      .references(() => lokasyon.id),
+    kind: countKind("kind").notNull(),
+    status: countStatus("status").notNull().default("taslak"),
+    category: text("category"), // null: every active product
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    approvedBy: text("approved_by").references(() => user.id),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    approveDocumentId: uuid("approve_document_id").references(() => stockDocument.id),
+    cancelledBy: text("cancelled_by").references(() => user.id),
+    cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+  },
   // Each Lokasyon has exactly one approved Açılış sayımı.
   (t) => [
     uniqueIndex("one_opening_per_lokasyon")

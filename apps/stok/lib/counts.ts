@@ -2,12 +2,12 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db } from "../db";
-import { countKind, lokasyon, product, productShelf, stock, stockCount, stockCountLine, user } from "../db/schema";
+import { countKind, lokasyon, product, productShelf, stock, stockCount, stockCountLine, stockMovement, user } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { postDocument, visibleLokasyonIds, type MovementLine } from "./ledger";
 import { can } from "./permissions";
-import { formatQuantity, parseQuantity, subtractQuantity, type Unit } from "./quantity";
+import { formatQuantity, parseQuantityOrZero, subtractQuantity } from "./quantity";
 
 export type CountKind = (typeof countKind.enumValues)[number];
 
@@ -19,26 +19,28 @@ async function findCount(countId: string) {
   return found;
 }
 
-// A count line may be zero: the product is simply not there.
-function parseCounted(raw: string, unit: Unit) {
-  if (/^0+([.,]0*)?$/.test(raw.trim())) return { ok: true as const, value: "0" };
-  return parseQuantity(raw, unit);
-}
+const openInput = z.object({
+  lokasyonId: z.uuid({ error: "Lokasyon seçin." }),
+  kind: z.enum(countKind.enumValues, { error: "Sayım türü geçersiz." }),
+  category: z.string().trim().nullish(),
+});
 
-export async function openCount(
-  headers: Headers,
-  { lokasyonId, kind, category }: { lokasyonId: string; kind: CountKind; category?: string | null },
-) {
-  if (!z.uuid().safeParse(lokasyonId).success) throw new UserError("Lokasyon seçin.");
+export async function openCount(headers: Headers, input: z.input<typeof openInput>) {
+  const parsed = openInput.safeParse(input);
+  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
+  const { lokasyonId, kind } = parsed.data;
+  // An opening count always covers the whole catalog.
+  const category = kind === "acilis" ? null : parsed.data.category || null;
   const actor = await requirePermission(headers, "count.perform", lokasyonId);
   const place = await db.query.lokasyon.findFirst({ where: eq(lokasyon.id, lokasyonId) });
-  if (kind === "acilis" && place?.openedAt) throw new UserError("Bu Lokasyonun açılış sayımı zaten onaylandı.");
-  if (kind === "sayim" && !place?.openedAt) throw new UserError("Önce bu Lokasyonun açılış sayımı onaylanmalı.");
+  if (!place) throw new UserError("Lokasyon bulunamadı.");
+  if (kind === "acilis" && place.openedAt) throw new UserError("Bu Lokasyonun açılış sayımı zaten onaylandı.");
+  if (kind === "sayim" && !place.openedAt) throw new UserError("Önce bu Lokasyonun açılış sayımı onaylanmalı.");
 
   return db.transaction(async (tx) => {
     const [created] = await tx
       .insert(stockCount)
-      .values({ lokasyonId, kind, category: category || null, createdBy: actor.userId })
+      .values({ lokasyonId, kind, category, createdBy: actor.userId })
       .returning({ id: stockCount.id });
     const products = await tx
       .select({ id: product.id, rafKodu: productShelf.rafKodu })
@@ -53,8 +55,9 @@ export async function openCount(
   });
 }
 
-// Saves counted quantities. Each line keeps the balance at the moment it was counted,
-// so later sales and transfers don't distort its difference. Empty entries are left uncounted.
+// Saves counted quantities. Each line keeps the balance at the moment it was counted, so later
+// sales and transfers don't distort its difference. Empty entries are left uncounted, and a line
+// whose quantity hasn't changed keeps its original moment (a sheet is saved more than once).
 export async function recordCountLines(headers: Headers, countId: string, entries: { productId: string; counted: string }[]) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.perform", count.lokasyonId);
@@ -63,14 +66,16 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
     const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("share");
     if (current.status !== "taslak") throw new UserError("Bu sayım açık değil; satır kaydedilemez.");
     for (const entry of entries.filter((e) => e.counted.trim() !== "")) {
+      if (!z.uuid().safeParse(entry.productId).success) throw new UserError("Bu ürün sayım listesinde yok.");
       const [line] = await tx
-        .select({ code: product.code, unit: product.unit })
+        .select({ code: product.code, unit: product.unit, counted: stockCountLine.counted })
         .from(stockCountLine)
         .innerJoin(product, eq(product.id, stockCountLine.productId))
         .where(and(eq(stockCountLine.countId, countId), eq(stockCountLine.productId, entry.productId)));
       if (!line) throw new UserError("Bu ürün sayım listesinde yok.");
-      const counted = parseCounted(entry.counted, line.unit);
+      const counted = parseQuantityOrZero(entry.counted, line.unit);
       if (!counted.ok) throw new UserError(`${line.code}: ${counted.error}`);
+      if (line.counted !== null && formatQuantity(line.counted) === counted.value) continue;
       const balance = await tx.query.stock.findFirst({
         where: and(eq(stock.productId, entry.productId), eq(stock.lokasyonId, count.lokasyonId)),
       });
@@ -101,6 +106,10 @@ export async function approveCount(headers: Headers, countId: string, { idempote
         const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("update");
         if (current.status === "onaylandi") throw new UserError("Bu sayım zaten onaylandı.");
         if (current.status === "iptal") throw new UserError("İptal edilen sayım onaylanamaz.");
+        // Opening balances start from zero; anything recorded here before go-live would be counted twice.
+        if (opening && (await tx.query.stockMovement.findFirst({ where: eq(stockMovement.lokasyonId, count.lokasyonId) }))) {
+          throw new UserError("Bu Lokasyonda açılıştan önce kaydedilmiş hareketler var; açılış sayımı onaylanamaz.");
+        }
 
         const lines = await tx
           .select()
