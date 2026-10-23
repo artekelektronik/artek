@@ -6,8 +6,8 @@ import { useLocale } from "next-intl";
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@artek/ui/components/badge";
+import { Button } from "@artek/ui/components/button";
 import { generateProductSlug } from "@/lib/utils";
 import type { AirtableProduct } from "@/types/airtable";
 

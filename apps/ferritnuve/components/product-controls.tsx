@@ -7,8 +7,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+} from "@artek/ui/components/select";
+import { ToggleGroup, ToggleGroupItem } from "@artek/ui/components/toggle-group";
 import { Grid3x3, LayoutGrid } from "lucide-react";
 
 interface ProductControlsProps {

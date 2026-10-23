@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Button } from "./ui/button";
+import { Button } from "@artek/ui/components/button";
 import { cn } from "@/lib/utils";
 
 interface BoxProps {

@@ -3,10 +3,10 @@ import { catalogLabel } from "@/lib/product-taxonomy";
 import { useLocale } from "next-intl";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@artek/ui/components/button";
+import { Checkbox } from "@artek/ui/components/checkbox";
+import { Label } from "@artek/ui/components/label";
+import { Separator } from "@artek/ui/components/separator";
 
 interface ProductFiltersProps {
   categories: string[];

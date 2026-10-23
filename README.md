@@ -80,11 +80,12 @@ Never commit `.env.local` or production credentials.
 The repository is a pnpm workspace run with Turborepo. From the repository root:
 
 ```bash
-pnpm dev                        # Start the development server
+pnpm dev                        # Start the site (:3000) and the stok app (:3001)
 pnpm lint                       # Run ESLint
 pnpm test                       # Run behaviour tests
 pnpm build                      # Create a production build
-pnpm --filter ferritnuve start  # Serve the production build
+pnpm --filter ferritnuve start  # Serve the site's production build
+pnpm --filter stok start        # Serve the stok app's production build
 ```
 
 Before opening a pull request, run:
@@ -108,13 +109,14 @@ apps/ferritnuve/            ferritnuve.com Vitrin (Next.js app)
     header.tsx              Responsive navigation and search
     search-dialog.tsx       Site and product search
     product-*.tsx           Catalog interface
-    ui/                     Shared UI primitives
   i18n/                     Locale routing and navigation
   lib/                      Product data, taxonomy, and SEO helpers
   messages/
     tr.json                 Turkish content
     en.json                 English content
   public/                   Product imagery, certificates, operations demo
+apps/stok/                  Internal stock app (Turkish, Europe/Istanbul times)
+packages/ui/                Shared shadcn/Radix UI primitives (@artek/ui)
 docs/                       Plan, ADRs and agent docs
 ```
 

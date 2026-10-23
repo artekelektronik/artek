@@ -5,6 +5,7 @@ import path from "path";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@artek/ui"],
   turbopack: {
     root: path.resolve(__dirname, "../.."),
   },
