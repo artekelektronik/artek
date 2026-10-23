@@ -249,3 +249,52 @@ export const stock = pgTable(
     check("stock_available_not_negative", sql`${t.physical} >= ${t.reserved} AND ${t.reserved} >= 0`),
   ],
 );
+
+// Transfer between Lokasyon: sevk takes stock out of the source, teslim alma puts what arrived into
+// the target and closes any shortfall as a loss right there. No long-lived partial state.
+
+export const transferStatus = pgEnum("transfer_status", ["yolda", "teslim_alindi"]);
+export const lossReason = pgEnum("loss_reason", ["kayip", "hasarli"]);
+
+export const transfer = pgTable(
+  "transfer",
+  {
+    id: uuid("id").primaryKey(),
+    fromLokasyonId: uuid("from_lokasyon_id")
+      .notNull()
+      .references(() => lokasyon.id),
+    toLokasyonId: uuid("to_lokasyon_id")
+      .notNull()
+      .references(() => lokasyon.id),
+    status: transferStatus("status").notNull().default("yolda"),
+    note: text("note"),
+    sendDocumentId: uuid("send_document_id")
+      .notNull()
+      .references(() => stockDocument.id),
+    sentBy: text("sent_by")
+      .notNull()
+      .references(() => user.id),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+    receiveDocumentId: uuid("receive_document_id").references(() => stockDocument.id),
+    receivedBy: text("received_by").references(() => user.id),
+    receivedAt: timestamp("received_at", { withTimezone: true }),
+  },
+  (t) => [check("transfer_between_two_lokasyon", sql`${t.fromLokasyonId} <> ${t.toLokasyonId}`)],
+);
+
+export const transferLine = pgTable(
+  "transfer_line",
+  {
+    transferId: uuid("transfer_id")
+      .notNull()
+      .references(() => transfer.id),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    sent: quantity("sent").notNull(),
+    received: quantity("received"),
+    lost: quantity("lost"),
+    lossReason: lossReason("loss_reason"),
+  },
+  (t) => [primaryKey({ columns: [t.transferId, t.productId] })],
+);

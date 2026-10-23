@@ -33,11 +33,10 @@ export type MovementLine = {
 
 // Records a document and its movements, and updates balances, in one transaction.
 // A document whose idempotency key already exists is returned as-is and records nothing new.
-// `lines` may be a function so callers can read state inside the same transaction.
+// `lines` may be a function so callers can read and write their own rows inside the same transaction.
 export async function postDocument(
   document: NewDocument,
-  lines: MovementLine[] | ((tx: Tx) => Promise<MovementLine[]>),
-  afterPost?: (tx: Tx, documentId: string) => Promise<void>,
+  lines: MovementLine[] | ((tx: Tx, documentId: string) => Promise<MovementLine[]>),
 ) {
   return db.transaction(async (tx) => {
     const [created] = await tx
@@ -52,13 +51,12 @@ export async function postDocument(
       return { documentId: existing!.id, created: false };
     }
 
-    const resolved = typeof lines === "function" ? await lines(tx) : lines;
+    const resolved = typeof lines === "function" ? await lines(tx, created.id) : lines;
     // A fixed order means two documents touching the same balances can't deadlock.
     const ordered = [...resolved].sort((a, b) =>
       `${a.productId}${a.lokasyonId}`.localeCompare(`${b.productId}${b.lokasyonId}`),
     );
     for (const line of ordered) await applyLine(tx, created.id, document.userId, line);
-    await afterPost?.(tx, created.id);
     return { documentId: created.id, created: true };
   });
 }
