@@ -1,23 +1,21 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import { openTestDatabase, skipWithoutDatabase } from "../lib/test-database";
+import { openTestDatabase, resetTestDatabase, skipWithoutDatabase } from "../lib/test-database";
 
 describe("first-admin script", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
   let auth: typeof import("../lib/auth").auth;
   let createFirstAdmin: typeof import("./create-admin").createFirstAdmin;
-  let schema: typeof import("../db/schema");
 
   before(async () => {
     db = await openTestDatabase();
     ({ auth } = await import("../lib/auth"));
     ({ createFirstAdmin } = await import("./create-admin"));
-    schema = await import("../db/schema");
     // The script only runs while no admin exists.
-    await db.delete(schema.user);
+    await resetTestDatabase();
   });
   after(async () => {
-    await db.delete(schema.user);
+    await resetTestDatabase();
     await db.$client.end();
   });
 
@@ -39,7 +37,7 @@ describe("first-admin script", { skip: skipWithoutDatabase }, () => {
   });
 
   test("refuses a password shorter than 8 characters", async () => {
-    await db.delete(schema.user);
+    await resetTestDatabase();
     await assert.rejects(
       createFirstAdmin({ email: "kisa@example.com", name: "Kısa", password: "short" }),
       /en az 8 karakter/,

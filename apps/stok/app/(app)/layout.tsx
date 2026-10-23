@@ -13,7 +13,7 @@ const screens: { label: string; href?: string }[] = [
   { label: "Ürünler", href: "/urunler" },
   { label: "Stok hareketleri", href: "/hareketler" },
   { label: "Mal kabul", href: "/mal-kabul" },
-  { label: "Stok çıkışı" },
+  { label: "Stok çıkışı", href: "/stok-cikisi" },
   { label: "Transfer" },
   { label: "Sayım" },
   { label: "Açılış sayımı" },
