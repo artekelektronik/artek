@@ -1,3 +1,4 @@
+import type { CountKind } from "./counts";
 import type { MovementType } from "./ledger";
 
 export const movementTypeLabels: Record<MovementType, string> = {
@@ -10,6 +11,14 @@ export const movementTypeLabels: Record<MovementType, string> = {
   uretim_tuketimi: "Üretim tüketimi",
   fire: "Fire",
   sayim_duzeltmesi: "Sayım düzeltmesi",
+};
+
+export const countKindLabels: Record<CountKind, string> = { sayim: "Sayım", acilis: "Açılış sayımı" };
+
+export const countStatusLabels: Record<"taslak" | "onaylandi" | "iptal", string> = {
+  taslak: "Açık",
+  onaylandi: "Onaylandı",
+  iptal: "İptal",
 };
 
 const dateTime = new Intl.DateTimeFormat("tr-TR", {

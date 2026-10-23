@@ -298,3 +298,46 @@ export const transferLine = pgTable(
   },
   (t) => [primaryKey({ columns: [t.transferId, t.productId] })],
 );
+
+// Sayım without locks: each line stores what was counted, when, and the balance at that moment,
+// so movements after the count don't distort the difference. Approval applies it once.
+
+export const countKind = pgEnum("count_kind", ["sayim", "acilis"]);
+export const countStatus = pgEnum("count_status", ["taslak", "onaylandi", "iptal"]);
+
+export const stockCount = pgTable("stock_count", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  lokasyonId: uuid("lokasyon_id")
+    .notNull()
+    .references(() => lokasyon.id),
+  kind: countKind("kind").notNull(),
+  status: countStatus("status").notNull().default("taslak"),
+  category: text("category"), // null: every active product
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  approvedBy: text("approved_by").references(() => user.id),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  approveDocumentId: uuid("approve_document_id").references(() => stockDocument.id),
+  cancelledBy: text("cancelled_by").references(() => user.id),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+});
+
+export const stockCountLine = pgTable(
+  "stock_count_line",
+  {
+    countId: uuid("count_id")
+      .notNull()
+      .references(() => stockCount.id),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    rafKodu: text("raf_kodu"), // copied when the session opens, to sort the sheet
+    counted: quantity("counted"),
+    balanceAtCount: quantity("balance_at_count"),
+    countedAt: timestamp("counted_at", { withTimezone: true }),
+    countedBy: text("counted_by").references(() => user.id),
+  },
+  (t) => [primaryKey({ columns: [t.countId, t.productId] })],
+);

@@ -57,6 +57,13 @@
       "when": 1792784601897,
       "tag": "0007_transfer",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792784926675,
+      "tag": "0008_stock-count",
+      "breakpoints": true
     }
   ]
 }

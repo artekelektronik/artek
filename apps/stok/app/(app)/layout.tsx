@@ -15,7 +15,7 @@ const screens: { label: string; href?: string }[] = [
   { label: "Mal kabul", href: "/mal-kabul" },
   { label: "Stok çıkışı", href: "/stok-cikisi" },
   { label: "Transfer", href: "/transfer" },
-  { label: "Sayım" },
+  { label: "Sayım", href: "/sayim" },
   { label: "Açılış sayımı" },
 ];
 
@@ -29,7 +29,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
-      <aside className="bg-muted/40 border-b md:w-64 md:shrink-0 md:border-r md:border-b-0">
+      <aside className="bg-muted/40 border-b md:w-64 md:shrink-0 md:border-r md:border-b-0 print:hidden">
         <div className="px-4 py-5">
           <p className="text-lg font-semibold">Artek Stok</p>
         </div>
