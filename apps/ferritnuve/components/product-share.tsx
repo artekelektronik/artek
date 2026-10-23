@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button } from "@artek/ui/components/button";
 export function ProductShare({name}:{name:string}) {
   const t = useTranslations("productDetail");
   const [status,setStatus] = useState("");

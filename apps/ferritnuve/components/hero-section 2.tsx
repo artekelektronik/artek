@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 
 import { ImageIllustration } from "@/components/image-illustration";
-import { Button } from "@/components/ui/button";
+import { Button } from "@artek/ui/components/button";
 
 const containerVariants = {
   hidden: { opacity: 0 },

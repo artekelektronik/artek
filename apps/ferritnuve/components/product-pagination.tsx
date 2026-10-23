@@ -9,7 +9,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from "@artek/ui/components/pagination";
 
 interface ProductPaginationProps {
   currentPage: number;

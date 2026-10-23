@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@artek/ui/components/command";
 import { FileText, Package, Loader2 } from "lucide-react";
 import { generateProductSlug } from "@/lib/utils";
 import { productContent } from "@/lib/product-content";
@@ -318,6 +318,7 @@ export function SearchDialog() {
       <CommandDialog
         title={t("nav.search")}
         description={t("search.placeholder")}
+        closeLabel={t("nav.closeMenu")}
         open={open}
         onOpenChange={setOpen}
         className="ring-4 ring-white/30"

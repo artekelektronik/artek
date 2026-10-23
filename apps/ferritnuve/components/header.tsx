@@ -14,20 +14,20 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+} from "@artek/ui/components/navigation-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@artek/ui/components/dropdown-menu";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+} from "@artek/ui/components/accordion";
+import { Button } from "@artek/ui/components/button";
 import { useMedia } from "@/hooks/use-media";
 import { cn } from "@/lib/utils";
 import { productGroups, groupName, productCatalogPaths } from "@/lib/product-taxonomy";

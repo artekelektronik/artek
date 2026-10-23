@@ -9,7 +9,7 @@ import {
   useQueryStates,
 } from "nuqs";
 import { useTranslations } from "next-intl";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@artek/ui/components/skeleton";
 import { ProductFilters, type FilterState } from "@/components/product-filters";
 import { ProductCard } from "@/components/product-card";
 import { ProductControls } from "@/components/product-controls";

@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 
 import { useLocale, useTranslations } from "next-intl";
 
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@artek/ui/hooks/use-mobile";
 import { productGroups, groupName, productCatalogPaths } from "@/lib/product-taxonomy";
 import {
   NavigationMenu,
@@ -14,7 +14,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+} from "@artek/ui/components/navigation-menu";
 
 export function ProductNavigation() {
   const isMobile = useIsMobile();
