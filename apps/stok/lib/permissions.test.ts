@@ -24,7 +24,7 @@ test("only admin manages users", () => {
 test("mağaza and depo sorumlusu act only in their own Lokasyon", () => {
   for (const role of ["magaza_sorumlusu", "depo_sorumlusu"] as const) {
     const actor = { roles: [role], lokasyonIds: [karakoy] };
-    for (const action of ["stock.receive", "stock.transfer", "stock.out", "count.perform"] as const) {
+    for (const action of ["stock.view", "stock.receive", "stock.transfer", "stock.out", "count.perform"] as const) {
       assert.equal(can(actor, action, karakoy), true, `${role} ${action} own`);
       assert.equal(can(actor, action, cekmekoy), false, `${role} ${action} other`);
       assert.equal(can(actor, action), false, `${role} ${action} without Lokasyon`);
@@ -32,6 +32,7 @@ test("mağaza and depo sorumlusu act only in their own Lokasyon", () => {
     assert.equal(can(actor, "products.view"), true, role);
     assert.equal(can(actor, "products.manage"), false, role);
     assert.equal(can(actor, "count.approve", karakoy), false, role);
+    assert.equal(can(actor, "stock.reverse", karakoy), false, role);
   }
 });
 

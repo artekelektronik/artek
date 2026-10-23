@@ -1,8 +1,22 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@artek/ui/components/table";
+import { MovementTable } from "@/components/movement-table";
 import { loadActor } from "@/lib/guard";
+import { displayQuantity } from "@/lib/labels";
+import { getBalances, listMovements } from "@/lib/ledger";
+import { unitLabels } from "@/lib/quantity";
 import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
@@ -19,6 +33,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     listCategories(requestHeaders),
   ]);
   if (!product) notFound();
+  const [balances, movements] = await Promise.all([
+    getBalances(requestHeaders, product.id),
+    listMovements(requestHeaders, { productId: product.id }),
+  ]);
   const canManage = can(actor, "products.manage");
 
   return (
@@ -29,6 +47,49 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         {product.archivedAt && <Badge variant="outline">Arşivde</Badge>}
       </div>
 
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">Stok</h2>
+        <Table className="max-w-2xl">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Lokasyon</TableHead>
+              <TableHead className="text-right">Fiziksel</TableHead>
+              <TableHead className="text-right">Ayrılmış</TableHead>
+              <TableHead className="text-right">Kullanılabilir</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {balances.lokasyon.map((b) => (
+              <TableRow key={b.lokasyonId}>
+                <TableCell>{b.name}</TableCell>
+                <TableCell className="text-right tabular-nums">{displayQuantity(b.physical)}</TableCell>
+                <TableCell className="text-right tabular-nums">{displayQuantity(b.reserved)}</TableCell>
+                <TableCell className="text-right tabular-nums">{displayQuantity(b.available)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>Toplam ({unitLabels[product.unit]})</TableCell>
+              <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.physical)}</TableCell>
+              <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.reserved)}</TableCell>
+              <TableCell className="text-right tabular-nums">{displayQuantity(balances.total.available)}</TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">Son hareketler</h2>
+          <Link href={`/hareketler?urun=${product.id}`} className="text-sm underline underline-offset-4">
+            Tümü
+          </Link>
+        </div>
+        <MovementTable movements={movements.slice(0, 20)} canReverse={can(actor, "stock.reverse")} />
+      </section>
+
+      <h2 className="text-lg font-semibold">Ürün bilgileri</h2>
       <ProductForm
         action={updateProductAction.bind(null, product.id)}
         product={product}

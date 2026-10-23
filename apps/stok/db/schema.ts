@@ -3,7 +3,9 @@ import {
   bigint,
   boolean,
   check,
+  index,
   integer,
+  numeric,
   jsonb,
   pgEnum,
   pgTable,
@@ -153,4 +155,95 @@ export const productShelf = pgTable(
     rafKodu: text("raf_kodu").notNull(),
   },
   (t) => [primaryKey({ columns: [t.productId, t.lokasyonId] })],
+);
+
+// Stock ledger. Balances change only through movements; movements are never edited or deleted.
+
+const quantity = (name: string) => numeric(name, { precision: 14, scale: 3 });
+
+export const documentKind = pgEnum("document_kind", [
+  "mal_kabul",
+  "stok_cikisi",
+  "transfer_sevk",
+  "transfer_teslim",
+  "sayim",
+  "acilis",
+  "ters_kayit",
+]);
+
+export const movementType = pgEnum("movement_type", [
+  "acilis",
+  "mal_kabul",
+  "transfer_sevk",
+  "transfer_teslim",
+  "transfer_kaybi",
+  "satis_teslimati",
+  "uretim_tuketimi",
+  "fire",
+  "sayim_duzeltmesi",
+]);
+
+// One user action that produced movements: a mal kabul, a stock-out, a transfer step, an approved count.
+export const stockDocument = pgTable("stock_document", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  kind: documentKind("kind").notNull(),
+  lokasyonId: uuid("lokasyon_id").references(() => lokasyon.id),
+  supplier: text("supplier"),
+  reference: text("reference"),
+  reason: text("reason"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Sent with the form; a retry or double click with the same key records nothing new.
+  idempotencyKey: text("idempotency_key").notNull().unique(),
+});
+
+export const stockMovement = pgTable(
+  "stock_movement",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => stockDocument.id),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    // Null while the quantity is on the way in a Transfer: it belongs to neither Lokasyon.
+    lokasyonId: uuid("lokasyon_id").references(() => lokasyon.id),
+    transferId: uuid("transfer_id"),
+    type: movementType("type").notNull(),
+    quantity: quantity("quantity").notNull(), // signed: in > 0, out < 0
+    unit: unit("unit").notNull(),
+    reason: text("reason"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    reversesId: uuid("reverses_id").unique(),
+  },
+  (t) => [
+    check("movement_not_zero", sql`${t.quantity} <> 0`),
+    index("movement_product_idx").on(t.productId, t.createdAt),
+    index("movement_lokasyon_idx").on(t.lokasyonId, t.createdAt),
+  ],
+);
+
+// One pile per product per Lokasyon (ADR-0003). Available = physical − reserved, never below zero.
+export const stock = pgTable(
+  "stock",
+  {
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    lokasyonId: uuid("lokasyon_id")
+      .notNull()
+      .references(() => lokasyon.id),
+    physical: quantity("physical").notNull().default("0"),
+    reserved: quantity("reserved").notNull().default("0"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.productId, t.lokasyonId] }),
+    check("stock_available_not_negative", sql`${t.physical} >= ${t.reserved} AND ${t.reserved} >= 0`),
+  ],
 );

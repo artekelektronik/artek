@@ -11,8 +11,8 @@ import { signOut } from "./actions";
 const screens: { label: string; href?: string }[] = [
   { label: "Stok durumu" },
   { label: "Ürünler", href: "/urunler" },
-  { label: "Stok hareketleri" },
-  { label: "Mal kabul" },
+  { label: "Stok hareketleri", href: "/hareketler" },
+  { label: "Mal kabul", href: "/mal-kabul" },
   { label: "Stok çıkışı" },
   { label: "Transfer" },
   { label: "Sayım" },

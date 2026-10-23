@@ -6,6 +6,8 @@ export type Action =
   | "users.manage"
   | "products.manage" // Ürün and Kritik seviye
   | "products.view"
+  | "stock.view" // balances and movement history
+  | "stock.reverse" // ters kayıt of a confirmed movement
   | "stock.receive" // Mal kabul
   | "stock.transfer"
   | "stock.out" // satış teslimatı, üretim tüketimi, fire
@@ -22,6 +24,8 @@ const rules: Record<Action, Partial<Record<Role, Scope>>> = {
   "users.manage": { admin: "any" },
   "products.manage": { admin: "any", muhendis: "any" },
   "products.view": { admin: "any", muhendis: "any", magaza_sorumlusu: "any", depo_sorumlusu: "any" },
+  "stock.view": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
+  "stock.reverse": { admin: "any", muhendis: "any" },
   "stock.receive": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "stock.transfer": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "stock.out": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
