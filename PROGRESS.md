@@ -9,19 +9,19 @@ Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 | #21 | Monorepo, site in `apps/ferritnuve` | Merged | `main` (#39) |
 | #22 | Stok app shell, shared `packages/ui` | Merged | `main` (#40) |
 | #23 | Stok Vercel project, Neon, Resend | Set up; the Neon preview-branch check remains (see Before go-live) | Vercel `artek-stok` · `stok.ferritnuve.com` |
-| #24 | Database, invite-only login, roles + Lokasyon guard | Draft PR [#41](https://github.com/artekelektronik/artek/pull/41) | `codex/stok-auth-roles` · `df36d69` |
-| #26 | Ürünler and the one-time import of the site's 92 products | Done locally | `codex/stok-products` · `ec5b535` |
-| #28 | Stock ledger: mal kabul, balances, Stok hareketleri | Done locally | `codex/stok-ledger` · `fd41c5a` |
-| #29 | Stok çıkışı: satış teslimatı, üretim tüketimi, fire | Done locally | `codex/stok-out` · `283e1d1`, review fixes `f2ad02f` |
-| #30 | Transfer: sevk and teslim alma | Done locally | `codex/stok-transfer` · `3a45a7e` |
-| #31 | Sayım without locks | Done locally | `codex/stok-count` · `3ad3255` |
-| #32 | Açılış sayımı (go-live per Lokasyon) | Done locally | `codex/stok-opening` · `32ba171` |
-| #33 | Stok durumu, filters, CSV | Done locally | `codex/stok-overview` · `867eb01`, review fixes `f1e94b4` |
-| #34 | Kritik seviye and email warnings | Done (sending needs Resend from #23) | `a022ee8` + `b741c86` |
-| #25 | User management: invite, deactivate, audit log | Not started (needs #34's email outbox) | — |
-| #27 | Public catalog API; the site reads from it | Not started (must merge after #23, or the live site loses its catalog) | — |
+| #24 | Database, invite-only login, roles + Lokasyon guard | Merged in [#41](https://github.com/artekelektronik/artek/pull/41); a deployed login is checked after `create-admin` | `df36d69` |
+| #26 | Ürünler and the one-time import of the site's 92 products | Merged (#41) | `ec5b535` |
+| #28 | Stock ledger: mal kabul, balances, Stok hareketleri | Merged (#41) | `fd41c5a` |
+| #29 | Stok çıkışı: satış teslimatı, üretim tüketimi, fire | Merged (#41) | `283e1d1`, review fixes `f2ad02f` |
+| #30 | Transfer: sevk and teslim alma | Merged (#41) | `3a45a7e` |
+| #31 | Sayım without locks | Merged (#41) | `3ad3255` |
+| #32 | Açılış sayımı (go-live per Lokasyon) | Merged (#41) | `32ba171` |
+| #33 | Stok durumu, filters, CSV | Merged (#41) | `867eb01`, review fixes `f1e94b4` |
+| #34 | Kritik seviye and email warnings | Merged (#41) | `a022ee8`, `b741c86`, `bac753e` |
+| #25 | User management: invite, deactivate, audit log | Not started; unblocked now that #34 is merged | — |
+| #27 | Public catalog API; the site reads from it | Stok side in progress: `@artek/catalog` contract + public `/api/catalog`. The site switches in a second PR, after production has its products | `codex/stok-catalog-api` |
 
-All of #24 and #26–#34 is on PR [#41](https://github.com/artekelektronik/artek/pull/41)'s branch `codex/stok-auth-roles`, one commit per ticket.
+#24 and #26–#34 were merged to `main` in PR [#41](https://github.com/artekelektronik/artek/pull/41) (merge commit `7fa35c2`), one commit per ticket. Production deployed it and ran the migrations on 24 October 2026.
 
 ## Kritik seviye (#34)
 

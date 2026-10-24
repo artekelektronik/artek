@@ -45,6 +45,10 @@ pnpm dev                                                        # http://localho
 - Every page that reads data and every action that changes it calls `requirePermission(headers, action, lokasyonId)` from `lib/guard.ts`. It loads the user's roles and Lokasyon from the database and applies the table in `lib/permissions.ts`. The `(app)` layout's session check and `proxy.ts` only redirect visitors; they are not access control.
 - Sign-in goes through `/api/auth`, where Better Auth rate-limits attempts (in production, counted in the `rate_limit` table).
 
+## Public catalog
+
+`GET /api/catalog` is public and read-only: every Vitrin reads its products here (ADR-0002). It returns products marked "show on site" and not archived, whatever their stock, with only the fields in the `@artek/catalog` contract (`packages/catalog`) and never quantities, stock codes, Raf kodu or prices. The CDN caches it for 5 minutes and may serve it stale for a day if the app is unreachable.
+
 ## Kritik seviye emails
 
 A movement that takes a product's company total below its Kritik seviye writes one email to the `notification` outbox in the same transaction, so a Resend failure never undoes stock. The outbox is sent right after the request (`after()`), and `vercel.json` runs `/api/cron/outbox` daily to retry failures (Vercel Hobby allows daily crons; on Pro it can run more often). Each email uses its notification id as Resend's idempotency key, so a retry never sends twice. Admins see every notification and choose the recipient roles under Bildirimler.
