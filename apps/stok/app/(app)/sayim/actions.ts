@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { sendNotificationsSoon } from "@/lib/send-soon";
 import { approveCount, cancelCount, openCount, recordCountLines, type CountKind } from "@/lib/counts";
 import { text } from "@/lib/form-data";
 
@@ -34,6 +35,7 @@ export async function approveCountAction(countId: string, formData: FormData): P
     await approveCount(await headers(), countId, { idempotencyKey: text(formData, "idempotencyKey") });
   });
   revalidatePath(`/sayim/${countId}`);
+  if (!state) sendNotificationsSoon();
   return state ?? { saved: true };
 }
 

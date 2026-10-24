@@ -31,6 +31,7 @@ function productFrom(formData: FormData): ProductInput {
     manufacturerCode: text(formData, "manufacturerCode"),
     supplier: text(formData, "supplier"),
     supplierCountry: text(formData, "supplierCountry"),
+    minLevel: text(formData, "minLevel"),
     description: text(formData, "description"),
     images: lines(formData.get("images")),
     // "Etiket | https://…" per line

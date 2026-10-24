@@ -146,8 +146,29 @@ describe("Kritik seviye warnings", { skip: skipWithoutDatabase }, () => {
     assert.equal(called, false);
   });
 
-  test("two simultaneous stock-outs crossing the level send one email", async () => {
-    await Promise.all([move("out", "2"), move("out", "2")]); // 12 → 10 → 8: only the second crosses
+  test("two simultaneous stock-outs at different Lokasyon crossing the level send one email", async () => {
+    // 6 at each Lokasyon (company total 12, level 10). The two stock-outs touch different balance
+    // rows, so only the product lock makes the second see the first: 12 → 10 → 8, one crossing.
+    await move("out", "6");
+    const { recordReceipt } = await import("./receipts");
+    await recordReceipt(muhendis.headers, {
+      lokasyonId: lokasyon["Çekmeköy İmalathane"],
+      supplier: "TDK",
+      reference: "İrsaliye",
+      lines: [{ productId: core, quantity: "6" }],
+      idempotencyKey: key(),
+    });
+    await db.delete(schema.notification);
+    const { recordStockOut } = await import("./stock-out");
+    const out = (name: keyof typeof lokasyon) =>
+      recordStockOut(muhendis.headers, {
+        type: "satis_teslimati",
+        lokasyonId: lokasyon[name],
+        reason: "Satış",
+        lines: [{ productId: core, quantity: "2" }],
+        idempotencyKey: key(),
+      });
+    await Promise.all([out("Karaköy Mağaza"), out("Çekmeköy İmalathane")]);
     assert.equal((await notifications()).length, 1);
   });
 

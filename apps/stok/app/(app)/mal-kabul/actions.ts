@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { sendNotificationsSoon } from "@/lib/send-soon";
 import { productLinesFrom, text } from "@/lib/form-data";
 import { recordReceipt } from "@/lib/receipts";
 
@@ -15,5 +16,6 @@ export async function recordReceiptAction(formData: FormData): Promise<ActionSta
       idempotencyKey: text(formData, "idempotencyKey"),
     });
   });
+  if (!state) sendNotificationsSoon();
   return state ?? { saved: true };
 }

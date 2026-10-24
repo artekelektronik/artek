@@ -7,7 +7,8 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Textarea } from "@artek/ui/components/textarea";
 import type { ActionState } from "@/lib/action-result";
-import { unitLabels } from "@/lib/quantity";
+import { displayQuantity } from "@/lib/labels";
+import { formatQuantity, unitLabels } from "@/lib/quantity";
 import { selectClassName } from "@/lib/ui";
 
 type Product = {
@@ -24,6 +25,7 @@ type Product = {
   manufacturerCode: string | null;
   supplier: string | null;
   supplierCountry: string | null;
+  minLevel: string | null;
   description: string | null;
   images: string[];
   datasheets: { label: string; url: string }[];
@@ -44,6 +46,7 @@ const empty: Product = {
   manufacturerCode: null,
   supplier: null,
   supplierCountry: null,
+  minLevel: null,
   description: null,
   images: [],
   datasheets: [],
@@ -102,6 +105,14 @@ export function ProductForm({
               </option>
             ))}
           </select>
+        </Field>
+        <Field label="Kritik seviye (şirket toplamı, boşsa uyarı yok)">
+          <Input
+            name="minLevel"
+            defaultValue={product.minLevel ? displayQuantity(formatQuantity(product.minLevel)) : ""}
+            inputMode="decimal"
+            className={input}
+          />
         </Field>
         <div className="flex flex-wrap gap-6 sm:col-span-2">
           <Label className="font-normal">

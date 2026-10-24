@@ -1,14 +1,15 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
 import { Separator } from "@artek/ui/components/separator";
 import { auth } from "@/lib/auth";
+import { loadActor } from "@/lib/guard";
+import { can, type Action } from "@/lib/permissions";
 import { signOut } from "./actions";
 
-// Phase 1 screens; each gets an href when its ticket lands.
-const screens: { label: string; href?: string }[] = [
+// Screens; one with an action is shown only to users who may do it (the server still checks).
+const screens: { label: string; href: string; action?: Action }[] = [
   { label: "Stok durumu", href: "/stok-durumu" },
   { label: "Ürünler", href: "/urunler" },
   { label: "Stok hareketleri", href: "/hareketler" },
@@ -17,6 +18,7 @@ const screens: { label: string; href?: string }[] = [
   { label: "Transfer", href: "/transfer" },
   { label: "Sayım", href: "/sayim" },
   { label: "Açılış sayımı", href: "/acilis-sayimi" },
+  { label: "Bildirimler", href: "/bildirimler", action: "notifications.manage" },
 ];
 
 export default async function AppLayout({
@@ -24,8 +26,10 @@ export default async function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const requestHeaders = await headers();
+  const session = await auth.api.getSession({ headers: requestHeaders });
   if (!session) redirect("/giris");
+  const actor = await loadActor(requestHeaders);
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
@@ -36,20 +40,15 @@ export default async function AppLayout({
         <Separator />
         <nav aria-label="Ana menü" className="p-2">
           <ul className="flex flex-col gap-1">
-            {screens.map(({ label, href }) => (
-              <li key={label}>
-                {href ? (
+            {screens
+              .filter(({ action }) => !action || can(actor, action))
+              .map(({ label, href }) => (
+                <li key={label}>
                   <Button variant="ghost" asChild className="w-full justify-start">
                     <Link href={href}>{label}</Link>
                   </Button>
-                ) : (
-                  <Button variant="ghost" disabled className="w-full justify-between">
-                    {label}
-                    <Badge variant="outline">Yakında</Badge>
-                  </Button>
-                )}
-              </li>
-            ))}
+                </li>
+              ))}
           </ul>
         </nav>
         <Separator />

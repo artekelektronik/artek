@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { sendNotificationsSoon } from "@/lib/send-soon";
 import { text } from "@/lib/form-data";
 import { reverseMovement } from "@/lib/ledger";
 
@@ -13,6 +14,9 @@ export async function reverseMovementAction(movementId: string, formData: FormDa
       idempotencyKey: text(formData, "idempotencyKey"),
     });
   });
-  if (!state) revalidatePath("/", "layout");
+  if (!state) {
+    revalidatePath("/", "layout");
+    sendNotificationsSoon();
+  }
   return state ?? { saved: true };
 }

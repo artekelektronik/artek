@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { sendNotificationsSoon } from "@/lib/send-soon";
 import { productLinesFrom, text } from "@/lib/form-data";
 import { receiveTransfer, sendTransfer, type LossReason } from "@/lib/transfers";
 
@@ -17,6 +18,7 @@ export async function sendTransferAction(formData: FormData): Promise<ActionStat
     });
   });
   revalidatePath("/transfer");
+  if (!state) sendNotificationsSoon();
   return state ?? { saved: true };
 }
 
@@ -33,5 +35,6 @@ export async function receiveTransferAction(transferId: string, formData: FormDa
     });
   });
   revalidatePath(`/transfer/${transferId}`);
+  if (!state) sendNotificationsSoon();
   return state ?? { saved: true };
 }

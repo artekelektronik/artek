@@ -12,6 +12,9 @@ Names only; never commit values. Locally they live in `apps/stok/.env.local` (gi
 | `BETTER_AUTH_SECRET` | Signs session cookies; generate with `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | The app's own URL, e.g. `http://localhost:3001` |
 | `TEST_DATABASE_URL` | A separate, throwaway database for the integration tests |
+| `RESEND_API_KEY` | Sends Kritik seviye emails (from the Resend integration) |
+| `RESEND_FROM` | Sender address on the verified Resend domain, e.g. `Artek Stok <stok@…>` |
+| `CRON_SECRET` | Protects `/api/cron/outbox`; Vercel Cron sends it automatically |
 
 ## Local setup
 
@@ -34,6 +37,10 @@ pnpm dev                                                        # http://localho
 - There is no sign-up: users are created by an admin, and the first admin by `create-admin`.
 - Every page that reads data and every action that changes it calls `requirePermission(headers, action, lokasyonId)` from `lib/guard.ts`. It loads the user's roles and Lokasyon from the database and applies the table in `lib/permissions.ts`. The `(app)` layout's session check and `proxy.ts` only redirect visitors; they are not access control.
 - Sign-in goes through `/api/auth`, where Better Auth rate-limits attempts (in production, counted in the `rate_limit` table).
+
+## Kritik seviye emails
+
+A movement that takes a product's company total below its Kritik seviye writes one email to the `notification` outbox in the same transaction, so a Resend failure never undoes stock. The outbox is sent right after the request (`after()`), and `vercel.json` runs `/api/cron/outbox` daily to retry failures (Vercel Hobby allows daily crons; on Pro it can run more often). Each email uses its notification id as Resend's idempotency key, so a retry never sends twice. Admins see every notification and choose the recipient roles under Bildirimler.
 
 ## Tests
 
