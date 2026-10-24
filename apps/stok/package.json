@@ -14,6 +14,7 @@
     "import-products": "tsx --env-file-if-exists=.env.local scripts/import-site-products.ts"
   },
   "dependencies": {
+    "@artek/catalog": "workspace:*",
     "@artek/ui": "workspace:*",
     "better-auth": "^1.7.12",
     "drizzle-orm": "^0.45.4",
