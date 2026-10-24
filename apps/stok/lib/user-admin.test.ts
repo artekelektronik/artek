@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
-import type { Email } from "./outbox";
-import { lokasyonIdsByName, openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
+import type { Email } from "./email";
+import { lokasyonIdsByName, openTestDatabase, resetTestDatabase, signedInAs, signIn, skipWithoutDatabase } from "./test-database";
 
 describe("user management", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
@@ -15,12 +15,7 @@ describe("user management", { skip: skipWithoutDatabase }, () => {
     sent.push(email);
   };
 
-  const tokenFrom = (email: Email) => new URL(email.text.match(/https?:\/\/\S+/)![0]).searchParams.get("token")!;
-
-  async function signIn(email: string, password: string) {
-    const { headers } = await auth.api.signInEmail({ body: { email, password }, returnHeaders: true });
-    return new Headers({ cookie: headers.getSetCookie().map((c) => c.split(";")[0]).join("; ") });
-  }
+  const tokenFrom = (email: { text: string }) => new URL(email.text.match(/https?:\/\/\S+/)![0]).searchParams.get("token")!;
 
   async function auditFor(userId: string) {
     const { eq, asc } = await import("drizzle-orm");
@@ -59,7 +54,13 @@ describe("user management", { skip: skipWithoutDatabase }, () => {
     await auth.api.resetPassword({ body: { token: tokenFrom(sent[0]), newPassword: "ayse-secret-1" } });
     const actor = await guard.loadActor(await signIn("ayse@example.com", "ayse-secret-1"));
 
-    assert.deepEqual(actor, { userId: invited.id, roles: ["magaza_sorumlusu"], lokasyonIds: [karakoy] });
+    assert.deepEqual(actor, {
+      userId: invited.id,
+      name: "Ayşe Yılmaz",
+      email: "ayse@example.com",
+      roles: ["magaza_sorumlusu"],
+      lokasyonIds: [karakoy],
+    });
     const history = (await auditFor(invited.id)).map((a) => a.action);
     assert.deepEqual(history, ["user.invite", "user.password_link", "user.password_set"]);
   });
@@ -267,7 +268,7 @@ describe("user management", { skip: skipWithoutDatabase }, () => {
     }
 
     assert.deepEqual(resend.map((e) => e.to), [[aktif.user.email]]);
-    const token = new URL(resend[0].text.match(/https?:\/\/\S+/)![0]).searchParams.get("token")!;
+    const token = tokenFrom(resend[0]);
     await auth.api.resetPassword({ body: { token, newPassword: "a-new-password" } });
     await signIn(aktif.user.email, "a-new-password");
     assert.equal(await auth.api.getSession({ headers: aktif.headers }), null, "old sessions end");

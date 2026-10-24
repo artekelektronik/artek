@@ -3,7 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db } from "../db";
 import { countKind, lokasyon, product, productShelf, stock, stockCount, stockCountLine, stockMovement, user } from "../db/schema";
-import { isUniqueViolation, UserError } from "./errors";
+import { isUniqueViolation, isUuid, parseInput, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { postDocument, visibleLokasyonIds, type MovementLine } from "./ledger";
 import { can } from "./permissions";
@@ -12,7 +12,7 @@ import { formatQuantity, parseQuantityOrZero, subtractQuantity } from "./quantit
 export type CountKind = (typeof countKind.enumValues)[number];
 
 async function findCount(countId: string) {
-  const found = z.uuid().safeParse(countId).success
+  const found = isUuid(countId)
     ? await db.query.stockCount.findFirst({ where: eq(stockCount.id, countId) })
     : undefined;
   if (!found) throw new UserError("Sayım bulunamadı.");
@@ -26,11 +26,10 @@ const openInput = z.object({
 });
 
 export async function openCount(headers: Headers, input: z.input<typeof openInput>) {
-  const parsed = openInput.safeParse(input);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
-  const { lokasyonId, kind } = parsed.data;
+  const data = parseInput(openInput, input);
+  const { lokasyonId, kind } = data;
   // An opening count always covers the whole catalog.
-  const category = kind === "acilis" ? null : parsed.data.category || null;
+  const category = kind === "acilis" ? null : data.category || null;
   const actor = await requirePermission(headers, "count.perform", lokasyonId);
   const place = await db.query.lokasyon.findFirst({ where: eq(lokasyon.id, lokasyonId) });
   if (!place) throw new UserError("Lokasyon bulunamadı.");
@@ -55,9 +54,7 @@ export async function openCount(headers: Headers, input: z.input<typeof openInpu
   });
 }
 
-// Saves counted quantities. Each line keeps the balance at the moment it was counted, so later
-// sales and transfers don't distort its difference. Empty entries are left uncounted, and a line
-// whose quantity hasn't changed keeps its original moment (a sheet is saved more than once).
+// Lines keep the balance at count time; unchanged lines keep their time (sheets are re-saved).
 export async function recordCountLines(headers: Headers, countId: string, entries: { productId: string; counted: string }[]) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.perform", count.lokasyonId);
@@ -66,7 +63,7 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
     const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("share");
     if (current.status !== "taslak") throw new UserError("Bu sayım açık değil; satır kaydedilemez.");
     for (const entry of entries.filter((e) => e.counted.trim() !== "")) {
-      if (!z.uuid().safeParse(entry.productId).success) throw new UserError("Bu ürün sayım listesinde yok.");
+      if (!isUuid(entry.productId)) throw new UserError("Bu ürün sayım listesinde yok.");
       const [line] = await tx
         .select({ code: product.code, unit: product.unit, counted: stockCountLine.counted })
         .from(stockCountLine)
@@ -92,8 +89,7 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
   });
 }
 
-// Applies each counted line exactly once: a Sayım as its difference (sayım düzeltmesi), an
-// Açılış sayımı as the opening balance (açılış), which also opens the Lokasyon for other movements.
+// Posts counted lines once: a Sayım as differences, an Açılış as opening balances (opening the Lokasyon).
 export async function approveCount(headers: Headers, countId: string, { idempotencyKey }: { idempotencyKey: string }) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.approve", count.lokasyonId);
@@ -117,7 +113,6 @@ export async function approveCount(headers: Headers, countId: string, { idempote
           .where(and(eq(stockCountLine.countId, countId), isNotNull(stockCountLine.counted)));
         const movements: MovementLine[] = [];
         for (const line of lines) {
-          // Before go-live every balance is zero, so the opening movement is the counted quantity.
           const difference = opening ? formatQuantity(line.counted!) : subtractQuantity(line.counted!, line.balanceAtCount!);
           if (difference === "0") continue;
           movements.push({
@@ -145,7 +140,6 @@ export async function approveCount(headers: Headers, countId: string, { idempote
   }
 }
 
-// An abandoned session is closed without touching stock.
 export async function cancelCount(headers: Headers, countId: string) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.approve", count.lokasyonId);
@@ -163,7 +157,7 @@ const counter = alias(user, "counter");
 
 export async function getCount(headers: Headers, countId: string) {
   const actor = await loadActor(headers);
-  if (!z.uuid().safeParse(countId).success) return undefined;
+  if (!isUuid(countId)) return undefined;
   const [found] = await db
     .select({
       id: stockCount.id,

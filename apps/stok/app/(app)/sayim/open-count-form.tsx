@@ -6,6 +6,7 @@ import { Label } from "@artek/ui/components/label";
 import type { CountKind } from "@/lib/counts";
 import { selectClassName } from "@/lib/ui";
 import { openCountAction } from "./actions";
+import { FormStatus } from "@/components/form-status";
 
 export function OpenCountForm({
   lokasyon,
@@ -44,11 +45,7 @@ export function OpenCountForm({
       <Button type="submit" disabled={pending}>
         {kind === "acilis" ? "Açılış sayımını başlat" : "Sayım başlat"}
       </Button>
-      {state?.error && (
-        <p role="alert" className="text-destructive w-full text-sm">
-          {state.error}
-        </p>
-      )}
+      <FormStatus state={state} className="w-full" />
     </form>
   );
 }

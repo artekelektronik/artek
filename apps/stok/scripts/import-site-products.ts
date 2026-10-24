@@ -1,5 +1,4 @@
-// One-time: imports the site's product JSON as the starting catalog. Safe to run again:
-// records already imported are skipped, so later edits in the stok app are kept.
+// One-time import of the site's products; re-runnable (imported records are skipped).
 // Usage: pnpm --filter stok import-products [path/to/site-products.json]
 import { readFileSync } from "node:fs";
 import path from "node:path";

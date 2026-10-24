@@ -37,11 +37,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!product) notFound();
   const [balances, movements, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
-    listMovements(requestHeaders, { productId: product.id }),
+    listMovements(requestHeaders, { productId: product.id, limit: 20 }),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
-  // Stock on the way belongs to no Lokasyon. As in the overview, a user sees what is on the way to
-  // or from their Lokasyon, and it counts in their total.
+  // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
   const showTransit = transit !== "0";
   const canManage = can(actor, "products.manage");
 
@@ -119,7 +118,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             Tümü
           </Link>
         </div>
-        <MovementTable movements={movements.slice(0, 20)} canReverse={can(actor, "stock.reverse")} />
+        <MovementTable movements={movements} canReverse={can(actor, "stock.reverse")} />
       </section>
 
       <h2 className="text-lg font-semibold">Ürün bilgileri</h2>

@@ -4,8 +4,7 @@ import Link from "next/link";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
+import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
@@ -15,7 +14,6 @@ import { ReverseButton } from "./reverse-button";
 type Movement = Awaited<ReturnType<typeof listMovements>>[number];
 
 const column = columnHelperFor<Movement>();
-const options = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "tr")).map((v) => ({ label: v, value: v }));
 const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boolean).join(" · ");
 
 export function MovementTable({ movements, canReverse }: { movements: Movement[]; canReverse: boolean }) {
@@ -96,15 +94,7 @@ export function MovementTable({ movements, canReverse }: { movements: Movement[]
       : []),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: movements,
-    columns,
-    initialState: { ...hiddenSearch, sorting: [{ id: "zaman", desc: true }], pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: movements, columns, sorting: [{ id: "zaman", desc: true }] });
 
   return (
     <DataTable table={table} aria-label="Stok hareketleri">

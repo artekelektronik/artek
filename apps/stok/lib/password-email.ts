@@ -1,7 +1,6 @@
 import type { Email } from "./email";
 
-// The email carrying a Better Auth reset-password token to /sifre-belirle: an invite for someone who
-// has never set a password, a reset otherwise.
+// An invite or reset email carrying a Better Auth reset-password token for /sifre-belirle.
 export function passwordEmail(target: { email: string; name: string }, kind: "invite" | "reset", token: string): Email {
   const origin = process.env.BETTER_AUTH_URL ?? "http://localhost:3001";
   const link = new URL(`/sifre-belirle?token=${token}`, origin).toString();

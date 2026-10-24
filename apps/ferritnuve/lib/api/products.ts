@@ -26,17 +26,3 @@ export async function fetchProducts(
 
   return response.json();
 }
-
-export async function fetchProduct(slug: string): Promise<AirtableProduct> {
-  const baseUrl =
-    typeof window !== "undefined"
-      ? ""
-      : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const response = await fetch(`${baseUrl}/api/products/${slug}`);
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch product");
-  }
-
-  return response.json();
-}

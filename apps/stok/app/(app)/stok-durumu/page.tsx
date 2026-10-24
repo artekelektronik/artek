@@ -15,7 +15,7 @@ type Params = { lokasyon?: string; kritik?: string };
 export default async function OverviewPage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
   const requestHeaders = await headers();
-  // Lokasyon and Kritik seviye change what is loaded; the table searches, filters and sorts the rest.
+  // Lokasyon and Kritik seviye change what is loaded; the table filters the rest.
   const [overview, categories, actor, allLokasyon] = await Promise.all([
     getOverview(requestHeaders, { lokasyonId: params.lokasyon || undefined, belowMinimum: params.kritik === "1" }),
     listCategories(requestHeaders),

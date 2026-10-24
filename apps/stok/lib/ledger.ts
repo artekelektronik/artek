@@ -1,17 +1,15 @@
 import { and, asc, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
-import { z } from "zod";
 import { db, type Tx } from "../db";
 import { documentKind, lokasyon, movementType, product, stock, stockDocument, stockMovement, user } from "../db/schema";
-import { isUniqueViolation, UserError } from "./errors";
+import { isUniqueViolation, isUuid, UserError } from "./errors";
 import { queueMinimumLevelWarnings } from "./kritik-seviye";
 import { loadActor, requirePermission } from "./guard";
 import { can, type Actor } from "./permissions";
 import { addQuantities, formatQuantity, parseQuantity, subtractQuantity, unitLabels } from "./quantity";
 
-export type { Tx } from "../db";
 export type MovementType = (typeof movementType.enumValues)[number];
 
-export type NewDocument = {
+type NewDocument = {
   kind: (typeof documentKind.enumValues)[number];
   lokasyonId?: string | null;
   supplier?: string | null;
@@ -32,9 +30,7 @@ export type MovementLine = {
   reversesId?: string | null;
 };
 
-// Records a document and its movements, and updates balances, in one transaction.
-// A document whose idempotency key already exists is returned as-is and records nothing new.
-// `lines` may be a function so callers can read and write their own rows inside the same transaction.
+// One transaction; a repeated idempotency key returns the first document. `lines` may run inside it.
 export async function postDocument(
   document: NewDocument,
   lines: MovementLine[] | ((tx: Tx, documentId: string) => Promise<MovementLine[]>),
@@ -64,7 +60,7 @@ export async function postDocument(
 }
 
 async function applyLine(tx: Tx, documentId: string, userId: string, line: MovementLine) {
-  if (!z.uuid().safeParse(line.productId).success) throw new UserError("Ürün bulunamadı; listeden bir ürün seçin.");
+  if (!isUuid(line.productId)) throw new UserError("Ürün bulunamadı; listeden bir ürün seçin.");
   const found = await tx.query.product.findFirst({
     where: eq(product.id, line.productId),
     columns: { code: true, unit: true, archivedAt: true },
@@ -137,8 +133,8 @@ async function applyLine(tx: Tx, documentId: string, userId: string, line: Movem
 // The Lokasyon whose stock this user may see; undefined means every Lokasyon (and stock on the way).
 export async function visibleLokasyonIds(actor: Actor): Promise<string[] | undefined> {
   const all = await db.select({ id: lokasyon.id }).from(lokasyon);
-  if (all.every((l) => can({ ...actor, lokasyonIds: [] }, "stock.view", l.id))) return undefined;
-  return all.filter((l) => can(actor, "stock.view", l.id)).map((l) => l.id);
+  const visible = all.filter((l) => can(actor, "stock.view", l.id)).map((l) => l.id);
+  return visible.length === all.length ? undefined : visible;
 }
 
 export async function getBalances(headers: Headers, productId: string) {
@@ -165,9 +161,8 @@ export async function getBalances(headers: Headers, productId: string) {
   }));
   return {
     lokasyon: lines,
-    // False when the user sees only some Lokasyon: the total is then theirs, not the company's.
+    // Totals cover the visible Lokasyon only; false when that isn't every Lokasyon.
     isCompanyTotal: visible === undefined,
-    // Totals cover only the Lokasyon shown, so they always equal the sum of the lines.
     total: {
       physical: addQuantities(...lines.map((l) => l.physical)),
       reserved: addQuantities(...lines.map((l) => l.reserved)),
@@ -176,13 +171,16 @@ export async function getBalances(headers: Headers, productId: string) {
   };
 }
 
-export type MovementFilters = {
+export const movementLimit = 500;
+
+type MovementFilters = {
   productId?: string;
   lokasyonId?: string;
   userId?: string;
   type?: MovementType;
   from?: Date;
   to?: Date;
+  limit?: number;
 };
 
 export async function listMovements(headers: Headers, filters: MovementFilters) {
@@ -226,7 +224,7 @@ export async function listMovements(headers: Headers, filters: MovementFilters) 
     .leftJoin(lokasyon, eq(lokasyon.id, stockMovement.lokasyonId))
     .where(and(...conditions))
     .orderBy(desc(stockMovement.createdAt), desc(stockMovement.id))
-    .limit(500);
+    .limit(filters.limit ?? movementLimit);
   return rows.map((r) => ({ ...r, quantity: formatQuantity(r.quantity) }));
 }
 
@@ -243,8 +241,7 @@ export async function reverseMovement(
   const original = await db.query.stockMovement.findFirst({ where: eq(stockMovement.id, movementId) });
   if (!original) throw new UserError("Hareket bulunamadı.");
   if (original.reversesId) throw new UserError("Bir ters kayıt yeniden ters kaydedilemez.");
-  // A transfer's movements belong together with its on-the-way stock; reversing one alone would
-  // create or lose stock. A wrong transfer is corrected by sending the stock back.
+  // Reversing one transfer movement alone would create or lose stock; send the stock back instead.
   if (original.transferId) throw new UserError("Transfer hareketleri ters kaydedilemez; ürünleri geri gönderin.");
   // Checked first for a clear message; the unique reverses_id still settles a race between two requests.
   if (await db.query.stockMovement.findFirst({ where: eq(stockMovement.reversesId, movementId) })) {
@@ -262,7 +259,6 @@ export async function reverseMovement(
         quantity: quantity.replace("-", ""),
         type: original.type,
         reason: reason.trim(),
-        transferId: original.transferId,
         reversesId: original.id,
       },
     ],

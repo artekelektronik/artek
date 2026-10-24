@@ -75,19 +75,20 @@ describe("stock overview", { skip: skipWithoutDatabase }, () => {
   });
 
   test("totals equal the sum of the lines shown, per unit", async () => {
+    const { totalsByUnit } = await import("./overview-totals");
+    const { addQuantities } = await import("./quantity");
     for (const filters of [{}, { category: "Ferrit" }, { q: "bakır" }]) {
       const result = await overview.getOverview(muhendis.headers, filters);
-      for (const [unit, totals] of Object.entries(result.totals)) {
-        const lines = result.rows.filter((r) => r.unit === unit);
+      for (const totals of totalsByUnit(result.rows, result.lokasyon.map((l) => l.id))) {
+        const lines = result.rows.filter((r) => r.unit === totals.unit);
         for (const l of result.lokasyon) {
-          const { addQuantities } = await import("./quantity");
-          assert.equal(totals.stock[l.id].physical, addQuantities(...lines.map((r) => r.stock[l.id].physical)), `${unit} ${l.name}`);
+          assert.equal(totals.physical[l.id], addQuantities(...lines.map((r) => r.stock[l.id].physical)), `${totals.unit} ${l.name}`);
         }
-        const { addQuantities } = await import("./quantity");
         assert.equal(totals.total, addQuantities(...lines.map((r) => r.total)));
       }
     }
-    const kg = (await overview.getOverview(muhendis.headers, {})).totals.kg!;
+    const result = await overview.getOverview(muhendis.headers, {});
+    const kg = totalsByUnit(result.rows, result.lokasyon.map((l) => l.id)).find((t) => t.unit === "kg")!;
     assert.equal(kg.total, "13.25");
   });
 

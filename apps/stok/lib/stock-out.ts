@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserError } from "./errors";
+import { parseInput } from "./errors";
 import { requirePermission } from "./guard";
 import { postDocument } from "./ledger";
 
@@ -20,9 +20,8 @@ const stockOutInput = z.object({
 export type StockOutInput = z.input<typeof stockOutInput>;
 
 export async function recordStockOut(headers: Headers, input: StockOutInput) {
-  const parsed = stockOutInput.safeParse(input);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
-  const { type, lokasyonId, reason, reference, lines, idempotencyKey } = parsed.data;
+  const data = parseInput(stockOutInput, input);
+  const { type, lokasyonId, reason, reference, lines, idempotencyKey } = data;
   const actor = await requirePermission(headers, "stock.out", lokasyonId);
 
   return postDocument(

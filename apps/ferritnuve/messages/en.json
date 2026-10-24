@@ -231,26 +231,14 @@
     "loading": "Loading products"
   },
   "productCard": {
-    "inStock": "In Stock",
-    "outOfStock": "Out of Stock",
-    "locationKarakoy": "Karaköy:",
     "code": "Code:",
-    "unitPrice": "Unit Price:",
-    "retailPrice": "Retail:",
-    "wholesalePrice": "Wholesale:",
     "viewDetails": "View Details"
   },
   "productDetail": {
     "backButton": "Back to Products",
     "notFound": "Product Not Found",
     "notFoundDescription": "This product does not exist or has been removed.",
-    "inStock": "In Stock",
-    "outOfStock": "Out of Stock",
     "code": "Code:",
-    "unitPrice": "Unit Price:",
-    "retailPrice": "Retail Price:",
-    "wholesalePrice": "Wholesale Price:",
-    "wholesaleBase": "Wholesale Base:",
     "aiSummary": "AI Product Summary",
     "description": "Description",
     "additionalInfo": "Additional Information",

@@ -11,7 +11,7 @@ export const metadata = { title: "Yeni ürün | Artek Stok" };
 
 export default async function NewProductPage() {
   const requestHeaders = await headers();
-  // The page is only a form; createProduct itself enforces the permission.
+  // UX only; createProduct enforces the permission.
   if (!can(await loadActor(requestHeaders), "products.manage")) return <NoAccess />;
   const [lokasyon, categories] = await Promise.all([listLokasyon(), listCategories(requestHeaders)]);
 

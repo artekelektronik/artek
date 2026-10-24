@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { Button } from "@artek/ui/components/button";
 import { loadActor } from "@/lib/guard";
+import { below } from "@/lib/kritik-seviye";
 import { getOverview } from "@/lib/overview";
 import { can } from "@/lib/permissions";
 import { listCategories, listProducts } from "@/lib/products";
@@ -13,17 +14,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const { arsiv } = await searchParams;
   const archived = arsiv === "1";
   const requestHeaders = await headers();
-  // Every product (or the archive) once, with its stock in the Lokasyon the user sees; the table
-  // searches, filters, sorts and pages them.
+  // All products at once (stock only for active ones); the table filters and pages client-side.
   const [actor, products, categories, overview] = await Promise.all([
     loadActor(requestHeaders),
     listProducts(requestHeaders, { archived }),
     listCategories(requestHeaders),
-    getOverview(requestHeaders, {}),
+    archived ? null : getOverview(requestHeaders, {}),
   ]);
-  const stockOf = new Map(overview.rows.map((r) => [r.id, r]));
-  // Kritik seviye compares the company total, so only users who see every Lokasyon get it.
-  const comparesMinimum = overview.canFilterBelowMinimum;
+  const stockOf = new Map(overview?.rows.map((r) => [r.id, r]));
+  const comparesMinimum = overview?.canFilterBelowMinimum ?? false;
 
   const rows: ProductRow[] = products.map((p) => {
     const stock = stockOf.get(p.id);
@@ -32,7 +31,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       ? "arsiv"
       : Number(total) <= 0
         ? "yok"
-        : comparesMinimum && p.minLevel !== null && Number(total) < Number(p.minLevel)
+        : comparesMinimum && p.minLevel !== null && below(total, p.minLevel)
           ? "kritik"
           : "stokta";
     return {
@@ -49,7 +48,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       showOnSite: p.showOnSite,
       images: p.images,
       minLevel: p.minLevel,
-      stock: overview.lokasyon.map((l) => ({
+      stock: (overview?.lokasyon ?? []).map((l) => ({
         lokasyonId: l.id,
         name: l.name,
         physical: stock?.stock[l.id]?.physical ?? "0",

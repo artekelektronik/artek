@@ -5,12 +5,14 @@ import { displayQuantity } from "./labels";
 import type { Role } from "./permissions";
 import { formatQuantity, subtractQuantity, unitLabels } from "./quantity";
 
-// Compares a quantity string with a level: true when value < level.
-const below = (value: string, level: string) => subtractQuantity(value, level).startsWith("-");
+export const below = (value: string, level: string) => subtractQuantity(value, level).startsWith("-");
 
-// Called inside the posting transaction after a document's movements are written. A product whose
-// company total went from at-or-above its Kritik seviye to below it gets one email in the outbox.
-// Product rows are locked in a fixed order, so concurrent documents see each other's movements.
+// Company total over every movement; "product"."id" is spelled out because Drizzle leaves it bare in a select.
+export const companyTotal = sql<string>`coalesce((select sum(m.quantity) from stock_movement m where m.product_id = "product"."id"), 0)`;
+
+export const belowMinimumLevel = sql`${product.minLevel} is not null and ${companyTotal} < ${product.minLevel}`;
+
+// In the posting transaction: one outbox email per product this document took below its Kritik seviye.
 export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
   const changes = await tx
     .select({ productId: stockMovement.productId, delta: sql<string>`sum(${stockMovement.quantity})` })
@@ -24,8 +26,7 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
     .from(product)
     .where(and(inArray(product.id, changes.map((c) => c.productId)), isNotNull(product.minLevel)))
     .orderBy(product.id)
-    // NO KEY UPDATE serializes two documents for the same product but, unlike FOR UPDATE, doesn't
-    // conflict with the key-share locks their movement inserts already hold, so it can't deadlock.
+    // NO KEY UPDATE serializes per product without clashing with the inserts' key-share locks (no deadlock).
     .for("no key update");
 
   for (const p of watched) {
@@ -41,7 +42,7 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
     const unit = unitLabels[p.unit];
     const recipients = await recipientEmails(tx);
     await tx.insert(notification).values({
-      // With nobody in the chosen roles there is no one to send to; show that instead of retrying.
+      // No recipients: mark failed so Bildirimler shows it instead of retrying.
       ...(recipients.length === 0 && { status: "failed" as const, lastError: "Alıcı yok: seçili rollerde kullanıcı bulunmuyor." }),
       kind: "kritik_seviye",
       productId: p.id,
@@ -58,14 +59,14 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
   }
 }
 
-export const defaultRecipientRoles: Role[] = ["admin", "muhendis"];
+const defaultRecipientRoles: Role[] = ["admin", "muhendis"];
 
 export async function recipientRoles(tx: Tx | typeof db): Promise<Role[]> {
   const setting = await tx.query.notificationSetting.findFirst({ where: eq(notificationSetting.key, "kritik_seviye") });
   return setting?.roles ?? defaultRecipientRoles;
 }
 
-export async function recipientEmails(tx: Tx) {
+async function recipientEmails(tx: Tx) {
   const roles = await recipientRoles(tx);
   const rows = await tx
     .selectDistinct({ email: user.email })

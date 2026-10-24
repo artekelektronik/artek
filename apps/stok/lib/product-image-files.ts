@@ -20,8 +20,7 @@ export async function unusedBlobImages(urls: string[]) {
   return candidates.filter((url) => !stillUsed.has(url));
 }
 
-// Deletes images taken off a product from Vercel Blob once nothing shows them. It runs after the
-// product is saved, so a failure only leaves an unused file behind and never fails the save.
+// Best effort after a save: a failure only leaves an unused file in Blob.
 export async function deleteUnusedImages(urls: string[]) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return;
   try {

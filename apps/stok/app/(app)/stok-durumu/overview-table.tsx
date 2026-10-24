@@ -7,12 +7,12 @@ import { Button } from "@artek/ui/components/button";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
+import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 import { displayQuantity } from "@/lib/labels";
 import type { Overview } from "@/lib/overview";
-import { addQuantities, unitLabels, type Unit } from "@/lib/quantity";
+import { totalsByUnit } from "@/lib/overview-totals";
+import { unitLabels } from "@/lib/quantity";
 
 type Row = Overview["rows"][number];
 const column = columnHelperFor<Row>();
@@ -47,7 +47,7 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
       id: "kategori",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Kategori" />,
       enableColumnFilter: true,
-      meta: { label: "Kategori", variant: "multiSelect", options: categories.map((c) => ({ label: c, value: c })) },
+      meta: { label: "Kategori", variant: "multiSelect", options: categories.map(option) },
     }),
     ...overview.lokasyon.map((l) =>
       column.group({
@@ -79,15 +79,7 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: overview.rows,
-    columns,
-    initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 50 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50 });
 
   return (
     <div className="flex flex-col gap-3">
@@ -103,7 +95,7 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
 
 type Filter = { id: string; value: unknown };
 
-// The CSV has the same rows as the table: its search and categories, plus the server filters in the URL.
+// The CSV follows the table's search and categories plus the URL's server filters.
 function CsvLink({ table }: { table: ReactTable<DataTableFeatures, Row, unknown> }) {
   const searchParams = useSearchParams();
   return (
@@ -128,7 +120,6 @@ function CsvLink({ table }: { table: ReactTable<DataTableFeatures, Row, unknown>
   );
 }
 
-// Adet and kg can't be added together, so the shown rows are totalled per unit.
 function Totals({
   table,
   lokasyon,
@@ -140,20 +131,15 @@ function Totals({
     <Subscribe source={table.atoms.columnFilters} selector={(filters) => filters}>
       {() => {
         const rows = table.getFilteredRowModel().rows.map((r) => r.original);
-        const units = [...new Set(rows.map((r) => r.unit))];
         return (
           <div className="text-muted-foreground flex flex-col gap-1 text-sm">
-            {units.map((unit) => {
-              const lines = rows.filter((r) => r.unit === unit);
-              const sum = (pick: (r: Row) => string) => displayQuantity(addQuantities(...lines.map(pick)));
-              return (
-                <p key={unit}>
-                  <span className="text-foreground font-medium">Toplam ({unitLabels[unit as Unit]}):</span>{" "}
-                  {lokasyon.map((l) => `${l.name} ${sum((r) => r.stock[l.id].physical)}`).join(" · ")} · Yolda {sum((r) => r.inTransit)} ·{" "}
-                  <span className="text-foreground">Toplam {sum((r) => r.total)}</span>
-                </p>
-              );
-            })}
+            {totalsByUnit(rows, lokasyon.map((l) => l.id)).map((t) => (
+              <p key={t.unit}>
+                <span className="text-foreground font-medium">Toplam ({unitLabels[t.unit]}):</span>{" "}
+                {lokasyon.map((l) => `${l.name} ${displayQuantity(t.physical[l.id])}`).join(" · ")} · Yolda{" "}
+                {displayQuantity(t.inTransit)} · <span className="text-foreground">Toplam {displayQuantity(t.total)}</span>
+              </p>
+            ))}
             <p>
               {rows.length} ürün. Yolda: transferde olup henüz teslim alınmamış miktar; hiçbir Lokasyonda sayılmaz.
             </p>

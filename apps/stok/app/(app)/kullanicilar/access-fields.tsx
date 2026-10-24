@@ -1,10 +1,9 @@
 import { Badge } from "@artek/ui/components/badge";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Label } from "@artek/ui/components/label";
-import { roleLabels } from "@/lib/labels";
+import { roleLabels, userStatus, userStatusLabels } from "@/lib/labels";
 import type { Role } from "@/lib/permissions";
 
-// Roles and the Lokasyon a user may act in; mağaza and depo sorumlusu act only in these.
 export function AccessFields({
   roles = [],
   lokasyonIds = [],
@@ -42,7 +41,7 @@ export function AccessFields({
 }
 
 export function UserStatus({ active, invited }: { active: boolean; invited: boolean }) {
-  if (!active) return <Badge variant="destructive">Devre dışı</Badge>;
-  if (invited) return <Badge variant="outline">Davet bekliyor</Badge>;
-  return <Badge variant="secondary">Etkin</Badge>;
+  const status = userStatus({ active, invited });
+  const variant = { pasif: "destructive", davet: "outline", etkin: "secondary" } as const;
+  return <Badge variant={variant[status]}>{userStatusLabels[status]}</Badge>;
 }

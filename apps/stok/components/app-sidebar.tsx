@@ -30,9 +30,8 @@ import {
 } from "@artek/ui/components/sidebar";
 import { NavUser } from "./nav-user";
 
-// Screens by group, adapted from shadcn's sidebar-07 block. Screens that `requires` a permission show only when
-// the layout says the user may use them; the server still checks every action.
-export const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" }[] = [
+// shadcn sidebar-07; `requires` only hides links, the server checks every action.
+const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" }[] = [
   { group: "Genel", label: "Ana sayfa", href: "/", icon: LayoutDashboard },
   { group: "Stok", label: "Stok durumu", href: "/stok-durumu", icon: Boxes },
   { group: "Stok", label: "Stok hareketleri", href: "/hareketler", icon: ArrowLeftRight },
@@ -106,13 +105,11 @@ export function AppSidebar({
   );
 }
 
-// The current screen's name for the header.
 export function useScreenTitle() {
   const pathname = usePathname();
   return screens.find((s) => isCurrent(pathname, s.href))?.label ?? "Artek Stok";
 }
 
-// "/" is current only on the home page; other screens also on their sub-pages.
 function isCurrent(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }

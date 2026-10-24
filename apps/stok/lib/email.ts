@@ -1,9 +1,7 @@
-// Email through Resend, used by the notification outbox and by password links.
 export type Email = { to: string[]; subject: string; text: string; idempotencyKey: string };
 export type EmailSender = (email: Email) => Promise<void>;
 
-// Sends through Resend's HTTP API. Resend drops a repeat with the same Idempotency-Key, so a
-// retry after a lost response never reaches anyone twice.
+// Resend drops repeats with the same Idempotency-Key, so a retry never sends twice.
 export const resendSender: EmailSender = async (email) => {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;

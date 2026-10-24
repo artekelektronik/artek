@@ -9,7 +9,7 @@ import { processOutbox, setRecipientRoles } from "@/lib/outbox";
 export async function setRecipientRolesAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => setRecipientRoles(await headers(), formData.getAll("roles").map(String)));
   revalidatePath("/bildirimler");
-  return state ?? { saved: true };
+  return state;
 }
 
 // Sends what is due now, e.g. after fixing the Resend settings, instead of waiting for the next run.
@@ -19,5 +19,5 @@ export async function processOutboxAction(): Promise<ActionState> {
     await processOutbox();
   });
   revalidatePath("/bildirimler");
-  return state ?? { saved: true };
+  return state;
 }

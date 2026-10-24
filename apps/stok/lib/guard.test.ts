@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import { openTestDatabase, skipWithoutDatabase } from "./test-database";
+import { openTestDatabase, signIn, skipWithoutDatabase } from "./test-database";
 
 describe("requirePermission", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
@@ -9,17 +9,6 @@ describe("requirePermission", { skip: skipWithoutDatabase }, () => {
   const lokasyon: Record<string, string> = {};
   let depoSorumlusu: { id: string; email: string };
   let muhendis: { id: string; email: string };
-
-  // Signs in through the real auth API and returns headers carrying that session's cookie.
-  async function signedIn(email: string) {
-    const { auth } = await import("./auth");
-    const { headers } = await auth.api.signInEmail({
-      body: { email, password: "a-long-password" },
-      returnHeaders: true,
-    });
-    const cookie = headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
-    return new Headers({ cookie });
-  }
 
   before(async () => {
     db = await openTestDatabase();
@@ -55,12 +44,12 @@ describe("requirePermission", { skip: skipWithoutDatabase }, () => {
   });
 
   test("a user acts in their own Lokasyon", async () => {
-    const actor = await guard.requirePermission(await signedIn(depoSorumlusu.email), "stock.receive", lokasyon["Karaköy Mağaza"]);
+    const actor = await guard.requirePermission(await signIn(depoSorumlusu.email), "stock.receive", lokasyon["Karaköy Mağaza"]);
     assert.equal(actor.userId, depoSorumlusu.id);
   });
 
   test("a crafted request for another Lokasyon is refused", async () => {
-    const headers = await signedIn(depoSorumlusu.email);
+    const headers = await signIn(depoSorumlusu.email);
     await assert.rejects(guard.requirePermission(headers, "stock.receive", lokasyon["Çekmeköy İmalathane"]), guard.Forbidden);
     await assert.rejects(guard.requirePermission(headers, "stock.out", crypto.randomUUID()), guard.Forbidden);
     await assert.rejects(guard.requirePermission(headers, "count.perform"), guard.Forbidden);
@@ -68,13 +57,13 @@ describe("requirePermission", { skip: skipWithoutDatabase }, () => {
 
   test("an action the role doesn't allow is refused even in the user's own Lokasyon", async () => {
     await assert.rejects(
-      guard.requirePermission(await signedIn(depoSorumlusu.email), "count.approve", lokasyon["Karaköy Mağaza"]),
+      guard.requirePermission(await signIn(depoSorumlusu.email), "count.approve", lokasyon["Karaköy Mağaza"]),
       guard.Forbidden,
     );
   });
 
   test("mühendis acts in every Lokasyon", async () => {
-    const headers = await signedIn(muhendis.email);
+    const headers = await signIn(muhendis.email);
     await guard.requirePermission(headers, "stock.receive", lokasyon["Çekmeköy İmalathane"]);
     await guard.requirePermission(headers, "count.approve", lokasyon["Karaköy Mağaza"]);
   });

@@ -1,12 +1,9 @@
 import { z } from "zod";
 
-// The public catalog contract between the stok app and every Vitrin (ADR-0002).
-// Only details a visitor may see: never quantities, stock codes, Raf kodu, prices or availability.
-// Strict objects, so a field added on one side fails loudly instead of leaking.
-export const publicProduct = z.strictObject({
+// Public catalog contract (ADR-0002): visitor-safe fields only; strict, so an extra field fails loudly.
+const publicProduct = z.strictObject({
   id: z.uuid(),
-  // The product's number on the site before the stok app existed ("product-3" → 3), so its
-  // URLs and translations keep working. New products have none.
+  // Pre-stok site number ("product-3" → 3) so old URLs and translations keep working.
   legacyId: z.number().int().positive().nullable(),
   name: z.string(),
   category: z.string(),

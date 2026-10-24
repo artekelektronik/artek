@@ -1,7 +1,6 @@
 import { Boxes } from "lucide-react";
 import { FieldDescription } from "@artek/ui/components/field";
 
-// The page around the login and set-password cards (shadcn login-03).
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

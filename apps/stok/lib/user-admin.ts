@@ -5,16 +5,16 @@ import { z } from "zod";
 import { db, type Tx } from "../db";
 import { account, auditLog, role, session, user, userLokasyon, userRole, verification } from "../db/schema";
 import { auth } from "./auth";
-import { UserError } from "./errors";
+import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { resendSender, type EmailSender } from "./email";
 import { passwordEmail } from "./password-email";
+import { createUser, writeAccess } from "./users";
 import type { Role } from "./permissions";
 
-// Admin user management (#25). Nobody, admins included, ever sees a password: an invited user sets
-// their own through an emailed link, and an admin can only send a new link.
+// Nobody, admins included, sees a password: users set their own from an emailed link.
 
-export type Access = { roles: Role[]; lokasyonIds: string[]; active: boolean };
+type Access = { roles: Role[]; lokasyonIds: string[]; active: boolean };
 
 const accessInput = z.object({
   roles: z.array(z.enum(role.enumValues)).min(1, { error: "En az bir rol seçin." }),
@@ -26,14 +26,9 @@ const inviteInput = accessInput.extend({
   name: z.string().trim().min(1, { error: "Ad soyad gerekli." }),
 });
 
-export type InviteInput = z.input<typeof inviteInput>;
-export type AccessInput = z.input<typeof accessInput>;
+type InviteInput = z.input<typeof inviteInput>;
+type AccessInput = z.input<typeof accessInput>;
 
-function parse<T>(schema: z.ZodType<T>, input: unknown): T {
-  const parsed = schema.safeParse(input);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
-  return parsed.data;
-}
 
 const inviteLinkLifetimeMs = 7 * 24 * 60 * 60_000;
 const resetLinkLifetimeMs = 60 * 60_000;
@@ -84,24 +79,15 @@ export async function getUserDetail(headers: Headers, id: string) {
   return { id: target.id, name: target.name, email: target.email, ...access, invited: credential.length === 0, history };
 }
 
-// Creates the user with their roles and Lokasyon and emails them a link to set their password.
 export async function inviteUser(headers: Headers, input: InviteInput, send: EmailSender = resendSender) {
   const actor = await requirePermission(headers, "users.manage");
-  const { email, name, roles, lokasyonIds } = parse(inviteInput, input);
+  const { email, name, roles, lokasyonIds } = parseInput(inviteInput, input);
   const ctx = await auth.$context;
   if (await ctx.internalAdapter.findUserByEmail(email)) throw new UserError("Bu e-posta ile bir kullanıcı zaten var.");
 
-  const created = await ctx.internalAdapter.createUser({ email, name, emailVerified: true }, { method: "email-password" });
-  try {
-    await db.transaction(async (tx) => {
-      await writeAccess(tx, created.id, { roles, lokasyonIds });
-      await audit(tx, actor.userId, created.id, "user.invite", null, { email, name, ...sorted({ roles, lokasyonIds }), active: true });
-    });
-  } catch (error) {
-    // Better Auth created the user outside our transaction; undo it so the invite can be retried.
-    await db.delete(user).where(eq(user.id, created.id));
-    throw error;
-  }
+  const created = await createUser({ email, name, roles, lokasyonIds }, (tx, id) =>
+    audit(tx, actor.userId, id, "user.invite", null, { email, name, ...sorted({ roles, lokasyonIds }), active: true }),
+  );
 
   try {
     await sendPasswordLink(created, "invite", send);
@@ -114,7 +100,6 @@ export async function inviteUser(headers: Headers, input: InviteInput, send: Ema
   return created;
 }
 
-// Emails a new link: an invite if the user has never set a password, a password reset otherwise.
 export async function sendPasswordLinkTo(headers: Headers, id: string, send: EmailSender = resendSender) {
   const actor = await requirePermission(headers, "users.manage");
   const [target] = await db.select().from(user).where(eq(user.id, id));
@@ -132,7 +117,7 @@ export async function sendPasswordLinkTo(headers: Headers, id: string, send: Ema
 
 export async function updateAccess(headers: Headers, id: string, input: AccessInput) {
   const actor = await requirePermission(headers, "users.manage");
-  const next = sorted(parse(accessInput, input));
+  const next = sorted(parseInput(accessInput, input));
   await db.transaction(async (tx) => {
     await lockAdmins(tx);
     const before = await readAccess(tx, id);
@@ -206,11 +191,6 @@ async function readAccess(tx: Tx | typeof db, id: string): Promise<Access> {
     tx.select({ id: userLokasyon.lokasyonId }).from(userLokasyon).where(eq(userLokasyon.userId, id)),
   ]);
   return { ...sorted({ roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) }), active: !target.deactivatedAt };
-}
-
-async function writeAccess(tx: Tx, id: string, { roles, lokasyonIds }: { roles: Role[]; lokasyonIds: string[] }) {
-  if (roles.length) await tx.insert(userRole).values(roles.map((r) => ({ userId: id, role: r })));
-  if (lokasyonIds.length) await tx.insert(userLokasyon).values(lokasyonIds.map((lokasyonId) => ({ userId: id, lokasyonId })));
 }
 
 function sorted({ roles, lokasyonIds }: { roles: Role[]; lokasyonIds: string[] }) {

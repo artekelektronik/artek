@@ -3,8 +3,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "../db";
 import { product } from "../db/schema";
 
-// The public catalog every Vitrin reads: products marked "show on site", whatever their stock.
-// Selects only public columns, and the contract's strict parse refuses anything extra.
+// Products shown on the site, whatever their stock; public columns only, and the strict parse rejects extras.
 export async function getPublicCatalog(): Promise<CatalogResponse> {
   const rows = await db
     .select({

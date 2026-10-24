@@ -1,6 +1,7 @@
 import { Forbidden, NotSignedIn } from "@/lib/guard";
 import { getOverview } from "@/lib/overview";
 import { toCsv } from "@/lib/overview-csv";
+import { istanbulDate } from "@/lib/time";
 
 // Same filters and the same Lokasyon visibility as the Stok durumu page.
 export async function GET(request: Request) {
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
     if (error instanceof Forbidden) return new Response(error.message, { status: 403 });
     throw error;
   }
-  const day = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(new Date());
+  const day = istanbulDate(new Date());
   return new Response(toCsv(overview), {
     headers: {
       "content-type": "text/csv; charset=utf-8",

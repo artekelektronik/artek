@@ -18,9 +18,8 @@ import { cn } from "@artek/ui/lib/utils";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
+import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { ProductImage } from "@/components/product-image";
-import { useDataTable } from "@/hooks/use-data-table";
 import { displayQuantity } from "@/lib/labels";
 import { unitLabels, type Unit } from "@/lib/quantity";
 import { archiveProductAction, restoreProductAction, setShowOnSiteAction } from "./actions";
@@ -69,7 +68,7 @@ const tabLabels: Record<(typeof tabs)[number], string> = { tumu: "Tümü", stokt
 
 const column = columnHelperFor<ProductRow>();
 
-// Which rows are open. A context, because tablecn memoizes rows and their cells wouldn't see a prop change.
+// Open rows live in a context: tablecn memoizes rows, so cells wouldn't see a prop change.
 const ExpandedRows = createContext<{ open: Set<string>; toggle: (id: string) => void }>({ open: new Set(), toggle: () => {} });
 
 function ExpandButton({ row }: { row: ProductRow }) {
@@ -88,9 +87,10 @@ function ExpandButton({ row }: { row: ProductRow }) {
     </Button>
   );
 }
-const types = (p: ProductRow) => [p.isTradeGoods && "Ticari mal", p.isMaterial && "Malzeme"].filter(Boolean) as string[];
+const typeLabels = { tradeGoods: "Ticari mal", material: "Malzeme" };
+const types = (p: ProductRow) => [p.isTradeGoods && typeLabels.tradeGoods, p.isMaterial && typeLabels.material].filter(Boolean) as string[];
 
-// The "Sitede" switch: changes at once, and goes back if the server refuses.
+// Optimistic; reverts if the server refuses.
 function ShowOnSiteSwitch({ row, canManage }: { row: ProductRow; canManage: boolean }) {
   const [pending, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(row.showOnSite);
@@ -148,7 +148,6 @@ function RowActions({ row, canManage, archived }: { row: ProductRow; canManage: 
   );
 }
 
-// The expanded row: pictures, description and stock per Lokasyon.
 function ProductDetail({ row }: { row: ProductRow }) {
   const unit = unitLabels[row.unit];
   return (
@@ -203,9 +202,7 @@ function ProductDetail({ row }: { row: ProductRow }) {
   );
 }
 
-// The product list as an inventory view (after AG Grid's inventory demo, built with tablecn):
-// status tabs, a rich product cell, stock against Kritik seviye, the Sitede switch, row actions and
-// rows that open into details.
+// Inventory view after AG Grid's demo, built with tablecn.
 export function ProductsTable({
   rows,
   categories,
@@ -266,7 +263,7 @@ export function ProductsTable({
       id: "kategori",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Kategori" />,
       enableColumnFilter: true,
-      meta: { label: "Kategori", variant: "multiSelect", options: categories.map((c) => ({ label: c, value: c })) },
+      meta: { label: "Kategori", variant: "multiSelect", options: categories.map(option) },
     }),
     column.accessor((p) => statusStyle[p.status].label, {
       id: "durum",
@@ -294,7 +291,7 @@ export function ProductsTable({
             {fill !== null && (
               <div className="bg-muted h-1.5 w-full max-w-36 overflow-hidden rounded-full">
                 <div
-                  className={cn("h-full rounded-full", p.status === "kritik" ? "bg-amber-500" : p.status === "yok" ? "bg-red-600" : "bg-green-600")}
+                  className={cn("h-full rounded-full", statusStyle[p.status].dot)}
                   style={{ width: `${fill}%` }}
                 />
               </div>
@@ -312,8 +309,8 @@ export function ProductsTable({
       header: ({ column }) => <DataTableColumnHeader column={column} label="Tür" />,
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
-          {row.original.isTradeGoods && <Badge variant="secondary">Ticari mal</Badge>}
-          {row.original.isMaterial && <Badge variant="outline">Malzeme</Badge>}
+          {row.original.isTradeGoods && <Badge variant="secondary">{typeLabels.tradeGoods}</Badge>}
+          {row.original.isMaterial && <Badge variant="outline">{typeLabels.material}</Badge>}
         </div>
       ),
       enableSorting: false,
@@ -321,10 +318,7 @@ export function ProductsTable({
       meta: {
         label: "Tür",
         variant: "multiSelect",
-        options: [
-          { label: "Ticari mal", value: "Ticari mal" },
-          { label: "Malzeme", value: "Malzeme" },
-        ],
+        options: Object.values(typeLabels).map(option),
       },
     }),
     column.accessor((p) => (p.showOnSite ? "evet" : "hayir"), {
@@ -351,15 +345,7 @@ export function ProductsTable({
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: shown,
-    columns,
-    initialState: { ...hiddenSearch, columnVisibility: { ...hiddenSearch.columnVisibility, kategori: false }, pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: shown, columns, hidden: ["kategori"] });
 
   return (
     <ExpandedRows.Provider value={{ open: expanded, toggle }}>

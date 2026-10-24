@@ -4,18 +4,16 @@ import { product, stock, transfer, transferLine } from "../db/schema";
 import { requirePermission } from "./guard";
 import { listLokasyon } from "./lokasyon";
 import { can } from "./permissions";
-import { addQuantities, formatQuantity, subtractQuantity, type Unit } from "./quantity";
+import { addQuantities, formatQuantity, subtractQuantity } from "./quantity";
+import { belowMinimumLevel } from "./kritik-seviye";
 
-// `category` may list several categories (the CSV of a table filtered on more than one).
-export type OverviewFilters = { q?: string; category?: string | string[]; lokasyonId?: string; belowMinimum?: boolean };
+type OverviewFilters = { q?: string; category?: string | string[]; lokasyonId?: string; belowMinimum?: boolean };
 
 type Pile = { physical: string; reserved: string; available: string };
 const empty: Pile = { physical: "0", reserved: "0", available: "0" };
 
-// The daily stock overview: every active product with physical / reserved / available per Lokasyon,
-// stock on the way, and totals per unit. Only Lokasyon the user may see appear, whatever is asked for.
+// Active products with stock per visible Lokasyon (whatever is asked for) and stock on the way.
 export async function getOverview(headers: Headers, filters: OverviewFilters) {
-  // Any role may open the overview; which Lokasyon it shows is decided per Lokasyon below.
   const actor = await requirePermission(headers, "products.view");
   const all = await listLokasyon();
   const visible = all.filter((l) => can(actor, "stock.view", l.id));
@@ -33,17 +31,13 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
         isNull(product.archivedAt),
         categoryCondition(filters.category),
         search ? or(ilike(product.code, `%${search}%`), ilike(product.name, `%${search}%`)) : undefined,
-        // Below Kritik seviye: the company total of every movement, as the warning uses.
-        belowMinimum
-          ? sql`${product.minLevel} is not null and (select coalesce(sum(m.quantity), 0) from stock_movement m where m.product_id = ${product.id}) < ${product.minLevel}`
-          : undefined,
+        belowMinimum ? belowMinimumLevel : undefined,
       ),
     )
     .orderBy(asc(product.code));
 
   const piles = shownIds.length ? await db.select().from(stock).where(inArray(stock.lokasyonId, shownIds)) : [];
   const pileOf = new Map(piles.map((s) => [`${s.productId}:${s.lokasyonId}`, s]));
-  // On the way in open transfers that start or end at a Lokasyon shown here.
   const transit = shownIds.length
     ? await db
         .select({ productId: transferLine.productId, total: sql<string>`sum(${transferLine.sent})` })
@@ -75,28 +69,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     return { ...p, stock: perLokasyon, inTransit, total };
   });
 
-  // Adet and kg can't be added together, so totals are per unit.
-  const totals: Partial<Record<Unit, { stock: Record<string, Pile>; inTransit: string; total: string }>> = {};
-  for (const unit of [...new Set(rows.map((r) => r.unit))]) {
-    const lines = rows.filter((r) => r.unit === unit);
-    const sum = (pick: (r: (typeof rows)[number]) => string) => addQuantities(...lines.map(pick));
-    totals[unit] = {
-      stock: Object.fromEntries(
-        shown.map((l) => [
-          l.id,
-          {
-            physical: sum((r) => r.stock[l.id].physical),
-            reserved: sum((r) => r.stock[l.id].reserved),
-            available: sum((r) => r.stock[l.id].available),
-          },
-        ]),
-      ),
-      inTransit: sum((r) => r.inTransit),
-      total: sum((r) => r.total),
-    };
-  }
-
-  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, totals, canFilterBelowMinimum: visible.length === all.length };
+  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, canFilterBelowMinimum: visible.length === all.length };
 }
 
 export type Overview = Awaited<ReturnType<typeof getOverview>>;

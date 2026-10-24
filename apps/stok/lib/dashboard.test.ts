@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { lokasyonIdsByName, openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
+import { istanbulDate } from "./time";
 
 describe("dashboard", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
@@ -95,7 +96,7 @@ describe("dashboard", { skip: skipWithoutDatabase }, () => {
 
   test("days with no movement are zero, and today is the last day", async () => {
     const d = await dashboard.getDashboard(muhendis.headers);
-    const istanbulToday = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(new Date());
+    const istanbulToday = istanbulDate(new Date());
     assert.equal(d.daily.at(-1)!.day, istanbulToday);
     assert.deepEqual(d.daily.slice(0, -1).map((x) => x.inbound + x.outbound), Array(dashboard.dashboardDays - 1).fill(0));
   });

@@ -10,13 +10,13 @@ import { Input } from "@artek/ui/components/input";
 import { PasswordInput } from "@/components/password-input";
 import { authClient } from "@/lib/auth-client";
 
-// shadcn's login-03 block, without social sign-in or sign-up: accounts are opened by an admin.
+// shadcn login-03 without social sign-in or sign-up (accounts are invite-only).
 export function LoginForm({ notice }: { notice?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
-  // Signs in through /api/auth so the request goes through Better Auth's rate limiter.
+  // Through /api/auth, so Better Auth rate-limits it.
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);

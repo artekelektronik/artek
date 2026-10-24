@@ -1,13 +1,12 @@
 "use server";
 
 import { headers } from "next/headers";
-import { runAction, type ActionState } from "@/lib/action-result";
-import { sendNotificationsSoon } from "@/lib/send-soon";
+import { runStockAction, type ActionState } from "@/lib/action-result";
 import { productLinesFrom, text } from "@/lib/form-data";
 import { recordReceipt } from "@/lib/receipts";
 
 export async function recordReceiptAction(formData: FormData): Promise<ActionState> {
-  const state = await runAction(async () => {
+  return runStockAction(async () => {
     await recordReceipt(await headers(), {
       lokasyonId: text(formData, "lokasyonId"),
       supplier: text(formData, "supplier"),
@@ -16,6 +15,4 @@ export async function recordReceiptAction(formData: FormData): Promise<ActionSta
       idempotencyKey: text(formData, "idempotencyKey"),
     });
   });
-  if (!state) sendNotificationsSoon();
-  return state ?? { saved: true };
 }

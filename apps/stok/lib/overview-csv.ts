@@ -1,8 +1,7 @@
 import type { Overview } from "./overview";
 import { unitLabels } from "./quantity";
 
-// Excel in Turkish locale: ";" between columns, "," as decimal separator, and a UTF-8 BOM so
-// characters like ğ, ş and İ open correctly.
+// Excel (tr): ";" separators, decimal comma, UTF-8 BOM for ğ, ş, İ.
 const quantity = (value: string) => value.replace(".", ",");
 
 function text(value: string) {

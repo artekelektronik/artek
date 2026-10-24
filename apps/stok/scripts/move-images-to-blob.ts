@@ -1,6 +1,4 @@
-// One-time: copies product images that still point at the Vitrin ("/products-images/…") into
-// Vercel Blob and points every product at the copy. Safe to run again: images already in Blob
-// are left alone, and a file shared by several products is copied once.
+// One-time copy of Vitrin-hosted images into Blob, repointing products; re-runnable.
 // Usage: pnpm --filter stok move-images-to-blob   (needs DATABASE_URL and BLOB_READ_WRITE_TOKEN)
 import path from "node:path";
 import { put } from "@vercel/blob";
@@ -9,7 +7,7 @@ import { db } from "../db";
 import { product } from "../db/schema";
 import { productImageUrl } from "../lib/product-images";
 
-export async function moveImagesToBlob() {
+async function moveImagesToBlob() {
   const { rows } = await db.execute<{ path: string }>(
     sql`select distinct unnest(${product.images}) as path from ${product}`,
   );

@@ -1,8 +1,7 @@
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { Forbidden, NotSignedIn, requirePermission } from "@/lib/guard";
 
-// Product images go from the browser straight to Vercel Blob; this route only hands out the
-// short-lived upload token, and only to users who may manage products.
+// Issues Blob client-upload tokens, only to users who may manage products.
 export async function POST(request: Request) {
   const body = (await request.json()) as HandleUploadBody;
   try {

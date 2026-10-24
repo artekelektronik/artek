@@ -26,7 +26,7 @@ export const user = pgTable("user", {
   image: text("image"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  // Set by an admin; a deactivated user can't sign in. Users are never deleted, so their history keeps their name.
+  // Deactivated users can't sign in; users are never deleted, so history keeps their name.
   deactivatedAt: timestamp("deactivated_at", { withTimezone: true }),
 });
 
@@ -113,11 +113,11 @@ export const userLokasyon = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.lokasyonId] })],
 );
 
-// Products. One unit per product, no conversions.
+// One unit per product, no conversions.
 
 export const unit = pgEnum("unit", ["adet", "takim", "rulo", "kg", "metre"]);
 
-export type Datasheet = { label: string; url: string };
+type Datasheet = { label: string; url: string };
 
 export const product = pgTable(
   "product",
@@ -130,10 +130,10 @@ export const product = pgTable(
     isMaterial: boolean("is_material").notNull(), // Malzeme
     unit: unit("unit").notNull(),
     showOnSite: boolean("show_on_site").notNull(),
-    // Kritik seviye: the company total below which admin and mühendis are warned. Never blocks anything.
+    // Kritik seviye: company total below which an email warns; never blocks anything.
     minLevel: numeric("min_level", { precision: 14, scale: 3 }),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
-    // Public details the Vitrin shows.
+    // Descriptive details; the Vitrin gets a subset (packages/catalog), never the supplier.
     productType: text("product_type"),
     subCategory: text("sub_category"),
     manufacturer: text("manufacturer"),
@@ -143,7 +143,7 @@ export const product = pgTable(
     description: text("description"),
     images: text("images").array().notNull().default(sql`'{}'::text[]`),
     datasheets: jsonb("datasheets").$type<Datasheet[]>().notNull().default([]),
-    // The site JSON record this product was imported from, so the import can run again safely.
+    // The site record this was imported from, so the import can run again.
     importKey: text("import_key").unique(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -257,8 +257,7 @@ export const stock = pgTable(
   ],
 );
 
-// Transfer between Lokasyon: sevk takes stock out of the source, teslim alma puts what arrived into
-// the target and closes any shortfall as a loss right there. No long-lived partial state.
+// Sevk takes stock out of the source; teslim alma books what arrived and closes any shortfall as a loss.
 
 export const transferStatus = pgEnum("transfer_status", ["yolda", "teslim_alindi"]);
 export const lossReason = pgEnum("loss_reason", ["kayip", "hasarli"]);
@@ -306,8 +305,7 @@ export const transferLine = pgTable(
   (t) => [primaryKey({ columns: [t.transferId, t.productId] })],
 );
 
-// Sayım without locks: each line stores what was counted, when, and the balance at that moment,
-// so movements after the count don't distort the difference. Approval applies it once.
+// Sayım lines keep the balance at count time, so later movements don't skew the difference.
 
 export const countKind = pgEnum("count_kind", ["sayim", "acilis"]);
 export const countStatus = pgEnum("count_status", ["taslak", "onaylandi", "iptal"]);
@@ -358,8 +356,7 @@ export const stockCountLine = pgTable(
   (t) => [primaryKey({ columns: [t.countId, t.productId] })],
 );
 
-// Email outbox: written in the same transaction as the movement that caused it, sent afterwards.
-// A Resend failure never undoes a movement, and the notification id is Resend's idempotency key.
+// Outbox written in the movement's transaction; a send failure never undoes stock, and the id is the idempotency key.
 
 export const notificationStatus = pgEnum("notification_status", ["pending", "sent", "failed"]);
 

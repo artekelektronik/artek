@@ -1,27 +1,4 @@
-// Airtable Select Options for querying records
-export interface AirtableSelectOptions {
-  fields?: string[];
-  filterByFormula?: string;
-  maxRecords?: number;
-  pageSize?: number;
-  sort?: Array<{ field: string; direction: "asc" | "desc" }>;
-  view?: string;
-}
-
-// Airtable API Error type
-export interface AirtableApiError extends Error {
-  message: string;
-  statusCode?: number;
-}
-
-// Airtable API Table metadata
-export interface AirtableTableMeta {
-  id: string;
-  name: string;
-  description?: string;
-}
-
-// Airtable Photo/Attachment Type
+// The product shape the pages use; lib/catalog.ts adapts the stok catalog API to it.
 export interface AirtableAttachment {
   id: string;
   url: string;
@@ -37,15 +14,6 @@ export interface AirtableAttachment {
   };
 }
 
-// AI Field Type
-export interface AIField {
-  value: string | null;
-  state: "generated" | "error" | "empty";
-  isStale: boolean;
-  errorType?: string;
-}
-
-// Product Fields from Airtable
 export interface ProductFields {
   "Product Name": string;
   "Product Code"?: string;
@@ -54,35 +22,10 @@ export interface ProductFields {
   "Ürün Tipi"?: string[];
   Description?: string;
   Photo?: AirtableAttachment[];
-
-  // Pricing
-  "Unit Price"?: number;
-  "Alış Fiyatı"?: number;
-  "Toptan Fiyatı"?: number;
-  "Toptan Taban "?: number;
-  "Parakende Fiyatı"?: number;
-
-  // Stock
-  "Stock Quantity"?: number;
-  "Stock (Karakoy)"?: number;
-  "Stock (Cekmekoy)"?: number;
-  "Total Stock Value"?: number;
-
-  // Relations
-  Supplier?: string[];
-  "Supplier Country"?: string[];
   Manufacturer?: string[];
-
-  // Metrics
-  "Total Actions"?: number;
-  "Total Projects Involved"?: number;
-
-  // AI Fields
-  "Product Summary (AI)"?: AIField;
-  "AI Product Issue Detector"?: AIField;
+  "Supplier Country"?: string[];
 }
 
-// Complete Product Type
 export interface AirtableProduct {
   id: string;
   fields: ProductFields;
