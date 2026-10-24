@@ -18,6 +18,7 @@
     "@artek/ui": "workspace:*",
     "better-auth": "^1.7.12",
     "drizzle-orm": "^0.45.4",
+    "lucide-react": "^1.61.0",
     "next": "16.4.3",
     "pg": "^8.23.1",
     "react": "19.3.1",

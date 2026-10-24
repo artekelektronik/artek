@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@artek/ui/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@artek/ui/components/card";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@artek/ui/components/field";
 import { Input } from "@artek/ui/components/input";
-import { Label } from "@artek/ui/components/label";
 import { authClient } from "@/lib/auth-client";
 
-export function LoginForm() {
+// shadcn's login-03 block, without social sign-in or sign-up: accounts are opened by an admin.
+export function LoginForm({ notice }: { notice?: string }) {
   const router = useRouter();
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
@@ -31,23 +33,33 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">E-posta</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Şifre</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
-      </div>
-      {error && (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
-      )}
-      <Button type="submit" disabled={pending}>
-        {pending ? "Giriş yapılıyor…" : "Giriş yap"}
-      </Button>
-    </form>
+    <Card>
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">Hoş geldiniz</CardTitle>
+        <CardDescription>E-posta adresiniz ve şifrenizle giriş yapın</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={onSubmit}>
+          <FieldGroup>
+            {notice && <p className="text-center text-sm text-green-700">{notice}</p>}
+            <Field>
+              <FieldLabel htmlFor="email">E-posta</FieldLabel>
+              <Input id="email" name="email" type="email" autoComplete="email" placeholder="ad@ferritnuve.com" required />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="password">Şifre</FieldLabel>
+              <Input id="password" name="password" type="password" autoComplete="current-password" required />
+              <FieldDescription>Şifrenizi unuttuysanız yöneticinizden yeni bir bağlantı isteyin.</FieldDescription>
+            </Field>
+            {error && <FieldError role="alert">{error}</FieldError>}
+            <Field>
+              <Button type="submit" disabled={pending}>
+                {pending ? "Giriş yapılıyor…" : "Giriş yap"}
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
