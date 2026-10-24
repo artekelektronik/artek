@@ -31,6 +31,7 @@ export function Combobox({
   const [search, setSearch] = useState("");
   const selected = options.find((o) => o.value === value)?.label ?? value;
   const typed = search.trim();
+  const canAdd = allowNew && typed !== "" && !options.some((o) => o.label.toLocaleLowerCase("tr") === typed.toLocaleLowerCase("tr"));
   const pick = (next: string) => {
     onChange(next);
     setOpen(false);
@@ -56,7 +57,7 @@ export function Combobox({
         <Command>
           <CommandInput placeholder={placeholder} value={search} onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>Sonuç yok.</CommandEmpty>
+            {!canAdd && <CommandEmpty>Sonuç yok.</CommandEmpty>}
             <CommandGroup>
               {options.map((o) => (
                 // NFKC keywords let a typed space match the odd spaces in imported names (e.g. NNBSP in "6 A").
@@ -65,12 +66,14 @@ export function Combobox({
                   {o.label}
                 </CommandItem>
               ))}
-              {allowNew && typed && !options.some((o) => o.label.toLocaleLowerCase("tr") === typed.toLocaleLowerCase("tr")) && (
+            </CommandGroup>
+            {canAdd && (
+              <CommandGroup forceMount>
                 <CommandItem value={typed} onSelect={() => pick(typed)} forceMount>
                   “{typed}” ekle
                 </CommandItem>
-              )}
-            </CommandGroup>
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
