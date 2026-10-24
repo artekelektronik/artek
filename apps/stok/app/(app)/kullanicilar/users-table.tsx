@@ -4,15 +4,13 @@ import Link from "next/link";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
-import { roleLabels } from "@/lib/labels";
+import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
+import { roleLabels, userStatus, userStatusLabels } from "@/lib/labels";
 import type { Role } from "@/lib/permissions";
 import { UserStatus } from "./access-fields";
 
 type User = { id: string; name: string; email: string; roles: Role[]; lokasyonIds: string[]; active: boolean; invited: boolean };
 const column = columnHelperFor<User>();
-const statusLabel = (u: User) => (!u.active ? "Devre dışı" : u.invited ? "Davet bekliyor" : "Etkin");
 
 export function UsersTable({ users, lokasyon }: { users: User[]; lokasyon: { id: string; name: string }[] }) {
   const lokasyonName = Object.fromEntries(lokasyon.map((l) => [l.id, l.name]));
@@ -42,7 +40,7 @@ export function UsersTable({ users, lokasyon }: { users: User[]; lokasyon: { id:
       cell: ({ row }) => row.original.roles.map((r) => roleLabels[r]).join(", "),
       enableSorting: false,
       enableColumnFilter: true,
-      meta: { label: "Roller", variant: "multiSelect", options: Object.values(roleLabels).map((v) => ({ label: v, value: v })) },
+      meta: { label: "Roller", variant: "multiSelect", options: Object.values(roleLabels).map(option) },
     }),
     column.accessor((u) => u.lokasyonIds.map((id) => lokasyonName[id]), {
       id: "lokasyon",
@@ -53,7 +51,7 @@ export function UsersTable({ users, lokasyon }: { users: User[]; lokasyon: { id:
       enableColumnFilter: true,
       meta: { label: "Lokasyon", variant: "multiSelect", options: lokasyon.map((l) => ({ label: l.name, value: l.name })) },
     }),
-    column.accessor((u) => statusLabel(u), {
+    column.accessor((u) => userStatusLabels[userStatus(u)], {
       id: "durum",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Durum" />,
       cell: ({ row }) => <UserStatus active={row.original.active} invited={row.original.invited} />,
@@ -61,20 +59,12 @@ export function UsersTable({ users, lokasyon }: { users: User[]; lokasyon: { id:
       meta: {
         label: "Durum",
         variant: "multiSelect",
-        options: ["Etkin", "Davet bekliyor", "Devre dışı"].map((v) => ({ label: v, value: v })),
+        options: Object.values(userStatusLabels).map(option),
       },
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: users,
-    columns,
-    initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: users, columns });
 
   return (
     <DataTable table={table} aria-label="Kullanıcılar">

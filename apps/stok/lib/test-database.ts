@@ -6,8 +6,7 @@ import type { Role } from "./permissions";
 // Integration tests run against TEST_DATABASE_URL and are skipped, with this reason, without it.
 export const skipWithoutDatabase = process.env.TEST_DATABASE_URL ? false : "TEST_DATABASE_URL is not set";
 
-// Points the app's db module at the test database and brings its schema up to date.
-// Call before importing anything that imports db.
+// Points db at the test database and migrates it; call before importing anything that imports db.
 export async function openTestDatabase() {
   const url = process.env.TEST_DATABASE_URL!;
   // Tests delete data; refuse anything that isn't plainly a test database.
@@ -18,8 +17,7 @@ export async function openTestDatabase() {
   return db;
 }
 
-// Empties every table except the seeded Lokasyon, so each suite starts from a known state.
-// Both Lokasyon start opened (as after their Açılış sayımı); opening tests close one explicitly.
+// Empties all tables but lokasyon and marks both opened; opening tests close one explicitly.
 export async function resetTestDatabase() {
   const { db } = await import("../db");
   const { rows } = await db.execute<{ tablename: string }>(
@@ -41,14 +39,16 @@ export async function lokasyonIdsByName() {
   >;
 }
 
-// Creates a user with these roles and Lokasyon, signs them in through the real auth API,
-// and returns request headers carrying that session.
 export async function signedInAs(roles: Role[], lokasyonIds: string[] = []) {
   const { createUser } = await import("./users");
-  const { auth } = await import("./auth");
   const email = `${roles.join("-") || "rolsuz"}-${crypto.randomUUID()}@example.com`;
   const user = await createUser({ email, name: `Test ${roles.join(", ")}`, password: "a-long-password", roles, lokasyonIds });
-  const { headers } = await auth.api.signInEmail({ body: { email, password: "a-long-password" }, returnHeaders: true });
-  const cookie = headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
-  return { user, headers: new Headers({ cookie }) };
+  return { user, headers: await signIn(email) };
+}
+
+// Signs in through the real auth API; returns headers carrying the session cookie.
+export async function signIn(email: string, password = "a-long-password") {
+  const { auth } = await import("./auth");
+  const { headers } = await auth.api.signInEmail({ body: { email, password }, returnHeaders: true });
+  return new Headers({ cookie: headers.getSetCookie().map((c) => c.split(";")[0]).join("; ") });
 }

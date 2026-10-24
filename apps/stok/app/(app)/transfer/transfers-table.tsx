@@ -1,19 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@artek/ui/components/badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
-import { formatDateTime } from "@/lib/labels";
+import { columnHelperFor, option, options, useClientDataTable } from "@/components/data-table/columns";
+import { formatDateTime, transferStatusLabels } from "@/lib/labels";
 import type { listTransfers } from "@/lib/transfers";
+import { TransferStatusBadge } from "./transfer-status";
 
 type Transfer = Awaited<ReturnType<typeof listTransfers>>[number];
 const column = columnHelperFor<Transfer>();
-const options = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "tr")).map((v) => ({ label: v, value: v }));
-const statusLabel = (t: Transfer) => (t.status === "yolda" ? "Yolda" : "Teslim alındı");
 
 export function TransfersTable({ transfers }: { transfers: Transfer[] }) {
   const columns = column.columns([
@@ -39,19 +36,15 @@ export function TransfersTable({ transfers }: { transfers: Transfer[] }) {
       enableColumnFilter: true,
       meta: { label: "Hedef", variant: "multiSelect", options: options(transfers.map((t) => t.toName)) },
     }),
-    column.accessor((t) => statusLabel(t), {
+    column.accessor((t) => transferStatusLabels[t.status], {
       id: "durum",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Durum" />,
-      cell: ({ row }) =>
-        row.original.status === "yolda" ? <Badge>Yolda</Badge> : <Badge variant="secondary">Teslim alındı</Badge>,
+      cell: ({ row }) => <TransferStatusBadge status={row.original.status} />,
       enableColumnFilter: true,
       meta: {
         label: "Durum",
         variant: "multiSelect",
-        options: [
-          { label: "Yolda", value: "Yolda" },
-          { label: "Teslim alındı", value: "Teslim alındı" },
-        ],
+        options: Object.values(transferStatusLabels).map(option),
       },
     }),
     column.accessor("sentBy", {
@@ -69,15 +62,7 @@ export function TransfersTable({ transfers }: { transfers: Transfer[] }) {
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: transfers,
-    columns,
-    initialState: { pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: transfers, columns });
 
   return (
     <DataTable table={table} aria-label="Transferler">

@@ -5,13 +5,11 @@ import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { unitLabels, type Unit } from "@/lib/quantity";
 
-export type PickableProduct = { id: string; code: string; name: string; unit: Unit };
+type PickableProduct = { id: string; code: string; name: string; unit: Unit };
 
-// Typed text and imported names differ in invisible ways (e.g. a narrow no-break space in "6 A"),
-// so matching ignores spacing and case.
+// Imported names hide odd spaces (e.g. NNBSP in "6 A"), so matching ignores spacing and case.
 const normalize = (text: string) => text.normalize("NFKC").replace(/\s+/g, " ").trim().toLocaleLowerCase("tr");
 
-// Rows of product + quantity for a stock form. Each row submits productId[] and quantity[].
 export function ProductLines({ products, initialRows = 1 }: { products: PickableProduct[]; initialRows?: number }) {
   const [rows, setRows] = useState(() => Array.from({ length: initialRows }, () => crypto.randomUUID()));
   const [picked, setPicked] = useState<Record<string, PickableProduct | undefined>>({});

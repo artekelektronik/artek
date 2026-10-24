@@ -1,19 +1,19 @@
 import { headers } from "next/headers";
-import { z } from "zod";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { MovementTable } from "@/components/movement-table";
+import { isUuid } from "@/lib/errors";
 import { loadActor } from "@/lib/guard";
-import { listMovements } from "@/lib/ledger";
+import { listMovements, movementLimit } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
+import { istanbulTimeOn } from "@/lib/time";
 
 export const metadata = { title: "Stok hareketleri | Artek Stok" };
 
-// A date picked in the filter is a day in Istanbul (UTC+3, no daylight saving).
 const istanbulDay = (day: string | undefined, time: string) =>
-  day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T${time}+03:00`) : undefined;
-// Filters come from the URL; anything malformed is ignored rather than sent to the database.
-const id = (value: string | undefined) => (value && z.uuid().safeParse(value).success ? value : undefined);
+  day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? istanbulTimeOn(day, time) : undefined;
+// Malformed URL filters are ignored rather than sent to the database.
+const id = (value: string | undefined) => (isUuid(value) ? value : undefined);
 
 export default async function MovementsPage({
   searchParams,
@@ -23,7 +23,7 @@ export default async function MovementsPage({
   const params = await searchParams;
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
-  // The date range (and a product, from its page) narrows what is loaded; the table filters the rest.
+  // Dates and product narrow what is loaded; the table filters the rest.
   const movements = await listMovements(requestHeaders, {
     from: istanbulDay(params.baslangic, "00:00:00"),
     to: istanbulDay(params.bitis, "23:59:59.999"),
@@ -52,7 +52,9 @@ export default async function MovementsPage({
         movements={movements}
         canReverse={can(actor, "stock.reverse")}
       />
-      {movements.length === 500 && <p className="text-muted-foreground text-sm">En yeni 500 hareket yüklendi; tarih aralığını daraltın.</p>}
+      {movements.length === movementLimit && (
+        <p className="text-muted-foreground text-sm">En yeni {movementLimit} hareket yüklendi; tarih aralığını daraltın.</p>
+      )}
     </div>
   );
 }

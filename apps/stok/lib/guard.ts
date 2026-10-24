@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { cache } from "react";
 import { db } from "../db";
 import { user, userLokasyon, userRole } from "../db/schema";
 import { auth } from "./auth";
@@ -16,9 +17,13 @@ export class Forbidden extends Error {
   }
 }
 
-// The signed-in user with their roles and Lokasyon, read from the database, never from the request.
+// The signed-in user with roles and Lokasyon from the database, loaded once per server render.
 export async function loadActor(headers: Headers) {
-  const session = await auth.api.getSession({ headers });
+  return actorFor(headers.get("cookie") ?? "");
+}
+
+const actorFor = cache(async (cookie: string) => {
+  const session = await auth.api.getSession({ headers: new Headers({ cookie }) });
   if (!session) throw new NotSignedIn();
 
   const userId = session.user.id;
@@ -29,8 +34,14 @@ export async function loadActor(headers: Headers) {
   ]);
   // Deactivation also deletes sessions; this covers any session that survives it.
   if (account?.deactivatedAt) throw new NotSignedIn();
-  return { userId, roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
-}
+  return {
+    userId,
+    name: session.user.name,
+    email: session.user.email,
+    roles: roles.map((r) => r.role),
+    lokasyonIds: lokasyon.map((l) => l.id),
+  };
+});
 
 // The one server-side check every action runs before touching data.
 export async function requirePermission(headers: Headers, action: Action, lokasyonId?: string) {

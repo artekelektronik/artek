@@ -5,17 +5,8 @@ import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import type { ActionState } from "@/lib/action-result";
+import { FormStatus } from "@/components/form-status";
 
-function Status({ state, saved }: { state: ActionState; saved: string }) {
-  if (state?.error) {
-    return (
-      <p role="alert" className="text-destructive text-sm">
-        {state.error}
-      </p>
-    );
-  }
-  return state?.saved ? <p className="text-sm text-green-700">{saved}</p> : null;
-}
 
 export function InviteForm({
   action,
@@ -36,7 +27,7 @@ export function InviteForm({
         <Input name="email" type="email" required autoComplete="off" />
       </Label>
       {children}
-      <Status state={state} saved="" />
+      <FormStatus state={state} />
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Gönderiliyor…" : "Davet gönder"}
       </Button>
@@ -55,7 +46,7 @@ export function AccessForm({
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-4">
       {children}
-      <Status state={state} saved="Yetkiler kaydedildi." />
+      <FormStatus state={state} saved="Yetkiler kaydedildi." />
       <Button type="submit" variant="outline" disabled={pending} className="self-start">
         Yetkileri kaydet
       </Button>
@@ -80,7 +71,7 @@ export function UserActionButton({
       <Button type="submit" variant={variant} size="sm" disabled={pending}>
         {label}
       </Button>
-      <Status state={state} saved={done} />
+      <FormStatus state={state} saved={done} />
     </form>
   );
 }

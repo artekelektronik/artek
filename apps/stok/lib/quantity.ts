@@ -10,10 +10,9 @@ export const unitLabels: Record<Unit, string> = {
   metre: "metre",
 };
 
-// Adet, takım and rulo are counted; kg and metre are measured to 3 decimals.
 const decimals: Record<Unit, number> = { adet: 0, takim: 0, rulo: 0, kg: 3, metre: 3 };
 
-export type ParsedQuantity = { ok: true; value: string } | { ok: false; error: string };
+type ParsedQuantity = { ok: true; value: string } | { ok: false; error: string };
 
 // Quantities have at most 3 decimals, so they are added exactly as integer thousandths.
 function toThousandths(value: string) {

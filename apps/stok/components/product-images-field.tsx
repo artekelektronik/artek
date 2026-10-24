@@ -8,8 +8,7 @@ import { Button } from "@artek/ui/components/button";
 import { cn } from "@artek/ui/lib/utils";
 import { productImageUrl } from "@/lib/product-images";
 
-// The product's pictures, in order (the first is the main one shown everywhere). New files go from
-// the browser straight to Vercel Blob; removed ones are deleted from Blob when the product is saved.
+// The first image is the main one; uploads go straight to Blob, removed files are deleted on save.
 export function ProductImagesField({ initial, readOnly }: { initial: string[]; readOnly?: boolean }) {
   const [images, setImages] = useState(initial);
   const [uploading, setUploading] = useState(0);

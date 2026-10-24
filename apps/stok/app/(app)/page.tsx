@@ -5,8 +5,8 @@ import { AlertTriangle, ArrowRight, Boxes, ClipboardList, Package, Truck, type L
 import { Alert, AlertDescription, AlertTitle } from "@artek/ui/components/alert";
 import { Badge } from "@artek/ui/components/badge";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@artek/ui/components/card";
-import { auth } from "@/lib/auth";
-import { getDashboard } from "@/lib/dashboard";
+import { loadActor } from "@/lib/guard";
+import { dashboardDays, getDashboard } from "@/lib/dashboard";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
 import { formatIstanbulTime } from "@/lib/time";
@@ -48,13 +48,12 @@ function StatCard({
 }
 
 export default async function HomePage() {
-  // Render per request so the counts and time are current.
   await connection();
   const requestHeaders = await headers();
-  const [session, d] = await Promise.all([auth.api.getSession({ headers: requestHeaders }), getDashboard(requestHeaders)]);
+  const [actor, d] = await Promise.all([loadActor(requestHeaders), getDashboard(requestHeaders)]);
   const now = new Date();
   const notOpened = d.lokasyon.filter((l) => !l.openedAt);
-  const firstName = session?.user.name.split(" ")[0];
+  const firstName = actor.name.split(" ")[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,7 +102,7 @@ export default async function HomePage() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Stok hareketleri</CardTitle>
-            <CardDescription>Son 14 gün, günlük giriş ve çıkış sayısı</CardDescription>
+            <CardDescription>Son {dashboardDays} gün, günlük giriş ve çıkış sayısı</CardDescription>
           </CardHeader>
           <CardContent>
             <MovementsChart data={d.daily} />

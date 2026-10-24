@@ -6,7 +6,6 @@ import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { cn } from "@artek/ui/lib/utils";
 
-// A password field with a button that shows or hides what was typed.
 export function PasswordInput({ className, ...props }: Omit<React.ComponentProps<typeof Input>, "type">) {
   const [visible, setVisible] = useState(false);
   return (

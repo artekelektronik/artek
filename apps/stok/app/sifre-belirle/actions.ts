@@ -6,7 +6,6 @@ import type { ActionState } from "@/lib/action-result";
 import { auth } from "@/lib/auth";
 import { text } from "@/lib/form-data";
 
-// Sets the password through Better Auth's reset-password endpoint, using the emailed token.
 export async function setPasswordAction(token: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const password = text(formData, "password");
   if (password !== text(formData, "confirm")) return { error: "Şifreler aynı değil." };

@@ -231,26 +231,14 @@
     "loading": "Ürünler yükleniyor"
   },
   "productCard": {
-    "inStock": "Stokta",
-    "outOfStock": "Tükendi",
-    "locationKarakoy": "Karaköy:",
     "code": "Kod:",
-    "unitPrice": "Birim Fiyat:",
-    "retailPrice": "Perakende:",
-    "wholesalePrice": "Toptan:",
     "viewDetails": "Detayları Gör"
   },
   "productDetail": {
     "backButton": "Ürünlere Dön",
     "notFound": "Ürün Bulunamadı",
     "notFoundDescription": "Bu ürün mevcut değil veya kaldırılmış olabilir.",
-    "inStock": "Stokta Var",
-    "outOfStock": "Stokta Yok",
     "code": "Kod:",
-    "unitPrice": "Birim Fiyat:",
-    "retailPrice": "Perakende Fiyatı:",
-    "wholesalePrice": "Toptan Fiyatı:",
-    "wholesaleBase": "Toptan Taban:",
     "aiSummary": "AI Ürün Özeti",
     "description": "Açıklama",
     "additionalInfo": "Ek Bilgiler",

@@ -10,7 +10,7 @@ import { InviteForm } from "../user-forms";
 export const metadata = { title: "Kullanıcı davet et | Artek Stok" };
 
 export default async function InviteUserPage() {
-  // The page is only a form; inviteUser itself enforces the permission.
+  // UX only; inviteUser enforces the permission.
   if (!can(await loadActor(await headers()), "users.manage")) return <NoAccess />;
   const lokasyon = await listLokasyon();
 

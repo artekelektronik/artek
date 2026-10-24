@@ -1,8 +1,8 @@
-import { and, asc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db, type Tx } from "../db";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
-import { isUniqueViolation, UserError } from "./errors";
+import { isUniqueViolation, isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { deleteUnusedImages } from "./product-image-files";
 import { parseQuantity } from "./quantity";
@@ -40,9 +40,7 @@ const productInput = z
 export type ProductInput = z.input<typeof productInput>;
 
 function parse(input: ProductInput) {
-  const result = productInput.safeParse(input);
-  if (!result.success) throw new UserError(result.error.issues[0].message);
-  const { minLevel, ...fields } = result.data;
+  const { minLevel, ...fields } = parseInput(productInput, input);
   // Kritik seviye follows the product's unit, like any quantity; empty means no warning.
   if (!minLevel) return { ...fields, minLevel: null };
   const level = parseQuantity(minLevel, fields.unit);
@@ -98,7 +96,6 @@ export async function updateProduct(headers: Headers, id: string, input: Product
   await deleteUnusedImages((before?.images ?? []).filter((url) => !fields.images.includes(url)));
 }
 
-// The "show on site" switch in the product list: whether the Vitrin lists the product.
 export async function setShowOnSite(headers: Headers, id: string, showOnSite: boolean) {
   await requirePermission(headers, "products.manage");
   await db.update(product).set({ showOnSite, updatedAt: new Date() }).where(eq(product.id, id));
@@ -130,25 +127,12 @@ export async function restoreProduct(headers: Headers, id: string) {
   await db.update(product).set({ archivedAt: null, updatedAt: new Date() }).where(eq(product.id, id));
 }
 
-export async function listProducts(headers: Headers, filters: { q?: string; category?: string; archived?: boolean }) {
+export async function listProducts(headers: Headers, filters: { archived?: boolean }) {
   await requirePermission(headers, "products.view");
-  const search = filters.q?.trim();
   return db
     .select()
     .from(product)
-    .where(
-      and(
-        filters.archived ? isNotNull(product.archivedAt) : isNull(product.archivedAt),
-        filters.category ? eq(product.category, filters.category) : undefined,
-        search
-          ? or(
-              ilike(product.code, `%${search}%`),
-              ilike(product.name, `%${search}%`),
-              ilike(product.manufacturerCode, `%${search}%`),
-            )
-          : undefined,
-      ),
-    )
+    .where(filters.archived ? isNotNull(product.archivedAt) : isNull(product.archivedAt))
     .orderBy(asc(product.code));
 }
 
@@ -160,7 +144,7 @@ export async function listCategories(headers: Headers) {
 
 export async function getProduct(headers: Headers, id: string) {
   await requirePermission(headers, "products.view");
-  if (!z.uuid().safeParse(id).success) return undefined;
+  if (!isUuid(id)) return undefined;
   const found = await db.query.product.findFirst({ where: eq(product.id, id) });
   if (!found) return undefined;
   const shelves = await db.select().from(productShelf).where(eq(productShelf.productId, id));

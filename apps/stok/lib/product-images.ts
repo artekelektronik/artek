@@ -1,5 +1,4 @@
-// Product images are served by the Vitrin (ferritnuve.com); imported products store paths like
-// "/products-images/ee-cores.jpg" relative to it. A full URL is used as it is.
+// Old imports store paths relative to the Vitrin; full URLs (Blob) are used as is.
 const vitrinUrl = process.env.NEXT_PUBLIC_VITRIN_URL || "https://www.ferritnuve.com";
 
 export function productImageUrl(path: string) {

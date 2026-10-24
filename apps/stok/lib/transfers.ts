@@ -3,7 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db } from "../db";
 import { lokasyon, lossReason, product, transfer, transferLine, user } from "../db/schema";
-import { UserError } from "./errors";
+import { isUuid, parseInput, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { postDocument, visibleLokasyonIds, type MovementLine } from "./ledger";
 import { can } from "./permissions";
@@ -29,13 +29,12 @@ const sendInput = z
   })
   .refine((t) => t.fromLokasyonId !== t.toLokasyonId, { error: "Kaynak ve hedef Lokasyon farklı olmalı." });
 
-export type SendInput = z.input<typeof sendInput>;
+type SendInput = z.input<typeof sendInput>;
 
 // Sevk: the quantity leaves the source and is on the way, at neither Lokasyon.
 export async function sendTransfer(headers: Headers, input: SendInput) {
-  const parsed = sendInput.safeParse(input);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
-  const { fromLokasyonId, toLokasyonId, note, idempotencyKey } = parsed.data;
+  const data = parseInput(sendInput, input);
+  const { fromLokasyonId, toLokasyonId, note, idempotencyKey } = data;
   const actor = await requirePermission(headers, "stock.transfer", fromLokasyonId);
   // Stock sent to a Lokasyon that hasn't gone live could never be received there.
   const target = await db.query.lokasyon.findFirst({ where: eq(lokasyon.id, toLokasyonId) });
@@ -57,8 +56,8 @@ export async function sendTransfer(headers: Headers, input: SendInput) {
       const products = await tx
         .select({ id: product.id, code: product.code, unit: product.unit })
         .from(product)
-        .where(inArray(product.id, parsed.data.lines.map((l) => l.productId).filter((id) => z.uuid().safeParse(id).success)));
-      const rows = parsed.data.lines.map((line) => {
+        .where(inArray(product.id, data.lines.map((l) => l.productId).filter((id) => isUuid(id))));
+      const rows = data.lines.map((line) => {
         const found = products.find((p) => p.id === line.productId);
         if (!found) throw new UserError("Ürün bulunamadı; listeden bir ürün seçin.");
         const quantity = parseQuantity(line.quantity, found.unit);
@@ -85,20 +84,19 @@ const receiveInput = z.object({
   idempotencyKey: z.string().min(1),
 });
 
-export type ReceiveInput = z.input<typeof receiveInput>;
+type ReceiveInput = z.input<typeof receiveInput>;
 
 // Teslim alma: what arrived enters the target; any shortfall is closed now as a loss with its reason.
 export async function receiveTransfer(headers: Headers, transferId: string, input: ReceiveInput) {
-  const parsed = receiveInput.safeParse(input);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
-  const found = z.uuid().safeParse(transferId).success
+  const data = parseInput(receiveInput, input);
+  const found = isUuid(transferId)
     ? await db.query.transfer.findFirst({ where: eq(transfer.id, transferId) })
     : undefined;
   if (!found) throw new UserError("Transfer bulunamadı.");
   const actor = await requirePermission(headers, "stock.transfer", found.toLokasyonId);
 
   return postDocument(
-    { kind: "transfer_teslim", lokasyonId: found.toLokasyonId, userId: actor.userId, idempotencyKey: parsed.data.idempotencyKey },
+    { kind: "transfer_teslim", lokasyonId: found.toLokasyonId, userId: actor.userId, idempotencyKey: data.idempotencyKey },
     async (tx, documentId) => {
       // Locked so two different receipts can't both go through.
       const [current] = await tx.select().from(transfer).where(eq(transfer.id, transferId)).for("update");
@@ -112,7 +110,7 @@ export async function receiveTransfer(headers: Headers, transferId: string, inpu
 
       const movements: MovementLine[] = [];
       for (const line of sentLines) {
-        const entry = parsed.data.lines.find((l) => l.productId === line.productId);
+        const entry = data.lines.find((l) => l.productId === line.productId);
         if (!entry) throw new UserError(`${line.code} için gelen miktarı girin.`);
         const parsedReceived = parseQuantityOrZero(entry.received, line.unit);
         if (!parsedReceived.ok) throw new UserError(`${line.code}: ${parsedReceived.error}`);
@@ -155,8 +153,7 @@ export async function receiveTransfer(headers: Headers, transferId: string, inpu
   );
 }
 
-// Quantity on the way in open transfers, for one product. Counts at neither Lokasyon.
-// With lokasyonIds, only transfers that start or end at one of them (as in the overview).
+// A product's quantity on the way; with lokasyonIds, only transfers touching them.
 export async function inTransit(productId: string, lokasyonIds?: string[]) {
   const [row] = await db
     .select({ total: sql<string>`coalesce(sum(${transferLine.sent}), 0)` })
@@ -201,7 +198,6 @@ function transferQuery() {
     .leftJoin(receiver, eq(receiver.id, transfer.receivedBy));
 }
 
-// Transfers that start or end at a Lokasyon the user can see; open ones first.
 export async function listTransfers(headers: Headers) {
   const visible = await visibleLokasyonIds(await loadActor(headers));
   return transferQuery()
@@ -211,7 +207,7 @@ export async function listTransfers(headers: Headers) {
 }
 
 export async function getTransfer(headers: Headers, id: string) {
-  if (!z.uuid().safeParse(id).success) return undefined;
+  if (!isUuid(id)) return undefined;
   const actor = await loadActor(headers);
   const [found] = await transferQuery().where(eq(transfer.id, id));
   if (!found || !(can(actor, "stock.view", found.fromLokasyonId) || can(actor, "stock.view", found.toLokasyonId))) {

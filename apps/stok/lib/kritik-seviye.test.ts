@@ -111,7 +111,7 @@ describe("Kritik seviye warnings", { skip: skipWithoutDatabase }, () => {
     assert.equal((await notifications())[0].status, "pending");
 
     const calls: string[] = [];
-    const failing: import("./outbox").EmailSender = async (email) => {
+    const failing: import("./email").EmailSender = async (email) => {
       calls.push(email.idempotencyKey);
       throw new Error("Resend 500");
     };
@@ -124,7 +124,7 @@ describe("Kritik seviye warnings", { skip: skipWithoutDatabase }, () => {
     const { getBalances } = await import("./ledger");
     assert.equal((await getBalances(muhendis.headers, core)).total.physical, "9");
 
-    const working: import("./outbox").EmailSender = async (email) => {
+    const working: import("./email").EmailSender = async (email) => {
       calls.push(email.idempotencyKey);
     };
     await outbox.processOutbox(working, { now: new Date(Date.now() + 60 * 60_000) });

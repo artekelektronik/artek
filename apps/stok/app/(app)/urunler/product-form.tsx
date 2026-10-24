@@ -11,6 +11,7 @@ import type { ActionState } from "@/lib/action-result";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
 import { selectClassName } from "@/lib/ui";
+import { FormStatus } from "@/components/form-status";
 
 type Product = {
   code: string;
@@ -177,12 +178,7 @@ export function ProductForm({
         ))}
       </fieldset>
 
-      {state?.error && (
-        <p role="alert" className="text-destructive text-sm">
-          {state.error}
-        </p>
-      )}
-      {state?.saved && <p className="text-sm text-green-700">Kaydedildi.</p>}
+      <FormStatus state={state} saved="Kaydedildi." />
       {!readOnly && (
         <Button type="submit" disabled={pending} className="self-start">
           {pending ? "Kaydediliyor…" : submitLabel}

@@ -14,8 +14,7 @@ import { ProductFilters, type FilterState } from "@/components/product-filters";
 import { ProductCard } from "@/components/product-card";
 import { ProductControls } from "@/components/product-controls";
 import { ProductPagination } from "@/components/product-pagination";
-import { useProducts, usePrefetchProduct } from "@/hooks/use-products";
-import { generateProductSlug } from "@/lib/utils";
+import { useProducts } from "@/hooks/use-products";
 import { Link } from "@/i18n/navigation";
 
 // Define search params parsers
@@ -37,7 +36,6 @@ function ProductsContent() {
   const t = useTranslations("products");
   const tFilters = useTranslations("filters");
   const tControls = useTranslations("controls");
-  const prefetchProduct = usePrefetchProduct();
 
   // Use nuqs to manage URL search params
   const [params, setParams] = useQueryStates(searchParamsParser, {
@@ -348,20 +346,11 @@ function ProductsContent() {
                     : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                 }`}
               >
-                {currentProducts.map((product) => {
-                  const slug = generateProductSlug(
-                    product.fields["Product Name"],
-                    product.id
-                  );
-                  return (
-                    <div
-                      key={product.id}
-                      onMouseEnter={() => prefetchProduct(slug)}
-                    >
-                      <ProductCard product={product} />
-                    </div>
-                  );
-                })}
+                {currentProducts.map((product) => (
+                  <div key={product.id}>
+                    <ProductCard product={product} />
+                  </div>
+                ))}
               </div>
 
               {/* Pagination */}

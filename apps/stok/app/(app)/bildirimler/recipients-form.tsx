@@ -7,6 +7,7 @@ import { Label } from "@artek/ui/components/label";
 import { roleLabels } from "@/lib/labels";
 import type { Role } from "@/lib/permissions";
 import { setRecipientRolesAction } from "./actions";
+import { FormStatus } from "@/components/form-status";
 
 export function RecipientsForm({ roles }: { roles: Role[] }) {
   const [state, formAction, pending] = useActionState(setRecipientRolesAction, undefined);
@@ -20,12 +21,7 @@ export function RecipientsForm({ roles }: { roles: Role[] }) {
       <Button type="submit" variant="outline" size="sm" disabled={pending}>
         Kaydet
       </Button>
-      {state?.error && (
-        <p role="alert" className="text-destructive w-full text-sm">
-          {state.error}
-        </p>
-      )}
-      {state?.saved && <p className="w-full text-sm text-green-700">Alıcılar kaydedildi.</p>}
+      <FormStatus state={state} saved="Alıcılar kaydedildi." className="w-full" />
     </form>
   );
 }

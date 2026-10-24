@@ -9,8 +9,7 @@ function authorized(request: Request) {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
-// Catch-up for emails that failed or were queued without a follow-up request. Vercel Cron sends
-// "Authorization: Bearer $CRON_SECRET"; anything else is refused.
+// Daily catch-up for unsent emails; Vercel Cron sends Bearer $CRON_SECRET.
 export async function GET(request: Request) {
   if (!authorized(request)) return new Response("Yetkisiz", { status: 401 });
   const processed = await processOutbox();

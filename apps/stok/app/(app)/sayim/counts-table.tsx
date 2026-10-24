@@ -5,14 +5,12 @@ import { Badge } from "@artek/ui/components/badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
+import { columnHelperFor, option, options, useClientDataTable } from "@/components/data-table/columns";
 import type { listCounts } from "@/lib/counts";
 import { countKindLabels, countStatusLabels, formatDateTime } from "@/lib/labels";
 
 type Count = Awaited<ReturnType<typeof listCounts>>[number];
 const column = columnHelperFor<Count>();
-const options = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b, "tr")).map((v) => ({ label: v, value: v }));
 
 export function CountsTable({ counts }: { counts: Count[] }) {
   const columns = column.columns([
@@ -30,7 +28,7 @@ export function CountsTable({ counts }: { counts: Count[] }) {
       id: "tur",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Tür" />,
       enableColumnFilter: true,
-      meta: { label: "Tür", variant: "multiSelect", options: Object.values(countKindLabels).map((v) => ({ label: v, value: v })) },
+      meta: { label: "Tür", variant: "multiSelect", options: Object.values(countKindLabels).map(option) },
     }),
     column.accessor("lokasyonName", {
       id: "lokasyon",
@@ -50,7 +48,7 @@ export function CountsTable({ counts }: { counts: Count[] }) {
         <Badge variant={row.original.status === "taslak" ? "default" : "secondary"}>{countStatusLabels[row.original.status]}</Badge>
       ),
       enableColumnFilter: true,
-      meta: { label: "Durum", variant: "multiSelect", options: Object.values(countStatusLabels).map((v) => ({ label: v, value: v })) },
+      meta: { label: "Durum", variant: "multiSelect", options: Object.values(countStatusLabels).map(option) },
     }),
     column.accessor("createdBy", {
       id: "acan",
@@ -59,15 +57,7 @@ export function CountsTable({ counts }: { counts: Count[] }) {
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: counts,
-    columns,
-    initialState: { pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: counts, columns });
 
   return (
     <DataTable table={table} aria-label="Sayımlar">

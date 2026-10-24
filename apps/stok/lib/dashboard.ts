@@ -3,21 +3,16 @@ import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { db } from "../db";
 import { lokasyon, product, stock, stockCount, stockMovement, transfer } from "../db/schema";
 import { requirePermission } from "./guard";
+import { belowMinimumLevel, companyTotal } from "./kritik-seviye";
 import { listMovements, visibleLokasyonIds } from "./ledger";
 import { formatQuantity } from "./quantity";
+import { istanbulDate, istanbulTimeOn } from "./time";
 
 export const dashboardDays = 14;
 const dayMs = 24 * 60 * 60_000;
 
-// The start of `date`'s day in Istanbul (UTC+3, no daylight saving).
-function istanbulDayStart(date: Date) {
-  const day = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(date);
-  return new Date(`${day}T00:00:00+03:00`);
-}
-
-// The home page: what needs attention and what moved, limited to the Lokasyon the user may see.
 export async function getDashboard(headers: Headers, now = new Date()) {
-  // Every role may open it; what it counts is decided by Lokasyon visibility below.
+  // Every role; what it counts depends on Lokasyon visibility.
   const actor = await requirePermission(headers, "products.view");
   const visible = await visibleLokasyonIds(actor); // undefined: every Lokasyon
   const within = (column: AnyPgColumn): SQL | undefined =>
@@ -28,11 +23,8 @@ export async function getDashboard(headers: Headers, now = new Date()) {
   // Movements at a Lokasyon; the "on the way" half of a transfer is not a receipt or an issue.
   const atALokasyon = and(isNotNull(stockMovement.lokasyonId), within(stockMovement.lokasyonId));
 
-  const today = istanbulDayStart(now);
+  const today = istanbulTimeOn(istanbulDate(now));
   const since = new Date(today.getTime() - (dashboardDays - 1) * dayMs);
-  // Qualified by hand: in a select list Drizzle writes the column unqualified, and inside the
-  // subquery a bare "id" would be the movement's own id.
-  const companyTotal = sql<string>`coalesce((select sum(m.quantity) from stock_movement m where m.product_id = "product"."id"), 0)`;
 
   const [[products], places, stocked, [onTheWay], [openCounts], [movedToday], perDay, below, recent] = await Promise.all([
     db.select({ n: count() }).from(product).where(isNull(product.archivedAt)),
@@ -66,16 +58,16 @@ export async function getDashboard(headers: Headers, now = new Date()) {
       ? db
           .select({ id: product.id, code: product.code, name: product.name, unit: product.unit, minLevel: product.minLevel, total: companyTotal })
           .from(product)
-          .where(and(isNull(product.archivedAt), isNotNull(product.minLevel), sql`${companyTotal} < ${product.minLevel}`))
+          .where(and(isNull(product.archivedAt), belowMinimumLevel))
           .orderBy(asc(product.code))
       : Promise.resolve(null),
-    listMovements(headers, {}),
+    listMovements(headers, { limit: 8 }),
   ]);
 
   const stockedBy = new Map(stocked.map((s) => [s.lokasyonId, s.n]));
   const countsBy = new Map(perDay.map((d) => [d.day, d]));
   const daily = Array.from({ length: dashboardDays }, (_, i) => {
-    const day = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(new Date(since.getTime() + i * dayMs));
+    const day = istanbulDate(new Date(since.getTime() + i * dayMs));
     return { day, inbound: countsBy.get(day)?.inbound ?? 0, outbound: countsBy.get(day)?.outbound ?? 0 };
   });
 
@@ -87,8 +79,7 @@ export async function getDashboard(headers: Headers, now = new Date()) {
     movementsToday: movedToday.n,
     daily,
     belowMinimum: below?.map((p) => ({ ...p, total: formatQuantity(p.total), minLevel: formatQuantity(p.minLevel!) })) ?? null,
-    recent: recent.slice(0, 8),
+    recent,
   };
 }
 
-export type Dashboard = Awaited<ReturnType<typeof getDashboard>>;

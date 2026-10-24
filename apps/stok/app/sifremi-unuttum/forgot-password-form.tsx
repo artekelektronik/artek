@@ -7,8 +7,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@ar
 import { Input } from "@artek/ui/components/input";
 import { authClient } from "@/lib/auth-client";
 
-// Asks Better Auth for a reset link (rate-limited). The reply is the same whether or not the
-// email belongs to someone, so the page can't be used to find out who has an account.
+// Same reply for every email, so the page can't reveal who has an account.
 export function ForgotPasswordForm() {
   const [state, setState] = useState<"idle" | "pending" | "sent" | "limited">("idle");
 

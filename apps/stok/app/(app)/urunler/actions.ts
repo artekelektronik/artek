@@ -48,14 +48,14 @@ export async function createProductAction(_previous: ActionState, formData: Form
   const state = await runAction(async () => {
     id = (await createProduct(await headers(), productFrom(formData))).id;
   });
-  if (state) return state;
+  if (state.error) return state;
   redirect(`/urunler/${id}`);
 }
 
 export async function updateProductAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => updateProduct(await headers(), id, productFrom(formData)));
   revalidatePath(`/urunler/${id}`);
-  return state ?? { saved: true };
+  return state;
 }
 
 export async function archiveProductAction(id: string) {

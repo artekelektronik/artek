@@ -27,21 +27,21 @@ export async function inviteUserAction(_previous: ActionState, formData: FormDat
   const state = await runAction(async () => {
     id = (await inviteUser(await headers(), { email: text(formData, "email"), name: text(formData, "name"), ...accessFrom(formData) })).id;
   });
-  if (state) return state;
+  if (state.error) return state;
   redirect(`/kullanicilar/${id}?davet=gonderildi`);
 }
 
 export async function updateAccessAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => updateAccess(await headers(), id, accessFrom(formData)));
   revalidatePath(`/kullanicilar/${id}`);
-  return state ?? { saved: true };
+  return state;
 }
 
 async function userAction(id: string, work: (headers: Headers) => Promise<void>): Promise<ActionState> {
   const state = await runAction(async () => work(await headers()));
   revalidatePath(`/kullanicilar/${id}`);
   revalidatePath("/kullanicilar");
-  return state ?? { saved: true };
+  return state;
 }
 
 export async function sendPasswordLinkAction(id: string): Promise<ActionState> {

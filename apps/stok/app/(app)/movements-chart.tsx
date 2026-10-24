@@ -18,7 +18,6 @@ const config = {
 const dayLabel = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", timeZone: "UTC" });
 const label = (day: string) => dayLabel.format(new Date(`${day}T00:00:00Z`));
 
-// Stock movements per day, in and out (shadcn's bar chart with recharts).
 export function MovementsChart({ data }: { data: { day: string; inbound: number; outbound: number }[] }) {
   return (
     <ChartContainer config={config} className="aspect-auto h-64 w-full">

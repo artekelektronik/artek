@@ -1,15 +1,8 @@
-/**
- * catalog.ts
- *
- * The Vitrin's products come from the stok app's public catalog API (ADR-0002).
- * The site holds no database credentials; responses are cached, so a short stok
- * outage keeps serving the last catalog.
- *
- * Products are adapted to the AirtableProduct shape the pages already use.
- */
+// Products from the stok catalog API (ADR-0002), cached, adapted to the AirtableProduct shape.
 
 import { catalogResponse, type PublicProduct } from "@artek/catalog";
 import type { AirtableProduct } from "../types/airtable";
+import { extractIdFromSlug } from "./utils";
 
 const CATALOG_URL = process.env.CATALOG_URL || "https://stok.ferritnuve.com/api/catalog";
 
@@ -24,12 +17,11 @@ export async function getProductBySlug(slug: string) {
 }
 
 export function findProductBySlug(products: AirtableProduct[], slug: string) {
-  const id = slug.split("-").at(-1);
+  const id = extractIdFromSlug(slug);
   return products.find(product => product.id.slice(-6) === id);
 }
 
-// Imported products keep their old record id ("rec" + number), so their URLs and
-// translations don't change; products created in the stok app use their own id.
+// Imported products keep their old rec id so URLs and translations don't change.
 export function toSiteProducts(products: PublicProduct[]): AirtableProduct[] {
   return [...products]
     .sort((a, b) => (a.legacyId ?? Infinity) - (b.legacyId ?? Infinity))

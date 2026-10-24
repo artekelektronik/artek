@@ -36,7 +36,6 @@ function UserLabel({ user }: { user: { name: string; email: string } }) {
   );
 }
 
-// The signed-in user with a sign-out menu, from shadcn's sidebar-07 block.
 export function NavUser({ user }: { user: { name: string; email: string } }) {
   const { isMobile } = useSidebar();
 

@@ -2,22 +2,18 @@ import { and, desc, eq, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { notification, notificationSetting, role } from "../db/schema";
-import { UserError } from "./errors";
+import { parseInput } from "./errors";
 import { requirePermission } from "./guard";
 import { recipientRoles } from "./kritik-seviye";
 
 import { resendSender, type EmailSender } from "./email";
 
-export { resendSender, type Email, type EmailSender } from "./email";
-
 const maxAttempts = 10;
-// Resend remembers an idempotency key for 24 hours. Retrying later could repeat an email whose
-// first send went through but whose response was lost, so retries stop well inside that window.
+// Resend keeps idempotency keys 24 hours; retries stop before that so a lost response can't double-send.
 const retryWindowMs = 23 * 60 * 60_000;
 // 5 min, 10 min, 20 min, 40 min, then hourly.
 const retryDelay = (attempts: number) => Math.min(5 * 60_000 * 2 ** (attempts - 1), 60 * 60_000);
 
-// A failed notification that will not be retried any more.
 export function gaveUp(n: { status: string; attempts: number; createdAt: Date; recipients: string[] }, now = new Date()) {
   return (
     n.status === "failed" &&
@@ -25,8 +21,7 @@ export function gaveUp(n: { status: string; attempts: number; createdAt: Date; r
   );
 }
 
-// Sends due notifications one by one. Rows are claimed with SKIP LOCKED, so two runs never send
-// the same notification at the same time.
+// SKIP LOCKED: two runs never send the same notification.
 export async function processOutbox(send: EmailSender = resendSender, { now = new Date(), limit = 20 } = {}) {
   let processed = 0;
   while (processed < limit) {
@@ -88,10 +83,9 @@ const rolesInput = z.array(z.enum(role.enumValues)).min(1, { error: "En az bir r
 
 export async function setRecipientRoles(headers: Headers, roles: string[]) {
   await requirePermission(headers, "notifications.manage");
-  const parsed = rolesInput.safeParse(roles);
-  if (!parsed.success) throw new UserError(parsed.error.issues[0].message);
+  const data = parseInput(rolesInput, roles);
   await db
     .insert(notificationSetting)
-    .values({ key: "kritik_seviye", roles: parsed.data })
-    .onConflictDoUpdate({ target: notificationSetting.key, set: { roles: parsed.data } });
+    .values({ key: "kritik_seviye", roles: data })
+    .onConflictDoUpdate({ target: notificationSetting.key, set: { roles: data } });
 }

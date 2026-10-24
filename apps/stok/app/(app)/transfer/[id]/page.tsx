@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { Badge } from "@artek/ui/components/badge";
 import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { StockForm } from "@/components/stock-form";
@@ -11,6 +10,7 @@ import { unitLabels } from "@/lib/quantity";
 import { getTransfer, lossReasonLabels } from "@/lib/transfers";
 import { selectClassName } from "@/lib/ui";
 import { receiveTransferAction } from "../actions";
+import { TransferStatusBadge } from "../transfer-status";
 
 export default async function TransferPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +25,7 @@ export default async function TransferPage({ params }: { params: Promise<{ id: s
         <h1 className="text-2xl font-semibold">
           {found.fromName} → {found.toName}
         </h1>
-        {found.status === "yolda" ? <Badge>Yolda</Badge> : <Badge variant="secondary">Teslim alındı</Badge>}
+        <TransferStatusBadge status={found.status} />
       </div>
       <p className="text-muted-foreground text-sm">
         Sevk: {found.sentBy} · {formatDateTime(found.sentAt)}

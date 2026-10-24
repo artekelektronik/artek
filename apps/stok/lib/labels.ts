@@ -1,3 +1,4 @@
+import type { countStatus, notificationStatus, transferStatus } from "../db/schema";
 import type { CountKind } from "./counts";
 import type { MovementType } from "./ledger";
 import type { Role } from "./permissions";
@@ -32,7 +33,7 @@ export const auditActionLabels: Record<string, string> = {
   "user.sessions_ended": "Oturumları kapatıldı",
 };
 
-export const notificationStatusLabels: Record<"pending" | "sent" | "failed", string> = {
+export const notificationStatusLabels: Record<(typeof notificationStatus.enumValues)[number], string> = {
   pending: "Bekliyor",
   sent: "Gönderildi",
   failed: "Gönderilemedi",
@@ -40,11 +41,22 @@ export const notificationStatusLabels: Record<"pending" | "sent" | "failed", str
 
 export const countKindLabels: Record<CountKind, string> = { sayim: "Sayım", acilis: "Açılış sayımı" };
 
-export const countStatusLabels: Record<"taslak" | "onaylandi" | "iptal", string> = {
+export const countStatusLabels: Record<(typeof countStatus.enumValues)[number], string> = {
   taslak: "Açık",
   onaylandi: "Onaylandı",
   iptal: "İptal",
 };
+
+export const transferStatusLabels: Record<(typeof transferStatus.enumValues)[number], string> = {
+  yolda: "Yolda",
+  teslim_alindi: "Teslim alındı",
+};
+
+export const userStatusLabels = { etkin: "Etkin", davet: "Davet bekliyor", pasif: "Devre dışı" } as const;
+
+export function userStatus(user: { active: boolean; invited: boolean }): keyof typeof userStatusLabels {
+  return !user.active ? "pasif" : user.invited ? "davet" : "etkin";
+}
 
 const dateTime = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",

@@ -4,11 +4,10 @@ import { Badge } from "@artek/ui/components/badge";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
-import { useDataTable } from "@/hooks/use-data-table";
+import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { formatDateTime } from "@/lib/labels";
 
-export type NotificationRow = {
+type NotificationRow = {
   id: string;
   createdAt: Date;
   subject: string;
@@ -59,7 +58,7 @@ export function NotificationsTable({ notifications }: { notifications: Notificat
         </>
       ),
       enableColumnFilter: true,
-      meta: { label: "Durum", variant: "multiSelect", options: statuses.map((s) => ({ label: s, value: s })) },
+      meta: { label: "Durum", variant: "multiSelect", options: statuses.map(option) },
     }),
     column.accessor("attempts", {
       id: "deneme",
@@ -77,15 +76,7 @@ export function NotificationsTable({ notifications }: { notifications: Notificat
     }),
   ]);
 
-  const { table } = useDataTable({
-    mode: "client",
-    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
-    autoResetPageIndex: false,
-    data: notifications,
-    columns,
-    initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 20 } },
-    getRowId: (row) => row.id,
-  });
+  const { table } = useClientDataTable({ data: notifications, columns });
 
   return (
     <DataTable table={table} aria-label="Bildirimler">

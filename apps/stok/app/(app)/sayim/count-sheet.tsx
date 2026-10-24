@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import type { ActionState } from "@/lib/action-result";
+import { FormStatus } from "@/components/form-status";
 
-// Counted quantities for an open session. Saving keeps what was typed and shows the server's
-// balance-at-count and difference once the page refreshes.
+// Keeps typed values after saving; the refresh shows balance-at-count and difference.
 export function CountSheetForm({
   action,
   children,
@@ -32,12 +32,7 @@ export function CountSheetForm({
       }}
     >
       {children}
-      {state?.error && (
-        <p role="alert" className="text-destructive text-sm">
-          {state.error}
-        </p>
-      )}
-      {state?.saved && <p className="text-sm text-green-700">Sayılan miktarlar kaydedildi.</p>}
+      <FormStatus state={state} saved="Sayılan miktarlar kaydedildi." />
       <Button type="submit" disabled={pending} className="self-start print:hidden">
         {pending ? "Kaydediliyor…" : "Sayılanları kaydet"}
       </Button>

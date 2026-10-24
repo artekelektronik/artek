@@ -34,7 +34,7 @@ export default async function UserPage({
   if (!target) notFound();
   const lokasyonName = Object.fromEntries(lokasyon.map((l) => [l.id, l.name]));
 
-  // An audit snapshot in words: roles, Lokasyon and status, or the few other facts some entries keep.
+  // An audit snapshot in words.
   function describe(value: unknown) {
     if (!value || typeof value !== "object") return "—";
     const v = value as { roles?: Role[]; lokasyonIds?: string[]; active?: boolean; kind?: string; sessions?: number };

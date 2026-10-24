@@ -5,14 +5,12 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Next's default ignores, plus the vendored tablecn files.
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Vendored from tablecn, kept as upstream wrote it.
     "components/data-table/data-table*.tsx",
     "components/ui/faceted.tsx",
     "components/ui/direction.tsx",
