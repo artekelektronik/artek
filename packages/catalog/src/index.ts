@@ -12,6 +12,7 @@ export const publicProduct = z.strictObject({
   category: z.string(),
   productType: z.string().nullable(),
   subCategory: z.string().nullable(),
+  manufacturer: z.string().nullable(), // the brand
   manufacturerCode: z.string().nullable(), // Üretici kodu, shown as the product code
   supplierCountry: z.string().nullable(),
   description: z.string().nullable(),
