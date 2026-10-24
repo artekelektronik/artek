@@ -24,8 +24,6 @@ interface ProductControlsProps {
     newest: string;
     nameAsc: string;
     nameDesc: string;
-    priceAsc: string;
-    priceDesc: string;
   };
 }
 
@@ -93,8 +91,6 @@ export function ProductControls({
             <SelectItem value="newest">{t.newest}</SelectItem>
             <SelectItem value="name-asc">{t.nameAsc}</SelectItem>
             <SelectItem value="name-desc">{t.nameDesc}</SelectItem>
-            <SelectItem value="price-asc">{t.priceAsc}</SelectItem>
-            <SelectItem value="price-desc">{t.priceDesc}</SelectItem>
           </SelectContent>
         </Select>
 

@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { getMessages } from "next-intl/server";
 import type { Metadata } from "next";
-import { getProductsFromJSON } from "@/lib/local-products";
+import { getProducts } from "@/lib/catalog";
 import { productContent } from "@/lib/product-content";
 import { generateProductSlug } from "@/lib/utils";
 import { Contact20 } from "@/components/contact";
@@ -56,7 +56,7 @@ export default async function Page({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   const {product: id} = await searchParams;
-  const product = getProductsFromJSON().find(p => p.id === id);
+  const product = (await getProducts()).find(p => p.id === id);
   const context = product ? {
     id:product.id,
     name:productContent(product,locale).name,

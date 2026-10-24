@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProductsFromJSON } from "@/lib/local-products";
+import { getProducts } from "@/lib/catalog";
 
 export async function GET(request: Request) {
   try {
@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const category = searchParams.get("category");
     const productType = searchParams.get("type");
 
-    let products = getProductsFromJSON();
+    let products = await getProducts();
 
     // Apply optional filters
     if (category) {
@@ -19,10 +19,10 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log(`[local-json] Returning ${products.length} products`);
+    console.log(`[catalog] Returning ${products.length} products`);
     return NextResponse.json({ products, count: products.length });
   } catch (error: unknown) {
-    console.error("[CSV] Error reading products:", error);
+    console.error("[catalog] Error reading products:", error);
     return NextResponse.json(
       { error: "Failed to load products", message: String(error) },
       { status: 500 }

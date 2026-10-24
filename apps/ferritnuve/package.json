@@ -10,6 +10,7 @@
     "test": "node --test scripts/test-behavior.cjs"
   },
   "dependencies": {
+    "@artek/catalog": "workspace:*",
     "@artek/ui": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-accordion": "^1.2.15",

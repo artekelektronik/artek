@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getProductBySlug } from "@/lib/local-products";
+import { getProductBySlug } from "@/lib/catalog";
 import { productContent } from "@/lib/product-content";
 import { generateProductSlug } from "@/lib/utils";
 import { getLanguageAlternates, getLocalizedPath, getSiteUrl } from "@/lib/seo";
 export async function generateMetadata({params}: {params:Promise<{locale:string; slug:string}>}):Promise<Metadata> {
   const {locale,slug} = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return {title:locale === "en" ? "Product not found" : "Ürün bulunamadı", robots:{index:false,follow:true}};
   const {name,description} = productContent(product,locale);
   const path = `/products/${generateProductSlug(product.fields["Product Name"],product.id)}`;
