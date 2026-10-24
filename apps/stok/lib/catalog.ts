@@ -14,6 +14,7 @@ export async function getPublicCatalog(): Promise<CatalogResponse> {
       category: product.category,
       productType: product.productType,
       subCategory: product.subCategory,
+      manufacturer: product.manufacturer,
       manufacturerCode: product.manufacturerCode,
       supplierCountry: product.supplierCountry,
       description: product.description,

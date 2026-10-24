@@ -56,6 +56,7 @@ describe("public catalog", { skip: skipWithoutDatabase }, () => {
         category: "Ferrit",
         productType: "Nüve",
         subCategory: "EE",
+        manufacturer: "TDK",
         manufacturerCode: "B66317",
         supplierCountry: "Almanya",
         description: "EE 25/13/7",
