@@ -12,7 +12,8 @@ export type Action =
   | "stock.transfer"
   | "stock.out" // satış teslimatı, üretim tüketimi, fire
   | "count.perform" // Sayım
-  | "count.approve";
+  | "count.approve"
+  | "notifications.manage"; // Kritik seviye recipients and the email outbox
 
 export type Actor = { roles: Role[]; lokasyonIds: string[] };
 
@@ -31,6 +32,7 @@ const rules: Record<Action, Partial<Record<Role, Scope>>> = {
   "stock.out": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "count.perform": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "count.approve": { admin: "any", muhendis: "any" },
+  "notifications.manage": { admin: "any" },
 };
 
 export function can(actor: Actor, action: Action, lokasyonId?: string): boolean {

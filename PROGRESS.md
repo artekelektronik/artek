@@ -1,0 +1,75 @@
+# Stok app progress
+
+Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); the plan is in [docs/artek-stok-crm-plan-ve-prompt.md](docs/artek-stok-crm-plan-ve-prompt.md).
+
+## Where things are
+
+| Issue | What | State | Branch / commit |
+| --- | --- | --- | --- |
+| #21 | Monorepo, site in `apps/ferritnuve` | Merged | `main` (#39) |
+| #22 | Stok app shell, shared `packages/ui` | Merged | `main` (#40) |
+| #23 | Stok Vercel project, Neon, Resend | **Waiting on a human** | — |
+| #24 | Database, invite-only login, roles + Lokasyon guard | Draft PR [#41](https://github.com/artekelektronik/artek/pull/41); Neon/deploy checks wait for #23 | `codex/stok-auth-roles` · `df36d69` |
+| #26 | Ürünler and the one-time import of the site's 92 products | Done locally | `codex/stok-products` · `ec5b535` |
+| #28 | Stock ledger: mal kabul, balances, Stok hareketleri | Done locally | `codex/stok-ledger` · `fd41c5a` |
+| #29 | Stok çıkışı: satış teslimatı, üretim tüketimi, fire | Done locally | `codex/stok-out` · `283e1d1`, review fixes `f2ad02f` |
+| #30 | Transfer: sevk and teslim alma | Done locally | `codex/stok-transfer` · `3a45a7e` |
+| #31 | Sayım without locks | Done locally | `codex/stok-count` · `3ad3255` |
+| #32 | Açılış sayımı (go-live per Lokasyon) | Done locally | `codex/stok-opening` · `32ba171` |
+| #33 | Stok durumu, filters, CSV | Done locally | `codex/stok-overview` · `867eb01`, review fixes `f1e94b4` |
+| #34 | Kritik seviye and email warnings | **In progress, uncommitted** | `codex/stok-kritik-seviye` |
+| #25 | User management: invite, deactivate, audit log | Not started (needs #34's email outbox) | — |
+| #27 | Public catalog API; the site reads from it | Not started (must merge after #23, or the live site loses its catalog) | — |
+
+Each branch is stacked on the one above it. None of the branches after #24 are pushed yet.
+
+## #34 status
+
+Written, typecheck clean, tests written but **not yet run**:
+
+- `product.min_level` (Kritik seviye) and migration `0010_kritik-seviye.sql`, which also seeds the default recipients (admin, mühendis).
+- `lib/kritik-seviye.ts`: inside the posting transaction, a product whose company total goes from at-or-above its level to below it gets one row in the outbox. Product rows are locked in a fixed order, so concurrent stock-outs send one email.
+- `lib/outbox.ts`: Resend sender (notification id as the idempotency key), `processOutbox` with back-off, admin-only listing and recipient roles.
+- Overview filter `belowMinimum`.
+- `lib/kritik-seviye.test.ts`: covers every acceptance criterion.
+
+Still to do for #34:
+
+- Run the tests and fix what fails.
+- Kritik seviye field on the product form.
+- Admin "Bildirimler" page: notification list and recipient roles.
+- Trigger sending: `after()` in the stock server actions, plus a `/api/cron/outbox` route protected by `CRON_SECRET` (exclude `/api/cron` from `proxy.ts`).
+- Document `RESEND_API_KEY`, `RESEND_FROM` and `CRON_SECRET` in `apps/stok/README.md`.
+
+## What the app does today
+
+Sign in at `http://localhost:3001` (`pnpm dev` from the repo root). Screens: Stok durumu, Ürünler, Stok hareketleri, Mal kabul, Stok çıkışı, Transfer, Sayım, Açılış sayımı.
+
+Rules the code and database enforce:
+
+- Balances change only through movements, in one transaction with them. The database refuses edits and deletes of movements; mistakes are reversed with a reason (admin, mühendis), once.
+- Available stock never goes below zero, even under concurrent requests; a repeated submission records once (idempotency key per form).
+- Mağaza and depo sorumlusu act in, and see, only their own Lokasyon.
+- A Lokasyon records nothing until its Açılış sayımı is approved; exactly one approved opening per Lokasyon.
+- Stock on the way in a transfer counts at neither Lokasyon; a shortfall at receipt is closed as a loss with its reason.
+
+## Decisions to confirm
+
+- **Stock visibility:** mağaza and depo sorumlusu see balances and history only for their own Lokasyon (read from #33). The plan's roles table only says where they may *act*.
+- **Product codes:** the site's "Product Code" is shared by several sizes, so it became the public Üretici kodu, and our unique code is `ART-<record number>`.
+- **Reversals** are for admin and mühendis only; transfer movements can't be reversed (send the stock back instead).
+
+## Before go-live
+
+- Do #23, then wire migrations into the stok Vercel build (`pnpm db:migrate`, using `DATABASE_URL_UNPOOLED`) and set `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` for Production and Preview.
+- Start from a fresh database: run migrations, `pnpm --filter stok import-products`, `pnpm --filter stok create-admin`, then an Açılış sayımı per Lokasyon.
+- The local dev database (`artek_stok`) has test movements from before the opening-count rule and should be reset.
+
+## Local setup
+
+See [apps/stok/README.md](apps/stok/README.md). Postgres 17 runs through Homebrew (`brew services start postgresql@17`) with databases `artek_stok` and `artek_stok_test`.
+
+## Notes
+
+- The stok test suite (75 tests) normally takes about 30 s. With iCloud's `fileproviderd` / `cloudd` near 100% CPU it has taken over 10 minutes.
+- After adding a new route folder, restart `pnpm dev`: the dev server's file watcher sometimes misses new `[id]` folders.

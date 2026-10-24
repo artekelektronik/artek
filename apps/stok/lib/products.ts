@@ -4,6 +4,7 @@ import { db, type Tx } from "../db";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { parseQuantityOrZero } from "./quantity";
 
 const optionalText = z
   .string()
@@ -26,6 +27,7 @@ const productInput = z
     manufacturerCode: optionalText,
     supplier: optionalText,
     supplierCountry: optionalText,
+    minLevel: z.string().trim().nullish(),
     description: optionalText,
     images: z.array(z.string().trim().min(1)).default([]),
     datasheets: z.array(z.object({ label: z.string().trim().min(1), url: z.string().trim().min(1) })).default([]),
@@ -39,7 +41,12 @@ export type ProductInput = z.input<typeof productInput>;
 function parse(input: ProductInput) {
   const result = productInput.safeParse(input);
   if (!result.success) throw new UserError(result.error.issues[0].message);
-  return result.data;
+  const { minLevel, ...fields } = result.data;
+  // Kritik seviye follows the product's unit, like any quantity; empty means no warning.
+  if (!minLevel) return { ...fields, minLevel: null };
+  const level = parseQuantityOrZero(minLevel, fields.unit);
+  if (!level.ok) throw new UserError(`Kritik seviye: ${level.error}`);
+  return { ...fields, minLevel: level.value };
 }
 
 async function saveWith<T>(write: () => Promise<T>) {

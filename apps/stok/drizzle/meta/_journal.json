@@ -71,6 +71,13 @@
       "when": 1792785243290,
       "tag": "0009_opening",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792800587848,
+      "tag": "0010_kritik-seviye",
+      "breakpoints": true
     }
   ]
 }

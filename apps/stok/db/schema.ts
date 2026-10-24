@@ -128,6 +128,8 @@ export const product = pgTable(
     isMaterial: boolean("is_material").notNull(), // Malzeme
     unit: unit("unit").notNull(),
     showOnSite: boolean("show_on_site").notNull(),
+    // Kritik seviye: the company total below which admin and mühendis are warned. Never blocks anything.
+    minLevel: numeric("min_level", { precision: 14, scale: 3 }),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     // Public details the Vitrin shows.
     productType: text("product_type"),
@@ -353,3 +355,34 @@ export const stockCountLine = pgTable(
   },
   (t) => [primaryKey({ columns: [t.countId, t.productId] })],
 );
+
+// Email outbox: written in the same transaction as the movement that caused it, sent afterwards.
+// A Resend failure never undoes a movement, and the notification id is Resend's idempotency key.
+
+export const notificationStatus = pgEnum("notification_status", ["pending", "sent", "failed"]);
+
+export const notification = pgTable(
+  "notification",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: text("kind").notNull(), // "kritik_seviye"
+    productId: uuid("product_id").references(() => product.id),
+    documentId: uuid("document_id").references(() => stockDocument.id),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    recipients: text("recipients").array().notNull(),
+    status: notificationStatus("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+  },
+  (t) => [index("notification_due_idx").on(t.status, t.nextAttemptAt)],
+);
+
+// Which roles receive Kritik seviye warnings; changed by an admin.
+export const notificationSetting = pgTable("notification_setting", {
+  key: text("key").primaryKey(),
+  roles: role("roles").array().notNull(),
+});

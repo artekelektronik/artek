@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db, type Tx } from "../db";
 import { documentKind, lokasyon, movementType, product, stock, stockDocument, stockMovement, user } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
+import { queueMinimumLevelWarnings } from "./kritik-seviye";
 import { loadActor, requirePermission } from "./guard";
 import { can, type Actor } from "./permissions";
 import { addQuantities, formatQuantity, parseQuantity, subtractQuantity, unitLabels } from "./quantity";
@@ -57,6 +58,7 @@ export async function postDocument(
       `${a.productId}${a.lokasyonId}`.localeCompare(`${b.productId}${b.lokasyonId}`),
     );
     for (const line of ordered) await applyLine(tx, created.id, document.userId, line);
+    await queueMinimumLevelWarnings(tx, created.id);
     return { documentId: created.id, created: true };
   });
 }
