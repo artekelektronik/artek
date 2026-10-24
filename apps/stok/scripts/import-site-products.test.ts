@@ -4,7 +4,7 @@ import path from "node:path";
 import { after, before, describe, test } from "node:test";
 import { openTestDatabase, resetTestDatabase, skipWithoutDatabase } from "../lib/test-database";
 
-const siteJson = path.join(__dirname, "../../ferritnuve/lib/products.json");
+const siteJson = path.join(__dirname, "site-products.json");
 
 describe("site product import", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;

@@ -2,7 +2,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Package } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getProductBySlug } from "@/lib/local-products";
+import { getProductBySlug } from "@/lib/catalog";
 import { productContent } from "@/lib/product-content";
 import { catalogLabel } from "@/lib/product-taxonomy";
 import { getLocalizedPath, getSiteUrl } from "@/lib/seo";
@@ -13,7 +13,7 @@ import { ProductShare } from "@/components/product-share";
 export default async function ProductPage({params}: {params: Promise<{locale: string; slug: string}>}) {
   const {locale, slug} = await params;
   setRequestLocale(locale);
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
   const canonicalSlug = generateProductSlug(product.fields["Product Name"], product.id);
   if (slug !== canonicalSlug) permanentRedirect(getLocalizedPath(locale, `/products/${canonicalSlug}`));

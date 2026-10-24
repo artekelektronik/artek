@@ -113,20 +113,6 @@ function ProductsContent() {
           return b.fields["Product Name"].localeCompare(
             a.fields["Product Name"]
           );
-        case "price-asc": {
-          const priceA =
-            a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
-          const priceB =
-            b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
-          return priceA - priceB;
-        }
-        case "price-desc": {
-          const priceA =
-            a.fields["Unit Price"] || a.fields["Parakende Fiyatı"] || 0;
-          const priceB =
-            b.fields["Unit Price"] || b.fields["Parakende Fiyatı"] || 0;
-          return priceB - priceA;
-        }
         case "newest":
         default:
           return 0;
@@ -339,8 +325,6 @@ function ProductsContent() {
                 newest: tControls("sort.newest"),
                 nameAsc: tControls("sort.nameAsc"),
                 nameDesc: tControls("sort.nameDesc"),
-                priceAsc: tControls("sort.priceAsc"),
-                priceDesc: tControls("sort.priceDesc"),
               }}
             />
           </div>

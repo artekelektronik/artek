@@ -1,6 +1,6 @@
 // One-time: imports the site's product JSON as the starting catalog. Safe to run again:
 // records already imported are skipped, so later edits in the stok app are kept.
-// Usage: pnpm --filter stok import-products [path/to/products.json]
+// Usage: pnpm --filter stok import-products [path/to/site-products.json]
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { db } from "../db";
@@ -54,7 +54,7 @@ export async function importSiteProducts(records: SiteRecord[]) {
 }
 
 async function main() {
-  const file = process.argv[2] ?? path.join(__dirname, "../../ferritnuve/lib/products.json");
+  const file = process.argv[2] ?? path.join(__dirname, "site-products.json");
   const result = await importSiteProducts(JSON.parse(readFileSync(file, "utf8")));
   console.log(`Ürün aktarımı: ${result.created} yeni, ${result.alreadyImported} zaten vardı.`);
   await db.$client.end();

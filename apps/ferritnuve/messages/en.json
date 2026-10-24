@@ -290,8 +290,6 @@
       "newest": "Newest first",
       "nameAsc": "Name: A to Z",
       "nameDesc": "Name: Z to A",
-      "priceAsc": "Price: Low to High",
-      "priceDesc": "Price: High to Low",
       "stockDesc": "Stock: High to Low"
     },
     "columns2": "2 columns",

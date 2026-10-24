@@ -1,10 +1,10 @@
 import { MetadataRoute } from "next";
-import { getProductsFromJSON } from "@/lib/local-products";
+import { getProducts } from "@/lib/catalog";
 import { generateProductSlug } from "@/lib/utils";
 
 export const dynamic = "force-static";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = (
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.ferritnuve.com"
   ).replace(/\/+$/, "");
@@ -101,7 +101,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const products = getProductsFromJSON();
+  const products = await getProducts();
 
   const productUrls = products.map((record) => {
     const slug = generateProductSlug(

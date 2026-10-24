@@ -8,12 +8,14 @@ require.extensions['.ts'] = (module, filename) => {
   const source = ts.transpileModule(fs.readFileSync(filename, 'utf8'), {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
   module._compile(source, filename);
 };
-const {getProductsFromJSON, getProductBySlug} = require('../lib/local-products.ts');
+const {toSiteProducts, findProductBySlug} = require('../lib/catalog.ts');
 const {productGroups, catalogLabel} = require('../lib/product-taxonomy.ts');
 const {generateProductSlug} = require('../lib/utils.ts');
 const {productContent} = require('../lib/product-content.ts');
 const {inquiryLinks} = require('../lib/inquiry.ts');
-const products = getProductsFromJSON();
+// A saved response of the stok app's public catalog API, so the tests don't need the network.
+const products = toSiteProducts(require('./catalog-fixture.json').products);
+const getProductBySlug = slug => findProductBySlug(products, slug);
 
 test('every catalog group targets matching records; empty groups use introductions', () => {
   assert.equal(productGroups.find(g=>g.key==='bobbins').href,'/bobin');
@@ -59,4 +61,13 @@ test('WhatsApp and email drafts contain name, unchanged code and localized produ
       assert.ok(body.includes(name));assert.ok(body.includes(product.fields['Product Code']));assert.ok(body.includes(url));
     }
   }
+});
+test('catalog products keep their old ids, so existing URLs and translations still work', () => {
+  assert.equal(products.length, 92);
+  products.forEach((p, i) => assert.equal(p.id, 'rec' + String(i + 1).padStart(14, '0')));
+  assert.equal(getProductBySlug('power-filter-000001').fields['Product Name'], 'POWER FILTER');
+});
+test('the site receives no stock, prices or internal fields from the catalog', () => {
+  const internal = ['Stock Quantity', 'Stock (Karakoy)', 'Stock (Cekmekoy)', 'Total Stock Value', 'Unit Price', 'Alış Fiyatı', 'Toptan Fiyatı', 'Parakende Fiyatı', 'Supplier'];
+  for (const product of products) for (const field of internal) assert.equal(product.fields[field], undefined, field);
 });

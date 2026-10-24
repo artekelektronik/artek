@@ -1,0 +1,1384 @@
+{
+  "products": [
+    {
+      "id": "b2a6ca77-c81c-48f2-9cd6-d6ee66976354",
+      "legacyId": 3,
+      "name": "6 A EMI Filter",
+      "category": "PEM",
+      "productType": null,
+      "subCategory": null,
+      "manufacturer": "Corcom",
+      "manufacturerCode": "6ET1‑F7003",
+      "supplierCountry": null,
+      "description": "Ürün Markası:\tCorcom\nModel:\t6ET1-F7003\nAkım Kapasitesi:\t6A\nGerilim Aralığı\t: 120-250V\nFrekans Aralığı:\t50/60Hz\nMontaj Türü:\tPanel Montaj\nBoyutlar:\t52 x 44 x 29\nAğırlık:\t150g\nSertifikasyon:\tUL, CSA, VDE",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-12.35.05-pm.png"
+      ]
+    },
+    {
+      "id": "ac8a9787-254b-4307-b56b-b2667740b07e",
+      "legacyId": 40,
+      "name": "EE 110 / 56 / 36 -CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-11036",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "e1a85779-39f9-49e8-a8ff-899760813664",
+      "legacyId": 26,
+      "name": "EE 13 9 / 6.5 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "6e818973-e461-436d-8312-e728ac2c305e",
+      "legacyId": 27,
+      "name": "EE 16 / 8 / 5 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "EE 1605",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "c2e89d03-9bfa-43fe-945c-5f69cbc9d73e",
+      "legacyId": 28,
+      "name": "EE 19 / 8 / 6.5 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": "EE 1906A",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "52fc4a88-4648-46e1-9331-90fd98cf8049",
+      "legacyId": 29,
+      "name": "EE 20 / 10 / 5.3 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": "EE 2005",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "7b03fb86-1ce9-489b-a904-4558e000dda9",
+      "legacyId": 30,
+      "name": "EE 25 / 13 / 7 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": "EE 2507",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "f2282c04-da18-4d8a-b2ed-64bb732eb489",
+      "legacyId": 31,
+      "name": "EE 33",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "b977bf02-1512-490e-90fd-b221aa284491",
+      "legacyId": 32,
+      "name": "EE 42 / 21 / 15 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "CF139EE4215",
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "a2ed644e-360b-47e9-9958-9901637e87ec",
+      "legacyId": 33,
+      "name": "EE 42 / 21 / 20 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "6148624f-5051-4bdb-b7a0-caf4b6524569",
+      "legacyId": 34,
+      "name": "EE 55 / 28 / 21 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "7a0c5606-631e-4034-8a8e-469e4f461f53",
+      "legacyId": 35,
+      "name": "EE 55 / 28 / 25 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "63f0dc9d-9641-4af5-a49f-285e5d60f25c",
+      "legacyId": 36,
+      "name": "EE 65 / 32 / 27 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-6527",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "0ed73462-97ad-480e-bc91-cec5e802a07b",
+      "legacyId": 37,
+      "name": "EE 70 / 33 / 32 - CF 139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART- 7032",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "fd68e540-ef26-4e2b-b96f-0c6223bb5805",
+      "legacyId": 38,
+      "name": "EE 80 / 38 / 20 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-8020",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "2c7e5af9-670e-4b56-aec5-6875578184bf",
+      "legacyId": 39,
+      "name": "EE 80 / 38 / 40 - CF139",
+      "category": "Ferrit",
+      "productType": "EE",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-8040",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ee-cores.jpg"
+      ]
+    },
+    {
+      "id": "b59a668d-7355-4eb7-9a56-35e6f2e36ac5",
+      "legacyId": 21,
+      "name": "ETD 29 / 16 / 10 - CF139",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Ferriwo",
+      "manufacturerCode": "B66358 G000 X187",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "1dee76ed-259e-4ce6-b65d-42f2e6b2dad9",
+      "legacyId": 20,
+      "name": "ETD 39 / 20 / 13- CF139",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Ferriwo,TDK Corporation,Ferrox Cube,Wuxi Spinel Magnetics Co ltd,\"XUYI OUGE ELECTRONIC CO.,LTD\",COSMO FERRITES",
+      "manufacturerCode": "B66363 G000 X187",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "68b554e9-9ca6-4dae-ba5a-01663c7924bc",
+      "legacyId": 22,
+      "name": "ETD 44 / 22 / 15 - CF139",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": "B66365 G000 X187",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "0dd677c0-ce76-494b-bf6e-1f6a7863b687",
+      "legacyId": 23,
+      "name": "ETD 49 25 / 16 - CF139",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": null,
+      "manufacturerCode": "B66367 G000 X187",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "79050982-7c2d-43c1-ab2c-2509a6318beb",
+      "legacyId": 24,
+      "name": "ETD 54 28 / 19 - CF139",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": null,
+      "manufacturerCode": "B66395 G000 X187",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "a641a58f-c6e6-427f-b1d1-a8bf84051acf",
+      "legacyId": 25,
+      "name": "ETD 59 31 / 21.5 - CF297",
+      "category": "Ferrit",
+      "productType": "ETD",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png"
+      ]
+    },
+    {
+      "id": "d01e3029-7cb7-4ebb-88e9-33375b94133d",
+      "legacyId": 92,
+      "name": "I 93 / 27 / 30 - CF139",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/i-bar-cores.jpg"
+      ]
+    },
+    {
+      "id": "1a549ccc-3806-4025-953c-d9726522fb70",
+      "legacyId": 75,
+      "name": "MAKARA 22X19",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/dr2w10x16.jpg"
+      ]
+    },
+    {
+      "id": "f3bdf4c1-670c-40a2-91f0-40a5ede79817",
+      "legacyId": 74,
+      "name": "MAKARA 8X10",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/dr2w10x16.jpg"
+      ]
+    },
+    {
+      "id": "4052d216-7d92-47df-a098-1df9f838a427",
+      "legacyId": 73,
+      "name": "MAKARA 9X12",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/dr2w10x16.jpg"
+      ]
+    },
+    {
+      "id": "f7dc526c-099a-4ce8-bb16-75f4212372b0",
+      "legacyId": 1,
+      "name": "POWER FILTER",
+      "category": "PEM",
+      "productType": null,
+      "subCategory": null,
+      "manufacturer": "Delta Electronics",
+      "manufacturerCode": "03GENG3U-R",
+      "supplierCountry": null,
+      "description": "(3A) 03GENG3E-R (032173R) EMİ FİLTER 3A 115/250V Power Line Filter (Made in Thailand)",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-9.10.59-am.png"
+      ]
+    },
+    {
+      "id": "acd96299-cd29-495e-9f6a-3ad4241236c1",
+      "legacyId": 2,
+      "name": "Power Filter",
+      "category": "PEM",
+      "productType": null,
+      "subCategory": null,
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "IH-0342-H",
+      "supplierCountry": null,
+      "description": "IH-0342-H, 3A 250V AC tek fazlı EMI güç filtresidir. \nAC şebeke hattındaki elektriksel parazitleri bastırmak için kullanılır. \nMetal kasalı, panel tipi montajlı bir filtredir ve genellikle güç kaynakları, monitörler ve endüstriyel cihazlarda kullanılır. 50–60 Hz frekansta çalışır, 3 A akım kapasitesine sahiptir ve CQC, TÜV, VDE, UL gibi uluslararası güvenlik sertifikalarına sahiptir.",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-9.40.07-am.png"
+      ]
+    },
+    {
+      "id": "7915e43e-0131-4f49-877f-9c96340e732d",
+      "legacyId": 13,
+      "name": "ROD 14 x 7",
+      "category": "Ferrit",
+      "productType": "CUBUK",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+      "manufacturerCode": "R630JF40",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-11.53.54-am.png"
+      ]
+    },
+    {
+      "id": "6848d2d1-f02d-430c-be72-d7d297c42aa3",
+      "legacyId": 15,
+      "name": "ROD 18 x 28",
+      "category": "Ferrit",
+      "productType": "CUBUK",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+      "manufacturerCode": "R630JF40",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-11.53.54-am.png"
+      ]
+    },
+    {
+      "id": "768f4cf0-870e-49fb-b83c-bddc1a183964",
+      "legacyId": 16,
+      "name": "ROD 28 x 20",
+      "category": "Ferrit",
+      "productType": "CUBUK",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+      "manufacturerCode": "R630JF40",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-11.53.54-am.png"
+      ]
+    },
+    {
+      "id": "b0992176-d6b9-4613-b541-db493a0d241e",
+      "legacyId": 12,
+      "name": "ROD 5 x 20",
+      "category": "Ferrit",
+      "productType": "CUBUK",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Fair Rite,G&G Hi-Tech (Çin),Wuxi Spinel Magnetics Co ltd",
+      "manufacturerCode": "R630JF40",
+      "supplierCountry": "China",
+      "description": "Ürün tipi: Silindirik mıknatıslı ferrit çekirdek (örnek ölçü: R5 × 20)\n\nÖlçüler: Dış çap ~ 5,0 mm, uzunluk ~ 20 ±0,3 mm. \n\nAğırlık: \n\nKullanım alanı: Yüksek frekanslı indüktörler, filtreler, trafo çekirdekleri gibi manyetik uygulamalarda.\n\nÜretici: Wuxi Spinel Co., Ltd. — Çin, Jiangsu eyaleti, Wuxi kenti.",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-11.53.54-am.png"
+      ]
+    },
+    {
+      "id": "3f61c808-52f8-42bf-98b9-95c720bef9f7",
+      "legacyId": 14,
+      "name": "ROD 6 x 30 DELİKLİ",
+      "category": "Ferrit",
+      "productType": "CUBUK",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "Wuxi Spinel Magnetics Co ltd",
+      "manufacturerCode": "R630JF40",
+      "supplierCountry": null,
+      "description": "Ürün tipi: Silindirik mıknatıslı ferrit çekirdek (örnek ölçü: R6 × 30)\n\nÖlçüler: Dış çap ~ 6,0 mm, uzunluk ~ 30 ±0,3 mm. \nwudumfg.com\n+2\nspinel.cn\n+2\n\nAğırlık: Örneğin R6 × 30 varyantı ~ 4,05 g.\n\nKullanım alanı: Yüksek frekanslı indüktörler, filtreler, trafo çekirdekleri gibi manyetik uygulamalarda.\n\nÜretici: Wuxi Spinel Co., Ltd. — Çin, Jiangsu eyaleti, Wuxi kenti",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-11.53.54-am.png"
+      ]
+    },
+    {
+      "id": "a0b89fc4-fc87-4179-bc9b-578e782ac248",
+      "legacyId": 56,
+      "name": "T 100 / 55 / 20 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-10050",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "2be6b026-b9af-4349-9c18-c1d435237a60",
+      "legacyId": 63,
+      "name": "T 106 - 26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T106-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "480f7d44-9eda-4969-93ed-ecbe2293dbd1",
+      "legacyId": 69,
+      "name": "T 106 - 52",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T106-52",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/kt106-52-tr.jpg.webp"
+      ]
+    },
+    {
+      "id": "f1df0ae5-a8c7-4162-9bf5-52d236f30470",
+      "legacyId": 57,
+      "name": "T 13 - 05",
+      "category": "Ferrit",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "3c41086d-e25d-4b95-8313-14d8eb1d12a4",
+      "legacyId": 58,
+      "name": "T 13 - 07",
+      "category": "Ferrit",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "d3e18371-2d1c-4065-9046-0ce4bab375bf",
+      "legacyId": 41,
+      "name": "T 13 / 7 / 5 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1305",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "c4442afc-a385-4cff-8866-af14e5039115",
+      "legacyId": 64,
+      "name": "T 130 - 26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T130-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "c3556125-810d-4758-86f2-b02f9c457318",
+      "legacyId": 70,
+      "name": "T 130 - 52",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T130-52",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/kt106-52-tr.jpg.webp"
+      ]
+    },
+    {
+      "id": "3c42e7de-565d-4ca2-94a0-b57302a600e0",
+      "legacyId": 42,
+      "name": "T 14 / 9 / 5 CT-G",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1405",
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "6eec7d09-cf7e-4792-abbb-7e425b17d1cc",
+      "legacyId": 43,
+      "name": "T 15 / 7 / 5 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1505",
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "e4a82b67-e5af-4013-a7e8-50f3d37ab708",
+      "legacyId": 65,
+      "name": "T 150 -26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T150-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "fb591929-2e24-42b7-9351-f7a1d6a5069f",
+      "legacyId": 44,
+      "name": "T 16 / 9.5 / 6 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1606",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "d7b955a6-cd01-4b37-99b9-0a534d8c12d3",
+      "legacyId": 59,
+      "name": "T 18 - 06",
+      "category": "Ferrit",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "ab126de4-22df-4f52-98f6-299e1f14244f",
+      "legacyId": 46,
+      "name": "T 18 / 11 / 10 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1810",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "4993103d-282a-45bd-ac7a-1770e3d3c646",
+      "legacyId": 45,
+      "name": "T 18 / 11 / 8 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T1808",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "2047bcff-b13f-420e-ac82-ebc0125c5cb3",
+      "legacyId": 66,
+      "name": "T 184 -26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T184-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "87e42b5f-38df-4e60-b33a-cc3d859276a9",
+      "legacyId": 67,
+      "name": "T 200 - 26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T200-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "ecb8e97f-8270-4659-be17-50050c9524d2",
+      "legacyId": 47,
+      "name": "T 25 / 15 / 10 - CF139",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T2510",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "e4a11468-3c66-445c-bd75-c9cf9f8881f6",
+      "legacyId": 48,
+      "name": "T 36 / 23 / 15 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T3615",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "f9686d60-2421-4c6a-b81f-71495ba3869f",
+      "legacyId": 50,
+      "name": "T 38 / 29 / 22",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-3822",
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "cb2efec8-acbe-4d4e-9f2e-3fc65dcc707b",
+      "legacyId": 71,
+      "name": "T 42 / 26 / 12.5 -F000",
+      "category": "Ferrit",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "B64290L",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/f2906219-02.webp"
+      ]
+    },
+    {
+      "id": "4946b9bb-1ccb-490e-a7e2-996ab365f6db",
+      "legacyId": 49,
+      "name": "T 42 / 26 / 18 - CF197",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T4215",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "18061714-48d3-41eb-85fe-7d8458856852",
+      "legacyId": 51,
+      "name": "T 49 / 32 / 19 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T4919",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "eb907081-8223-4edb-be5a-3ee6ea35b53c",
+      "legacyId": 72,
+      "name": "T 57 / 35 / 15 - F000",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "B65790L",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/f2906219-02.webp"
+      ]
+    },
+    {
+      "id": "4dab4ad0-d1fa-49e6-8ef9-379418d1873f",
+      "legacyId": 60,
+      "name": "T 60 - 26",
+      "category": "IRON-POWDER",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T60-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "a716bba4-4468-4c45-af07-73360da92819",
+      "legacyId": 52,
+      "name": "T 63 / 38 / 25 - CF195",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T6325-195",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "d76c90d3-9866-4947-99d8-55d0efa768ef",
+      "legacyId": 53,
+      "name": "T 63 / 38 / 25 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T6325-199",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "2ebf31ec-cfbd-48c2-ac8d-5c5f57fc0e1f",
+      "legacyId": 61,
+      "name": "T 80 - 26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T80-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "e4e5be4a-4f1d-4896-ac4f-d60434215d71",
+      "legacyId": 54,
+      "name": "T 85 / 62 / 15 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-T8515",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "02e3776f-9846-4ed4-bb17-a5675e3ddb9a",
+      "legacyId": 55,
+      "name": "T 85 / 62 / 30 - CF199",
+      "category": "Ferrit",
+      "productType": "TOROID",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "ART-8530",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ferrite_toroid_green_coated.jpg"
+      ]
+    },
+    {
+      "id": "e70e6d99-10c4-4e32-ae57-8c3d5f5647f8",
+      "legacyId": 62,
+      "name": "T 94 - 26",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T94-26",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/ir184.jpg"
+      ]
+    },
+    {
+      "id": "6146d7a1-a962-4ad6-8687-05a85fb01cd3",
+      "legacyId": 68,
+      "name": "T 94 - 52",
+      "category": "IRON-POWDER",
+      "productType": "IRON POWDER",
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": "T94-52",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/kt106-52-tr.jpg.webp"
+      ]
+    },
+    {
+      "id": "1f891466-73ef-4f3c-8683-45dcdc341d44",
+      "legacyId": 78,
+      "name": "UU 10.5",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "c0cb0340-45d1-45bc-b72b-fd686966a027",
+      "legacyId": 89,
+      "name": "UU 101 / 76 / 30",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "a0b75cc4-dd80-4a6e-8387-c8f4357ae9dc",
+      "legacyId": 90,
+      "name": "UU 126 / 40 / 20",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "726a2135-431b-46e6-ba1a-f47ce4444176",
+      "legacyId": 91,
+      "name": "UU 126 / 45 / 20",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "63051700-5bd3-4f7e-9257-833f62755313",
+      "legacyId": 79,
+      "name": "UU 16",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "d20355e7-ace5-4191-bbb5-73bf61e11524",
+      "legacyId": 76,
+      "name": "UU 20 / 16 / 8",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "SAMWHA CORE",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "9e060649-e8b8-45f2-9c4e-ed73f8af326b",
+      "legacyId": 80,
+      "name": "UU 25 / 19 / 7.5",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "d9f48436-2838-41d3-8e76-36cf94ffeb56",
+      "legacyId": 81,
+      "name": "UU 46 / 28",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "3358143c-07b8-4c8d-ab6c-45a79a11c1ca",
+      "legacyId": 84,
+      "name": "UU 57",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores-soft-ferrite-cores.jpg"
+      ]
+    },
+    {
+      "id": "6578d63d-8be0-449b-8dbb-2be50bfedc75",
+      "legacyId": 88,
+      "name": "UU 60 / 55 / 15 - CF139",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "bf86cfec-fa16-4ba8-bd82-02f597002329",
+      "legacyId": 77,
+      "name": "UU 9.8",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "7b87520c-bc80-4db2-8f73-e191b877966e",
+      "legacyId": 86,
+      "name": "UU 93 / 76 / 30 - CF139",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "cde7ddb5-012f-46d8-99fc-46e020fb9701",
+      "legacyId": 87,
+      "name": "UU 93 / 76 / 30 EPCOS",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uu-cores.jpg"
+      ]
+    },
+    {
+      "id": "c4ad136f-e14a-4335-835e-f3f370caa749",
+      "legacyId": 82,
+      "name": "UUR 55",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uur-cores-soft-ferrite-cores.jpg"
+      ]
+    },
+    {
+      "id": "a115f28f-f06d-4dab-a8be-e7247cb92e6c",
+      "legacyId": 83,
+      "name": "UUR 64 / 40",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "COSMO FERRITES",
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/uur-cores-soft-ferrite-cores.jpg"
+      ]
+    },
+    {
+      "id": "5c31097f-f08f-467d-af0f-60e691e32ce2",
+      "legacyId": 85,
+      "name": "UY 5858",
+      "category": "Ferrit",
+      "productType": null,
+      "subCategory": "Cekirdekler",
+      "manufacturer": "G&G Hi-Tech (Çin)",
+      "manufacturerCode": null,
+      "supplierCountry": "China",
+      "description": null,
+      "images": [
+        "/products-images/uu-cores-soft-ferrite-cores.jpg"
+      ]
+    },
+    {
+      "id": "8e9c2f7c-7a8f-4268-9514-39577923d2a5",
+      "legacyId": 18,
+      "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 1.5 mm",
+      "category": "Ferrit",
+      "productType": "YASSI",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "Würth",
+      "manufacturerCode": null,
+      "supplierCountry": "Germany",
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png"
+      ]
+    },
+    {
+      "id": "69971c8f-e8f1-41ec-86c3-23f861da6a82",
+      "legacyId": 17,
+      "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 3 mm",
+      "category": "Ferrit",
+      "productType": "YASSI",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "Würth",
+      "manufacturerCode": "Würth 74272475",
+      "supplierCountry": "Germany",
+      "description": "3 mm Yassı Parazit Önleyici Flex Kablo Filtresi",
+      "images": [
+        "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png"
+      ]
+    },
+    {
+      "id": "bb0112d4-9dc0-423d-aca3-8adc9e8e45c8",
+      "legacyId": 19,
+      "name": "Yassı Parazit Önleyici Flex Kablo Filtresi 3.5 mm",
+      "category": "Ferrit",
+      "productType": "YASSI",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": null,
+      "manufacturerCode": null,
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png"
+      ]
+    },
+    {
+      "id": "5aef2e64-4a66-4d1a-9fb5-7b5642388bc1",
+      "legacyId": 7,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 10mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 1030",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 10 mm Parazit Önleyici Kablo Filtresi\n\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor.\n \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\n\nİç çap: 10 mm",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "4273882b-1069-4746-be45-d2e63b466203",
+      "legacyId": 8,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 11mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 1130",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 11 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\nİç çap: 11 mm",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "bd4bff92-5f82-453c-9f3c-3f2637004a91",
+      "legacyId": 10,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 13.5mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 1330",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 13.5 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 13.5 mm",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "83ffceab-d09d-4077-82dc-569199bdbc4a",
+      "legacyId": 9,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 13mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 1330",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 13 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR**\nİç çap: 13 mm",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "284610ce-cff6-4fda-89d5-1f75b8f94d9d",
+      "legacyId": 11,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 14.5mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 1430",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma Çin Firma Adı Bilinmiyor\nÜrün Açıklaması 11 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları: Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 11 mm",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "f39f3a0e-a314-45cf-abc6-6c99e3f5c17b",
+      "legacyId": 4,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 6mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035-0630",
+      "supplierCountry": null,
+      "description": "6 mm\nParazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor.",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "974f6fd0-fa41-4ba0-9560-496543f7be2f",
+      "legacyId": 5,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 7mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 0730",
+      "supplierCountry": null,
+      "description": "Tedarikçi Firma: Çin Firma Adı Bilinmiyor\nÜrün Açıklaması: 7 mm Parazit Önleyici Kablo Filtresi\nKullanım Alanları:Parazit oluşabilen elektronik aletlerde paraziti önlemek için kullanılıyor. \nOrtalama Aylık Satış Miktarı : BİLİNMİYOR\nİç çap: 7 mm\nManufacturer : TDK Corporation",
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    },
+    {
+      "id": "318d44c0-1bb2-42c8-9bde-3224a081e73d",
+      "legacyId": 6,
+      "name": "Yuvarlak Plastik Kablo Çekirdekleri 9mm",
+      "category": "Ferrit",
+      "productType": "YUVARLAK",
+      "subCategory": "ferrit kablo çekirdekleri",
+      "manufacturer": "TDK Corporation",
+      "manufacturerCode": "ZCAT - 2035 - 0930",
+      "supplierCountry": null,
+      "description": null,
+      "images": [
+        "/products-images/screenshot-2025-10-31-at-10.33.11-am.png"
+      ]
+    }
+  ]
+}

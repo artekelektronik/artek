@@ -14,6 +14,9 @@ importers:
 
   apps/ferritnuve:
     dependencies:
+      '@artek/catalog':
+        specifier: workspace:*
+        version: link:../../packages/catalog
       '@artek/ui':
         specifier: workspace:*
         version: link:../../packages/ui
