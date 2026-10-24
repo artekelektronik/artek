@@ -15,6 +15,8 @@ Names only; never commit values. Locally they live in `apps/stok/.env.local` (gi
 | `TEST_DATABASE_URL` | A separate, throwaway database for the integration tests |
 | `RESEND_API_KEY` | Sends Kritik seviye emails (from the Resend integration) |
 | `RESEND_FROM` | Sender address on the verified Resend domain, e.g. `Artek Stok <stok@…>` |
+| `BLOB_READ_WRITE_TOKEN` | Product image uploads to Vercel Blob (store `artek-stok-images`, connected to this project only) |
+| `NEXT_PUBLIC_VITRIN_URL` | Optional; where image paths of old imports live (default `https://www.ferritnuve.com`) |
 | `CRON_SECRET` | Protects `/api/cron/outbox`; Vercel Cron sends it automatically |
 
 ## Local setup
@@ -43,10 +45,15 @@ pnpm dev                                                        # http://localho
 
 - There is no sign-up: the first admin is created by `create-admin`, everyone else is invited by an admin under Kullanıcılar.
 - An invite emails a link to `/sifre-belirle`, where the user sets their own password (link valid 7 days; a reset link sent later is valid 1 hour). The link is a Better Auth reset-password token, so nobody, admins included, ever sees or sets someone else's password.
+- Anyone can ask for a reset link under "Şifremi unuttum" (`/sifremi-unuttum`): Better Auth rate-limits it, answers the same for every email, and sends nothing to a deactivated user. The link is valid 1 hour.
 - Deactivating a user ends their sessions, voids unused links and blocks sign-in; users are never deleted, so their movements keep their name. The last active admin can't be deactivated or lose the admin role.
 - Every change to a user, their roles or Lokasyon is written to the append-only `audit_log` (who, when, before and after), shown on the user's page.
 - Every page that reads data and every action that changes it calls `requirePermission(headers, action, lokasyonId)` from `lib/guard.ts`. It loads the user's roles and Lokasyon from the database and applies the table in `lib/permissions.ts`. The `(app)` layout's session check and `proxy.ts` only redirect visitors; they are not access control.
 - Sign-in goes through `/api/auth`, where Better Auth rate-limits attempts (in production, counted in the `rate_limit` table).
+
+## Product images
+
+Images live in Vercel Blob. The product form uploads them from the browser straight to Blob (`/api/urunler/gorsel` only issues the upload token, to users who may manage products; JPEG, PNG, WebP, AVIF or GIF up to 5 MB), and keeps their order: the first is the main image shown in lists and on the site. An image taken off a product is deleted from Blob when the product is saved, unless another product still shows it. `pnpm --filter stok move-images-to-blob` copies images that still point at the site (`/products-images/…`) into Blob; it is safe to run again.
 
 ## Public catalog
 

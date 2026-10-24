@@ -7,7 +7,8 @@ import { account, auditLog, role, session, user, userLokasyon, userRole, verific
 import { auth } from "./auth";
 import { UserError } from "./errors";
 import { requirePermission } from "./guard";
-import { resendSender, type EmailSender } from "./outbox";
+import { resendSender, type EmailSender } from "./email";
+import { passwordEmail } from "./password-email";
 import type { Role } from "./permissions";
 
 // Admin user management (#25). Nobody, admins included, ever sees a password: an invited user sets
@@ -194,24 +195,7 @@ async function sendPasswordLink(target: { id: string; email: string; name: strin
     identifier: `reset-password:${token}`,
     expiresAt: new Date(Date.now() + (kind === "invite" ? inviteLinkLifetimeMs : resetLinkLifetimeMs)),
   });
-  const origin = process.env.BETTER_AUTH_URL ?? "http://localhost:3001";
-  const link = new URL(`/sifre-belirle?token=${token}`, origin).toString();
-  const login = new URL("/giris", origin).toString();
-  await send(
-    kind === "invite"
-      ? {
-          to: [target.email],
-          subject: "Artek Stok hesabınız açıldı",
-          text: `Merhaba ${target.name},\n\nArtek Stok'ta sizin için bir hesap açıldı. Şifrenizi belirlemek için 7 gün içinde bu bağlantıyı açın:\n${link}\n\nSonra ${login} adresinden ${target.email} ile giriş yapabilirsiniz.`,
-          idempotencyKey: token,
-        }
-      : {
-          to: [target.email],
-          subject: "Artek Stok şifre sıfırlama",
-          text: `Merhaba ${target.name},\n\nYeni şifrenizi belirlemek için 1 saat içinde bu bağlantıyı açın:\n${link}\n\nBu isteği siz yapmadıysanız yöneticinize haber verin.`,
-          idempotencyKey: token,
-        },
-  );
+  await send(passwordEmail(target, kind, token));
 }
 
 async function readAccess(tx: Tx | typeof db, id: string): Promise<Access> {

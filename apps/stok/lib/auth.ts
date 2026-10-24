@@ -4,6 +4,8 @@ import { nextCookies } from "better-auth/next-js";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import * as schema from "../db/schema";
+import { resendSender } from "./email";
+import { passwordEmail } from "./password-email";
 
 // Reads BETTER_AUTH_SECRET and BETTER_AUTH_URL from the environment.
 export const auth = betterAuth({
@@ -14,6 +16,20 @@ export const auth = betterAuth({
     enabled: true,
     disableSignUp: true,
     revokeSessionsOnPasswordReset: true,
+    // "Şifremi unuttum": Better Auth answers the same whether or not the email exists and rate-limits
+    // the request; a deactivated user gets nothing.
+    resetPasswordTokenExpiresIn: 60 * 60,
+    sendResetPassword: async ({ user, token }) => {
+      const [row] = await db
+        .select({ deactivatedAt: schema.user.deactivatedAt })
+        .from(schema.user)
+        .where(eq(schema.user.id, user.id));
+      if (!row || row.deactivatedAt) return;
+      await resendSender(passwordEmail(user, "reset", token));
+      await db
+        .insert(schema.auditLog)
+        .values({ actorId: user.id, targetUserId: user.id, action: "user.password_link", after: { kind: "reset", self: true } });
+    },
     onPasswordReset: async ({ user }) => {
       await db.insert(schema.auditLog).values({ actorId: user.id, targetUserId: user.id, action: "user.password_set" });
     },

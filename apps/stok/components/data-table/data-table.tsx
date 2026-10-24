@@ -38,11 +38,14 @@ interface DataTableProps<
 > extends React.ComponentProps<"div"> {
   table: ReactTable<DataTableFeatures, TData, unknown>;
   actionBar?: React.ReactNode;
+  // Local addition: a full-width row under any row this returns something for (e.g. an expanded row).
+  renderRowDetail?: (row: Row<DataTableFeatures, TData>) => React.ReactNode;
 }
 
 export function DataTable<TData extends RowData>({
   table,
   actionBar,
+  renderRowDetail,
   children,
   className,
   "aria-label": ariaLabel,
@@ -66,7 +69,7 @@ export function DataTable<TData extends RowData>({
           aria-labelledby={ariaLabelledBy}
         >
           <DataTableHeader table={table} />
-          <DataTableBody table={table} />
+          <DataTableBody table={table} renderRowDetail={renderRowDetail} />
         </DataTableLayout>
       </div>
       <div className="flex flex-col gap-2.5">
@@ -178,10 +181,12 @@ function DataTableHeadCell<TData extends RowData>({
 
 interface DataTableBodyProps<TData extends RowData> {
   table: ReactTable<DataTableFeatures, TData, unknown>;
+  renderRowDetail?: (row: Row<DataTableFeatures, TData>) => React.ReactNode;
 }
 
 function DataTableBody<TData extends RowData>({
   table,
+  renderRowDetail,
 }: DataTableBodyProps<TData>) {
   const rows = table.getRowModel().rows;
 
@@ -206,9 +211,24 @@ function DataTableBody<TData extends RowData>({
 
   return (
     <TableBody>
-      {rows.map((row) => (
-        <DataTableRow key={row.id} row={row} />
-      ))}
+      {rows.map((row) => {
+        const detail = renderRowDetail?.(row);
+        return (
+          <React.Fragment key={row.id}>
+            <DataTableRow row={row} />
+            {detail ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell
+                  colSpan={row.getVisibleCells().length}
+                  className="bg-muted/30 p-0"
+                >
+                  {detail}
+                </TableCell>
+              </TableRow>
+            ) : null}
+          </React.Fragment>
+        );
+      })}
     </TableBody>
   );
 }

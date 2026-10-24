@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@artek/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@artek/ui/components/card";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@artek/ui/components/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@artek/ui/components/field";
 import { Input } from "@artek/ui/components/input";
+import { PasswordInput } from "@/components/password-input";
 import { authClient } from "@/lib/auth-client";
 
 // shadcn's login-03 block, without social sign-in or sign-up: accounts are opened by an admin.
@@ -47,9 +49,13 @@ export function LoginForm({ notice }: { notice?: string }) {
               <Input id="email" name="email" type="email" autoComplete="email" placeholder="ad@ferritnuve.com" required />
             </Field>
             <Field>
-              <FieldLabel htmlFor="password">Şifre</FieldLabel>
-              <Input id="password" name="password" type="password" autoComplete="current-password" required />
-              <FieldDescription>Şifrenizi unuttuysanız yöneticinizden yeni bir bağlantı isteyin.</FieldDescription>
+              <div className="flex items-center">
+                <FieldLabel htmlFor="password">Şifre</FieldLabel>
+                <Link href="/sifremi-unuttum" className="ml-auto text-sm underline-offset-4 hover:underline">
+                  Şifremi unuttum
+                </Link>
+              </div>
+              <PasswordInput id="password" name="password" autoComplete="current-password" required />
             </Field>
             {error && <FieldError role="alert">{error}</FieldError>}
             <Field>

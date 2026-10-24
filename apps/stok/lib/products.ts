@@ -4,6 +4,7 @@ import { db, type Tx } from "../db";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { deleteUnusedImages } from "./product-image-files";
 import { parseQuantity } from "./quantity";
 
 const optionalText = z
@@ -81,6 +82,7 @@ export async function createProduct(headers: Headers, input: ProductInput) {
 export async function updateProduct(headers: Headers, id: string, input: ProductInput) {
   await requirePermission(headers, "products.manage");
   const { shelves, ...fields } = parse(input);
+  const before = await db.query.product.findFirst({ where: eq(product.id, id), columns: { images: true } });
   await saveWith(() =>
     db.transaction(async (tx) => {
       // One unit per product, no conversions: once stock has moved, the unit is fixed.
@@ -93,6 +95,13 @@ export async function updateProduct(headers: Headers, id: string, input: Product
       await replaceShelves(tx, id, shelves);
     }),
   );
+  await deleteUnusedImages((before?.images ?? []).filter((url) => !fields.images.includes(url)));
+}
+
+// The "show on site" switch in the product list: whether the Vitrin lists the product.
+export async function setShowOnSite(headers: Headers, id: string, showOnSite: boolean) {
+  await requirePermission(headers, "products.manage");
+  await db.update(product).set({ showOnSite, updatedAt: new Date() }).where(eq(product.id, id));
 }
 
 // Products are never deleted: archiving hides them from everyday lists and keeps their history.

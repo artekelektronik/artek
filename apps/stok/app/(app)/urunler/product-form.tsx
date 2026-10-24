@@ -6,6 +6,7 @@ import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Textarea } from "@artek/ui/components/textarea";
+import { ProductImagesField } from "@/components/product-images-field";
 import type { ActionState } from "@/lib/action-result";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
@@ -152,9 +153,6 @@ export function ProductForm({
             <Textarea name="description" defaultValue={product.description ?? ""} rows={5} className={input} />
           </Field>
         </div>
-        <Field label="Fotoğraflar (her satıra bir adres)">
-          <Textarea name="images" defaultValue={product.images.join("\n")} rows={3} className={input} />
-        </Field>
         <Field label="Teknik belgeler (her satıra: Etiket | adres)">
           <Textarea
             name="datasheets"
@@ -164,6 +162,11 @@ export function ProductForm({
           />
         </Field>
       </fieldset>
+
+      <section className="flex flex-col gap-2">
+        <h3 className="text-lg font-semibold">Görseller</h3>
+        <ProductImagesField initial={product.images} readOnly={readOnly} />
+      </section>
 
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
         <legend className="mb-2 text-lg font-semibold">Raf kodu</legend>

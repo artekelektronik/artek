@@ -237,6 +237,42 @@ describe("user management", { skip: skipWithoutDatabase }, () => {
     assert.equal(/"password"/.test(shown), false);
   });
 
+  test("forgot password: an active user gets a working link; deactivated and unknown emails get nothing", async () => {
+    const yonetici = await signedInAs(["admin"]);
+    const aktif = await signedInAs(["muhendis"]);
+    const pasif = await signedInAs(["muhendis"]);
+    await admin.deactivateUser(yonetici.headers, pasif.user.id);
+
+    // Stand in for Resend's API; Better Auth sends through it.
+    const resend: { to: string[]; text: string }[] = [];
+    const realFetch = globalThis.fetch;
+    process.env.RESEND_API_KEY = "test-key";
+    process.env.RESEND_FROM = "Artek Stok <stok@example.com>";
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).startsWith("https://api.resend.com/")) {
+        resend.push(JSON.parse(String(init?.body)));
+        return new Response("{}", { status: 200 });
+      }
+      return realFetch(input, init);
+    }) as typeof fetch;
+    try {
+      for (const email of [aktif.user.email, pasif.user.email, "kimse@example.com"]) {
+        const reply = await auth.api.requestPasswordReset({ body: { email, redirectTo: "/sifre-belirle" } });
+        assert.equal(reply.status, true, "the same answer for every email");
+      }
+    } finally {
+      globalThis.fetch = realFetch;
+      delete process.env.RESEND_API_KEY;
+      delete process.env.RESEND_FROM;
+    }
+
+    assert.deepEqual(resend.map((e) => e.to), [[aktif.user.email]]);
+    const token = new URL(resend[0].text.match(/https?:\/\/\S+/)![0]).searchParams.get("token")!;
+    await auth.api.resetPassword({ body: { token, newPassword: "a-new-password" } });
+    await signIn(aktif.user.email, "a-new-password");
+    assert.equal(await auth.api.getSession({ headers: aktif.headers }), null, "old sessions end");
+  });
+
   test("ending sessions signs the user out everywhere", async () => {
     const yonetici = await signedInAs(["admin"]);
     const muhendis = await signedInAs(["muhendis"]);
