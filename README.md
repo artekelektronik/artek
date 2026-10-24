@@ -162,8 +162,9 @@ pnpm install
 The app needs `apps/stok/.env.local`. **Ask an admin for its values**: they are never committed, and this repository is public. The variable names and what they are for are in [apps/stok/README.md](apps/stok/README.md#environment-variables).
 
 ```bash
-pnpm --filter stok dev      # only the stok app: http://localhost:3001
-pnpm dev                    # the site (:3000) and the stok app (:3001) together
+pnpm stock                  # the stok app: http://localhost:3001
+pnpm dev                    # the site: http://localhost:3000
+pnpm dev:all                # both together
 ```
 
 Sign in with the same account you use on stok.ferritnuve.com.
