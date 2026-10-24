@@ -79,6 +79,8 @@ export function NotificationsTable({ notifications }: { notifications: Notificat
 
   const { table } = useDataTable({
     mode: "client",
+    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
+    autoResetPageIndex: false,
     data: notifications,
     columns,
     initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 20 } },

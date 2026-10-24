@@ -68,6 +68,8 @@ export function UsersTable({ users, lokasyon }: { users: User[]; lokasyon: { id:
 
   const { table } = useDataTable({
     mode: "client",
+    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
+    autoResetPageIndex: false,
     data: users,
     columns,
     initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 20 } },

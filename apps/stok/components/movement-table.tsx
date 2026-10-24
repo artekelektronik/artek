@@ -98,6 +98,8 @@ export function MovementTable({ movements, canReverse }: { movements: Movement[]
 
   const { table } = useDataTable({
     mode: "client",
+    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
+    autoResetPageIndex: false,
     data: movements,
     columns,
     initialState: { ...hiddenSearch, sorting: [{ id: "zaman", desc: true }], pagination: { pageIndex: 0, pageSize: 20 } },

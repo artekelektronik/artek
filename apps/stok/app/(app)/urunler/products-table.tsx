@@ -6,6 +6,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, hiddenSearch, searchColumn } from "@/components/data-table/columns";
+import { ProductImage } from "@/components/product-image";
 import { useDataTable } from "@/hooks/use-data-table";
 import { unitLabels, type Unit } from "@/lib/quantity";
 
@@ -19,6 +20,7 @@ export type ProductRow = {
   isMaterial: boolean;
   unit: Unit;
   showOnSite: boolean;
+  image: string | null;
 };
 
 const column = columnHelperFor<ProductRow>();
@@ -28,6 +30,14 @@ const types = (p: ProductRow) => [p.isTradeGoods && "Ticari mal", p.isMaterial &
 export function ProductsTable({ rows, categories }: { rows: ProductRow[]; categories: string[] }) {
   const columns = column.columns([
     searchColumn<ProductRow>((p) => [p.code, p.name, p.manufacturerCode].filter(Boolean).join(" "), "Kod, ad veya üretici kodu"),
+    column.display({
+      id: "gorsel",
+      size: 64,
+      header: () => <span className="sr-only">Görsel</span>,
+      cell: ({ row }) => <ProductImage path={row.original.image} alt={row.original.name} className="size-10" />,
+      enableHiding: true,
+      meta: { label: "Görsel" },
+    }),
     column.accessor("code", {
       id: "kod",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Kod" />,
@@ -95,6 +105,8 @@ export function ProductsTable({ rows, categories }: { rows: ProductRow[]; catego
 
   const { table } = useDataTable({
     mode: "client",
+    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
+    autoResetPageIndex: false,
     data: rows,
     columns,
     initialState: { ...hiddenSearch, pagination: { pageIndex: 0, pageSize: 20 } },

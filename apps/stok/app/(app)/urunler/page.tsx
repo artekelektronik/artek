@@ -46,6 +46,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           isMaterial: p.isMaterial,
           unit: p.unit,
           showOnSite: p.showOnSite,
+          image: p.images[0] ?? null,
         }))}
       />
     </div>

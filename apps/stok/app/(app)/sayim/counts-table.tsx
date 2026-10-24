@@ -61,6 +61,8 @@ export function CountsTable({ counts }: { counts: Count[] }) {
 
   const { table } = useDataTable({
     mode: "client",
+    // Keep the page from the URL; the hook itself goes back to page 1 when filters change.
+    autoResetPageIndex: false,
     data: counts,
     columns,
     initialState: { pagination: { pageIndex: 0, pageSize: 20 } },

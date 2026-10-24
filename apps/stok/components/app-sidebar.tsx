@@ -8,6 +8,7 @@ import {
   Boxes,
   ClipboardCheck,
   ClipboardList,
+  LayoutDashboard,
   Package,
   PackageMinus,
   PackagePlus,
@@ -32,6 +33,7 @@ import { NavUser } from "./nav-user";
 // Screens by group, adapted from shadcn's sidebar-07 block. Screens that `requires` a permission show only when
 // the layout says the user may use them; the server still checks every action.
 export const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" }[] = [
+  { group: "Genel", label: "Ana sayfa", href: "/", icon: LayoutDashboard },
   { group: "Stok", label: "Stok durumu", href: "/stok-durumu", icon: Boxes },
   { group: "Stok", label: "Stok hareketleri", href: "/hareketler", icon: ArrowLeftRight },
   { group: "İşlemler", label: "Mal kabul", href: "/mal-kabul", icon: PackagePlus },
@@ -84,7 +86,7 @@ export function AppSidebar({
                 .filter((s) => s.group === group)
                 .map((s) => (
                   <SidebarMenuItem key={s.href}>
-                    <SidebarMenuButton asChild tooltip={s.label} isActive={pathname === s.href || pathname.startsWith(`${s.href}/`)}>
+                    <SidebarMenuButton asChild tooltip={s.label} isActive={isCurrent(pathname, s.href)}>
                       <Link href={s.href}>
                         <s.icon />
                         <span>{s.label}</span>
@@ -107,5 +109,10 @@ export function AppSidebar({
 // The current screen's name for the header.
 export function useScreenTitle() {
   const pathname = usePathname();
-  return screens.find((s) => pathname === s.href || pathname.startsWith(`${s.href}/`))?.label ?? "Ana sayfa";
+  return screens.find((s) => isCurrent(pathname, s.href))?.label ?? "Artek Stok";
+}
+
+// "/" is current only on the home page; other screens also on their sub-pages.
+function isCurrent(pathname: string, href: string) {
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }

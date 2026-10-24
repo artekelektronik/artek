@@ -29,7 +29,7 @@ interface DataTablePaginationProps<
 
 export function DataTablePagination<TData extends RowData>({
   table,
-  pageSizeOptions = [10, 20, 30, 40, 50],
+  pageSizeOptions = [10, 20, 50, 100],
   className,
   ...props
 }: DataTablePaginationProps<TData>) {
@@ -40,13 +40,15 @@ export function DataTablePagination<TData extends RowData>({
         pageSize: state.pagination.pageSize,
         selectedRowCount: table.getSelectedRowIds().length,
         visibleSelectedRowCount: getVisibleSelectedRows(table).length,
+        rowCount: table.getRowCount(),
       })}
     >
-      {({ pageIndex, pageSize, selectedRowCount, visibleSelectedRowCount }) => (
+      {({ pageIndex, pageSize, selectedRowCount, visibleSelectedRowCount, rowCount }) => (
         <DataTablePaginationContent
           table={table}
           pageIndex={pageIndex}
           pageSize={pageSize}
+          rowCount={rowCount}
           selectedRowCount={selectedRowCount}
           visibleSelectedRowCount={visibleSelectedRowCount}
           pageSizeOptions={pageSizeOptions}
@@ -64,6 +66,7 @@ interface DataTablePaginationContentProps<
   table: ReactTable<DataTableFeatures, TData, unknown>;
   pageIndex: number;
   pageSize: number;
+  rowCount: number;
   selectedRowCount: number;
   visibleSelectedRowCount: number;
   pageSizeOptions: number[];
@@ -73,6 +76,7 @@ function DataTablePaginationContent<TData extends RowData>({
   table,
   pageIndex,
   pageSize,
+  rowCount,
   selectedRowCount,
   visibleSelectedRowCount,
   pageSizeOptions,
@@ -97,7 +101,7 @@ function DataTablePaginationContent<TData extends RowData>({
         role="status"
         className="flex-1 text-sm whitespace-nowrap text-muted-foreground"
       >
-        {selectedRowCount > 0 && (
+        {selectedRowCount > 0 ? (
           <>
             {selectedRowCount} satır seçili
             {selectedRowCount > visibleSelectedRowCount
@@ -105,6 +109,10 @@ function DataTablePaginationContent<TData extends RowData>({
               : ""}
             .
           </>
+        ) : rowCount > 0 ? (
+          `${pageIndex * pageSize + 1}–${Math.min((pageIndex + 1) * pageSize, rowCount)} / ${rowCount} kayıt`
+        ) : (
+          "0 kayıt"
         )}
       </div>
       <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
