@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
-import { archiveProduct, createProduct, restoreProduct, updateProduct, type ProductInput } from "@/lib/products";
+import { archiveProduct, createProduct, restoreProduct, setShowOnSite, updateProduct, type ProductInput } from "@/lib/products";
 
 function lines(value: FormDataEntryValue | null) {
   return String(value ?? "")
@@ -33,7 +33,7 @@ function productFrom(formData: FormData): ProductInput {
     supplierCountry: text(formData, "supplierCountry"),
     minLevel: text(formData, "minLevel"),
     description: text(formData, "description"),
-    images: lines(formData.get("images")),
+    images: formData.getAll("images").map(String).filter(Boolean),
     // "Etiket | https://…" per line
     datasheets: lines(formData.get("datasheets")).map((line) => {
       const [label, ...url] = line.split("|");
@@ -61,9 +61,17 @@ export async function updateProductAction(id: string, _previous: ActionState, fo
 export async function archiveProductAction(id: string) {
   await archiveProduct(await headers(), id);
   revalidatePath(`/urunler/${id}`);
+  revalidatePath("/urunler");
 }
 
 export async function restoreProductAction(id: string) {
   await restoreProduct(await headers(), id);
   revalidatePath(`/urunler/${id}`);
+  revalidatePath("/urunler");
+}
+
+export async function setShowOnSiteAction(id: string, showOnSite: boolean): Promise<ActionState> {
+  const state = await runAction(async () => setShowOnSite(await headers(), id, showOnSite));
+  revalidatePath("/urunler");
+  return state;
 }

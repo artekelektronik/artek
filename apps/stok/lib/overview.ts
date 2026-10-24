@@ -6,7 +6,8 @@ import { listLokasyon } from "./lokasyon";
 import { can } from "./permissions";
 import { addQuantities, formatQuantity, subtractQuantity, type Unit } from "./quantity";
 
-export type OverviewFilters = { q?: string; category?: string; lokasyonId?: string; belowMinimum?: boolean };
+// `category` may list several categories (the CSV of a table filtered on more than one).
+export type OverviewFilters = { q?: string; category?: string | string[]; lokasyonId?: string; belowMinimum?: boolean };
 
 type Pile = { physical: string; reserved: string; available: string };
 const empty: Pile = { physical: "0", reserved: "0", available: "0" };
@@ -30,7 +31,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     .where(
       and(
         isNull(product.archivedAt),
-        filters.category ? eq(product.category, filters.category) : undefined,
+        categoryCondition(filters.category),
         search ? or(ilike(product.code, `%${search}%`), ilike(product.name, `%${search}%`)) : undefined,
         // Below Kritik seviye: the company total of every movement, as the warning uses.
         belowMinimum
@@ -99,3 +100,8 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
 }
 
 export type Overview = Awaited<ReturnType<typeof getOverview>>;
+
+function categoryCondition(category: OverviewFilters["category"]) {
+  const categories = [category ?? []].flat().filter(Boolean);
+  return categories.length ? inArray(product.category, categories) : undefined;
+}

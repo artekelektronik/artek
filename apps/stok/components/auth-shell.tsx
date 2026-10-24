@@ -1,0 +1,20 @@
+import { Boxes } from "lucide-react";
+import { FieldDescription } from "@artek/ui/components/field";
+
+// The page around the login and set-password cards (shadcn login-03).
+export function AuthShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="flex w-full max-w-sm flex-col gap-6">
+        <div className="flex items-center gap-2 self-center font-medium">
+          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
+            <Boxes className="size-4" />
+          </div>
+          Artek Stok
+        </div>
+        {children}
+        <FieldDescription className="px-6 text-center">Hesabınız yöneticiniz tarafından açılır.</FieldDescription>
+      </div>
+    </div>
+  );
+}

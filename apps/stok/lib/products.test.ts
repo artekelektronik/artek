@@ -102,4 +102,21 @@ describe("products", { skip: skipWithoutDatabase }, () => {
     const saved = await products.getProduct(muhendis, created.id);
     assert.deepEqual(saved?.shelves, { [lokasyon["Karaköy Mağaza"]]: "A-03" });
   });
+  test("an image left on another product is not deleted from Blob", async () => {
+    const blob = (name: string) => `https://abc123.public.blob.vercel-storage.com/urunler/${name}`;
+    const shared = blob("ortak.png");
+    const own = blob("kendi.png");
+    const a = await products.createProduct(muhendis, { ...ferrit, code: "ART-G1", images: [shared, own] });
+    await products.createProduct(muhendis, { ...ferrit, code: "ART-G2", images: [shared] });
+    await products.updateProduct(muhendis, a.id, { ...ferrit, code: "ART-G1", images: [] });
+
+    const { unusedBlobImages } = await import("./product-image-files");
+    assert.deepEqual(await unusedBlobImages([shared, own, "/products-images/site.png"]), [own]);
+  });
+  test("the show-on-site switch is for those who manage products", async () => {
+    const created = await products.createProduct(muhendis, { ...ferrit, code: "ART-S1" });
+    await products.setShowOnSite(muhendis, created.id, false);
+    assert.equal((await products.getProduct(muhendis, created.id))?.showOnSite, false);
+    await assert.rejects(products.setShowOnSite(depoSorumlusu, created.id, true), guard.Forbidden);
+  });
 });

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   try {
     overview = await getOverview(request.headers, {
       q: params.get("q") ?? undefined,
-      category: params.get("kategori") || undefined,
+      category: params.getAll("kategori"),
       lokasyonId: params.get("lokasyon") || undefined,
       belowMinimum: params.get("kritik") === "1",
     });

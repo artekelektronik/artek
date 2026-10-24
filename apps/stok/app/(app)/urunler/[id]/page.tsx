@@ -22,6 +22,7 @@ import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
 import { archiveProductAction, restoreProductAction, updateProductAction } from "../actions";
+import { ProductImage } from "@/components/product-image";
 import { ProductForm } from "../product-form";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,10 +47,25 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold">{product.name}</h1>
-        <span className="text-muted-foreground font-mono">{product.code}</span>
-        {product.archivedAt && <Badge variant="outline">Arşivde</Badge>}
+      <div className="flex flex-wrap items-start gap-4">
+        <ProductImage path={product.images[0]} alt={product.name} className="size-32" />
+        <div className="flex min-w-0 flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold">{product.name}</h1>
+            <span className="text-muted-foreground font-mono">{product.code}</span>
+            {product.archivedAt && <Badge variant="outline">Arşivde</Badge>}
+          </div>
+          <p className="text-muted-foreground text-sm">
+            {[product.category, product.manufacturer, product.manufacturerCode].filter(Boolean).join(" · ")}
+          </p>
+          {product.images.length > 1 && (
+            <div className="flex flex-wrap gap-2">
+              {product.images.slice(1).map((path) => (
+                <ProductImage key={path} path={path} alt={product.name} className="size-14" />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <section className="flex flex-col gap-2">

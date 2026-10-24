@@ -1,18 +1,15 @@
 import { headers } from "next/headers";
-import Link from "next/link";
-import { Badge } from "@artek/ui/components/badge";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { ProductLines } from "@/components/product-lines";
 import { StockForm } from "@/components/stock-form";
 import { loadActor } from "@/lib/guard";
-import { formatDateTime } from "@/lib/labels";
 import { listLokasyon } from "@/lib/lokasyon";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { listTransfers } from "@/lib/transfers";
 import { selectClassName } from "@/lib/ui";
 import { sendTransferAction } from "./actions";
+import { TransfersTable } from "./transfers-table";
 
 export const metadata = { title: "Transfer | Artek Stok" };
 
@@ -75,43 +72,7 @@ export default async function TransfersPage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">Transferler</h2>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Sevk</TableHead>
-              <TableHead>Kaynak → Hedef</TableHead>
-              <TableHead>Durum</TableHead>
-              <TableHead>Sevk eden</TableHead>
-              <TableHead>Teslim alan</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transfers.map((t) => (
-              <TableRow key={t.id}>
-                <TableCell>
-                  <Link href={`/transfer/${t.id}`} className="underline-offset-4 hover:underline">
-                    {formatDateTime(t.sentAt)}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  {t.fromName} → {t.toName}
-                </TableCell>
-                <TableCell>
-                  {t.status === "yolda" ? <Badge>Yolda</Badge> : <Badge variant="secondary">Teslim alındı</Badge>}
-                </TableCell>
-                <TableCell>{t.sentBy}</TableCell>
-                <TableCell>{t.receivedBy ? `${t.receivedBy} · ${formatDateTime(t.receivedAt!)}` : ""}</TableCell>
-              </TableRow>
-            ))}
-            {transfers.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-muted-foreground text-center">
-                  Transfer yok.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <TransfersTable transfers={transfers} />
       </section>
     </div>
   );
