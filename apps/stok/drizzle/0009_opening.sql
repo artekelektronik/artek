@@ -1,0 +1,2 @@
+ALTER TABLE "lokasyon" ADD COLUMN "opened_at" timestamp with time zone;--> statement-breakpoint
+CREATE UNIQUE INDEX "one_opening_per_lokasyon" ON "stock_count" USING btree ("lokasyon_id") WHERE "stock_count"."kind" = 'acilis' AND "stock_count"."status" = 'onaylandi';

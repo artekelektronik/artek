@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { before, test } from "node:test";
 
-// Run as if the server were elsewhere, so a local-time implementation can't pass by accident.
-process.env.TZ = "America/New_York";
+let formatIstanbulTime: typeof import("./time").formatIstanbulTime;
 
-const { formatIstanbulTime } = await import("./time.ts");
+before(async () => {
+  // Run as if the server were elsewhere, so a local-time implementation can't pass by accident.
+  process.env.TZ = "America/New_York";
+  ({ formatIstanbulTime } = await import("./time"));
+});
 
 test("a UTC instant is shown in Turkish as Europe/Istanbul wall time", () => {
   // 21:30 UTC is 00:30 the next day in Istanbul (UTC+3).
