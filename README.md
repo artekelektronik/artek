@@ -1,5 +1,10 @@
 # Artek Elektronik
 
+Two apps live in this repository:
+
+- **ferritnuve.com**, the bilingual public website and product catalog (`apps/ferritnuve`).
+- **Artek Stok**, the internal stock app at [stok.ferritnuve.com](https://stok.ferritnuve.com) (`apps/stok`). The website reads its products from it. See [Stock app (Artek Stok)](#stock-app-artek-stok) below.
+
 The bilingual website and product catalog for Artek Elektronik. The checked-in
 catalog contains ferrite cores, iron powder cores, and power/EMI filters from
 multiple manufacturers. Other product groups use introductory pages. Manufacturing
@@ -57,9 +62,8 @@ Create `apps/ferritnuve/.env.local` as needed:
 # Canonical production URL used by metadata and sitemap generation
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
-# Product data source
-AIRTABLE_API_KEY=your_airtable_api_key
-AIRTABLE_BASE_ID=your_airtable_base_id
+# Product data: the stok app's public catalog (this is the default)
+CATALOG_URL=https://stok.ferritnuve.com/api/catalog
 
 # Customer contact
 NEXT_PUBLIC_WHATSAPP_PHONE=905327183364
@@ -122,7 +126,70 @@ packages/ui/                Shared shadcn/Radix UI primitives (@artek/ui)
 docs/                       Plan, ADRs and agent docs
 ```
 
+## Stock app (Artek Stok)
+
+The internal app for stock, products and users: Turkish only, times in Istanbul. The website gets its product list from it, so a product edited here changes on ferritnuve.com within a few minutes.
+
+### Using it (no setup needed)
+
+1. Open **[stok.ferritnuve.com](https://stok.ferritnuve.com)**. It works in any browser, on phones too.
+2. There is no sign-up. An admin invites you under **Kullanıcılar → Kullanıcı davet et**, and you get an email from Artek Stok.
+3. Open the link in that email (valid for 7 days) and set your own password. Nobody else, admins included, ever sees it.
+4. Sign in with your email and password.
+   - Forgot your password? Click **Şifremi unuttum** on the login page. A reset link valid for 1 hour comes by email.
+   - The invite link expired? Ask an admin to press **Daveti yeniden gönder** on your user page.
+
+What each role can do (an admin assigns roles and Lokasyon):
+
+| Role | Can do |
+| --- | --- |
+| Yönetici (admin) | Everything, including users, roles and Bildirimler |
+| Mühendis | Products and Kritik seviye, all stock work in every Lokasyon, approving counts, reversing movements |
+| Mağaza sorumlusu / Depo sorumlusu | Mal kabul, Stok çıkışı, Transfer and Sayım in their own Lokasyon; they see stock only there |
+
+Main screens: **Ana sayfa** (dashboard), **Stok durumu**, **Stok hareketleri**, **Mal kabul**, **Stok çıkışı**, **Transfer**, **Sayım**, **Açılış sayımı**, **Ürünler** (with images and the "Sitede" switch), **Bildirimler** and **Kullanıcılar** (admins). Tables keep their filters in the address bar, so you can bookmark or share a filtered view.
+
+Before a Lokasyon can record stock, its **Açılış sayımı** (opening count) has to be done and approved. The dashboard warns while one is missing.
+
+### Running it on your computer (developers)
+
+Requirements: Node.js 24 and pnpm 10 (`corepack enable` gives you the right pnpm).
+
+```bash
+git clone https://github.com/artekelektronik/artek.git
+cd artek
+pnpm install
+```
+
+The app needs `apps/stok/.env.local`. **Ask an admin for its values**: they are never committed, and this repository is public. The variable names and what they are for are in [apps/stok/README.md](apps/stok/README.md#environment-variables).
+
+```bash
+pnpm stock                  # the stok app: http://localhost:3001
+pnpm dev                    # the site: http://localhost:3000
+pnpm dev:all                # both together
+```
+
+Sign in with the same account you use on stok.ferritnuve.com.
+
+> **Careful:** for now, `.env.local` points at the **production** database, so company data is entered once. Anything you save while running locally (stock movements, products, images, users) is real. Stock movements can't be deleted, only reversed. Never run `pnpm --filter stok db:migrate` on your computer; production migrates itself when a pull request is merged.
+
+To experiment without touching real data, use your own local Postgres instead. The steps are under *Local setup* in [apps/stok/README.md](apps/stok/README.md#local-setup).
+
+Tests need their own throwaway database, whose name must contain `test`; they refuse anything else:
+
+```bash
+TEST_DATABASE_URL=postgres://localhost/artek_stok_test pnpm --filter stok test
+```
+
+### Where it runs
+
+- Vercel project **`artek-stok`** (team *Merve's projects*). It deploys from `main`, and every pull request gets a preview. Previews may share the production database, so don't save anything there either.
+- **Neon** (database), **Resend** (email) and **Vercel Blob** (product images) are attached to this project only. The website's project has none of these credentials.
+- More detail (deploys, migrations, images, permissions): [apps/stok/README.md](apps/stok/README.md).
+
 ## Main routes
+
+These are the website's routes.
 
 | Route | Purpose |
 | --- | --- |
@@ -143,4 +210,4 @@ Localized navigation is handled automatically by next-intl.
 Create feature branches with the `codex/` prefix, keep unrelated local files
 out of commits, and submit changes through pull requests.
 
-This repository is private and proprietary to Artek Elektronik.
+This repository is public on GitHub but its contents are proprietary to Artek Elektronik. Never commit passwords, keys or `.env` files.
