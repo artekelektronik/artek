@@ -6,8 +6,8 @@ import { unitLabels } from "./quantity";
 const quantity = (value: string) => value.replace(".", ",");
 
 function text(value: string) {
-  // A cell starting with = + - @ would run as a formula in Excel.
-  const safe = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  // A cell starting with = + - @ (or a tab or carriage return) would run as a formula in Excel.
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   return /[;"\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 

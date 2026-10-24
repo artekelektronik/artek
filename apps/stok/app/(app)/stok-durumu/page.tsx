@@ -22,13 +22,18 @@ import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Stok durumu | Artek Stok" };
 
-type Params = { q?: string; kategori?: string; lokasyon?: string };
+type Params = { q?: string; kategori?: string; lokasyon?: string; kritik?: string };
 
 export default async function OverviewPage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
   const requestHeaders = await headers();
   const [overview, categories, actor, allLokasyon] = await Promise.all([
-    getOverview(requestHeaders, { q: params.q, category: params.kategori, lokasyonId: params.lokasyon || undefined }),
+    getOverview(requestHeaders, {
+      q: params.q,
+      category: params.kategori,
+      lokasyonId: params.lokasyon || undefined,
+      belowMinimum: params.kritik === "1",
+    }),
     listCategories(requestHeaders),
     loadActor(requestHeaders),
     listLokasyon(),
@@ -62,6 +67,12 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             </option>
           ))}
         </select>
+        {overview.canFilterBelowMinimum && (
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="kritik" value="1" defaultChecked={params.kritik === "1"} />
+            Kritik seviyenin altındakiler
+          </label>
+        )}
         <Button type="submit" variant="outline">
           Filtrele
         </Button>

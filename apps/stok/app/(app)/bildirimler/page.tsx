@@ -1,13 +1,12 @@
 import { headers } from "next/headers";
 import { Badge } from "@artek/ui/components/badge";
-import { Button } from "@artek/ui/components/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { NoAccess } from "@/components/no-access";
 import { loadActor } from "@/lib/guard";
 import { formatDateTime, notificationStatusLabels } from "@/lib/labels";
-import { getRecipientRoles, listNotifications } from "@/lib/outbox";
+import { gaveUp, getRecipientRoles, listNotifications } from "@/lib/outbox";
 import { can } from "@/lib/permissions";
-import { processOutboxAction } from "./actions";
+import { SendNowButton } from "./send-now-button";
 import { RecipientsForm } from "./recipients-form";
 
 export const metadata = { title: "Bildirimler | Artek Stok" };
@@ -32,16 +31,7 @@ export default async function NotificationsPage() {
       <section className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">Gönderilen e-postalar</h2>
-          <form
-            action={async () => {
-              "use server";
-              await processOutboxAction();
-            }}
-          >
-            <Button type="submit" variant="outline" size="sm">
-              Bekleyenleri şimdi gönder
-            </Button>
-          </form>
+          <SendNowButton />
         </div>
         <Table>
           <TableHeader>
@@ -62,7 +52,7 @@ export default async function NotificationsPage() {
                 <TableCell className="max-w-56 truncate text-sm">{n.recipients.join(", ")}</TableCell>
                 <TableCell>
                   <Badge variant={n.status === "sent" ? "secondary" : n.status === "failed" ? "destructive" : "default"}>
-                    {notificationStatusLabels[n.status]}
+                    {gaveUp(n) ? "Gönderilemedi · vazgeçildi" : notificationStatusLabels[n.status]}
                   </Badge>
                   {n.sentAt && <span className="text-muted-foreground ml-2 text-xs">{formatDateTime(n.sentAt)}</span>}
                 </TableCell>

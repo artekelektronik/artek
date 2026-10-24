@@ -102,6 +102,30 @@ describe("stock overview", { skip: skipWithoutDatabase }, () => {
     assert.equal(toCsv(crafted).includes("100"), false);
   });
 
+  test("the CSV route applies the same visibility to a crafted request, and refuses users without a role", async () => {
+    const { GET } = await import("../app/(app)/stok-durumu/csv/route");
+    const crafted = await GET(
+      new Request(`http://localhost/stok-durumu/csv?lokasyon=${lokasyon["Çekmeköy İmalathane"]}`, { headers: karakoyUser.headers }),
+    );
+    assert.equal(crafted.status, 200);
+    const csv = await crafted.text();
+    assert.equal(csv.includes("Çekmeköy"), false);
+    assert.equal(csv.includes("100"), false);
+
+    const noRole = await signedInAs([]);
+    assert.equal((await GET(new Request("http://localhost/stok-durumu/csv", { headers: noRole.headers }))).status, 403);
+    assert.equal((await GET(new Request("http://localhost/stok-durumu/csv"))).status, 401);
+  });
+
+  test("the below-Kritik-seviye filter is ignored for users who don't see every Lokasyon", async () => {
+    const { eq } = await import("drizzle-orm");
+    await db.update(schema.product).set({ minLevel: "1000" }).where(eq(schema.product.id, core));
+    assert.deepEqual((await overview.getOverview(muhendis.headers, { belowMinimum: true })).rows.map((r) => r.code), ["T-CORE"]);
+    const restricted = await overview.getOverview(karakoyUser.headers, { belowMinimum: true });
+    assert.equal(restricted.canFilterBelowMinimum, false);
+    assert.equal(restricted.rows.length, 2);
+  });
+
   test("filters by product, category and Lokasyon", async () => {
     assert.deepEqual((await overview.getOverview(muhendis.headers, { q: "t-cu" })).rows.map((r) => r.code), ["T-CU"]);
     assert.deepEqual((await overview.getOverview(muhendis.headers, { category: "Ferrit" })).rows.map((r) => r.code), ["T-CORE"]);

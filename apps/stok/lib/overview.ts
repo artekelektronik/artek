@@ -1,7 +1,7 @@
 import { and, asc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "../db";
 import { product, stock, transfer, transferLine } from "../db/schema";
-import { loadActor } from "./guard";
+import { requirePermission } from "./guard";
 import { listLokasyon } from "./lokasyon";
 import { can } from "./permissions";
 import { addQuantities, formatQuantity, subtractQuantity, type Unit } from "./quantity";
@@ -14,8 +14,12 @@ const empty: Pile = { physical: "0", reserved: "0", available: "0" };
 // The daily stock overview: every active product with physical / reserved / available per Lokasyon,
 // stock on the way, and totals per unit. Only Lokasyon the user may see appear, whatever is asked for.
 export async function getOverview(headers: Headers, filters: OverviewFilters) {
-  const actor = await loadActor(headers);
-  const visible = (await listLokasyon()).filter((l) => can(actor, "stock.view", l.id));
+  // Any role may open the overview; which Lokasyon it shows is decided per Lokasyon below.
+  const actor = await requirePermission(headers, "products.view");
+  const all = await listLokasyon();
+  const visible = all.filter((l) => can(actor, "stock.view", l.id));
+  // The below-Kritik-seviye filter compares the company total, so it is only for users who see every Lokasyon.
+  const belowMinimum = filters.belowMinimum && visible.length === all.length;
   const shown = filters.lokasyonId ? visible.filter((l) => l.id === filters.lokasyonId) : visible;
   const shownIds = shown.map((l) => l.id);
 
@@ -29,7 +33,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
         filters.category ? eq(product.category, filters.category) : undefined,
         search ? or(ilike(product.code, `%${search}%`), ilike(product.name, `%${search}%`)) : undefined,
         // Below Kritik seviye: the company total of every movement, as the warning uses.
-        filters.belowMinimum
+        belowMinimum
           ? sql`${product.minLevel} is not null and (select coalesce(sum(m.quantity), 0) from stock_movement m where m.product_id = ${product.id}) < ${product.minLevel}`
           : undefined,
       ),
@@ -37,6 +41,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     .orderBy(asc(product.code));
 
   const piles = shownIds.length ? await db.select().from(stock).where(inArray(stock.lokasyonId, shownIds)) : [];
+  const pileOf = new Map(piles.map((s) => [`${s.productId}:${s.lokasyonId}`, s]));
   // On the way in open transfers that start or end at a Lokasyon shown here.
   const transit = shownIds.length
     ? await db
@@ -55,7 +60,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
   const rows = products.map((p) => {
     const perLokasyon: Record<string, Pile> = {};
     for (const l of shown) {
-      const pile = piles.find((s) => s.productId === p.id && s.lokasyonId === l.id);
+      const pile = pileOf.get(`${p.id}:${l.id}`);
       perLokasyon[l.id] = pile
         ? {
             physical: formatQuantity(pile.physical),
@@ -90,7 +95,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     };
   }
 
-  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, totals };
+  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, totals, canFilterBelowMinimum: visible.length === all.length };
 }
 
 export type Overview = Awaited<ReturnType<typeof getOverview>>;

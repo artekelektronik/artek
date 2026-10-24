@@ -9,6 +9,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except the login page, API routes (each checks access itself), Next.js internals and static files.
-  matcher: ["/((?!giris|api/|_next|.*\\..*).*)"],
+  // Everything except the login page, the auth API and the cron route (each checks access itself),
+  // Next.js internals and static files.
+  matcher: ["/((?!giris|api/auth|api/cron|_next|.*\\..*).*)"],
 };

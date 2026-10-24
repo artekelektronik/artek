@@ -1,7 +1,8 @@
 import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
-import type { Tx } from "../db";
+import { db, type Tx } from "../db";
 import { notification, notificationSetting, product, stockMovement, user, userRole } from "../db/schema";
 import { displayQuantity } from "./labels";
+import type { Role } from "./permissions";
 import { formatQuantity, subtractQuantity, unitLabels } from "./quantity";
 
 // Compares a quantity string with a level: true when value < level.
@@ -23,7 +24,9 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
     .from(product)
     .where(and(inArray(product.id, changes.map((c) => c.productId)), isNotNull(product.minLevel)))
     .orderBy(product.id)
-    .for("update");
+    // NO KEY UPDATE serializes two documents for the same product but, unlike FOR UPDATE, doesn't
+    // conflict with the key-share locks their movement inserts already hold, so it can't deadlock.
+    .for("no key update");
 
   for (const p of watched) {
     // Every movement counts, including stock on the way, so a transfer never triggers a warning.
@@ -36,7 +39,10 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
     if (below(before, p.minLevel!) || !below(total, p.minLevel!)) continue;
 
     const unit = unitLabels[p.unit];
+    const recipients = await recipientEmails(tx);
     await tx.insert(notification).values({
+      // With nobody in the chosen roles there is no one to send to; show that instead of retrying.
+      ...(recipients.length === 0 && { status: "failed" as const, lastError: "Alıcı yok: seçili rollerde kullanıcı bulunmuyor." }),
       kind: "kritik_seviye",
       productId: p.id,
       documentId,
@@ -47,14 +53,20 @@ export async function queueMinimumLevelWarnings(tx: Tx, documentId: string) {
         `Toplam: ${displayQuantity(formatQuantity(total))} ${unit}`,
         `Kritik seviye: ${displayQuantity(formatQuantity(p.minLevel!))} ${unit}`,
       ].join("\n"),
-      recipients: await recipientEmails(tx),
+      recipients,
     });
   }
 }
 
-export async function recipientEmails(tx: Tx) {
+export const defaultRecipientRoles: Role[] = ["admin", "muhendis"];
+
+export async function recipientRoles(tx: Tx | typeof db): Promise<Role[]> {
   const setting = await tx.query.notificationSetting.findFirst({ where: eq(notificationSetting.key, "kritik_seviye") });
-  const roles = setting?.roles ?? ["admin", "muhendis"];
+  return setting?.roles ?? defaultRecipientRoles;
+}
+
+export async function recipientEmails(tx: Tx) {
+  const roles = await recipientRoles(tx);
   const rows = await tx
     .selectDistinct({ email: user.email })
     .from(user)

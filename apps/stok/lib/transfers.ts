@@ -156,12 +156,21 @@ export async function receiveTransfer(headers: Headers, transferId: string, inpu
 }
 
 // Quantity on the way in open transfers, for one product. Counts at neither Lokasyon.
-export async function inTransit(productId: string) {
+// With lokasyonIds, only transfers that start or end at one of them (as in the overview).
+export async function inTransit(productId: string, lokasyonIds?: string[]) {
   const [row] = await db
     .select({ total: sql<string>`coalesce(sum(${transferLine.sent}), 0)` })
     .from(transferLine)
     .innerJoin(transfer, eq(transfer.id, transferLine.transferId))
-    .where(and(eq(transfer.status, "yolda"), eq(transferLine.productId, productId)));
+    .where(
+      and(
+        eq(transfer.status, "yolda"),
+        eq(transferLine.productId, productId),
+        lokasyonIds
+          ? or(inArray(transfer.fromLokasyonId, lokasyonIds), inArray(transfer.toLokasyonId, lokasyonIds))
+          : undefined,
+      ),
+    );
   return formatQuantity(row.total);
 }
 

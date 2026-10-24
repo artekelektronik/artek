@@ -1,9 +1,10 @@
-import { and, desc, eq, inArray, lt, lte } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { notification, notificationSetting, role } from "../db/schema";
 import { UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { recipientRoles } from "./kritik-seviye";
 
 export type Email = { to: string[]; subject: string; text: string; idempotencyKey: string };
 export type EmailSender = (email: Email) => Promise<void>;
@@ -22,13 +23,26 @@ export const resendSender: EmailSender = async (email) => {
       "idempotency-key": email.idempotencyKey,
     },
     body: JSON.stringify({ from, to: email.to, subject: email.subject, text: email.text }),
+    // The outbox row stays locked while this runs, so a hung request must not hold it.
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) throw new Error(`Resend ${response.status}: ${(await response.text()).slice(0, 300)}`);
 };
 
 const maxAttempts = 10;
-// 5 min, 10 min, 20 min … capped at 6 hours.
-const retryDelay = (attempts: number) => Math.min(5 * 60_000 * 2 ** (attempts - 1), 6 * 60 * 60_000);
+// Resend remembers an idempotency key for 24 hours. Retrying later could repeat an email whose
+// first send went through but whose response was lost, so retries stop well inside that window.
+const retryWindowMs = 23 * 60 * 60_000;
+// 5 min, 10 min, 20 min, 40 min, then hourly.
+const retryDelay = (attempts: number) => Math.min(5 * 60_000 * 2 ** (attempts - 1), 60 * 60_000);
+
+// A failed notification that will not be retried any more.
+export function gaveUp(n: { status: string; attempts: number; createdAt: Date; recipients: string[] }, now = new Date()) {
+  return (
+    n.status === "failed" &&
+    (n.attempts >= maxAttempts || n.recipients.length === 0 || now.getTime() - n.createdAt.getTime() > retryWindowMs)
+  );
+}
 
 // Sends due notifications one by one. Rows are claimed with SKIP LOCKED, so two runs never send
 // the same notification at the same time.
@@ -44,6 +58,8 @@ export async function processOutbox(send: EmailSender = resendSender, { now = ne
             inArray(notification.status, ["pending", "failed"]),
             lte(notification.nextAttemptAt, now),
             lt(notification.attempts, maxAttempts),
+            gt(notification.createdAt, new Date(now.getTime() - retryWindowMs)),
+            sql`cardinality(${notification.recipients}) > 0`,
           ),
         )
         .orderBy(notification.createdAt)
@@ -84,8 +100,7 @@ export async function listNotifications(headers: Headers) {
 
 export async function getRecipientRoles(headers: Headers) {
   await requirePermission(headers, "notifications.manage");
-  const setting = await db.query.notificationSetting.findFirst({ where: eq(notificationSetting.key, "kritik_seviye") });
-  return setting?.roles ?? ["admin", "muhendis"];
+  return recipientRoles(db);
 }
 
 const rolesInput = z.array(z.enum(role.enumValues)).min(1, { error: "En az bir rol seçin." });

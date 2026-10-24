@@ -172,6 +172,41 @@ describe("Kritik seviye warnings", { skip: skipWithoutDatabase }, () => {
     assert.equal((await notifications()).length, 1);
   });
 
+  test("a Kritik seviye of 0 is refused, since it could never warn", async () => {
+    const { updateProduct } = await import("./products");
+    await assert.rejects(updateProduct(admin.headers, core, { ...ferrit, minLevel: "0" }), /sıfırdan büyük/);
+  });
+
+  test("with nobody in the chosen roles the email is marked undeliverable, not retried", async () => {
+    await outbox.setRecipientRoles(admin.headers, ["depo_sorumlusu"]);
+    const { eq } = await import("drizzle-orm");
+    await db.delete(schema.userRole).where(eq(schema.userRole.role, "depo_sorumlusu"));
+    await move("out", "3");
+    const [n] = await notifications();
+    assert.equal(n.status, "failed");
+    assert.match(n.lastError ?? "", /Alıcı yok/);
+    let called = false;
+    await outbox.processOutbox(async () => {
+      called = true;
+    });
+    assert.equal(called, false);
+    assert.equal(outbox.gaveUp(n), true);
+  });
+
+  test("retries stop inside Resend's 24-hour idempotency window", async () => {
+    await move("out", "3");
+    await outbox.processOutbox(async () => {
+      throw new Error("down");
+    });
+    let called = false;
+    const nextDay = new Date(Date.now() + 23.5 * 60 * 60_000);
+    await outbox.processOutbox(async () => {
+      called = true;
+    }, { now: nextDay });
+    assert.equal(called, false);
+    assert.equal(outbox.gaveUp((await notifications())[0], nextDay), true);
+  });
+
   test("sent, failed and pending notifications are visible to admins only", async () => {
     await move("out", "3");
     assert.equal((await outbox.listNotifications(admin.headers)).length, 1);

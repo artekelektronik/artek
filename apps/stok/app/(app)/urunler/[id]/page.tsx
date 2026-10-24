@@ -15,7 +15,7 @@ import {
 import { MovementTable } from "@/components/movement-table";
 import { loadActor } from "@/lib/guard";
 import { displayQuantity } from "@/lib/labels";
-import { getBalances, listMovements } from "@/lib/ledger";
+import { getBalances, listMovements, visibleLokasyonIds } from "@/lib/ledger";
 import { addQuantities, unitLabels } from "@/lib/quantity";
 import { inTransit } from "@/lib/transfers";
 import { listLokasyon } from "@/lib/lokasyon";
@@ -37,10 +37,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const [balances, movements, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
     listMovements(requestHeaders, { productId: product.id }),
-    inTransit(product.id),
+    visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
-  // Stock on the way belongs to no Lokasyon; it is part of the company total only.
-  const showTransit = balances.isCompanyTotal && transit !== "0";
+  // Stock on the way belongs to no Lokasyon. As in the overview, a user sees what is on the way to
+  // or from their Lokasyon, and it counts in their total.
+  const showTransit = transit !== "0";
   const canManage = can(actor, "products.manage");
 
   return (

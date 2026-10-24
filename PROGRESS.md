@@ -17,29 +17,18 @@ Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 | #31 | Sayım without locks | Done locally | `codex/stok-count` · `3ad3255` |
 | #32 | Açılış sayımı (go-live per Lokasyon) | Done locally | `codex/stok-opening` · `32ba171` |
 | #33 | Stok durumu, filters, CSV | Done locally | `codex/stok-overview` · `867eb01`, review fixes `f1e94b4` |
-| #34 | Kritik seviye and email warnings | **In progress, uncommitted** | `codex/stok-kritik-seviye` |
+| #34 | Kritik seviye and email warnings | Done (sending needs Resend from #23) | `a022ee8` + `b741c86` |
 | #25 | User management: invite, deactivate, audit log | Not started (needs #34's email outbox) | — |
 | #27 | Public catalog API; the site reads from it | Not started (must merge after #23, or the live site loses its catalog) | — |
 
-Each branch is stacked on the one above it. None of the branches after #24 are pushed yet.
+All of #24 and #26–#34 is on PR [#41](https://github.com/artekelektronik/artek/pull/41)'s branch `codex/stok-auth-roles`, one commit per ticket.
 
-## #34 status
+## Kritik seviye (#34)
 
-Written, typecheck clean, tests written but **not yet run**:
-
-- `product.min_level` (Kritik seviye) and migration `0010_kritik-seviye.sql`, which also seeds the default recipients (admin, mühendis).
-- `lib/kritik-seviye.ts`: inside the posting transaction, a product whose company total goes from at-or-above its level to below it gets one row in the outbox. Product rows are locked in a fixed order, so concurrent stock-outs send one email.
-- `lib/outbox.ts`: Resend sender (notification id as the idempotency key), `processOutbox` with back-off, admin-only listing and recipient roles.
-- Overview filter `belowMinimum`.
-- `lib/kritik-seviye.test.ts`: covers every acceptance criterion.
-
-Still to do for #34:
-
-- Run the tests and fix what fails.
-- Kritik seviye field on the product form.
-- Admin "Bildirimler" page: notification list and recipient roles.
-- Trigger sending: `after()` in the stock server actions, plus a `/api/cron/outbox` route protected by `CRON_SECRET` (exclude `/api/cron` from `proxy.ts`).
-- Document `RESEND_API_KEY`, `RESEND_FROM` and `CRON_SECRET` in `apps/stok/README.md`.
+- A movement that takes a product's company total below its Kritik seviye writes one email to the `notification` outbox in the same transaction. Product rows are locked in a fixed order, so concurrent stock-outs send one email.
+- The outbox is sent right after the request (`after()`). `/api/cron/outbox` (daily in `vercel.json`, protected by `CRON_SECRET`) retries failures. The notification id is Resend's idempotency key.
+- Admins see every notification and choose the recipient roles under Bildirimler.
+- Locally there is no Resend key, so notifications show as "Gönderilemedi: RESEND_API_KEY veya RESEND_FROM tanımlı değil." That's expected until #23.
 
 ## What the app does today
 
@@ -61,9 +50,17 @@ Rules the code and database enforce:
 
 ## Before go-live
 
-- Do #23, then wire migrations into the stok Vercel build (`pnpm db:migrate`, using `DATABASE_URL_UNPOOLED`) and set `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL` for Production and Preview.
-- Start from a fresh database: run migrations, `pnpm --filter stok import-products`, `pnpm --filter stok create-admin`, then an Açılış sayımı per Lokasyon.
-- The local dev database (`artek_stok`) has test movements from before the opening-count rule and should be reset.
+- Do #23, then wire migrations into the stok Vercel build (`pnpm db:migrate`, using `DATABASE_URL_UNPOOLED`).
+- Set these for Production and Preview:
+  - `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`
+  - `RESEND_FROM`, on the verified Resend domain
+  - `CRON_SECRET`
+- Start from a fresh database:
+  1. Run migrations.
+  2. `pnpm --filter stok import-products`
+  3. `pnpm --filter stok create-admin`
+  4. An Açılış sayımı per Lokasyon.
+- The local dev database (`artek_stok`) was reset on 24 October 2026; it keeps the 92 products and the local admin. Karaköy was opened with a test count (ART-0003 = 12, then a stock-out of 3).
 
 ## Local setup
 
@@ -71,5 +68,5 @@ See [apps/stok/README.md](apps/stok/README.md). Postgres 17 runs through Homebre
 
 ## Notes
 
-- The stok test suite (75 tests) normally takes about 30 s. With iCloud's `fileproviderd` / `cloudd` near 100% CPU it has taken over 10 minutes.
+- The stok test suite (83 tests) normally takes about 30 s. With iCloud's `fileproviderd` / `cloudd` near 100% CPU it has taken over 10 minutes.
 - After adding a new route folder, restart `pnpm dev`: the dev server's file watcher sometimes misses new `[id]` folders.

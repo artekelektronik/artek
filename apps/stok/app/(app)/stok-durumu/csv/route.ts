@@ -1,4 +1,4 @@
-import { NotSignedIn } from "@/lib/guard";
+import { Forbidden, NotSignedIn } from "@/lib/guard";
 import { getOverview } from "@/lib/overview";
 import { toCsv } from "@/lib/overview-csv";
 
@@ -11,9 +11,11 @@ export async function GET(request: Request) {
       q: params.get("q") ?? undefined,
       category: params.get("kategori") || undefined,
       lokasyonId: params.get("lokasyon") || undefined,
+      belowMinimum: params.get("kritik") === "1",
     });
   } catch (error) {
     if (error instanceof NotSignedIn) return new Response(error.message, { status: 401 });
+    if (error instanceof Forbidden) return new Response(error.message, { status: 403 });
     throw error;
   }
   const day = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Istanbul" }).format(new Date());

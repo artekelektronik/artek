@@ -4,7 +4,7 @@ import { db, type Tx } from "../db";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
 import { isUniqueViolation, UserError } from "./errors";
 import { requirePermission } from "./guard";
-import { parseQuantityOrZero } from "./quantity";
+import { parseQuantity } from "./quantity";
 
 const optionalText = z
   .string()
@@ -44,7 +44,7 @@ function parse(input: ProductInput) {
   const { minLevel, ...fields } = result.data;
   // Kritik seviye follows the product's unit, like any quantity; empty means no warning.
   if (!minLevel) return { ...fields, minLevel: null };
-  const level = parseQuantityOrZero(minLevel, fields.unit);
+  const level = parseQuantity(minLevel, fields.unit);
   if (!level.ok) throw new UserError(`Kritik seviye: ${level.error}`);
   return { ...fields, minLevel: level.value };
 }
