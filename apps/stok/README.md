@@ -9,6 +9,7 @@ Names only; never commit values. Locally they live in `apps/stok/.env.local` (gi
 | Name | Used for |
 | --- | --- |
 | `DATABASE_URL` | PostgreSQL connection (Neon in Vercel, a local Postgres in development) |
+| `DATABASE_URL_UNPOOLED` | Direct Neon connection for migrations (from the Neon integration); falls back to `DATABASE_URL` |
 | `BETTER_AUTH_SECRET` | Signs session cookies; generate with `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | The app's own URL, e.g. `http://localhost:3001` |
 | `TEST_DATABASE_URL` | A separate, throwaway database for the integration tests |
@@ -31,6 +32,12 @@ pnpm dev                                                        # http://localho
 
 - Schema: `db/schema.ts`. After changing it run `pnpm --filter stok db:generate` and commit the new file in `drizzle/`.
 - Lokasyon are rows, seeded by the `drizzle/0001_seed-lokasyon.sql` migration.
+
+## Deploy
+
+- Vercel project `artek-stok` (Merve's projects), Root Directory `apps/stok`, domain `stok.ferritnuve.com`. Neon and Resend are attached to this project only; the site's `artek` project has no database or email variables (ADR-0002).
+- Production builds run `pnpm db:migrate` before `next build` (`vercel.json`). Preview builds don't migrate, so a pull request can't change the production schema before it merges.
+- The Neon and Resend variables are marked Sensitive, so `vercel env pull` doesn't return them. To run `create-admin` or `import-products` against production, copy the connection string from the Neon console into `DATABASE_URL` for that one command.
 
 ## Access
 

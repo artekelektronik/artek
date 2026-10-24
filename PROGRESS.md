@@ -8,8 +8,8 @@ Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 | --- | --- | --- | --- |
 | #21 | Monorepo, site in `apps/ferritnuve` | Merged | `main` (#39) |
 | #22 | Stok app shell, shared `packages/ui` | Merged | `main` (#40) |
-| #23 | Stok Vercel project, Neon, Resend | **Waiting on a human** | — |
-| #24 | Database, invite-only login, roles + Lokasyon guard | Draft PR [#41](https://github.com/artekelektronik/artek/pull/41); Neon/deploy checks wait for #23 | `codex/stok-auth-roles` · `df36d69` |
+| #23 | Stok Vercel project, Neon, Resend | Set up; the Neon preview-branch check remains (see Before go-live) | Vercel `artek-stok` · `stok.ferritnuve.com` |
+| #24 | Database, invite-only login, roles + Lokasyon guard | Draft PR [#41](https://github.com/artekelektronik/artek/pull/41) | `codex/stok-auth-roles` · `df36d69` |
 | #26 | Ürünler and the one-time import of the site's 92 products | Done locally | `codex/stok-products` · `ec5b535` |
 | #28 | Stock ledger: mal kabul, balances, Stok hareketleri | Done locally | `codex/stok-ledger` · `fd41c5a` |
 | #29 | Stok çıkışı: satış teslimatı, üretim tüketimi, fire | Done locally | `codex/stok-out` · `283e1d1`, review fixes `f2ad02f` |
@@ -50,13 +50,12 @@ Rules the code and database enforce:
 
 ## Before go-live
 
-- Do #23, then wire migrations into the stok Vercel build (`pnpm db:migrate`, using `DATABASE_URL_UNPOOLED`).
-- Set these for Production and Preview:
-  - `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`
-  - `RESEND_FROM`, on the verified Resend domain
-  - `CRON_SECRET`
-- Start from a fresh database:
-  1. Run migrations.
+- #23 is in place, checked on 24 October 2026: Vercel project `artek-stok` (Root Directory `apps/stok`) on `stok.ferritnuve.com`. Neon and Resend are attached to it only, the Resend domain is verified, `BETTER_AUTH_SECRET` is set for Production and Preview, and `CRON_SECRET` for Production. Production builds run migrations on `DATABASE_URL_UNPOOLED` (`apps/stok/vercel.json`).
+- Still to do in Vercel:
+  - Check that Neon creates a branch per preview deployment. Previews don't migrate, so they show the production schema until their PR merges.
+  - Optional: `RESEND_FROM` and `BETTER_AUTH_URL` for Preview, and a DMARC record for `ferritnuve.com` at Natro.
+- After #41 merges, on the production database (its connection string is in the Neon console; `vercel env pull` hides Sensitive values):
+  1. The production build has run the migrations.
   2. `pnpm --filter stok import-products`
   3. `pnpm --filter stok create-admin`
   4. An Açılış sayımı per Lokasyon.
