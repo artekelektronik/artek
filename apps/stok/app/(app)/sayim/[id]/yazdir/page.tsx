@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { getCount } from "@/lib/counts";
 import { countKindLabels, formatDateTime } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
@@ -33,26 +34,26 @@ export default async function CountSheetPrintPage({ params }: { params: Promise<
       {[...groups].map(([shelf, lines]) => (
         <section key={shelf} className="break-inside-avoid">
           <h2 className="border-b py-1 font-semibold">Raf {shelf}</h2>
-          <table className="w-full">
-            <thead>
-              <tr className="text-left">
-                <th className="w-32 py-1">Kod</th>
-                <th>Ürün</th>
-                <th className="w-20">Birim</th>
-                <th className="w-40">Sayılan</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-32">Kod</TableHead>
+                <TableHead>Ürün</TableHead>
+                <TableHead className="w-20">Birim</TableHead>
+                <TableHead className="w-40">Sayılan</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {lines.map((line) => (
-                <tr key={line.productId} className="border-b">
-                  <td className="py-2 font-mono">{line.code}</td>
-                  <td>{line.name}</td>
-                  <td>{unitLabels[line.unit]}</td>
-                  <td className="border-l" />
-                </tr>
+                <TableRow key={line.productId}>
+                  <TableCell className="font-mono">{line.code}</TableCell>
+                  <TableCell>{line.name}</TableCell>
+                  <TableCell>{unitLabels[line.unit]}</TableCell>
+                  <TableCell className="border-l" />
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </section>
       ))}
     </div>

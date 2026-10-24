@@ -3,7 +3,9 @@
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=ferritnuve",
+    "stock": "turbo run dev --filter=stok",
+    "dev:all": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test"

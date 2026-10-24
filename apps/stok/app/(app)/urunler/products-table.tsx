@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@artek/ui/components/dropdown-menu";
 import { Switch } from "@artek/ui/components/switch";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { Tabs, TabsList, TabsTrigger } from "@artek/ui/components/tabs";
 import { cn } from "@artek/ui/lib/utils";
 import { DataTable } from "@/components/data-table/data-table";
@@ -167,36 +168,36 @@ function ProductDetail({ row }: { row: ProductRow }) {
         {row.description && <p className="text-muted-foreground line-clamp-3 whitespace-pre-line">{row.description}</p>}
       </div>
       {row.status !== "arsiv" && (
-        <table className="text-sm">
-          <thead>
-            <tr className="text-muted-foreground">
-              <th className="pr-6 text-left font-normal">Lokasyon</th>
-              <th className="pr-6 text-right font-normal">Fiziksel</th>
-              <th className="text-right font-normal">Kullanılabilir</th>
-            </tr>
-          </thead>
-          <tbody className="tabular-nums">
+        <Table className="w-auto">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Lokasyon</TableHead>
+              <TableHead className="text-right">Fiziksel</TableHead>
+              <TableHead className="text-right">Kullanılabilir</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="tabular-nums">
             {row.stock.map((s) => (
-              <tr key={s.lokasyonId}>
-                <td className="pr-6">{s.name}</td>
-                <td className="pr-6 text-right">{displayQuantity(s.physical)}</td>
-                <td className="text-right">{displayQuantity(s.available)}</td>
-              </tr>
+              <TableRow key={s.lokasyonId}>
+                <TableCell>{s.name}</TableCell>
+                <TableCell className="text-right">{displayQuantity(s.physical)}</TableCell>
+                <TableCell className="text-right">{displayQuantity(s.available)}</TableCell>
+              </TableRow>
             ))}
             {row.inTransit !== "0" && (
-              <tr>
-                <td className="pr-6">Yolda</td>
-                <td className="pr-6 text-right">{displayQuantity(row.inTransit)}</td>
-                <td className="text-muted-foreground text-right">—</td>
-              </tr>
+              <TableRow>
+                <TableCell>Yolda</TableCell>
+                <TableCell className="text-right">{displayQuantity(row.inTransit)}</TableCell>
+                <TableCell className="text-muted-foreground text-right">—</TableCell>
+              </TableRow>
             )}
-            <tr className="font-medium">
-              <td className="pr-6">Toplam ({unit})</td>
-              <td className="pr-6 text-right">{displayQuantity(row.total)}</td>
-              <td />
-            </tr>
-          </tbody>
-        </table>
+            <TableRow className="font-medium">
+              <TableCell>Toplam ({unit})</TableCell>
+              <TableCell className="text-right">{displayQuantity(row.total)}</TableCell>
+              <TableCell />
+            </TableRow>
+          </TableBody>
+        </Table>
       )}
     </div>
   );
