@@ -114,15 +114,16 @@ export function ProductImagesField({ initial, readOnly }: { initial: string[]; r
           </figure>
         ))}
         {!readOnly && (
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => fileInput.current?.click()}
-            className="text-muted-foreground hover:bg-muted/50 flex aspect-square flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-sm"
+            className="text-muted-foreground aspect-square h-auto flex-col gap-2 border-dashed font-normal"
           >
             {uploading > 0 ? <Loader2 className="size-6 animate-spin" /> : <ImagePlus className="size-6" />}
             {uploading > 0 ? "Yükleniyor…" : "Görsel ekle"}
             <span className="text-xs">veya buraya sürükleyin</span>
-          </button>
+          </Button>
         )}
         {readOnly && images.length === 0 && <p className="text-muted-foreground text-sm">Görsel yok.</p>}
       </div>

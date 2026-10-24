@@ -1,16 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Textarea } from "@artek/ui/components/textarea";
+import { Combobox } from "@/components/combobox";
+import { FormSelect } from "@/components/form-select";
 import { ProductImagesField } from "@/components/product-images-field";
 import type { ActionState } from "@/lib/action-result";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
-import { selectClassName } from "@/lib/ui";
 import { FormStatus } from "@/components/form-status";
 
 type Product = {
@@ -80,6 +81,7 @@ export function ProductForm({
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const [category, setCategory] = useState(product.category);
   const input = "font-normal";
 
   return (
@@ -92,21 +94,18 @@ export function ProductForm({
           <Input name="name" defaultValue={product.name} required className={input} />
         </Field>
         <Field label="Kategori">
-          <Input name="category" defaultValue={product.category} list="kategoriler" required className={input} />
-          <datalist id="kategoriler">
-            {categories.map((category) => (
-              <option key={category} value={category} />
-            ))}
-          </datalist>
+          <Combobox
+            options={categories.map((c) => ({ value: c, label: c }))}
+            value={category}
+            onChange={setCategory}
+            placeholder="Kategori seçin veya yazın"
+            allowNew
+            aria-label="Kategori"
+          />
+          <input type="hidden" name="category" value={category} />
         </Field>
         <Field label="Birim">
-          <select name="unit" defaultValue={product.unit} className={`${selectClassName} ${input} w-full`}>
-            {Object.entries(unitLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <FormSelect name="unit" options={Object.entries(unitLabels).map(([value, label]) => ({ value, label }))} defaultValue={product.unit} className="w-full" />
         </Field>
         <Field label="Kritik seviye (şirket toplamı, boşsa uyarı yok)">
           <Input

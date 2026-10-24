@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Label } from "@artek/ui/components/label";
 import type { CountKind } from "@/lib/counts";
-import { selectClassName } from "@/lib/ui";
+import { FormSelect } from "@/components/form-select";
 import { openCountAction } from "./actions";
 import { FormStatus } from "@/components/form-status";
 
@@ -23,23 +23,12 @@ export function OpenCountForm({
       <input type="hidden" name="kind" value={kind} />
       <Label className="flex-col items-stretch gap-1">
         Lokasyon
-        <select name="lokasyonId" className={`${selectClassName} font-normal`} required>
-          {lokasyon.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+        <FormSelect name="lokasyonId" options={lokasyon.map((l) => ({ value: l.id, label: l.name }))} />
       </Label>
       {kind === "sayim" && (
         <Label className="flex-col items-stretch gap-1">
           Kapsam
-          <select name="category" className={`${selectClassName} font-normal`}>
-            <option value="">Tüm ürünler</option>
-            {categories.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
+          <FormSelect name="category" options={categories.map((c) => ({ value: c, label: c }))} empty="Tüm ürünler" />
         </Label>
       )}
       <Button type="submit" disabled={pending}>

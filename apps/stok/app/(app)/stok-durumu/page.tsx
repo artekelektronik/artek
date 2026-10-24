@@ -1,8 +1,10 @@
 import { headers } from "next/headers";
 import { Button } from "@artek/ui/components/button";
+import { Checkbox } from "@artek/ui/components/checkbox";
+import { Label } from "@artek/ui/components/label";
+import { FormSelect } from "@/components/form-select";
 import { getOverview } from "@/lib/overview";
 import { listCategories } from "@/lib/products";
-import { selectClassName } from "@/lib/ui";
 import { listLokasyon } from "@/lib/lokasyon";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
@@ -28,19 +30,18 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok durumu</h1>
       <form className="flex flex-wrap items-center gap-2">
-        <select name="lokasyon" defaultValue={params.lokasyon ?? ""} className={selectClassName} aria-label="Lokasyon">
-          <option value="">Tüm Lokasyonlar</option>
-          {visible.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+        <FormSelect
+          name="lokasyon"
+          options={visible.map((l) => ({ value: l.id, label: l.name }))}
+          defaultValue={params.lokasyon}
+          empty="Tüm Lokasyonlar"
+          aria-label="Lokasyon"
+        />
         {overview.canFilterBelowMinimum && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="kritik" value="1" defaultChecked={params.kritik === "1"} />
+          <Label className="font-normal">
+            <Checkbox name="kritik" value="1" defaultChecked={params.kritik === "1"} />
             Kritik seviyenin altındakiler
-          </label>
+          </Label>
         )}
         <Button type="submit" variant="outline">
           Uygula

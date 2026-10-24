@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { Button } from "@artek/ui/components/button";
-import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
 import { MovementTable } from "@/components/movement-table";
+import { DatePicker } from "@/components/date-picker";
 import { isUuid } from "@/lib/errors";
 import { loadActor } from "@/lib/guard";
 import { listMovements, movementLimit } from "@/lib/ledger";
@@ -34,14 +35,14 @@ export default async function MovementsPage({
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok hareketleri</h1>
       <form className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-sm">
-          Başlangıç
-          <Input type="date" name="baslangic" defaultValue={params.baslangic} className="w-40" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Bitiş
-          <Input type="date" name="bitis" defaultValue={params.bitis} className="w-40" />
-        </label>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="baslangic">Başlangıç</Label>
+          <DatePicker id="baslangic" name="baslangic" defaultValue={params.baslangic} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="bitis">Bitiş</Label>
+          <DatePicker id="bitis" name="bitis" defaultValue={params.bitis} />
+        </div>
         {params.urun && <input type="hidden" name="urun" value={params.urun} />}
         <Button type="submit" variant="outline">
           Tarihleri uygula

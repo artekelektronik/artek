@@ -80,7 +80,9 @@ Never commit `.env.local` or production credentials.
 The repository is a pnpm workspace run with Turborepo. From the repository root:
 
 ```bash
-pnpm dev                        # Start the site (:3000) and the stok app (:3001)
+pnpm dev                        # Start the site (:3000)
+pnpm stock                      # Start the stok app (:3001)
+pnpm dev:all                    # Start both
 pnpm lint                       # Run ESLint
 pnpm test                       # Run behaviour tests
 pnpm build                      # Create a production build

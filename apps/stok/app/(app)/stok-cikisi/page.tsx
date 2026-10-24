@@ -3,12 +3,12 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { NoAccess } from "@/components/no-access";
 import { ProductLines } from "@/components/product-lines";
+import { FormSelect } from "@/components/form-select";
 import { StockForm } from "@/components/stock-form";
 import { loadActor } from "@/lib/guard";
 import { movementTypeLabels } from "@/lib/labels";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { stockOutTypes } from "@/lib/stock-out";
-import { selectClassName } from "@/lib/ui";
 import { recordStockOutAction } from "./actions";
 
 export const metadata = { title: "Stok çıkışı | Artek Stok" };
@@ -28,23 +28,15 @@ export default async function StockOutPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Label className="flex-col items-stretch gap-1">
             Çıkış türü
-            <select name="type" className={`${selectClassName} w-full font-normal`} required>
-              {stockOutTypes.map((type) => (
-                <option key={type} value={type}>
-                  {movementTypeLabels[type]}
-                </option>
-              ))}
-            </select>
+            <FormSelect
+              name="type"
+              options={stockOutTypes.map((type) => ({ value: type, label: movementTypeLabels[type] }))}
+              className="w-full"
+            />
           </Label>
           <Label className="flex-col items-stretch gap-1">
             Lokasyon
-            <select name="lokasyonId" className={`${selectClassName} w-full font-normal`} required>
-              {lokasyon.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
+            <FormSelect name="lokasyonId" options={lokasyon.map((l) => ({ value: l.id, label: l.name }))} className="w-full" />
           </Label>
           <Label className="flex-col items-stretch gap-1">
             Neden

@@ -2,12 +2,12 @@ import { headers } from "next/headers";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { ProductLines } from "@/components/product-lines";
+import { FormSelect } from "@/components/form-select";
 import { StockForm } from "@/components/stock-form";
 import { loadActor } from "@/lib/guard";
 import { listLokasyon } from "@/lib/lokasyon";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { listTransfers } from "@/lib/transfers";
-import { selectClassName } from "@/lib/ui";
 import { sendTransferAction } from "./actions";
 import { TransfersTable } from "./transfers-table";
 
@@ -37,28 +37,16 @@ export default async function TransfersPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <Label className="flex-col items-stretch gap-1">
                 Kaynak
-                <select name="fromLokasyonId" className={`${selectClassName} w-full font-normal`} required>
-                  {sources.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
+                <FormSelect name="fromLokasyonId" options={sources.map((l) => ({ value: l.id, label: l.name }))} className="w-full" />
               </Label>
               <Label className="flex-col items-stretch gap-1">
                 Hedef
-                <select
+                <FormSelect
                   name="toLokasyonId"
+                  options={targets.map((l) => ({ value: l.id, label: l.name }))}
                   defaultValue={targets.find((t) => t.id !== sources[0].id)?.id}
-                  className={`${selectClassName} w-full font-normal`}
-                  required
-                >
-                  {targets.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
+                  className="w-full"
+                />
               </Label>
               <Label className="flex-col items-stretch gap-1">
                 Not (isteğe bağlı)

@@ -2,13 +2,13 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { FormSelect } from "@/components/form-select";
 import { StockForm } from "@/components/stock-form";
 import { loadActor } from "@/lib/guard";
 import { displayQuantity, formatDateTime } from "@/lib/labels";
 import { can } from "@/lib/permissions";
 import { unitLabels } from "@/lib/quantity";
 import { getTransfer, lossReasonLabels } from "@/lib/transfers";
-import { selectClassName } from "@/lib/ui";
 import { receiveTransferAction } from "../actions";
 import { TransferStatusBadge } from "../transfer-status";
 
@@ -72,14 +72,13 @@ export default async function TransferPage({ params }: { params: Promise<{ id: s
                     />
                   </TableCell>
                   <TableCell>
-                    <select name={`lossReason:${line.productId}`} className={selectClassName} aria-label={`${line.code} eksik nedeni`}>
-                      <option value="">—</option>
-                      {Object.entries(lossReasonLabels).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
+                    <FormSelect
+                      name={`lossReason:${line.productId}`}
+                      options={Object.entries(lossReasonLabels).map(([value, label]) => ({ value, label }))}
+                      empty="—"
+                      className="w-40"
+                      aria-label={`${line.code} eksik nedeni`}
+                    />
                   </TableCell>
                 </TableRow>
               ))}
