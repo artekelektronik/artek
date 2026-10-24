@@ -5,8 +5,9 @@ import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Giriş | Artek Stok" };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ sifre?: string }> }) {
   if (await auth.api.getSession({ headers: await headers() })) redirect("/");
+  const { sifre } = await searchParams;
 
   return (
     <main className="flex min-h-svh items-center justify-center p-6">
@@ -15,6 +16,7 @@ export default async function LoginPage() {
           <h1 className="text-2xl font-semibold">Artek Stok</h1>
           <p className="text-muted-foreground text-sm">Hesabınız yöneticiniz tarafından açılır.</p>
         </div>
+        {sifre === "kaydedildi" && <p className="text-sm text-green-700">Şifreniz kaydedildi; şimdi giriş yapabilirsiniz.</p>}
         <LoginForm />
       </div>
     </main>

@@ -18,8 +18,8 @@ Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 | #32 | Açılış sayımı (go-live per Lokasyon) | Merged (#41) | `32ba171` |
 | #33 | Stok durumu, filters, CSV | Merged (#41) | `867eb01`, review fixes `f1e94b4` |
 | #34 | Kritik seviye and email warnings | Merged (#41) | `a022ee8`, `b741c86`, `bac753e` |
-| #25 | User management: invite, deactivate, audit log | Not started; unblocked now that #34 is merged | — |
-| #27 | Public catalog API; the site reads from it | Stok side in progress: `@artek/catalog` contract + public `/api/catalog`. The site switches in a second PR, after production has its products | `codex/stok-catalog-api` |
+| #25 | User management: invite, deactivate, audit log | Admin user management: invite by email, roles + Lokasyon, deactivate, password links, append-only audit log | `codex/stok-users` |
+| #27 | Public catalog API; the site reads from it | Merged: `/api/catalog` (#42, brand added in #43); ferritnuve.com reads it (#44). `lib/products.json` retired | `main` |
 
 #24 and #26–#34 were merged to `main` in PR [#41](https://github.com/artekelektronik/artek/pull/41) (merge commit `7fa35c2`), one commit per ticket. Production deployed it and ran the migrations on 24 October 2026.
 
@@ -63,7 +63,11 @@ Rules the code and database enforce:
 
 ## Local setup
 
-See [apps/stok/README.md](apps/stok/README.md). Postgres 17 runs through Homebrew (`brew services start postgresql@17`) with databases `artek_stok` and `artek_stok_test`.
+See [apps/stok/README.md](apps/stok/README.md).
+
+- Since 24 October 2026, local development uses the **production** Neon database (`apps/stok/.env.local`), so company data is entered once. Anything done through `pnpm dev` is real; dev and staging Neon branches come later.
+- Never run `pnpm db:migrate` locally while `.env.local` points at production: production migrates in its Vercel build.
+- The tests need their own throwaway Postgres in `TEST_DATABASE_URL` (its name must contain "test"); they refuse anything else.
 
 ## Notes
 

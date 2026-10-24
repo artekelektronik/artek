@@ -5,12 +5,15 @@ import { Writable } from "node:stream";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { userRole } from "../db/schema";
+import { auditNow } from "../lib/user-admin";
 import { createUser, type NewUser } from "../lib/users";
 
 export async function createFirstAdmin(admin: Pick<NewUser, "email" | "name" | "password">) {
   const existing = await db.query.userRole.findFirst({ where: eq(userRole.role, "admin") });
   if (existing) throw new Error("Sistemde zaten bir yönetici var; yeni kullanıcıları o davet etmeli.");
-  return createUser({ ...admin, roles: ["admin"] });
+  const created = await createUser({ ...admin, roles: ["admin"] });
+  await auditNow(null, created.id, "user.first_admin", null, { email: created.email, name: created.name, roles: ["admin"], lokasyonIds: [], active: true });
+  return created;
 }
 
 // Reads a line without echoing it, so the password doesn't stay in the terminal.
