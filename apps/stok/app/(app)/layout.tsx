@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { SidebarInset, SidebarProvider } from "@artek/ui/components/sidebar";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -26,9 +27,12 @@ export default async function AppLayout({
         user={{ name: session.user.name, email: session.user.email }}
         allowed={{ notifications: can(actor, "notifications.manage"), users: can(actor, "users.manage") }}
       />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <AppHeader />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-6">
+          {/* Data tables keep their filters, sorting and page in the URL. */}
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

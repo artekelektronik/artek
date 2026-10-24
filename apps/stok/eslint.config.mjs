@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored from tablecn, kept as upstream wrote it.
+    "components/data-table/data-table*.tsx",
+    "components/ui/faceted.tsx",
+    "components/ui/direction.tsx",
+    "hooks/use-data-table.ts",
+    "hooks/use-debounced-callback.ts",
+    "lib/data-table-*.ts",
   ]),
 ]);
 

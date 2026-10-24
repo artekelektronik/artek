@@ -129,6 +129,10 @@ describe("stock overview", { skip: skipWithoutDatabase }, () => {
   test("filters by product, category and Lokasyon", async () => {
     assert.deepEqual((await overview.getOverview(muhendis.headers, { q: "t-cu" })).rows.map((r) => r.code), ["T-CU"]);
     assert.deepEqual((await overview.getOverview(muhendis.headers, { category: "Ferrit" })).rows.map((r) => r.code), ["T-CORE"]);
+    assert.deepEqual(
+      (await overview.getOverview(muhendis.headers, { category: ["Ferrit", "Malzeme"] })).rows.map((r) => r.code).sort(),
+      ["T-CORE", "T-CU"],
+    );
     const karakoyOnly = await overview.getOverview(muhendis.headers, { lokasyonId: lokasyon["Karaköy Mağaza"] });
     assert.deepEqual(karakoyOnly.lokasyon.map((l) => l.name), ["Karaköy Mağaza"]);
   });

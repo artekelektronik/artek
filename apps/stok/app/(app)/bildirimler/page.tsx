@@ -1,12 +1,11 @@
 import { headers } from "next/headers";
-import { Badge } from "@artek/ui/components/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { NoAccess } from "@/components/no-access";
 import { loadActor } from "@/lib/guard";
-import { formatDateTime, notificationStatusLabels } from "@/lib/labels";
+import { notificationStatusLabels } from "@/lib/labels";
 import { gaveUp, getRecipientRoles, listNotifications } from "@/lib/outbox";
 import { can } from "@/lib/permissions";
 import { SendNowButton } from "./send-now-button";
+import { NotificationsTable } from "./notifications-table";
 import { RecipientsForm } from "./recipients-form";
 
 export const metadata = { title: "Bildirimler | Artek Stok" };
@@ -33,42 +32,19 @@ export default async function NotificationsPage() {
           <h2 className="text-lg font-semibold">Gönderilen e-postalar</h2>
           <SendNowButton />
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Oluşma</TableHead>
-              <TableHead>Konu</TableHead>
-              <TableHead>Alıcılar</TableHead>
-              <TableHead>Durum</TableHead>
-              <TableHead className="text-right">Deneme</TableHead>
-              <TableHead>Son hata</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {notifications.map((n) => (
-              <TableRow key={n.id}>
-                <TableCell className="whitespace-nowrap">{formatDateTime(n.createdAt)}</TableCell>
-                <TableCell>{n.subject}</TableCell>
-                <TableCell className="max-w-56 truncate text-sm">{n.recipients.join(", ")}</TableCell>
-                <TableCell>
-                  <Badge variant={n.status === "sent" ? "secondary" : n.status === "failed" ? "destructive" : "default"}>
-                    {gaveUp(n) ? "Gönderilemedi · vazgeçildi" : notificationStatusLabels[n.status]}
-                  </Badge>
-                  {n.sentAt && <span className="text-muted-foreground ml-2 text-xs">{formatDateTime(n.sentAt)}</span>}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{n.attempts}</TableCell>
-                <TableCell className="text-destructive max-w-64 truncate text-sm">{n.lastError}</TableCell>
-              </TableRow>
-            ))}
-            {notifications.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground text-center">
-                  Henüz bildirim yok.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+        <NotificationsTable
+          notifications={notifications.map((n) => ({
+            id: n.id,
+            createdAt: n.createdAt,
+            subject: n.subject,
+            recipients: n.recipients,
+            status: n.status,
+            statusLabel: gaveUp(n) ? "Gönderilemedi · vazgeçildi" : notificationStatusLabels[n.status],
+            sentAt: n.sentAt,
+            attempts: n.attempts,
+            lastError: n.lastError,
+          }))}
+        />
       </section>
     </div>
   );
