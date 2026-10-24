@@ -19,6 +19,7 @@ const screens: { label: string; href: string; action?: Action }[] = [
   { label: "Sayım", href: "/sayim" },
   { label: "Açılış sayımı", href: "/acilis-sayimi" },
   { label: "Bildirimler", href: "/bildirimler", action: "notifications.manage" },
+  { label: "Kullanıcılar", href: "/kullanicilar", action: "users.manage" },
 ];
 
 export default async function AppLayout({

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { userLokasyon, userRole } from "../db/schema";
+import { user, userLokasyon, userRole } from "../db/schema";
 import { auth } from "./auth";
 import { can, type Action } from "./permissions";
 
@@ -22,10 +22,13 @@ export async function loadActor(headers: Headers) {
   if (!session) throw new NotSignedIn();
 
   const userId = session.user.id;
-  const [roles, lokasyon] = await Promise.all([
+  const [roles, lokasyon, [account]] = await Promise.all([
     db.select({ role: userRole.role }).from(userRole).where(eq(userRole.userId, userId)),
     db.select({ id: userLokasyon.lokasyonId }).from(userLokasyon).where(eq(userLokasyon.userId, userId)),
+    db.select({ deactivatedAt: user.deactivatedAt }).from(user).where(eq(user.id, userId)),
   ]);
+  // Deactivation also deletes sessions; this covers any session that survives it.
+  if (account?.deactivatedAt) throw new NotSignedIn();
   return { userId, roles: roles.map((r) => r.role), lokasyonIds: lokasyon.map((l) => l.id) };
 }
 

@@ -21,6 +21,17 @@ export const roleLabels: Record<Role, string> = {
   depo_sorumlusu: "Depo sorumlusu",
 };
 
+export const auditActionLabels: Record<string, string> = {
+  "user.first_admin": "İlk yönetici oluşturuldu",
+  "user.invite": "Davet edildi",
+  "user.access": "Yetkiler değişti",
+  "user.deactivate": "Devre dışı bırakıldı",
+  "user.reactivate": "Yeniden etkinleştirildi",
+  "user.password_link": "Şifre bağlantısı gönderildi",
+  "user.password_set": "Şifresini belirledi",
+  "user.sessions_ended": "Oturumları kapatıldı",
+};
+
 export const notificationStatusLabels: Record<"pending" | "sent" | "failed", string> = {
   pending: "Bekliyor",
   sent: "Gönderildi",

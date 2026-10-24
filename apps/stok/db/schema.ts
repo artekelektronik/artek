@@ -26,6 +26,8 @@ export const user = pgTable("user", {
   image: text("image"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  // Set by an admin; a deactivated user can't sign in. Users are never deleted, so their history keeps their name.
+  deactivatedAt: timestamp("deactivated_at", { withTimezone: true }),
 });
 
 export const session = pgTable("session", {
@@ -386,3 +388,20 @@ export const notificationSetting = pgTable("notification_setting", {
   key: text("key").primaryKey(),
   roles: role("roles").array().notNull(),
 });
+
+// Every change to a user, their roles or their Lokasyon: who, when, and the state before and after.
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: text("actor_id").references(() => user.id), // null for the first-admin script
+    targetUserId: text("target_user_id")
+      .notNull()
+      .references(() => user.id),
+    action: text("action").notNull(), // e.g. "user.invite", "user.access", "user.deactivate"
+    before: jsonb("before"),
+    after: jsonb("after"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("audit_log_target_idx").on(t.targetUserId, t.createdAt)],
+);

@@ -9,7 +9,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except the login page, the auth API and the cron route (each checks access itself),
-  // the public catalog, Next.js internals and static files.
-  matcher: ["/((?!giris|api/auth|api/cron|api/catalog|_next|.*\\..*).*)"],
+  // Everything except the login and set-password pages, the auth API and the cron route (each checks
+  // access itself), the public catalog, Next.js internals and static files.
+  matcher: ["/((?!giris|sifre-belirle|api/auth|api/cron|api/catalog|_next|.*\\..*).*)"],
 };

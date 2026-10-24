@@ -41,7 +41,10 @@ pnpm dev                                                        # http://localho
 
 ## Access
 
-- There is no sign-up: users are created by an admin, and the first admin by `create-admin`.
+- There is no sign-up: the first admin is created by `create-admin`, everyone else is invited by an admin under Kullanıcılar.
+- An invite emails a link to `/sifre-belirle`, where the user sets their own password (link valid 7 days; a reset link sent later is valid 1 hour). The link is a Better Auth reset-password token, so nobody, admins included, ever sees or sets someone else's password.
+- Deactivating a user ends their sessions, voids unused links and blocks sign-in; users are never deleted, so their movements keep their name. The last active admin can't be deactivated or lose the admin role.
+- Every change to a user, their roles or Lokasyon is written to the append-only `audit_log` (who, when, before and after), shown on the user's page.
 - Every page that reads data and every action that changes it calls `requirePermission(headers, action, lokasyonId)` from `lib/guard.ts`. It loads the user's roles and Lokasyon from the database and applies the table in `lib/permissions.ts`. The `(app)` layout's session check and `proxy.ts` only redirect visitors; they are not access control.
 - Sign-in goes through `/api/auth`, where Better Auth rate-limits attempts (in production, counted in the `rate_limit` table).
 
