@@ -45,6 +45,7 @@
     "learnMore": "Detaylı Bilgi"
   },
   "nav": {
+    "blog": "Blog",
     "brand": "Artek Elektronik",
     "about": "Hakkımızda",
     "contact": "İletişim",
@@ -183,6 +184,7 @@
       "certificates": "Sertifikalar"
     },
     "links": {
+      "blog": "Blog",
       "overview": "Genel Bakış",
       "pricing": "Fiyatlandırma",
       "marketplace": "Pazar Yeri",

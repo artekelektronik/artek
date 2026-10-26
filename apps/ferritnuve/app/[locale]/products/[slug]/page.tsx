@@ -1,3 +1,4 @@
+import { productGuideSlug, getBlogPost } from "@/lib/blog";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Package } from "lucide-react";
@@ -20,6 +21,8 @@ export default async function ProductPage({params}: {params: Promise<{locale: st
   const t = await getTranslations({locale, namespace:"productDetail"});
   const {name, description, reviewRequired} = productContent(product, locale);
   const f = product.fields;
+  const guideSlug = productGuideSlug(f.Category, f["Ürün Tipi"]);
+  const guide = locale === "tr" && guideSlug ? getBlogPost(guideSlug) : undefined;
   const url = `${await getSiteUrl()}${getLocalizedPath(locale, `/products/${canonicalSlug}`)}`;
   const links = inquiryLinks(name, f["Product Code"], url, locale);
   const details = [
@@ -42,6 +45,7 @@ export default async function ProductPage({params}: {params: Promise<{locale: st
         <div className="flex flex-wrap gap-4"><a href={links.whatsapp} target="_blank" rel="noopener noreferrer" className="underline py-2">{t("chatNow")}</a><a href={links.email} className="underline py-2">{t("email")}</a></div>
         {description && <section><h2 className="font-semibold mb-3">{t("description")}</h2><ul className="space-y-2 text-muted-foreground">{description.split(/\n+/).filter(Boolean).map((line,i) => <li key={i} className="break-words">{line}</li>)}</ul></section>}
         {reviewRequired && <p className="text-sm text-muted-foreground">{t("reviewNote")}</p>}
+        {guide && <section className="rounded-lg border border-slate-200 bg-white p-5"><h2 className="mb-2 font-semibold">Seçim rehberi</h2><Link href={`/blog/${guide.slug}`} className="inline-block py-2 leading-7 underline underline-offset-4">{guide.title} →</Link></section>}
         <ProductShare name={name} />
       </div>
     </div>

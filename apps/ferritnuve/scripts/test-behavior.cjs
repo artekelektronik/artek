@@ -71,3 +71,26 @@ test('the site receives no stock, prices or internal fields from the catalog', (
   const internal = ['Stock Quantity', 'Stock (Karakoy)', 'Stock (Cekmekoy)', 'Total Stock Value', 'Unit Price', 'Alış Fiyatı', 'Toptan Fiyatı', 'Parakende Fiyatı', 'Supplier'];
   for (const product of products) for (const field of internal) assert.equal(product.fields[field], undefined, field);
 });
+
+test('published blog guides have working source anchors and safe rendered markup', () => {
+  const {blogPosts, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
+  assert.equal(blogPosts.length, 4);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 4);
+  for (const post of blogPosts) {
+    const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length);
+    for (const match of post.html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(match[1]), `${post.slug}: ${match[1]}`);
+    assert.doesNotMatch(post.html, /onay bekleyen|noindex|javascript:|<script/i);
+    const graph = blogStructuredData(post, 'https://www.ferritnuve.com')['@graph'];
+    assert.equal(graph[0].mainEntityOfPage['@id'], `https://www.ferritnuve.com/blog/${post.slug}`);
+    assert.equal(graph[0].inLanguage, 'tr-TR');
+    assert.equal(graph[1].itemListElement.at(-1).item, graph[0].mainEntityOfPage['@id']);
+  }
+  const sample = renderBlogMarkdown('# Başlık\n\nGiriş\n\n## Bölüm\n\n<img src=x onerror=alert(1)> [yerel](https://www.ferritnuve.com/contact)');
+  assert.doesNotMatch(sample.html, /<img/);
+  assert.match(sample.html, /&lt;img/);
+  assert.match(sample.html, /href="\/contact"/);
+  for (const [category, type] of [['PEM', undefined], ['IRON-POWDER', undefined], ['Ferrit', ['ETD']], ['Ferrit', ['YUVARLAK']]]) {
+    assert.ok(blogPosts.some(post => post.slug === productGuideSlug(category, type)));
+  }
+});
