@@ -7,7 +7,14 @@
     "alt": "Kablo üzerine takılan ferrit ürün grubu",
     "description": "Kablo ferriti seçerken kablo çapı, parazit frekansı, empedans ve montaj nasıl değerlendirilir? Uygulamanız için pratik seçim ve teklif rehberi.",
     "publishedAt": "2026-10-26T00:00:00+03:00",
-    "modifiedAt": "2026-10-26T00:00:00+03:00"
+    "modifiedAt": "2026-10-26T00:00:00+03:00",
+    "en": {
+      "file": "en/cable-ferrite-selection.md",
+      "slug": "cable-ferrite-selection",
+      "category": "EMI / Cable ferrites",
+      "alt": "Cable-mounted ferrite product group",
+      "description": "Choose a cable ferrite by cable diameter, interference frequency, impedance and installation. Practical selection steps and enquiry guidance."
+    }
   },
   {
     "file": "02-etd-nuve-secimi.md",
@@ -17,7 +24,14 @@
     "alt": "Manyetik nüve ürün grubu",
     "description": "ETD29, ETD39 ve ETD44 nüvelerde malzeme, AL, hava aralığı ve karkas uyumunu değerlendirin. SMPS tasarımı için teknik seçim rehberi.",
     "publishedAt": "2026-10-26T00:00:00+03:00",
-    "modifiedAt": "2026-10-26T00:00:00+03:00"
+    "modifiedAt": "2026-10-26T00:00:00+03:00",
+    "en": {
+      "file": "en/etd-core-selection.md",
+      "slug": "etd-core-selection",
+      "category": "Power electronics / ETD cores",
+      "alt": "Magnetic core product group",
+      "description": "Compare ETD29, ETD39 and ETD44 cores by material, AL, air gap and bobbin fit. A practical ferrite core selection guide for SMPS designs."
+    }
   },
   {
     "file": "03-ferrit-demir-tozu-toroid.md",
@@ -27,7 +41,14 @@
     "alt": "Halka biçimli ferrit nüve ürün grubu",
     "description": "Ferrit ve demir tozu toroidlerin farklarını, DC akım etkisini ve -26/-52 malzeme kodlarını öğrenin. Bobin nüvesi için seçim kontrol listesi.",
     "publishedAt": "2026-10-26T00:00:00+03:00",
-    "modifiedAt": "2026-10-26T00:00:00+03:00"
+    "modifiedAt": "2026-10-26T00:00:00+03:00",
+    "en": {
+      "file": "en/ferrite-vs-iron-powder-toroids.md",
+      "slug": "ferrite-vs-iron-powder-toroids",
+      "category": "Material selection / Toroids",
+      "alt": "Ring-shaped ferrite core product group",
+      "description": "Compare ferrite and iron-powder toroids, DC-bias behaviour and -26/-52 material codes. A practical checklist for choosing an inductor core."
+    }
   },
   {
     "file": "04-tek-fazli-emi-filtre-secimi.md",
@@ -37,6 +58,13 @@
     "alt": "Güç ve EMI filtre ürün grubu",
     "description": "Tek fazlı EMI filtre seçerken gerilim, akım, sıcaklık, kaçak akım ve montajı değerlendirin. Veri sayfası ve ekleme kaybı eğrileri için rehber.",
     "publishedAt": "2026-10-26T00:00:00+03:00",
-    "modifiedAt": "2026-10-26T00:00:00+03:00"
+    "modifiedAt": "2026-10-26T00:00:00+03:00",
+    "en": {
+      "file": "en/single-phase-emi-filter-selection.md",
+      "slug": "single-phase-emi-filter-selection",
+      "category": "EMC / Power filters",
+      "alt": "Power and EMI filter product group",
+      "description": "Select a single-phase EMI filter by voltage, current, temperature, leakage and installation. Learn how to read insertion-loss curves and datasheets."
+    }
   }
 ]
