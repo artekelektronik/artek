@@ -195,6 +195,9 @@ These are the website's routes.
 | --- | --- |
 | `/` | Turkish homepage |
 | `/en` | English homepage |
+| `/blog` | Turkish technical guides |
+| `/en/blog` | English introduction to the Turkish guides |
+| `/blog/[slug]` | Individual Turkish guide |
 | `/products` | Product catalog |
 | `/products/[slug]` | Product details |
 | `/ferrit-nuve` | Ferrite core landing page |

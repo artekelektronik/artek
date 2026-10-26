@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { getProducts } from "@/lib/catalog";
+import { blogPosts } from "@/lib/blog";
 import { generateProductSlug } from "@/lib/utils";
 
 export const dynamic = "force-static";
@@ -123,5 +124,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const entries = [...staticPages, ...productUrls];
-  return entries.flatMap(entry => [entry, {...entry, url: entry.alternates.languages.en}]);
+  return [
+    ...entries.flatMap(entry => [entry, {...entry, url: entry.alternates.languages.en}]),
+    ...["/blog", "/en/blog"].map(path => ({url: `${siteUrl}${path}`, changeFrequency: "weekly" as const, priority: 0.7, alternates: {languages: {tr: `${siteUrl}/blog`, en: `${siteUrl}/en/blog`}}})),
+    ...blogPosts.map(post => ({url: `${siteUrl}/blog/${post.slug}`, lastModified: post.modifiedAt, changeFrequency: "monthly" as const, priority: 0.7})),
+  ];
 }

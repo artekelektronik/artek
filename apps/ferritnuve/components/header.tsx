@@ -168,6 +168,7 @@ const Header = () => {
                   translations={{
                     about: t("about"),
                     contact: t("contact"),
+                    blog: t("blog"),
                     whatsappLabel: t("whatsappLabel"),
                   }}
                 />
@@ -240,7 +241,7 @@ function LanguageSwitcher({ pathname, onNavigate }: { pathname: string; onNaviga
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href={`${pathname}${query}`}
+            href={pathname.startsWith("/blog/") ? "/blog" : `${pathname}${query}`}
             onClick={onNavigate}
             locale="en"
             className="flex items-center gap-2 cursor-pointer"
@@ -266,6 +267,7 @@ function MobileMenu({
   translations: {
     about: string;
     contact: string;
+    blog: string;
     whatsappLabel: string;
   };
 }) {
@@ -277,6 +279,7 @@ function MobileMenu({
       groupName: tProduct("title"),
       links: productCategories,
     },
+    { name: translations.blog, href: "/blog" },
     { name: translations.about, href: "/about" },
     { name: translations.contact, href: "/contact" },
   ];
@@ -440,6 +443,11 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
               </div>
             </div>
           </NavigationMenuContent>
+        </NavigationMenuItem>
+        <NavigationMenuItem value="blog">
+          <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10 hover:text-white")}>
+            <Link href="/blog">{t("blog")}</Link>
+          </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem value="about">
           <NavigationMenuLink

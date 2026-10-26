@@ -45,6 +45,7 @@
     "learnMore": "Learn More"
   },
   "nav": {
+    "blog": "Blog",
     "brand": "Artek Elektronik",
     "about": "About",
     "contact": "Contact",
@@ -183,6 +184,7 @@
       "certificates": "Certificates"
     },
     "links": {
+      "blog": "Blog",
       "overview": "Overview",
       "pricing": "Pricing",
       "marketplace": "Marketplace",
