@@ -3,11 +3,11 @@ import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
 
 const middleware = createMiddleware(routing);
-const turkishArticleMiddleware = createMiddleware({...routing, localeDetection: false, alternateLinks: false});
+const articleMiddleware = createMiddleware({...routing, localeDetection: false, alternateLinks: false});
 
 export default function proxy(request: NextRequest) {
-  return /^\/(?:tr\/)?blog\/[^/]+\/?$/.test(request.nextUrl.pathname)
-    ? turkishArticleMiddleware(request)
+  return /^\/(?:(?:tr|en)\/)?blog\/[^/]+\/?$/.test(request.nextUrl.pathname)
+    ? articleMiddleware(request)
     : middleware(request);
 }
 

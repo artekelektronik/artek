@@ -73,17 +73,22 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 });
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
-  const {blogPosts, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
+  const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
   assert.equal(blogPosts.length, 4);
   assert.equal(new Set(blogPosts.map(post => post.slug)).size, 4);
-  for (const post of blogPosts) {
+  for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
     for (const match of post.html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(match[1]), `${post.slug}: ${match[1]}`);
     assert.doesNotMatch(post.html, /onay bekleyen|noindex|javascript:|<script/i);
     const graph = blogStructuredData(post, 'https://www.ferritnuve.com')['@graph'];
-    assert.equal(graph[0].mainEntityOfPage['@id'], `https://www.ferritnuve.com/blog/${post.slug}`);
-    assert.equal(graph[0].inLanguage, 'tr-TR');
+    assert.equal(graph[0].mainEntityOfPage['@id'], `https://www.ferritnuve.com${post.locale === 'en' ? '/en' : ''}/blog/${post.slug}`);
+    assert.equal(graph[0].inLanguage, post.locale === 'en' ? 'en' : 'tr-TR');
+    for (const locale of ['tr', 'en']) assert.ok(getBlogPost(post.translations[locale], locale));
+    if (post.locale === 'en') {
+      assert.match(post.html, /aria-label="Source /);
+      assert.match(post.html, /href="\/en\/contact"/);
+    }
     assert.equal(graph[1].itemListElement.at(-1).item, graph[0].mainEntityOfPage['@id']);
   }
   const sample = renderBlogMarkdown('# Başlık\n\nGiriş\n\n## Bölüm\n\n<img src=x onerror=alert(1)> [yerel](https://www.ferritnuve.com/contact)');

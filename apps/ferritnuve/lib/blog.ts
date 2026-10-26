@@ -9,7 +9,7 @@ export function headingId(text: string) {
 const escapeHtml = (text: string) => text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 
 // Only the checked-in Markdown subset is supported. Raw HTML is always escaped.
-export function renderBlogMarkdown(markdown: string) {
+export function renderBlogMarkdown(markdown: string, locale = "tr") {
   const lines = markdown.trim().split(/\r?\n/);
   const title = lines.shift()!.replace(/^# /, "");
   const lead = lines.find(line => line.trim()) ?? "";
@@ -27,7 +27,7 @@ export function renderBlogMarkdown(markdown: string) {
       return `BLOG_LINK_${index}_END`;
     });
     value = escapeHtml(value).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-    if (references) value = value.replace(/\[(\d+)\]/g, '<sup><a href="#kaynak-$1" aria-label="Kaynak $1">[$1]</a></sup>');
+    if (references) value = value.replace(/\[(\d+)\]/g, `<sup><a href="#kaynak-$1" aria-label="${locale === "en" ? "Source" : "Kaynak"} $1">[$1]</a></sup>`);
     return value.replace(/BLOG_LINK_(\d+)_END/g, (_, index: string) => links[Number(index)]);
   }
   function flush() {
@@ -60,33 +60,39 @@ export function renderBlogMarkdown(markdown: string) {
   return {title, lead, html: html.slice(1).join("\n"), headings, minutes: Math.ceil(markdown.split(/\s+/).length / 180)};
 }
 
-export const blogPosts = posts.map(post => {
-  const markdown = fs.readFileSync(path.join(process.cwd(), "content/blog", post.file), "utf8");
-  return {...post, ...renderBlogMarkdown(markdown)};
-});
+export function getBlogPosts(locale = "tr") {
+  return posts.map(post => {
+    const localized = locale === "en" ? {...post, ...post.en} : post;
+    const markdown = fs.readFileSync(path.join(process.cwd(), "content/blog", localized.file), "utf8");
+    return {...localized, locale, translations: {tr: post.slug, en: post.en.slug}, ...renderBlogMarkdown(markdown, locale)};
+  });
+}
 
-export function getBlogPost(slug: string) {
-  return blogPosts.find(post => post.slug === slug);
+export const blogPosts = getBlogPosts();
+export const englishBlogPosts = getBlogPosts("en");
+export function getBlogPost(slug: string, locale = "tr") {
+  return (locale === "en" ? englishBlogPosts : blogPosts).find(post => post.slug === slug);
 }
 
 export function blogStructuredData(post: typeof blogPosts[number], siteUrl: string) {
-  const url = `${siteUrl}/blog/${post.slug}`;
+  const prefix = post.locale === "en" ? "/en" : "";
+  const url = `${siteUrl}${prefix}/blog/${post.slug}`;
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "BlogPosting", "@id": `${url}#article`, headline: post.title,
         description: post.description, image: [`${siteUrl}${post.image}`],
-        datePublished: post.publishedAt, dateModified: post.modifiedAt, inLanguage: "tr-TR",
+        datePublished: post.publishedAt, dateModified: post.modifiedAt, inLanguage: post.locale === "en" ? "en" : "tr-TR",
         mainEntityOfPage: {"@type": "WebPage", "@id": url},
-        author: {"@type": "Organization", name: "Artek Elektronik", url: `${siteUrl}/about`},
+        author: {"@type": "Organization", name: "Artek Elektronik", url: `${siteUrl}${prefix}/about`},
         publisher: {"@type": "Organization", name: "Artek Elektronik", url: siteUrl},
-        isPartOf: {"@type": "Blog", "@id": `${siteUrl}/blog`, name: "Artek Teknik Rehberler"},
+        isPartOf: {"@type": "Blog", "@id": `${siteUrl}${prefix}/blog`, name: post.locale === "en" ? "Artek Technical Guides" : "Artek Teknik Rehberler"},
       },
       {
         "@type": "BreadcrumbList", itemListElement: [
-          {"@type": "ListItem", position: 1, name: "Ana sayfa", item: siteUrl},
-          {"@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}/blog`},
+          {"@type": "ListItem", position: 1, name: post.locale === "en" ? "Home" : "Ana sayfa", item: `${siteUrl}${prefix}`},
+          {"@type": "ListItem", position: 2, name: "Blog", item: `${siteUrl}${prefix}/blog`},
           {"@type": "ListItem", position: 3, name: post.title, item: url},
         ],
       },

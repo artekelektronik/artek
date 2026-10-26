@@ -4,6 +4,7 @@ import React from "react";
 import { Search, Globe, Menu, X, Grid3x3 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import blogManifest from "@/content/blog/posts.json";
 import { SearchDialog } from "./search-dialog";
 
 import {
@@ -218,6 +219,7 @@ const Header = () => {
 };
 
 function LanguageSwitcher({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) {
+  const article = pathname.startsWith("/blog/") ? blogManifest.find(post => post.slug === pathname.slice(6) || post.en.slug === pathname.slice(6)) : undefined;
   const t = useTranslations("language");
   const [query, setQuery] = React.useState("");
   return (
@@ -230,7 +232,7 @@ function LanguageSwitcher({ pathname, onNavigate }: { pathname: string; onNaviga
       <DropdownMenuContent align="end" className="w-32">
         <DropdownMenuItem asChild>
           <Link
-            href={`${pathname}${query}`}
+            href={article ? `/blog/${article.slug}` : `${pathname}${query}`}
             onClick={onNavigate}
             locale="tr"
             className="flex items-center gap-2 cursor-pointer"
@@ -241,7 +243,7 @@ function LanguageSwitcher({ pathname, onNavigate }: { pathname: string; onNaviga
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href={pathname.startsWith("/blog/") ? "/blog" : `${pathname}${query}`}
+            href={article ? `/blog/${article.en.slug}` : `${pathname}${query}`}
             onClick={onNavigate}
             locale="en"
             className="flex items-center gap-2 cursor-pointer"
