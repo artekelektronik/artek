@@ -155,6 +155,16 @@ export default async function LocaleLayout({
                   page_path: window.location.pathname,
                   locale: '${locale}'
                 });
+                // Contact clicks are the site's conversions (no cart): mark them for GA4 / Google Ads.
+                document.addEventListener('click', function (e) {
+                  var a = e.target.closest && e.target.closest('a[href]');
+                  if (!a) return;
+                  var href = a.getAttribute('href');
+                  var name = href.indexOf('https://wa.me/') === 0 ? 'whatsapp_click'
+                    : href.indexOf('tel:') === 0 ? 'phone_click'
+                    : href.indexOf('mailto:') === 0 ? 'email_click' : null;
+                  if (name) gtag('event', name, { link_url: href.split('?')[0] });
+                }, true);
               `}
             </Script>
           </>
