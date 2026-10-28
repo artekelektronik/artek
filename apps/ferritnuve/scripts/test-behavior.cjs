@@ -176,3 +176,32 @@ test('business data is structured and llms.txt lists every guide and the catalog
   assert.ok(text.includes(`${site}/en/products?categories=PEM`));
   assert.doesNotMatch(text, /fiyat|price:|stok adedi/i);
 });
+test('FAQ page combines own questions with every guide FAQ and searches like a visitor types', () => {
+  const {faqItems, faqStructuredData} = require('../lib/faq.ts');
+  const {matchFaq, scrubSearch} = require('../lib/faq-search.ts');
+  const {blogPosts, englishBlogPosts} = require('../lib/blog.ts');
+  for (const [locale, posts] of [['tr', blogPosts], ['en', englishBlogPosts]]) {
+    const items = faqItems(locale);
+    assert.equal(new Set(items.map(item => item.id)).size, items.length);
+    for (const item of items) {
+      assert.ok(item.question.endsWith('?') && item.answer.length > 40, item.question);
+      if (item.link) assert.match(item.link.href, /^\/(blog\/|products|contact|certificates)/);
+      if (item.source) assert.match(item.source.href, /^https:\/\//);
+    }
+    // Every guide's FAQ appears, linking back to that guide in the same language.
+    for (const post of posts) for (const {question} of post.faq) {
+      const item = items.find(i => i.question === question);
+      assert.equal(item.group, 'guides');
+      assert.equal(item.link.href, `/blog/${post.slug}`);
+    }
+    // FAQPage markup only for questions not already marked up on a guide page.
+    const data = faqStructuredData(items, 'https://www.ferritnuve.com/faq', locale);
+    assert.equal(data.mainEntity.length, items.filter(i => i.group !== 'guides').length);
+  }
+  const tr = faqItems('tr');
+  assert.ok(matchFaq(tr, 'ferrit nuve nedir').some(i => i.question === 'Ferrit nüve nedir?'));
+  assert.ok(matchFaq(tr, 'HAVA ARALIĞI').length >= 1);
+  assert.equal(matchFaq(tr, '').length, tr.length);
+  assert.equal(matchFaq(tr, 'pizza teslimatı').length, 0);
+  assert.equal(scrubSearch(' Ali  0532 718 33 64 ali@firma.com etd39 '), 'Ali [tel] [e-posta] etd39');
+});

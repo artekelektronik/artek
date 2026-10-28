@@ -34,6 +34,7 @@ export function llmsText(siteUrl: string) {
     "",
     "## Company",
     "",
+    `- [Frequently asked questions](${siteUrl}/en/faq): technical answers (AL value, air gap, MnZn/NiZn ferrite, common-mode chokes) and the quote process`,
     `- [About](${siteUrl}/en/about)`,
     `- [Certificates](${siteUrl}/en/certificates)`,
     "",

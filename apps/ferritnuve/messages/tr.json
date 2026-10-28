@@ -31,6 +31,10 @@
     "transformator": {
       "title": "Transformatör Üreticisi | SMPS Ferrit Sac Trafo | Artek",
       "description": "Transformatörler — ürün grubu tanıtımı ve iletişim."
+    },
+    "faq": {
+      "title": "Sık Sorulan Sorular | Ferrit Nüve ve EMI Filtre | Artek Elektronik",
+      "description": "Ferrit nüve, AL değeri, hava aralığı, EMI filtre ve teklif süreci hakkında kısa cevaplar. Sorunuzu arayın veya Artek'e doğrudan sorun."
     }
   },
   "homeKeywords": {
@@ -55,7 +59,8 @@
     "search": "Ara",
     "home": "Ana sayfa",
     "openMenu": "Menüyü aç",
-    "closeMenu": "Menüyü kapat"
+    "closeMenu": "Menüyü kapat",
+    "faq": "SSS"
   },
   "hero": {
     "eyebrow": "Artek Elektronik",
@@ -192,7 +197,6 @@
       "integrations": "Entegrasyonlar",
       "about": "Hakkımızda",
       "team": "Ekip",
-      "blog": "Blog",
       "careers": "Kariyer",
       "contact": "İletişim",
       "privacy": "Gizlilik",
@@ -210,7 +214,8 @@
       "iso9001": "ISO 9001:2015",
       "iso45001": "ISO 45001:2018",
       "iso10002": "ISO 10002:2018",
-      "viewCertificates": "Sertifikaları Görüntüle"
+      "viewCertificates": "Sertifikaları Görüntüle",
+      "faq": "Sık Sorulan Sorular"
     },
     "terms": "Şartlar ve Koşullar",
     "privacyPolicy": "Gizlilik Politikası"

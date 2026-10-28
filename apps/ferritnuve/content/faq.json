@@ -1,0 +1,115 @@
+[
+  {
+    "group": "technical",
+    "href": "/products?categories=Ferrit",
+    "source": {"url": "https://www.tdk-electronics.tdk.com/inf/80/db/fer/u_93_76_30.pdf", "tr": "TDK: Ferrit nüve verileri ve uyarılar", "en": "TDK: Ferrite core data and cautions"},
+    "tr": {
+      "q": "Ferrit nüve nedir?",
+      "a": "Ferrit nüve, bobin, trafo ve parazit bastırma elemanlarında manyetik akıyı taşıyan, seramik bir manyetik malzemeden üretilmiş parçadır. Seramik olduğu için kırılgandır; darbeye, hızlı sıcaklık değişimine ve çekme yüküne karşı hassastır. Nüvedeki mekanik gerilim, manyetik özellikleri de etkiler."
+    },
+    "en": {
+      "q": "What is a ferrite core?",
+      "a": "A ferrite core is a part made of a ceramic magnetic material that carries the magnetic flux in inductors, transformers and interference suppression components. Because it is a ceramic, it is brittle and sensitive to shock, fast temperature changes and tensile load. Mechanical stress in the core also affects its magnetic properties."
+    }
+  },
+  {
+    "group": "technical",
+    "guide": "kablo-ferriti-secimi",
+    "source": {"url": "https://yageogroup.com/content/datasheet/asset/file/KEM_LF0016_SU9V-9H", "tr": "KEMET: Ferrit malzeme ve frekans aralığı", "en": "KEMET: Ferrite material and frequency range"},
+    "tr": {
+      "q": "MnZn ve NiZn ferrit arasındaki fark nedir?",
+      "a": "İkisi farklı ferrit malzeme aileleridir ve farklı frekans aralıklarında etkilidir. Yüksek geçirgenlikli malzemeler daha düşük frekanslarda, düşük geçirgenlikli malzemeler daha yüksek frekanslarda etkilidir. Parazit bastırmada MnZn malzemeler çoğunlukla iletilen gürültüye, NiZn malzemeler ise ışıma gürültüsüne karşı kullanılır. Etki, nüve biçimine, boyutuna ve sarım sayısına da bağlıdır; gerçek cihazda test edilmelidir."
+    },
+    "en": {
+      "q": "What is the difference between MnZn and NiZn ferrite?",
+      "a": "They are different ferrite material families that work in different frequency ranges. High-permeability materials are effective at lower frequencies and lower-permeability materials at higher frequencies. For interference suppression, MnZn materials are mainly used against conducted noise and NiZn materials against radiated noise. The effect also depends on core shape, size and number of turns, and should be tested on the actual device."
+    }
+  },
+  {
+    "group": "technical",
+    "guide": "ee-nuve-secimi",
+    "source": {"url": "https://www.ferroxcube.com/upload/media/product/file/Pr_ds/U25_20_13.pdf", "tr": "Ferroxcube: U25/20/13 endüktans faktörü", "en": "Ferroxcube: U25/20/13 inductance factor"},
+    "tr": {
+      "q": "Nüvenin AL değeri nedir?",
+      "a": "AL değeri (endüktans faktörü), bir nüve takımı için sarım başına düşen endüktansı gösterir ve nH/sarım² birimiyle verilir. Endüktans yaklaşık olarak L = AL × N² ile hesaplanır; N sarım sayısıdır. AL değeri belirli bir takım, hava aralığı ve ölçüm koşulu için geçerlidir; bu yüzden toleransıyla ve hangi takıma ait olduğuyla birlikte okunmalıdır."
+    },
+    "en": {
+      "q": "What is the AL value of a core?",
+      "a": "The AL value (inductance factor) gives the inductance per turn squared for a core set and is stated in nH/turns². Inductance is approximately L = AL × N², where N is the number of turns. The AL value applies to a specific set, air gap and test condition, so read it together with its tolerance and the set it refers to."
+    }
+  },
+  {
+    "group": "technical",
+    "guide": "etd-nuve-secimi",
+    "source": {"url": "https://www.ti.com/lit/ml/slup127/slup127.pdf", "tr": "Texas Instruments: Bobin ve flyback transformatörü tasarımı", "en": "Texas Instruments: Inductor and flyback transformer design"},
+    "tr": {
+      "q": "Nüvede hava aralığı neden kullanılır?",
+      "a": "Bobinlerde ve flyback trafolarında enerji neredeyse tamamen hava aralığında depolanır; yüksek geçirgenlikli nüve, bu enerjiyi sargıya bağlayan kolay bir akı yolu sağlar. Hava aralığı etkin geçirgenliği düşürür ve nüvenin enerji depolama kapasitesini belirler. Aralığın dışına taşan saçak akı ise ek kayıplara ve beklenenden farklı endüktansa yol açabilir."
+    },
+    "en": {
+      "q": "Why is an air gap used in a core?",
+      "a": "In inductors and flyback transformers, almost all of the energy is stored in the air gap; the high-permeability core provides an easy flux path that links this energy to the winding. The gap lowers the effective permeability and sets how much energy the core can store. Fringing flux outside the gap can cause extra losses and an inductance different from the expected value."
+    }
+  },
+  {
+    "group": "technical",
+    "guide": "tek-fazli-emi-filtre-secimi",
+    "source": {"url": "https://www.tdk-electronics.tdk.com/en/530144/products/product-catalog/emc-components/power-line-chokes", "tr": "TDK: Güç hattı bobinleri", "en": "TDK: Power line chokes"},
+    "tr": {
+      "q": "Akım kompanzasyonlu (ortak mod) bobin nedir?",
+      "a": "Şebeke hattındaki ortak mod paraziti bastırmak için kullanılan, aynı nüve üzerinde iki sargısı olan bobindir. Çalışma akımı iki sargıdan zıt yönlerde geçtiği için manyetik etkileri büyük ölçüde birbirini dengeler ve nüve bu akımla doymaz. İki hatta aynı yönde akan ortak mod parazit ise yüksek empedansla karşılaşır. Bu bobinler toroid, U, D veya çerçeve nüvelerle yapılabilir."
+    },
+    "en": {
+      "q": "What is a current-compensated (common-mode) choke?",
+      "a": "It is a choke with two windings on the same core, used to suppress common-mode interference on mains lines. The operating current flows through the two windings in opposite directions, so their magnetic effects largely cancel and the core is not saturated by that current. Common-mode noise flowing in the same direction on both lines meets a high impedance. These chokes can be built on ring, U, D or frame cores."
+    }
+  },
+  {
+    "group": "company",
+    "href": "/contact",
+    "tr": {
+      "q": "Ürün fiyatlarını neden sitede göremiyorum?",
+      "a": "Site, Artek Elektronik'in ürün kataloğudur; fiyat ve stok bilgisi göstermez. Fiyat, parça tanımına ve istenen adede göre teklifle verilir. Ürün sayfasından, WhatsApp'tan, telefonla veya e-postayla talep gönderebilirsiniz."
+    },
+    "en": {
+      "q": "Why can't I see product prices on the site?",
+      "a": "The site is Artek Elektronik's product catalog and does not show prices or stock. Prices are quoted according to the part definition and the required quantity. You can send an enquiry from the product page, by WhatsApp, by phone or by email."
+    }
+  },
+  {
+    "group": "company",
+    "guide": "ozel-trafo-teklif-rehberi",
+    "tr": {
+      "q": "Teklif için hangi bilgileri göndermeliyim?",
+      "a": "Parçanın adını veya tam ölçüsünü, varsa mevcut üretici ve parça numarasını, fotoğraf veya çizimi, uygulamayı (frekans, akım, gerilim) ve istenen adedi tek mesajda gönderin. Bilmediğiniz değerleri tahmin etmek yerine bilinmiyor olarak belirtin. Ürün gruplarına göre ayrıntılı kontrol listeleri teknik rehberlerde yer alır."
+    },
+    "en": {
+      "q": "What information should I send for a quote?",
+      "a": "Send the part name or full dimensions, the existing manufacturer and part number if available, a photograph or drawing, the application (frequency, current, voltage) and the required quantity in a single message. If you do not know a value, mark it as unknown instead of guessing. The technical guides include detailed checklists for each product group."
+    }
+  },
+  {
+    "group": "company",
+    "href": "/certificates",
+    "tr": {
+      "q": "Artek Elektronik'in hangi sertifikaları var?",
+      "a": "Artek Elektronik'in ISO 9001:2015 kalite yönetim sistemi, ISO 45001:2018 iş sağlığı ve güvenliği yönetim sistemi ve ISO 10002:2018 müşteri memnuniyeti yönetim sistemi sertifikaları bulunur. Belgelerde kapsam, elektronik cihaz ve parçaların toptan ticareti olarak belirtilir; her katalog ürününün ayrıca sertifikalı olduğunu göstermez."
+    },
+    "en": {
+      "q": "Which certificates does Artek Elektronik hold?",
+      "a": "Artek Elektronik holds ISO 9001:2015 quality management, ISO 45001:2018 occupational health and safety management, and ISO 10002:2018 customer satisfaction management certificates. The documents state the scope as wholesale trade of electronic devices and parts; they do not certify each catalog product separately."
+    }
+  },
+  {
+    "group": "company",
+    "href": "/contact",
+    "tr": {
+      "q": "Artek Elektronik'e nasıl ulaşabilirim?",
+      "a": "Telefon (0212 252 11 68 veya 0532 718 33 64), WhatsApp, e-posta (artek@ferritnuve.com) veya iletişim formuyla ulaşabilirsiniz. Adres: Erişteci Sokak Abed Han No: 7/1, Karaköy, İstanbul."
+    },
+    "en": {
+      "q": "How can I contact Artek Elektronik?",
+      "a": "You can reach Artek by phone (+90 212 252 11 68 or +90 532 718 33 64), WhatsApp, email (artek@ferritnuve.com) or the contact form. Address: Erişteci Sokak Abed Han No: 7/1, Karaköy, İstanbul, Türkiye."
+    }
+  }
+]
