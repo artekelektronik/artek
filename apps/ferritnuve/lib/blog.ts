@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import posts from "../content/blog/posts.json";
+import type { AirtableProduct } from "../types/airtable";
 
 export function headingId(text: string) {
   return text.toLocaleLowerCase("tr").replace(/[ğüşıöç]/g, character => ({ğ:"g",ü:"u",ş:"s",ı:"i",ö:"o",ç:"c"})[character] ?? character).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -105,4 +106,18 @@ export function productGuideSlug(category?: string, productTypes?: string[]) {
   if (category === "IRON-POWDER" || productTypes?.includes("TOROID")) return "ferrit-demir-tozu-toroid";
   if (productTypes?.includes("ETD")) return "etd-nuve-secimi";
   if (productTypes?.includes("YUVARLAK")) return "kablo-ferriti-secimi";
+}
+
+// The catalog products a guide is about (the reverse of productGuideSlug), taking categories in turn
+// so a comparison guide shows both sides, plus a catalog link filtered to all of them.
+export function relatedProducts(products: AirtableProduct[], guideSlug: string, limit = 4) {
+  const matches = products.filter(p => productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"]) === guideSlug);
+  const categories = [...new Set(matches.map(p => p.fields.Category ?? ""))];
+  const types = [...new Set(matches.flatMap(p => p.fields["Ürün Tipi"] ?? []))];
+  const byCategory = categories.map(category => matches.filter(p => (p.fields.Category ?? "") === category));
+  const longest = Math.max(0, ...byCategory.map(group => group.length));
+  const inTurn = Array.from({length: longest}, (_, i) => byCategory.map(group => group[i])).flat().filter(p => p !== undefined);
+  const query = new URLSearchParams({categories: categories.join(",")});
+  if (types.length) query.set("productTypes", types.join(","));
+  return {products: inTurn.slice(0, limit), catalogHref: `/products?${query}`};
 }
