@@ -8,6 +8,11 @@ export * from "./finance-calc";
 // Both panels read it: Finans for the totals, Müşteri for each customer's sales and Öncelik.
 export async function financeSummary(headers: Headers, action: "finance.view" | "crm.view") {
   await requirePermission(headers, action);
+  return loadSalesSummary();
+}
+
+// Unchecked: for callers that already checked access, and for the morning assistant run by the cron.
+export async function loadSalesSummary() {
   const [invoices, lines, customers] = await Promise.all([
     db
       .select({

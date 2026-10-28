@@ -1,7 +1,7 @@
 import { asc, desc, eq, and, lte, isNotNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { customer, customerNote, customerStatus, invoice, user } from "../db/schema";
+import { customer, customerNote, customerStatus, followUpChannel, invoice, user } from "../db/schema";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 
@@ -12,20 +12,7 @@ export async function customerCard(headers: Headers, id: string) {
   if (!isUuid(id)) return null;
   const [row] = await db.select().from(customer).where(eq(customer.id, id));
   if (!row) return null;
-  const [invoices, notes] = await Promise.all([
-    db
-      .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
-      .from(invoice)
-      .where(eq(invoice.customerId, id))
-      .orderBy(desc(invoice.issuedOn)),
-    db
-      .select({ id: customerNote.id, body: customerNote.body, createdAt: customerNote.createdAt, author: user.name })
-      .from(customerNote)
-      .innerJoin(user, eq(user.id, customerNote.userId))
-      .where(eq(customerNote.customerId, id))
-      .orderBy(desc(customerNote.createdAt)),
-  ]);
-  return { ...row, invoices, notes };
+  return { ...row, ...(await customerHistory(headers, id)) };
 }
 
 const optional = z
@@ -47,6 +34,7 @@ const updateInput = z.object({
     .trim()
     .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), { error: "Takip tarihi geçersiz." })
     .transform((v) => v || null),
+  followUpChannel: z.enum(followUpChannel.enumValues, { error: "Takip şeklini seçin." }),
 });
 
 export async function updateCustomer(headers: Headers, input: z.input<typeof updateInput>) {
@@ -61,6 +49,26 @@ const noteInput = z.object({
   customerId: z.uuid(),
   body: z.string().trim().min(1, { error: "Not boş olamaz." }).max(4000, { error: "Not en fazla 4000 karakter olabilir." }),
 });
+
+// The parts of a card the list doesn't carry: notes and invoices, loaded when the card opens.
+export async function customerHistory(headers: Headers, id: string) {
+  await requirePermission(headers, "crm.view");
+  if (!isUuid(id)) return { notes: [], invoices: [] };
+  const [invoices, notes] = await Promise.all([
+    db
+      .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
+      .from(invoice)
+      .where(eq(invoice.customerId, id))
+      .orderBy(desc(invoice.issuedOn)),
+    db
+      .select({ id: customerNote.id, body: customerNote.body, createdAt: customerNote.createdAt, author: user.name })
+      .from(customerNote)
+      .innerJoin(user, eq(user.id, customerNote.userId))
+      .where(eq(customerNote.customerId, id))
+      .orderBy(desc(customerNote.createdAt)),
+  ]);
+  return { invoices, notes };
+}
 
 // Notes are a history: added, never edited.
 export async function addCustomerNote(headers: Headers, input: z.input<typeof noteInput>) {

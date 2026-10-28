@@ -233,3 +233,6 @@ export const customerStatusLabels = {
   ilgilenmiyor: "İlgilenmiyor",
 } as const;
 export type CustomerStatus = keyof typeof customerStatusLabels;
+
+export const followUpChannelLabels = { telefon: "Telefon", eposta: "E-posta" } as const;
+export type FollowUpChannel = keyof typeof followUpChannelLabels;

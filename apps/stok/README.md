@@ -17,7 +17,8 @@ Names only; never commit values. Locally they live in `apps/stok/.env.local` (gi
 | `RESEND_FROM` | Sender address on the verified Resend domain, e.g. `Artek Stok <stok@…>` |
 | `BLOB_READ_WRITE_TOKEN` | Product image uploads to Vercel Blob (store `artek-stok-images`, connected to this project only) |
 | `NEXT_PUBLIC_VITRIN_URL` | Optional; where image paths of old imports live (default `https://www.ferritnuve.com`) |
-| `CRON_SECRET` | Protects `/api/cron/outbox`; Vercel Cron sends it automatically |
+| `CRON_SECRET` | Protects `/api/cron/*`; Vercel Cron sends it automatically |
+| `ANTHROPIC_API_KEY` | The morning assistant (Claude) that prepares call plans and email drafts; without it the Bugün screen stays empty |
 
 ## Local setup
 
@@ -61,6 +62,23 @@ Images live in Vercel Blob. The product form uploads them from the browser strai
 Two private panels, ADR-0004. Each admin gets them one by one under Kullanıcılar → Panel izinleri, at view or edit level: Artek Müşteri Paneli (`crm.*`) and Artek Finans Paneli (`finance.*`, where uploading needs edit). Invoice PDFs from QNB Dijital Köprü are uploaded at `/faturalar`; the browser unzips a zip and posts each PDF to `/api/faturalar` (one PDF per request, 4 MB max). An invoice is stored once per ETTN with its lines and the PDF's text; the PDF itself isn't kept. Customers are created from the buyer's VKN/TCKN. Finans and Müşteriler are calculated from the invoices on every request. The daily cron emails artek@ferritnuve.com after 7 days without a new invoice and sends Müşteri paneli holders the customers whose follow-up date has come.
 
 Contact routes researched outside the repo are loaded once with `pnpm --filter stok import-crm-contacts <file.json>`. It only fills empty fields and skips weak matches. Like `import-products`, it uses `.env.local`, so it writes to whatever database `DATABASE_URL` names.
+
+## Bugün: the morning assistant
+
+Every morning at 08:00 Istanbul (`/api/cron/asistan`), `lib/assistant.ts` picks up to 10 customers:
+
+- customers whose Takip date has come, by the Takip channel on their card;
+- up to 5 lapsed or one-off customers it proposes itself, each at most once every 30 days.
+
+For each one, Claude (`claude-opus-5-5`, web search and fetch) reads the customer's site and recent news, combines them with our invoices and notes, and writes a call plan or an email draft. Nothing is sent automatically.
+
+On `/musteriler/bugun` a person with Müşteri paneli edit rights works through the list:
+
+- **Calls:** record a call with a note.
+- **Emails:** edit a draft and press Gönder. The email goes from artek@ferritnuve.com, replies go to that inbox, and the signature and opt-out line are added automatically.
+- **Bugün değil:** skip a suggestion for today.
+
+Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.
 
 ## Public catalog
 

@@ -5,6 +5,7 @@ import { PanelShell, panelLede, panelWarning } from "@/components/panel";
 import { financeSummary, shortName } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { istanbulDate } from "@/lib/time";
 import { CrmBoard, type CrmRow } from "./crm-board";
 
 export const metadata = { title: "Müşteriler | Artek Müşteri Paneli" };
@@ -43,6 +44,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       contactSource: c.contactSource,
       status: c.status,
       nextFollowUpOn: c.nextFollowUpOn,
+      followUpChannel: c.followUpChannel,
+      emailOptOut: Boolean(c.emailOptOutAt),
     };
   });
 
@@ -51,7 +54,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       {rows.length === 0 ? (
         <p className="text-muted-foreground">Henüz müşteri yok; faturalar yüklenince burada listelenir.</p>
       ) : (
-        <CrmBoard rows={rows} canEdit={can(actor, "crm.edit")} initialSelected={secili && byId.has(secili) ? secili : undefined} />
+        <CrmBoard
+          rows={rows}
+          canEdit={can(actor, "crm.edit")}
+          today={istanbulDate(new Date())}
+          initialSelected={secili && byId.has(secili) ? secili : undefined}
+        />
       )}
       <p className="text-muted-foreground text-xs">
         Telefon, e-posta ve web adresleri firmaların kendi sitelerinden veya resmi rehberlerden alındı; kaynağı seçili müşteri kartında. Şahıs

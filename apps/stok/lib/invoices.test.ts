@@ -178,13 +178,15 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       contactSource: "",
       status: "arandi",
       nextFollowUpOn: "2025-04-10",
+      followUpChannel: "eposta",
     });
     await crm.addCustomerNote(admin.headers, { customerId: c.id, body: "Mayısta yeni proje var." });
     const card = await crm.customerCard(admin.headers, c.id);
     assert.equal(card?.status, "arandi");
+    assert.equal(card?.followUpChannel, "eposta");
     assert.equal(card?.notes[0].body, "Mayısta yeni proje var.");
     await assert.rejects(
-      crm.updateCustomer(admin.headers, { id: c.id, phone: "", email: "yanlis", website: "", about: "", contactSource: "", status: "arandi", nextFollowUpOn: "" }),
+      crm.updateCustomer(admin.headers, { id: c.id, phone: "", email: "yanlis", website: "", about: "", contactSource: "", status: "arandi", nextFollowUpOn: "", followUpChannel: "telefon" }),
       /E-posta/,
     );
   });

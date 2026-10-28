@@ -433,6 +433,9 @@ export const customerStatus = pgEnum("customer_status", [
   "ilgilenmiyor",
 ]);
 
+// How the next follow-up is made; the morning assistant suggests a call or drafts an email accordingly.
+export const followUpChannel = pgEnum("follow_up_channel", ["telefon", "eposta"]);
+
 // One row per buyer, keyed by the VKN / TCKN on its invoices.
 export const customer = pgTable("customer", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -449,6 +452,9 @@ export const customer = pgTable("customer", {
   contactSource: text("contact_source"),
   status: customerStatus("status").notNull().default("aranacak"),
   nextFollowUpOn: date("next_follow_up_on", { mode: "string" }),
+  followUpChannel: followUpChannel("follow_up_channel").notNull().default("telefon"),
+  // Asked not to get emails ("istemiyorum"); the assistant never drafts one for them again.
+  emailOptOutAt: timestamp("email_opt_out_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -512,4 +518,35 @@ export const invoiceLine = pgTable(
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.invoiceId, t.seq] })],
+);
+
+// The morning assistant's suggestions: call this customer and ask this, or send this email. Nothing goes out
+// until a person approves it on the Bugün screen.
+export const suggestionKind = pgEnum("suggestion_kind", ["arama", "eposta"]);
+export const suggestionStatus = pgEnum("suggestion_status", ["bekliyor", "gonderildi", "yapildi", "atlandi", "basarisiz"]);
+
+type Finding = { title: string; url: string; summary: string };
+
+export const assistantSuggestion = pgTable(
+  "assistant_suggestion",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id),
+    forDay: date("for_day", { mode: "string" }).notNull(), // Istanbul day it was prepared for
+    kind: suggestionKind("kind").notNull(),
+    reason: text("reason").notNull(), // why this customer today, in one sentence
+    talkingPoints: text("talking_points").array().notNull().default(sql`'{}'::text[]`), // what to ask on the call
+    subject: text("subject"),
+    body: text("body"),
+    findings: jsonb("findings").$type<Finding[]>().notNull().default([]), // what it found online, with links
+    status: suggestionStatus("status").notNull().default("bekliyor"),
+    error: text("error"),
+    model: text("model"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+    decidedBy: text("decided_by").references(() => user.id),
+  },
+  (t) => [uniqueIndex("assistant_suggestion_customer_day_idx").on(t.customerId, t.forDay), index("assistant_suggestion_day_idx").on(t.forDay)],
 );
