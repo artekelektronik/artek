@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 4);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 4);
+  assert.equal(blogPosts.length, 7);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 7);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
@@ -104,7 +104,15 @@ test('every blog guide lists its own catalog products and links to them in the c
   for (const post of blogPosts) {
     const related = relatedProducts(products, post.slug);
     assert.ok(related.products.length > 0 && related.products.length <= 4, post.slug);
-    for (const product of related.products) assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi']), post.slug);
+    for (const product of related.products) {
+      if (post.slug === 'ozel-trafo-teklif-rehberi') {
+        assert.equal(product.fields.Category, 'Ferrit');
+        assert.ok(product.fields['Ürün Tipi'].some(type => ['EE', 'ETD'].includes(type)));
+      } else if (post.slug === '26-52-toroid-karsilastirmasi') {
+        assert.equal(product.fields.Category, 'IRON-POWDER');
+        assert.match(product.fields['Product Name'], /-\s*(26|52)\s*$/);
+      } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi']), post.slug);
+    }
     const query = new URL(related.catalogHref, 'https://test.invalid').searchParams;
     const categories = query.get('categories').split(',');
     const types = query.get('productTypes')?.split(',');
@@ -116,4 +124,18 @@ test('every blog guide lists its own catalog products and links to them in the c
   // A comparison guide shows both sides, not just the first category in catalog order.
   const toroids = relatedProducts(products, 'ferrit-demir-tozu-toroid').products;
   assert.deepEqual(new Set(toroids.map(p => p.fields.Category)), new Set(['Ferrit', 'IRON-POWDER']));
+  const transformerCores = relatedProducts(products, 'ozel-trafo-teklif-rehberi').products;
+  assert.deepEqual(new Set(transformerCores.flatMap(p => p.fields['Ürün Tipi'])), new Set(['EE', 'ETD']));
+  const eeCores = relatedProducts(products, 'ee-nuve-secimi').products;
+  assert.ok(eeCores.some(p => p.fields['Product Name'].startsWith('EE 25')));
+  assert.ok(eeCores.some(p => p.fields['Product Name'].startsWith('EE 42')));
+  const powderCores = relatedProducts(products, '26-52-toroid-karsilastirmasi').products;
+  assert.deepEqual(new Set(powderCores.map(p => p.fields['Product Name'].match(/(26|52)\s*$/)[1])), new Set(['26', '52']));
+  // An unrelated ferrite or an unclassified powder core must not enter this comparison.
+  const unrelated = [{...products[0], fields: {...products[0].fields, Category: 'IRON-POWDER', 'Product Name': 'Unknown mix'}}];
+  assert.deepEqual(relatedProducts(unrelated, '26-52-toroid-karsilastirmasi').products, []);
+  for (const post of blogPosts) {
+    assert.ok(products.some(p => p.fields.Photo?.some(photo => photo.url === post.image)), `${post.slug}: cover must be a catalog photo`);
+    assert.ok(fs.existsSync(`public${post.image}`), post.image);
+  }
 });

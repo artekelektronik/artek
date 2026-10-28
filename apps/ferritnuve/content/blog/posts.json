@@ -66,5 +66,56 @@
       "alt": "Single-phase EMI filter",
       "description": "Select a single-phase EMI filter by voltage, current, temperature, leakage and installation. Learn how to read insertion-loss curves and datasheets."
     }
+  },
+  {
+    "file": "05-ee-nuve-secimi.md",
+    "slug": "ee-nuve-secimi",
+    "category": "Güç elektroniği / EE nüveler",
+    "image": "/products-images/ee-cores.jpg",
+    "alt": "Katalogdaki EE ferrit nüve grubu",
+    "description": "EE25 ve EE42 nüvelere muadil ararken ölçü, malzeme, AL, hava aralığı ve karkas uyumunu kontrol edin. Uygulama doğrulaması ve talep rehberi.",
+    "publishedAt": "2026-10-28T00:00:00+03:00",
+    "modifiedAt": "2026-10-28T00:00:00+03:00",
+    "en": {
+      "file": "en/ee-core-selection.md",
+      "slug": "ee-core-selection",
+      "category": "Power electronics / EE cores",
+      "alt": "EE ferrite core group from the catalog",
+      "description": "Check dimensions, material, AL, air gap and bobbin fit when replacing EE25 or EE42 ferrite cores. Application checks and enquiry guidance."
+    }
+  },
+  {
+    "file": "06-ozel-trafo-teklif-rehberi.md",
+    "slug": "ozel-trafo-teklif-rehberi",
+    "category": "Özel trafo / Teklif hazırlama",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "alt": "Trafo değerlendirmelerinde kullanılan ETD ferrit nüve grubu",
+    "description": "Özel trafo talebi için giriş ve çıkışlar, frekans, izolasyon, ölçüler ve adet bilgilerini hazırlayın. Kopyalayıp doldurabileceğiniz teklif kontrol listesi.",
+    "publishedAt": "2026-10-28T00:00:00+03:00",
+    "modifiedAt": "2026-10-28T00:00:00+03:00",
+    "en": {
+      "file": "en/custom-transformer-rfq-guide.md",
+      "slug": "custom-transformer-rfq-guide",
+      "category": "Custom transformers / RFQ preparation",
+      "alt": "ETD ferrite core group for transformer assessment",
+      "description": "Prepare input/output, frequency, insulation, dimensions and quantities for a custom transformer enquiry. Includes a checklist to copy into your request."
+    }
+  },
+  {
+    "file": "07-26-52-toroid-karsilastirmasi.md",
+    "slug": "26-52-toroid-karsilastirmasi",
+    "category": "Malzeme seçimi / Demir tozu nüveler",
+    "image": "/products-images/kt106-52-tr.jpg.webp",
+    "alt": "Katalogdaki -52 kodlu demir tozu toroid grubu",
+    "description": "-26 ve -52 demir tozu toroidleri üretici, DC kutuplama, nüve ve sargı kayıpları ile sıcaklık üzerinden karşılaştırın. Muadil seçiminde kontrol adımları.",
+    "publishedAt": "2026-10-28T00:00:00+03:00",
+    "modifiedAt": "2026-10-28T00:00:00+03:00",
+    "en": {
+      "file": "en/26-vs-52-iron-powder-toroids.md",
+      "slug": "26-vs-52-iron-powder-toroids",
+      "category": "Material selection / Iron-powder cores",
+      "alt": "Catalog iron-powder toroid group labelled -52",
+      "description": "Compare -26 and -52 iron-powder toroids by manufacturer, DC bias, core and winding losses, and temperature. Practical checks for replacement selection."
+    }
   }
 ]

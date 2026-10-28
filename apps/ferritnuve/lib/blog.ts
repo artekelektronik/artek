@@ -105,18 +105,31 @@ export function productGuideSlug(category?: string, productTypes?: string[]) {
   if (category === "PEM") return "tek-fazli-emi-filtre-secimi";
   if (category === "IRON-POWDER" || productTypes?.includes("TOROID")) return "ferrit-demir-tozu-toroid";
   if (productTypes?.includes("ETD")) return "etd-nuve-secimi";
+  if (productTypes?.includes("EE")) return "ee-nuve-secimi";
   if (productTypes?.includes("YUVARLAK")) return "kablo-ferriti-secimi";
 }
 
-// The catalog products a guide is about (the reverse of productGuideSlug), taking categories in turn
-// so a comparison guide shows both sides, plus a catalog link filtered to all of them.
+// A product can support more than one guide. Take groups in turn so comparisons
+// and the transformer enquiry guide show both relevant material/type families.
 export function relatedProducts(products: AirtableProduct[], guideSlug: string, limit = 4) {
-  const matches = products.filter(p => productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"]) === guideSlug);
+  const transformer = guideSlug === "ozel-trafo-teklif-rehberi";
+  const powderComparison = guideSlug === "26-52-toroid-karsilastirmasi";
+  const matches = products.filter(p => {
+    if (transformer) return p.fields.Category === "Ferrit" && p.fields["Ürün Tipi"]?.some(type => type === "EE" || type === "ETD");
+    if (powderComparison) return p.fields.Category === "IRON-POWDER" && /-\s*(26|52)\s*$/.test(p.fields["Product Name"]);
+    return productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"]) === guideSlug;
+  });
+  if (guideSlug === "ee-nuve-secimi") {
+    const featured = (p: AirtableProduct) => /^EE\s*(25|42)\b/.test(p.fields["Product Name"]);
+    matches.sort((a, b) => Number(featured(b)) - Number(featured(a)));
+  }
   const categories = [...new Set(matches.map(p => p.fields.Category ?? ""))];
   const types = [...new Set(matches.flatMap(p => p.fields["Ürün Tipi"] ?? []))];
-  const byCategory = categories.map(category => matches.filter(p => (p.fields.Category ?? "") === category));
-  const longest = Math.max(0, ...byCategory.map(group => group.length));
-  const inTurn = Array.from({length: longest}, (_, i) => byCategory.map(group => group[i])).flat().filter(p => p !== undefined);
+  const groupKey = (p: AirtableProduct) => transformer ? p.fields["Ürün Tipi"]?.[0] : powderComparison ? p.fields["Product Name"].match(/(26|52)\s*$/)?.[1] : p.fields.Category;
+  const keys = [...new Set(matches.map(groupKey))];
+  const groups = keys.map(key => matches.filter(p => groupKey(p) === key));
+  const longest = Math.max(0, ...groups.map(group => group.length));
+  const inTurn = Array.from({length: longest}, (_, i) => groups.map(group => group[i])).flat().filter(p => p !== undefined);
   const query = new URLSearchParams({categories: categories.join(",")});
   if (types.length) query.set("productTypes", types.join(","));
   return {products: inTurn.slice(0, limit), catalogHref: `/products?${query}`};
