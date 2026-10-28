@@ -35,6 +35,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     },
     {
+      url: `${siteUrl}/faq`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/faq`,
+          en: `${siteUrl}/en/faq`,
+        },
+      },
+    },
+    {
       url: `${siteUrl}/about`,
       changeFrequency: "monthly" as const,
       priority: 0.7,

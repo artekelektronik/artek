@@ -31,6 +31,10 @@
     "transformator": {
       "title": "Transformer Manufacturer | SMPS Ferrite Laminated | Artek",
       "description": "Transformers — product group introduction and contact."
+    },
+    "faq": {
+      "title": "FAQ | Ferrite Cores and EMI Filters | Artek Elektronik",
+      "description": "Short answers about ferrite cores, AL value, air gaps, EMI filters and the quote process. Search your question or ask Artek directly."
     }
   },
   "homeKeywords": {
@@ -55,7 +59,8 @@
     "search": "Search",
     "home": "Home",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "faq": "FAQ"
   },
   "hero": {
     "eyebrow": "Artek Elektronik",
@@ -192,7 +197,6 @@
       "integrations": "Integrations",
       "about": "About",
       "team": "Team",
-      "blog": "Blog",
       "careers": "Careers",
       "contact": "Contact",
       "privacy": "Privacy",
@@ -210,7 +214,8 @@
       "iso9001": "ISO 9001:2015",
       "iso45001": "ISO 45001:2018",
       "iso10002": "ISO 10002:2018",
-      "viewCertificates": "View Certificates"
+      "viewCertificates": "View Certificates",
+      "faq": "FAQ"
     },
     "terms": "Terms and Conditions",
     "privacyPolicy": "Privacy Policy"

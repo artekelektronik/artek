@@ -170,6 +170,7 @@ const Header = () => {
                     about: t("about"),
                     contact: t("contact"),
                     blog: t("blog"),
+                    faq: t("faq"),
                     whatsappLabel: t("whatsappLabel"),
                   }}
                 />
@@ -270,6 +271,7 @@ function MobileMenu({
     about: string;
     contact: string;
     blog: string;
+    faq: string;
     whatsappLabel: string;
   };
 }) {
@@ -282,6 +284,7 @@ function MobileMenu({
       links: productCategories,
     },
     { name: translations.blog, href: "/blog" },
+    { name: translations.faq, href: "/faq" },
     { name: translations.about, href: "/about" },
     { name: translations.contact, href: "/contact" },
   ];
@@ -449,6 +452,11 @@ const NavMenu = ({ t, tProduct }: { t: (key: string) => string; tProduct: (key: 
         <NavigationMenuItem value="blog">
           <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10 hover:text-white")}>
             <Link href="/blog">{t("blog")}</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem value="faq">
+          <NavigationMenuLink asChild className={cn(navigationMenuTriggerStyle(), "bg-transparent text-white hover:bg-white/10 hover:text-white")}>
+            <Link href="/faq">{t("faq")}</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem value="about">

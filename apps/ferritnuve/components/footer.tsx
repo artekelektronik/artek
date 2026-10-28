@@ -65,6 +65,7 @@ const Footer = ({
       title: t("sections.company"),
       links: [
         { text: t("links.blog"), url: "/blog" },
+        { text: t("links.faq"), url: "/faq" },
         { text: t("links.about"), url: "/about" },
         { text: t("links.contact"), url: "/contact" },
         { text: t("links.products"), url: "/products" },
