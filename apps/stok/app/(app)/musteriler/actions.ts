@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
+import { importContactsFile } from "@/lib/contact-import";
 import { addCustomerNote, customerHistory, updateCustomer } from "@/lib/crm";
 import type { CustomerStatus, FollowUpChannel } from "@/lib/finance-calc";
 import { text } from "@/lib/form-data";
@@ -44,4 +45,13 @@ export async function setEmailOptOutAction(customerId: string, optOut: boolean):
   const state = await runAction(async () => setEmailOptOut(await headers(), customerId, optOut));
   revalidatePath("/musteriler");
   return state;
+}
+
+export async function importContactsAction(records: unknown): Promise<ActionState & { updated?: number; skipped?: number }> {
+  let result = { updated: 0, skipped: 0 };
+  const state = await runAction(async () => {
+    result = await importContactsFile(await headers(), records);
+  });
+  revalidatePath("/musteriler");
+  return state.saved ? { ...state, ...result } : state;
 }
