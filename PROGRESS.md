@@ -46,7 +46,7 @@ Branch `fatura-crm`. Two private panels, granted per user under Kullanıcılar �
 - **Go-live order**:
   1. Merge, which runs migration `0012`. Then, under Kullanıcılar, give Merve and the owner both panels.
   2. Upload the invoice PDFs at `/faturalar`.
-  3. Run `pnpm --filter stok import-crm-contacts <iletisim.json>` with the research file kept outside the repo (customer data).
+  3. Load the research file kept outside the repo (customer data) from Müşteriler → "İletişim bilgilerini yükle".
 - **Next**: automatic intake from QNB Dijital Köprü (about one week later), through the same ETTN import.
 
 ## Kritik seviye (#34)
@@ -91,7 +91,7 @@ Rules the code and database enforce:
 
 See [apps/stok/README.md](apps/stok/README.md).
 
-- Since 24 October 2026, local development uses the **production** Neon database (`apps/stok/.env.local`), so company data is entered once. Anything done through `pnpm dev` is real; dev and staging Neon branches come later.
+- As of 28 October 2026, `apps/stok/.env.local` points at the **local** `artek_stok` database, not production. Scripts that should write to production need its Neon connection string in `DATABASE_URL` for that one command.
 - Never run `pnpm db:migrate` locally while `.env.local` points at production: production migrates in its Vercel build.
 - The tests need their own throwaway Postgres in `TEST_DATABASE_URL` (its name must contain "test"); they refuse anything else.
 

@@ -6,6 +6,7 @@ import { financeSummary, shortName } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { istanbulDate } from "@/lib/time";
+import { ContactImportButton } from "./contact-import-button";
 import { CrmBoard, type CrmRow } from "./crm-board";
 
 export const metadata = { title: "Müşteriler | Artek Müşteri Paneli" };
@@ -51,6 +52,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   return (
     <PanelShell active="crm" allowed={allowed} lede={panelLede(s, allowed.finance)} warning={panelWarning(s.gaps, s.asOf)}>
+      {can(actor, "crm.edit") && rows.length > 0 && <ContactImportButton />}
       {rows.length === 0 ? (
         <p className="text-muted-foreground">Henüz müşteri yok; faturalar yüklenince burada listelenir.</p>
       ) : (

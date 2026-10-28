@@ -61,7 +61,7 @@ Images live in Vercel Blob. The product form uploads them from the browser strai
 
 Two private panels, ADR-0004. Each admin gets them one by one under Kullanıcılar → Panel izinleri, at view or edit level: Artek Müşteri Paneli (`crm.*`) and Artek Finans Paneli (`finance.*`, where uploading needs edit). Invoice PDFs from QNB Dijital Köprü are uploaded at `/faturalar`; the browser unzips a zip and posts each PDF to `/api/faturalar` (one PDF per request, 4 MB max). An invoice is stored once per ETTN with its lines and the PDF's text; the PDF itself isn't kept. Customers are created from the buyer's VKN/TCKN. Finans and Müşteriler are calculated from the invoices on every request. The daily cron emails artek@ferritnuve.com after 7 days without a new invoice and sends Müşteri paneli holders the customers whose follow-up date has come.
 
-Contact routes researched outside the repo are loaded once with `pnpm --filter stok import-crm-contacts <file.json>`. It only fills empty fields and skips weak matches. Like `import-products`, it uses `.env.local`, so it writes to whatever database `DATABASE_URL` names.
+Contact routes researched outside the repo (`iletisim.json`) are loaded from Müşteriler → "İletişim bilgilerini yükle" (Müşteri paneli edit rights), or with `pnpm --filter stok import-crm-contacts <file.json>`. Either way, only empty fields are filled and weak matches are skipped. The script writes to whatever database `DATABASE_URL` names; `.env.local` points at the local database.
 
 ## Bugün: the morning assistant
 
