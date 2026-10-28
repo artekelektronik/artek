@@ -1,4 +1,4 @@
-import { company } from "@/lib/company";
+import { businessStructuredData } from "@/lib/company";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -122,17 +122,7 @@ export default async function LocaleLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "@id": `${siteUrl}/#business`,
-              name: company.name,
-              url: siteUrl,
-              telephone: company.phones.map(p => p.href.replace("tel:","")),
-              email: company.email,
-              address: company.address,
-
-            }),
+            __html: JSON.stringify(businessStructuredData(siteUrl, locale, (messages.metadata as Record<string, {description: string}>).home.description)),
           }}
         />
       </head>

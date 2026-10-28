@@ -16,6 +16,9 @@ export function renderBlogMarkdown(markdown: string, locale = "tr") {
   const lead = lines.find(line => line.trim()) ?? "";
   const headings: {id: string; title: string}[] = [];
   const html: string[] = [];
+  // Questions (###) under the FAQ section and their paragraphs as plain text, for FAQPage data.
+  const faq: {question: string; answer: string}[] = [];
+  let inFaq = false;
   let paragraph: string[] = [];
   let inList = false;
   function inline(text: string, references = true) {
@@ -32,7 +35,12 @@ export function renderBlogMarkdown(markdown: string, locale = "tr") {
     return value.replace(/BLOG_LINK_(\d+)_END/g, (_, index: string) => links[Number(index)]);
   }
   function flush() {
-    if (paragraph.length) { html.push(`<p>${inline(paragraph.join(" "))}</p>`); paragraph = []; }
+    if (!paragraph.length) return;
+    const text = paragraph.join(" ");
+    html.push(`<p>${inline(text)}</p>`);
+    const question = inFaq ? faq.at(-1) : undefined;
+    if (question) question.answer = [question.answer, plainText(text)].filter(Boolean).join(" ");
+    paragraph = [];
   }
   function closeList() {
     if (inList) { html.push("</ul>"); inList = false; }
@@ -46,6 +54,8 @@ export function renderBlogMarkdown(markdown: string, locale = "tr") {
       const label = line.replace(/^#{2,3} /, "");
       const id = headingId(label);
       if (level === 2) headings.push({id, title: label});
+      if (level === 2) inFaq = /^(Sık sorulan sorular|Frequently asked questions)$/.test(label);
+      else if (inFaq) faq.push({question: label, answer: ""});
       html.push(`<h${level} id="${id}">${inline(label)}</h${level}>`);
     } else if (line.startsWith("- ")) {
       flush();
@@ -58,8 +68,10 @@ export function renderBlogMarkdown(markdown: string, locale = "tr") {
     }
   }
   flush(); closeList();
-  return {title, lead, html: html.slice(1).join("\n"), headings, minutes: Math.ceil(markdown.split(/\s+/).length / 180)};
+  return {title, lead, html: html.slice(1).join("\n"), headings, faq, minutes: Math.ceil(markdown.split(/\s+/).length / 180)};
 }
+
+const plainText = (text: string) => text.replace(/\[([^\]]+)\]\(https:\/\/[^\s)]+\)/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\s*\[\d+\]/g, "").trim();
 
 export function getBlogPosts(locale = "tr") {
   return posts.map(post => {
@@ -87,7 +99,7 @@ export function blogStructuredData(post: typeof blogPosts[number], siteUrl: stri
         datePublished: post.publishedAt, dateModified: post.modifiedAt, inLanguage: post.locale === "en" ? "en" : "tr-TR",
         mainEntityOfPage: {"@type": "WebPage", "@id": url},
         author: {"@type": "Organization", name: "Artek Elektronik", url: `${siteUrl}${prefix}/about`},
-        publisher: {"@type": "Organization", name: "Artek Elektronik", url: siteUrl},
+        publisher: {"@type": "Organization", "@id": `${siteUrl}/#business`, name: "Artek Elektronik", url: siteUrl},
         isPartOf: {"@type": "Blog", "@id": `${siteUrl}${prefix}/blog`, name: post.locale === "en" ? "Artek Technical Guides" : "Artek Teknik Rehberler"},
       },
       {
@@ -97,6 +109,10 @@ export function blogStructuredData(post: typeof blogPosts[number], siteUrl: stri
           {"@type": "ListItem", position: 3, name: post.title, item: url},
         ],
       },
+      ...(post.faq.length ? [{
+        "@type": "FAQPage", "@id": `${url}#faq`, inLanguage: post.locale === "en" ? "en" : "tr-TR",
+        mainEntity: post.faq.map(({question, answer}) => ({"@type": "Question", name: question, acceptedAnswer: {"@type": "Answer", text: answer}})),
+      }] : []),
     ],
   };
 }

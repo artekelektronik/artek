@@ -143,3 +143,36 @@ test('every blog guide lists its own catalog products and links to them in the c
     assert.ok(fs.existsSync(`public${post.image}`), post.image);
   }
 });
+test('guides expose their FAQ as FAQPage data and name Artek as one linked organisation', () => {
+  const {blogPosts, englishBlogPosts, blogStructuredData} = require('../lib/blog.ts');
+  for (const post of [...blogPosts, ...englishBlogPosts]) {
+    assert.ok(post.faq.length > 0, post.slug);
+    for (const {question, answer} of post.faq) {
+      assert.ok(question.endsWith('?'), question);
+      assert.ok(answer.length > 20, question);
+      assert.doesNotMatch(answer, /\[\d+\]|\]\(|\*\*/, question);
+    }
+    const graph = blogStructuredData(post, 'https://www.ferritnuve.com')['@graph'];
+    const faq = graph.find(node => node['@type'] === 'FAQPage');
+    assert.deepEqual(faq.mainEntity.map(q => q.name), post.faq.map(q => q.question));
+    assert.equal(graph[0].publisher['@id'], 'https://www.ferritnuve.com/#business');
+  }
+});
+test('business data is structured and llms.txt lists every guide and the catalog', () => {
+  const {businessStructuredData, company} = require('../lib/company.ts');
+  const {llmsText} = require('../lib/llms.ts');
+  const {blogPosts, englishBlogPosts} = require('../lib/blog.ts');
+  const site = 'https://www.ferritnuve.com';
+  const business = businessStructuredData(site, 'en', 'Catalog description');
+  assert.equal(business['@id'], `${site}/#business`);
+  assert.equal(business.address.addressCountry, 'TR');
+  assert.ok(business.knowsAbout.includes('Ferrite Cores'));
+  assert.equal(business.hasOfferCatalog.url, `${site}/en/products`);
+  const text = llmsText(site);
+  assert.match(text, /^# Artek Elektronik\n\n> /);
+  assert.ok(text.includes(company.email));
+  for (const post of blogPosts) assert.ok(text.includes(`${site}/blog/${post.slug}`), post.slug);
+  for (const post of englishBlogPosts) assert.ok(text.includes(`${site}/en/blog/${post.slug}`), post.slug);
+  assert.ok(text.includes(`${site}/en/products?categories=PEM`));
+  assert.doesNotMatch(text, /fiyat|price:|stok adedi/i);
+});
