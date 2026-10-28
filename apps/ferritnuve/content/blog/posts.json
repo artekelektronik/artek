@@ -134,5 +134,22 @@
       "alt": "UU ferrite core group from the catalog",
       "description": "Check full dimensions, UU/UI combination, material and AL value when choosing a UU ferrite core for a line filter choke or power transformer."
     }
+  },
+  {
+    "file": "09-yassi-kablo-ferriti-secimi.md",
+    "slug": "yassi-kablo-ferriti-secimi",
+    "category": "EMI / Kablo ferritleri",
+    "image": "/products-images/screenshot-2025-10-28-at-1.50.09-pm.png",
+    "alt": "Katalogdaki yassı kablo ferriti",
+    "description": "Yassı (şerit) kablo ferriti seçerken genişlik, damar sayısı, malzeme, nüve uzunluğu ve montajı değerlendirin. Pratik seçim ve teklif rehberi.",
+    "publishedAt": "2026-10-28T00:00:00+03:00",
+    "modifiedAt": "2026-10-28T00:00:00+03:00",
+    "en": {
+      "file": "en/flat-cable-ferrite-selection.md",
+      "slug": "flat-cable-ferrite-selection",
+      "category": "EMI / Cable ferrites",
+      "alt": "Flat cable ferrite from the catalog",
+      "description": "Choose a flat (ribbon) cable ferrite by width, conductor count, material, core length and mounting. Practical selection and enquiry guidance."
+    }
   }
 ]
