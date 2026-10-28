@@ -7,3 +7,4 @@ The plan left e-invoicing out of scope, and Artek keeps issuing invoices in QNB 
 - Invoices arrive by upload. Automatic intake from Dijital Köprü is a later step, and whatever form it takes, it must use the same ETTN-based import so repeats stay harmless.
 - Only the PDF's text is kept, not the PDF itself. A better parser can re-read old invoices, but the original file has to come from Dijital Köprü.
 - The public repo holds the code only. Invoice and customer data live in the production database, and parser tests use made-up invoices.
+- The morning assistant drafts customer emails, but a person sends each one. Turning on automatic sending is a separate decision, to be made after the drafts have been reviewed for a few weeks.

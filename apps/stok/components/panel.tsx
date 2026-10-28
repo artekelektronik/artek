@@ -5,6 +5,7 @@ import { cn } from "@artek/ui/lib/utils";
 
 const tabs = [
   { key: "ozet", label: "Finansal özet", href: "/finans", needs: "finance" },
+  { key: "bugun", label: "Bugün", href: "/musteriler/bugun", needs: "crm" },
   { key: "crm", label: "Müşteriler (CRM)", href: "/musteriler", needs: "crm" },
   { key: "urun", label: "Ürünler", href: "/finans/urunler", needs: "finance" },
   { key: "fatura", label: "Faturalar", href: "/faturalar", needs: "finance" },

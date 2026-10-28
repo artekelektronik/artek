@@ -23,6 +23,15 @@ Last updated: 28 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 
 #24 and #26–#34 were merged to `main` in PR [#41](https://github.com/artekelektronik/artek/pull/41) (merge commit `7fa35c2`), one commit per ticket. Production deployed it and ran the migrations on 24 October 2026.
 
+## Müşteri kartı and the morning assistant
+
+Branch `crm-asistan`.
+
+- **Müşteri kartı:** Customer cards open as a side panel from the list. `/musteriler/[id]` redirects to the list.
+- **Bugün filter:** shows follow-ups that are due. A follow-up's channel is Telefon or E-posta.
+- **Bugün screen:** shows the assistant's call plans and email drafts (see `apps/stok/README.md`). Emails are never sent without a person pressing Gönder; automatic sending may come after a few weeks of review.
+- **Before go-live:** add `ANTHROPIC_API_KEY` to the `artek-stok` Vercel project (Production).
+
 ## Finans and CRM from invoices (ADR-0004)
 
 Branch `fatura-crm`. Two private panels, granted per user under Kullanıcılar → Panel izinleri. Only admins can hold them, and the admin role alone opens neither:

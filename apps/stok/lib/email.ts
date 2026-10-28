@@ -1,4 +1,5 @@
-export type Email = { to: string[]; subject: string; text: string; idempotencyKey: string };
+// `from` and `replyTo` default to RESEND_FROM; customer emails go out as the company with replies to its inbox.
+export type Email = { to: string[]; subject: string; text: string; idempotencyKey: string; from?: string; replyTo?: string };
 export type EmailSender = (email: Email) => Promise<void>;
 
 // Resend drops repeats with the same Idempotency-Key, so a retry never sends twice.
@@ -13,7 +14,13 @@ export const resendSender: EmailSender = async (email) => {
       "content-type": "application/json",
       "idempotency-key": email.idempotencyKey,
     },
-    body: JSON.stringify({ from, to: email.to, subject: email.subject, text: email.text }),
+    body: JSON.stringify({
+      from: email.from ?? from,
+      to: email.to,
+      subject: email.subject,
+      text: email.text,
+      ...(email.replyTo && { reply_to: email.replyTo }),
+    }),
     // The outbox row stays locked while this runs, so a hung request must not hold it.
     signal: AbortSignal.timeout(10_000),
   });

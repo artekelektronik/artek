@@ -1,4 +1,13 @@
 {
   "buildCommand": "[ \"$VERCEL_ENV\" != production ] || pnpm db:migrate && pnpm build",
-  "crons": [{ "path": "/api/cron/outbox", "schedule": "0 6 * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron/asistan",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/outbox",
+      "schedule": "0 6 * * *"
+    }
+  ]
 }

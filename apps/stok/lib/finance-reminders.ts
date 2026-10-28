@@ -1,6 +1,6 @@
 import { and, eq, gt, isNull, max } from "drizzle-orm";
 import { db } from "../db";
-import { invoice, notification, user, userPanel, userRole } from "../db/schema";
+import { assistantSuggestion, customer, invoice, notification, user, userPanel, userRole } from "../db/schema";
 import { followUpsDue } from "./crm";
 import { formatIstanbulTime, istanbulDate } from "./time";
 
@@ -49,10 +49,16 @@ export async function queueFinanceReminders(now = new Date()) {
     queued.push("fatura_hatirlatma");
   }
 
-  // Customers whose follow-up date has come: one list a day to admins who hold the Müşteri paneli.
+  // The morning email to admins who hold the Müşteri paneli: what the assistant prepared (it runs an hour
+  // earlier), and the follow-ups that have come due.
   const today = istanbulDate(now);
   const due = await followUpsDue(today);
-  if (due.length && !(await sentSince("crm_takip", new Date(now.getTime() - 20 * 60 * 60_000)))) {
+  const prepared = await db
+    .select({ kind: assistantSuggestion.kind, name: customer.name })
+    .from(assistantSuggestion)
+    .innerJoin(customer, eq(customer.id, assistantSuggestion.customerId))
+    .where(and(eq(assistantSuggestion.forDay, today), eq(assistantSuggestion.status, "bekliyor")));
+  if ((due.length || prepared.length) && !(await sentSince("crm_takip", new Date(now.getTime() - 20 * 60 * 60_000)))) {
     const admins = await db
       .selectDistinct({ email: user.email })
       .from(user)
@@ -60,15 +66,34 @@ export async function queueFinanceReminders(now = new Date()) {
       .innerJoin(userPanel, and(eq(userPanel.userId, user.id), eq(userPanel.panel, "musteri")))
       .where(isNull(user.deactivatedAt));
     const recipients = admins.map((a) => a.email).sort();
+    const calls = prepared.filter((p) => p.kind === "arama");
+    const emails = prepared.filter((p) => p.kind === "eposta");
     await db.insert(notification).values({
       ...(recipients.length === 0 && { status: "failed" as const, lastError: "Alıcı yok: Müşteri paneli izni olan etkin yönetici bulunmuyor." }),
       createdAt: now,
       kind: "crm_takip",
-      subject: `Bugün takip edilecek ${due.length} müşteri`,
+      subject: prepared.length
+        ? `Bugün: ${calls.length} arama, ${emails.length} e-posta önerisi`
+        : `Bugün takip edilecek ${due.length} müşteri`,
       body: [
-        "Takip tarihi gelen müşteriler:",
-        "",
-        ...due.map((c) => `- ${c.name}${c.phone ? ` · ${c.phone}` : ""} (takip: ${c.nextFollowUpOn})\n  ${appUrl()}/musteriler/${c.id}`),
+        ...(prepared.length
+          ? [
+              "Asistan bugün için önerilerini hazırladı. E-postalar siz onaylamadan gönderilmez.",
+              "",
+              ...calls.map((p) => `- Ara: ${p.name}`),
+              ...emails.map((p) => `- E-posta: ${p.name}`),
+              "",
+              `Onaylamak ve aramaları görmek için: ${appUrl()}/musteriler/bugun`,
+              "",
+            ]
+          : []),
+        ...(due.length
+          ? [
+              "Takip tarihi gelen müşteriler:",
+              "",
+              ...due.map((c) => `- ${c.name}${c.phone ? ` · ${c.phone}` : ""} (takip: ${c.nextFollowUpOn})\n  ${appUrl()}/musteriler?secili=${c.id}`),
+            ]
+          : []),
       ].join("\n"),
       recipients,
     });

@@ -92,6 +92,13 @@
       "when": 1793197858955,
       "tag": "0012_invoices-crm",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793203726293,
+      "tag": "0013_crm-assistant",
+      "breakpoints": true
     }
   ]
 }
