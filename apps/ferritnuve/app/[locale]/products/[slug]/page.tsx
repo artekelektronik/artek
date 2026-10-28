@@ -21,7 +21,7 @@ export default async function ProductPage({params}: {params: Promise<{locale: st
   const t = await getTranslations({locale, namespace:"productDetail"});
   const {name, description, reviewRequired} = productContent(product, locale);
   const f = product.fields;
-  const guideSlug = productGuideSlug(f.Category, f["Ürün Tipi"]);
+  const guideSlug = productGuideSlug(f.Category, f["Ürün Tipi"], f["Product Name"]);
   const guide = guideSlug ? getBlogPost(guideSlug) : undefined;
   const localizedGuide = guide && locale === "en" ? getBlogPost(guide.translations.en, "en") : guide;
   const url = `${await getSiteUrl()}${getLocalizedPath(locale, `/products/${canonicalSlug}`)}`;

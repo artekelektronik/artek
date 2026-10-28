@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 7);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 7);
+  assert.equal(blogPosts.length, 8);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 8);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
@@ -111,7 +111,7 @@ test('every blog guide lists its own catalog products and links to them in the c
       } else if (post.slug === '26-52-toroid-karsilastirmasi') {
         assert.equal(product.fields.Category, 'IRON-POWDER');
         assert.match(product.fields['Product Name'], /-\s*(26|52)\s*$/);
-      } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi']), post.slug);
+      } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi'], product.fields['Product Name']), post.slug);
     }
     const query = new URL(related.catalogHref, 'https://test.invalid').searchParams;
     const categories = query.get('categories').split(',');
@@ -131,6 +131,10 @@ test('every blog guide lists its own catalog products and links to them in the c
   assert.ok(eeCores.some(p => p.fields['Product Name'].startsWith('EE 42')));
   const powderCores = relatedProducts(products, '26-52-toroid-karsilastirmasi').products;
   assert.deepEqual(new Set(powderCores.map(p => p.fields['Product Name'].match(/(26|52)\s*$/)[1])), new Set(['26', '52']));
+  // UU cores have no Ürün Tipi in the catalog, so the guide finds them by name and shows both leg shapes.
+  const uuCores = relatedProducts(products, 'uu-nuve-secimi').products;
+  assert.deepEqual(new Set(uuCores.map(p => p.fields['Product Name'].split(' ')[0])), new Set(['UU', 'UUR']));
+  assert.equal(productGuideSlug('Ferrit', undefined, 'UY 5858'), undefined);
   // An unrelated ferrite or an unclassified powder core must not enter this comparison.
   const unrelated = [{...products[0], fields: {...products[0].fields, Category: 'IRON-POWDER', 'Product Name': 'Unknown mix'}}];
   assert.deepEqual(relatedProducts(unrelated, '26-52-toroid-karsilastirmasi').products, []);
