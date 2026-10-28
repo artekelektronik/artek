@@ -1,6 +1,6 @@
 # Stok app progress
 
-Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); the plan is in [docs/artek-stok-crm-plan-ve-prompt.md](docs/artek-stok-crm-plan-ve-prompt.md).
+Last updated: 28 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); the plan is in [docs/artek-stok-crm-plan-ve-prompt.md](docs/artek-stok-crm-plan-ve-prompt.md).
 
 ## Where things are
 
@@ -22,6 +22,23 @@ Last updated: 24 October 2026. Vocabulary follows [GLOSSARY.md](GLOSSARY.md); th
 | #27 | Public catalog API; the site reads from it | Merged: `/api/catalog` (#42, brand added in #43); ferritnuve.com reads it (#44). `lib/products.json` retired | `main` |
 
 #24 and #26–#34 were merged to `main` in PR [#41](https://github.com/artekelektronik/artek/pull/41) (merge commit `7fa35c2`), one commit per ticket. Production deployed it and ran the migrations on 24 October 2026.
+
+## Finans and CRM from invoices (ADR-0004)
+
+Branch `fatura-crm`. Two private panels, granted per user under Kullanıcılar → Panel izinleri. Only admins can hold them, and the admin role alone opens neither:
+- Artek Müşteri Paneli: `crm.view` / `crm.edit`.
+- Artek Finans Paneli: `finance.view` / `finance.edit`. Uploading invoices needs edit.
+
+- **Faturalar** (`/faturalar`): drop PDFs or a zip. Each PDF is posted to `/api/faturalar`, parsed by `lib/invoice-parse.ts` and stored once per ETTN. The page lists gaps in the invoice number series. The parser matched the Python analysis on all 308 real invoices (2024-11 → 2025-10); only an image-only proforma was unreadable.
+- **Finans** (`/finans`, `/finans/urunler`) and **Müşteriler** (`/musteriler`, `/musteriler/[id]`) share the panel look in `components/panel.tsx`: tabs, tiles, bar charts, priority chips, and a selected-customer card. They are computed from the invoices on each request (`lib/finance-calc.ts`, pure). Öncelik and "ne konuşulur" follow the first analysis's rules. The customer card holds contact routes, status, the next Takip date and append-only notes.
+- **Emails**: the daily cron (`/api/cron/outbox`) first queues reminders (`lib/finance-reminders.ts`), then sends:
+  - "N gündür fatura yüklenmedi" to artek@ferritnuve.com, after 7 days with no new invoice and then weekly.
+  - One daily list of customers whose Takip date has come, to active admins who hold the Müşteri paneli.
+- **Go-live order**:
+  1. Merge, which runs migration `0012`. Then, under Kullanıcılar, give Merve and the owner both panels.
+  2. Upload the invoice PDFs at `/faturalar`.
+  3. Run `pnpm --filter stok import-crm-contacts <iletisim.json>` with the research file kept outside the repo (customer data).
+- **Next**: automatic intake from QNB Dijital Köprü (about one week later), through the same ETTN import.
 
 ## Kritik seviye (#34)
 

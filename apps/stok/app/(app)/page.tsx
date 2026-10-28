@@ -160,7 +160,7 @@ export default async function HomePage() {
                         {movementTypeLabels[m.type]} · {m.lokasyonName ?? "Yolda"} · {formatDateTime(m.createdAt)}
                       </span>
                     </div>
-                    <span className={`shrink-0 tabular-nums ${m.quantity.startsWith("-") ? "text-destructive" : "text-green-700"}`}>
+                    <span className={`shrink-0 tabular-nums ${m.quantity.startsWith("-") ? "text-destructive" : "text-green-700 dark:text-green-400"}`}>
                       {m.quantity.startsWith("-") ? "" : "+"}
                       {displayQuantity(m.quantity)} {unitLabels[m.unit]}
                     </span>

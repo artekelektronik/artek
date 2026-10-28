@@ -8,6 +8,9 @@ import {
   Boxes,
   ClipboardCheck,
   ClipboardList,
+  Contact,
+  FileText,
+  LineChart,
   LayoutDashboard,
   Package,
   PackageMinus,
@@ -31,7 +34,7 @@ import {
 import { NavUser } from "./nav-user";
 
 // shadcn sidebar-07; `requires` only hides links, the server checks every action.
-const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" }[] = [
+const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" | "finance" | "crm" }[] = [
   { group: "Genel", label: "Ana sayfa", href: "/", icon: LayoutDashboard },
   { group: "Stok", label: "Stok durumu", href: "/stok-durumu", icon: Boxes },
   { group: "Stok", label: "Stok hareketleri", href: "/hareketler", icon: ArrowLeftRight },
@@ -41,6 +44,9 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "İşlemler", label: "Sayım", href: "/sayim", icon: ClipboardList },
   { group: "İşlemler", label: "Açılış sayımı", href: "/acilis-sayimi", icon: ClipboardCheck },
   { group: "Katalog", label: "Ürünler", href: "/urunler", icon: Package },
+  { group: "Satış", label: "Finans", href: "/finans", icon: LineChart, requires: "finance" },
+  { group: "Satış", label: "Müşteriler", href: "/musteriler", icon: Contact, requires: "crm" },
+  { group: "Satış", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
   { group: "Yönetim", label: "Bildirimler", href: "/bildirimler", icon: Bell, requires: "notifications" },
   { group: "Yönetim", label: "Kullanıcılar", href: "/kullanicilar", icon: Users, requires: "users" },
 ];
@@ -51,7 +57,7 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: { name: string; email: string };
-  allowed: { notifications: boolean; users: boolean };
+  allowed: { notifications: boolean; users: boolean; finance: boolean; crm: boolean };
 }) {
   const pathname = usePathname();
   const visible = screens.filter((s) => !s.requires || allowed[s.requires]);

@@ -60,6 +60,7 @@ describe("user management", { skip: skipWithoutDatabase }, () => {
       email: "ayse@example.com",
       roles: ["magaza_sorumlusu"],
       lokasyonIds: [karakoy],
+      panels: {}, // an invite never opens the Müşteri or Finans panel
     });
     const history = (await auditFor(invited.id)).map((a) => a.action);
     assert.deepEqual(history, ["user.invite", "user.password_link", "user.password_set"]);

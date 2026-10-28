@@ -31,7 +31,11 @@ export const auditActionLabels: Record<string, string> = {
   "user.password_link": "Şifre bağlantısı gönderildi",
   "user.password_set": "Şifresini belirledi",
   "user.sessions_ended": "Oturumları kapatıldı",
+  "user.panels": "Panel izinleri değişti",
 };
+
+export const panelLabels = { musteri: "Artek Müşteri Paneli", finans: "Artek Finans Paneli" } as const;
+export const panelLevelLabels = { yok: "Göremez", gorur: "Görebilir", duzenler: "Görebilir ve düzenleyebilir" } as const;
 
 export const notificationStatusLabels: Record<(typeof notificationStatus.enumValues)[number], string> = {
   pending: "Bekliyor",

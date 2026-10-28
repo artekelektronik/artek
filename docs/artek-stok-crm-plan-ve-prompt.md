@@ -80,7 +80,8 @@ Four fixed roles live in code: admin, mühendis (engineer), mağaza sorumlusu (s
 | 0 — Architecture | Monorepo, stok app, Vercel project with Neon + Resend, auth, roles | An invited user logs into the deployed stok app; ferritnuve.com deploys from the monorepo unchanged |
 | 1 — Trusted stock | Products + catalog import, Vitrin API, movements, mal kabul, manual stock-out, Transfer, Sayım, Açılış sayımı, overview | Both Lokasyon go live from an Açılış sayımı and every balance is explained by its movements |
 | 2 — Warnings | Kritik seviye, email notifications (outbox, no duplicates) | Crossing a minimum level sends exactly one email |
-| 3 — Sipariş and CRM | Customers, contacts, notes, follow-ups, Sipariş for Ticari mal, Rezervasyon, partial delivery, returns | Stock and reservations stay consistent from order to delivery |
+| 2b — Finans and CRM from invoices (ADR-0004) | Fatura upload from QNB Dijital Köprü PDFs, Finans dashboard, Müşteri cards with Öncelik, notes and Takip, reminder emails; admin only | Uploading the same invoices twice changes nothing, and the dashboard matches the invoices |
+| 3 — Sipariş and CRM | Contacts per Müşteri, Sipariş for Ticari mal, Rezervasyon, partial delivery, returns (customers, notes and follow-ups exist since 2b) | Stock and reservations stay consistent from order to delivery |
 | 4 — Manufacturing | Recipes (versioned), Üretim emri from a Sipariş line, consumption, fire, returns, serial-numbered finished units | A finished order's material and product movements add up |
 | 5 — Second brand shop | Online shop as a Satış kanalı creating Sipariş through the stok app | Online orders reserve stock with no duplicate movements |
 
@@ -88,7 +89,7 @@ Phases 3–5 are broken into tickets after Phase 1 is live.
 
 ## 6. Out of scope (for now)
 
-Accounting, e-invoicing, payments, purchase orders, automatic purchasing, lot tracking for materials, stock per shelf, multi-company/SaaS.
+Accounting, issuing e-invoices (invoices are only read, ADR-0004), payments, purchase orders, automatic purchasing, lot tracking for materials, stock per shelf, multi-company/SaaS.
 
 ## 7. Agent prompt
 

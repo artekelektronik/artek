@@ -75,3 +75,22 @@ export function UserActionButton({
     </form>
   );
 }
+
+export function PanelsForm({
+  action,
+  children,
+}: {
+  action: (state: ActionState, formData: FormData) => Promise<ActionState>;
+  children: React.ReactNode;
+}) {
+  const [state, formAction, pending] = useActionState(action, undefined);
+  return (
+    <form action={formAction} className="flex max-w-xl flex-col gap-4">
+      {children}
+      <FormStatus state={state} saved="Panel izinleri kaydedildi." />
+      <Button type="submit" variant="outline" disabled={pending} className="self-start">
+        Panel izinlerini kaydet
+      </Button>
+    </form>
+  );
+}

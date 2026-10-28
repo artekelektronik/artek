@@ -23,7 +23,7 @@ export default async function AppLayout({
       <AppSidebar
         className="print:hidden"
         user={{ name: actor.name, email: actor.email }}
-        allowed={{ notifications: can(actor, "notifications.manage"), users: can(actor, "users.manage") }}
+        allowed={{ notifications: can(actor, "notifications.manage"), users: can(actor, "users.manage"), finance: can(actor, "finance.view"), crm: can(actor, "crm.view") }}
       />
       <SidebarInset className="min-w-0">
         <AppHeader />

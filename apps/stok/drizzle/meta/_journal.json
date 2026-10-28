@@ -85,6 +85,13 @@
       "when": 1792835333276,
       "tag": "0011_user-management",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793197858955,
+      "tag": "0012_invoices-crm",
+      "breakpoints": true
     }
   ]
 }

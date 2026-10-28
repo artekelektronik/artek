@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import { cache } from "react";
 import { db } from "../db";
-import { user, userLokasyon, userRole } from "../db/schema";
+import { user, userLokasyon, userPanel, userRole } from "../db/schema";
 import { auth } from "./auth";
-import { can, type Action } from "./permissions";
+import { can, type Action, type PanelAction } from "./permissions";
 
 export class NotSignedIn extends Error {
   constructor() {
@@ -27,9 +27,10 @@ const actorFor = cache(async (cookie: string) => {
   if (!session) throw new NotSignedIn();
 
   const userId = session.user.id;
-  const [roles, lokasyon, [account]] = await Promise.all([
+  const [roles, lokasyon, panels, [account]] = await Promise.all([
     db.select({ role: userRole.role }).from(userRole).where(eq(userRole.userId, userId)),
     db.select({ id: userLokasyon.lokasyonId }).from(userLokasyon).where(eq(userLokasyon.userId, userId)),
+    db.select({ panel: userPanel.panel, level: userPanel.level }).from(userPanel).where(eq(userPanel.userId, userId)),
     db.select({ deactivatedAt: user.deactivatedAt }).from(user).where(eq(user.id, userId)),
   ]);
   // Deactivation also deletes sessions; this covers any session that survives it.
@@ -40,11 +41,12 @@ const actorFor = cache(async (cookie: string) => {
     email: session.user.email,
     roles: roles.map((r) => r.role),
     lokasyonIds: lokasyon.map((l) => l.id),
+    panels: Object.fromEntries(panels.map((p) => [p.panel, p.level])),
   };
 });
 
 // The one server-side check every action runs before touching data.
-export async function requirePermission(headers: Headers, action: Action, lokasyonId?: string) {
+export async function requirePermission(headers: Headers, action: Action | PanelAction, lokasyonId?: string) {
   const actor = await loadActor(headers);
   if (!can(actor, action, lokasyonId)) throw new Forbidden();
   return actor;

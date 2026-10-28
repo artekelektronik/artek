@@ -73,3 +73,22 @@ _Avoid_: Satış (for the order itself)
 **Üretim emri** (Production order):
 The shop-floor job that builds an Özel trafo. Each Özel trafo line on a Sipariş creates one Üretim emri.
 _Avoid_: İş, proje, PRJ
+
+## Invoices and customers
+
+**Fatura** (Sales invoice):
+A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An İade fatura is stored but not counted as a sale.
+_Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
+
+**Müşteri** (Customer):
+A buyer on Artek's sales invoices, identified by the VKN (company) or TCKN (şahıs firması) printed on them.
+_Avoid_: Cari (accounting term), firma (when it's a customer specifically)
+
+**Öncelik** (Follow-up priority):
+Which group a Müşteri falls in for follow-up, worked out from its invoices: Geri kazan, Tekrar getir, Büyüt, Takipte tut or Sonra. It is computed, never typed in.
+
+**Takip** (Follow-up):
+The next date someone should contact a Müşteri. On that day the Müşteri appears in the admins' daily email.
+
+**Panel** (Private panel):
+One of the owner's private screens, granted per user by name: the Müşteri paneli (customers and follow-up) and the Finans paneli (sales and invoices). Only admins can hold one, and holding the admin role does not open either.
