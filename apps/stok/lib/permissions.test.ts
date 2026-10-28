@@ -21,6 +21,24 @@ test("only admin manages users", () => {
   }
 });
 
+test("the Müşteri and Finans panels need the admin role and a permission given by name", () => {
+  const admin = { roles: ["admin" as const], lokasyonIds: [] };
+  assert.equal(can(admin, "crm.view"), false, "admin role alone opens nothing");
+  assert.equal(can(admin, "finance.view"), false);
+
+  const viewer = { ...admin, panels: { musteri: "gorur" as const } };
+  assert.equal(can(viewer, "crm.view"), true);
+  assert.equal(can(viewer, "crm.edit"), false);
+  assert.equal(can(viewer, "finance.view"), false, "one panel doesn't open the other");
+
+  const editor = { ...admin, panels: { finans: "duzenler" as const } };
+  assert.equal(can(editor, "finance.view"), true);
+  assert.equal(can(editor, "finance.edit"), true);
+
+  // A permission left behind after the admin role is taken away opens nothing.
+  assert.equal(can({ roles: ["muhendis"], lokasyonIds: [], panels: { musteri: "duzenler", finans: "duzenler" } }, "crm.view"), false);
+});
+
 test("mağaza and depo sorumlusu act only in their own Lokasyon", () => {
   for (const role of ["magaza_sorumlusu", "depo_sorumlusu"] as const) {
     const actor = { roles: [role], lokasyonIds: [karakoy] };

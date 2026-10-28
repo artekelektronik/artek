@@ -1,6 +1,8 @@
-import type { role } from "../db/schema";
+import type { panel, panelLevel, role } from "../db/schema";
 
 export type Role = (typeof role.enumValues)[number];
+export type Panel = (typeof panel.enumValues)[number];
+export type PanelLevel = (typeof panelLevel.enumValues)[number];
 
 export type Action =
   | "users.manage"
@@ -15,7 +17,14 @@ export type Action =
   | "count.approve"
   | "notifications.manage"; // Kritik seviye recipients and the email outbox
 
-export type Actor = { roles: Role[]; lokasyonIds: string[] };
+// The owner's private panels: each needs the admin role and a permission given to that user by name.
+export type PanelAction =
+  | "finance.view" // Finans paneli and the invoice list
+  | "finance.edit" // uploading invoices
+  | "crm.view" // Müşteri paneli
+  | "crm.edit"; // customer cards: contacts, status, follow-up, notes
+
+export type Actor = { roles: Role[]; lokasyonIds: string[]; panels?: Partial<Record<Panel, PanelLevel>> };
 
 // "any": in every Lokasyon. "own": only in a Lokasyon the user is assigned to.
 type Scope = "any" | "own";
@@ -35,7 +44,20 @@ const rules: Record<Action, Partial<Record<Role, Scope>>> = {
   "notifications.manage": { admin: "any" },
 };
 
-export function can(actor: Actor, action: Action, lokasyonId?: string): boolean {
+const panelRules: Record<PanelAction, { panel: Panel; levels: PanelLevel[] }> = {
+  "finance.view": { panel: "finans", levels: ["gorur", "duzenler"] },
+  "finance.edit": { panel: "finans", levels: ["duzenler"] },
+  "crm.view": { panel: "musteri", levels: ["gorur", "duzenler"] },
+  "crm.edit": { panel: "musteri", levels: ["duzenler"] },
+};
+
+const isPanelAction = (action: Action | PanelAction): action is PanelAction => action in panelRules;
+
+export function can(actor: Actor, action: Action | PanelAction, lokasyonId?: string): boolean {
+  if (isPanelAction(action)) {
+    const level = actor.panels?.[panelRules[action].panel];
+    return actor.roles.includes("admin") && level !== undefined && panelRules[action].levels.includes(level);
+  }
   return actor.roles.some((role) => {
     const scope = rules[action][role];
     if (scope === "any") return true;

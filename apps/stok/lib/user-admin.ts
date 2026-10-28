@@ -3,14 +3,14 @@ import { and, asc, desc, eq, isNull, like, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db, type Tx } from "../db";
-import { account, auditLog, role, session, user, userLokasyon, userRole, verification } from "../db/schema";
+import { account, auditLog, panel, role, session, user, userLokasyon, userPanel, userRole, verification } from "../db/schema";
 import { auth } from "./auth";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { resendSender, type EmailSender } from "./email";
 import { passwordEmail } from "./password-email";
 import { createUser, writeAccess } from "./users";
-import type { Role } from "./permissions";
+import type { Panel, PanelLevel, Role } from "./permissions";
 
 // Nobody, admins included, sees a password: users set their own from an emailed link.
 
@@ -35,10 +35,11 @@ const resetLinkLifetimeMs = 60 * 60_000;
 
 export async function listUsers(headers: Headers) {
   await requirePermission(headers, "users.manage");
-  const [users, roles, lokasyon, credentials] = await Promise.all([
+  const [users, roles, lokasyon, panels, credentials] = await Promise.all([
     db.select().from(user).orderBy(asc(user.name)),
     db.select().from(userRole),
     db.select().from(userLokasyon),
+    db.select().from(userPanel),
     db.select({ userId: account.userId }).from(account).where(eq(account.providerId, "credential")),
   ]);
   const hasPassword = new Set(credentials.map((c) => c.userId));
@@ -51,6 +52,7 @@ export async function listUsers(headers: Headers) {
     invited: !hasPassword.has(u.id),
     roles: roles.filter((r) => r.userId === u.id).map((r) => r.role),
     lokasyonIds: lokasyon.filter((l) => l.userId === u.id).map((l) => l.lokasyonId),
+    panels: Object.fromEntries(panels.filter((p) => p.userId === u.id).map((p) => [p.panel, p.level])) as Panels,
   }));
 }
 
@@ -76,7 +78,7 @@ export async function getUserDetail(headers: Headers, id: string) {
       .where(eq(auditLog.targetUserId, id))
       .orderBy(desc(auditLog.createdAt)),
   ]);
-  return { id: target.id, name: target.name, email: target.email, ...access, invited: credential.length === 0, history };
+  return { id: target.id, name: target.name, email: target.email, ...access, panels: await readPanels(db, id), invited: credential.length === 0, history };
 }
 
 export async function inviteUser(headers: Headers, input: InviteInput, send: EmailSender = resendSender) {
@@ -128,6 +130,36 @@ export async function updateAccess(headers: Headers, id: string, input: AccessIn
     await tx.delete(userLokasyon).where(eq(userLokasyon.userId, id));
     await writeAccess(tx, id, next);
     await audit(tx, actor.userId, id, "user.access", before, after);
+  });
+}
+
+type Panels = Partial<Record<Panel, PanelLevel>>;
+const panelChoice = z.enum(["yok", "gorur", "duzenler"], { error: "İzin seçin." });
+const panelsInput = z.object({ musteri: panelChoice, finans: panelChoice });
+
+async function readPanels(tx: Tx | typeof db, id: string): Promise<Panels> {
+  const rows = await tx.select({ panel: userPanel.panel, level: userPanel.level }).from(userPanel).where(eq(userPanel.userId, id));
+  return Object.fromEntries(panel.enumValues.flatMap((p) => rows.filter((r) => r.panel === p).map((r) => [p, r.level])));
+}
+
+// The Müşteri and Finans panels are given to each admin by name; the admin role alone opens neither.
+export async function updatePanels(headers: Headers, id: string, input: z.input<typeof panelsInput>) {
+  const actor = await requirePermission(headers, "users.manage");
+  const choice = parseInput(panelsInput, input);
+  const after: Panels = Object.fromEntries(
+    panel.enumValues.filter((p) => choice[p] !== "yok").map((p) => [p, choice[p] as PanelLevel]),
+  );
+  await db.transaction(async (tx) => {
+    const access = await readAccess(tx, id);
+    if (Object.keys(after).length && !(access.active && access.roles.includes("admin"))) {
+      throw new UserError("Panel izni yalnızca etkin yöneticilere verilebilir. Önce yönetici rolünü verin.");
+    }
+    const before = await readPanels(tx, id);
+    if (JSON.stringify(before) === JSON.stringify(after)) return;
+    await tx.delete(userPanel).where(eq(userPanel.userId, id));
+    const grants = Object.entries(after) as [Panel, PanelLevel][];
+    if (grants.length) await tx.insert(userPanel).values(grants.map(([p, level]) => ({ userId: id, panel: p, level })));
+    await audit(tx, actor.userId, id, "user.panels", { panels: before }, { panels: after });
   });
 }
 

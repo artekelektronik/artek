@@ -13,6 +13,7 @@ import {
   reactivateUser,
   sendPasswordLinkTo,
   updateAccess,
+  updatePanels,
 } from "@/lib/user-admin";
 
 function accessFrom(formData: FormData) {
@@ -33,6 +34,34 @@ export async function inviteUserAction(_previous: ActionState, formData: FormDat
 
 export async function updateAccessAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => updateAccess(await headers(), id, accessFrom(formData)));
+  revalidatePath("/kullanicilar");
+  revalidatePath(`/kullanicilar/${id}`);
+  return state;
+}
+
+export async function updatePanelsAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
+  const state = await runAction(async () =>
+    updatePanels(await headers(), id, { musteri: text(formData, "musteri") as never, finans: text(formData, "finans") as never }),
+  );
+  revalidatePath("/kullanicilar");
+  revalidatePath(`/kullanicilar/${id}`);
+  return state;
+}
+
+// The ⋯ editor on the Kullanıcılar table: roles, Lokasyon and panels in one save. Roles go first, because a panel
+// can only be given to an admin; without the admin role the panels are cleared.
+export async function updatePermissionsAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
+  const access = accessFrom(formData);
+  const admin = access.roles.includes("admin");
+  const state = await runAction(async () => {
+    const requestHeaders = await headers();
+    await updateAccess(requestHeaders, id, access);
+    await updatePanels(requestHeaders, id, {
+      musteri: admin ? (text(formData, "musteri") as never) : "yok",
+      finans: admin ? (text(formData, "finans") as never) : "yok",
+    });
+  });
+  revalidatePath("/kullanicilar");
   revalidatePath(`/kullanicilar/${id}`);
   return state;
 }

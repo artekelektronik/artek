@@ -47,13 +47,20 @@ pnpm dev                                                        # http://localho
 - An invite emails a link to `/sifre-belirle`, where the user sets their own password (link valid 7 days; a reset link sent later is valid 1 hour). The link is a Better Auth reset-password token, so nobody, admins included, ever sees or sets someone else's password.
 - Anyone can ask for a reset link under "Şifremi unuttum" (`/sifremi-unuttum`): Better Auth rate-limits it, answers the same for every email, and sends nothing to a deactivated user. The link is valid 1 hour.
 - Deactivating a user ends their sessions, voids unused links and blocks sign-in; users are never deleted, so their movements keep their name. The last active admin can't be deactivated or lose the admin role.
-- Every change to a user, their roles or Lokasyon is written to the append-only `audit_log` (who, when, before and after), shown on the user's page.
+- Kullanıcılar shows a permission map: one row per person and one column per capability (stock, products, the two panels, management). It is worked out from `lib/permissions.ts` by `lib/capabilities.ts`, so it shows exactly what the app enforces. The ⋯ at the end of a row changes roles, Lokasyon and panel permissions in one save, with a live preview.
+- Every change to a user, their roles, Lokasyon or panels is written to the append-only `audit_log` (who, when, before and after), shown on the user's page.
 - Every page that reads data and every action that changes it calls `requirePermission(headers, action, lokasyonId)` from `lib/guard.ts`. It loads the user's roles and Lokasyon from the database and applies the table in `lib/permissions.ts`. The `(app)` layout's session check and `proxy.ts` only redirect visitors; they are not access control.
 - Sign-in goes through `/api/auth`, where Better Auth rate-limits attempts (in production, counted in the `rate_limit` table).
 
 ## Product images
 
 Images live in Vercel Blob. The product form uploads them from the browser straight to Blob (`/api/urunler/gorsel` only issues the upload token, to users who may manage products; JPEG, PNG, WebP, AVIF or GIF up to 5 MB), and keeps their order: the first is the main image shown in lists and on the site. An image taken off a product is deleted from Blob when the product is saved, unless another product still shows it. `pnpm --filter stok move-images-to-blob` copies images that still point at the site (`/products-images/…`) into Blob; it is safe to run again.
+
+## Faturalar, Finans and Müşteriler
+
+Two private panels, ADR-0004. Each admin gets them one by one under Kullanıcılar → Panel izinleri, at view or edit level: Artek Müşteri Paneli (`crm.*`) and Artek Finans Paneli (`finance.*`, where uploading needs edit). Invoice PDFs from QNB Dijital Köprü are uploaded at `/faturalar`; the browser unzips a zip and posts each PDF to `/api/faturalar` (one PDF per request, 4 MB max). An invoice is stored once per ETTN with its lines and the PDF's text; the PDF itself isn't kept. Customers are created from the buyer's VKN/TCKN. Finans and Müşteriler are calculated from the invoices on every request. The daily cron emails artek@ferritnuve.com after 7 days without a new invoice and sends Müşteri paneli holders the customers whose follow-up date has come.
+
+Contact routes researched outside the repo are loaded once with `pnpm --filter stok import-crm-contacts <file.json>`. It only fills empty fields and skips weak matches. Like `import-products`, it uses `.env.local`, so it writes to whatever database `DATABASE_URL` names.
 
 ## Public catalog
 

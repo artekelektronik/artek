@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  date,
   index,
   uniqueIndex,
   integer,
@@ -364,7 +365,7 @@ export const notification = pgTable(
   "notification",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    kind: text("kind").notNull(), // "kritik_seviye"
+    kind: text("kind").notNull(), // "kritik_seviye", "fatura_hatirlatma", "crm_takip"
     productId: uuid("product_id").references(() => product.id),
     documentId: uuid("document_id").references(() => stockDocument.id),
     subject: text("subject").notNull(),
@@ -401,4 +402,114 @@ export const auditLog = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("audit_log_target_idx").on(t.targetUserId, t.createdAt)],
+);
+
+// Sales invoices read from QNB Dijital Köprü PDFs. Artek issues invoices there; this app only reads them,
+// for the Finans and Müşteri panels. Only admins given a panel permission (user_panel) see either.
+
+// The owner's private panels. An admin role alone opens neither; each is granted per user.
+export const panel = pgEnum("panel", ["musteri", "finans"]);
+export const panelLevel = pgEnum("panel_level", ["gorur", "duzenler"]);
+
+export const userPanel = pgTable(
+  "user_panel",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    panel: panel("panel").notNull(),
+    level: panelLevel("level").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.panel] })],
+);
+
+// Where a CRM follow-up stands; set by hand on the customer card.
+export const customerStatus = pgEnum("customer_status", [
+  "aranacak",
+  "arandi",
+  "ulasilamadi",
+  "teklif_verildi",
+  "siparis_geldi",
+  "ilgilenmiyor",
+]);
+
+// One row per buyer, keyed by the VKN / TCKN on its invoices.
+export const customer = pgTable("customer", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  taxId: text("tax_id").notNull().unique(),
+  taxIdType: text("tax_id_type").notNull(), // "VKN" (company) or "TCKN" (şahıs)
+  name: text("name").notNull(),
+  city: text("city").notNull().default(""),
+  district: text("district").notNull().default(""),
+  // Business contact routes from the company's own site or an official directory; never guessed.
+  phone: text("phone"),
+  email: text("email"),
+  website: text("website"),
+  about: text("about"),
+  contactSource: text("contact_source"),
+  status: customerStatus("status").notNull().default("aranacak"),
+  nextFollowUpOn: date("next_follow_up_on", { mode: "string" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const customerNote = pgTable(
+  "customer_note",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("customer_note_customer_idx").on(t.customerId, t.createdAt)],
+);
+
+// The ETTN is unique per invoice in GİB, so uploading the same invoice twice adds nothing.
+export const invoice = pgTable(
+  "invoice",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ettn: uuid("ettn").notNull().unique(),
+    number: text("number").notNull(), // e-Fatura and e-Arşiv number in separate series
+    issuedOn: date("issued_on", { mode: "string" }).notNull(),
+    scenario: text("scenario").notNull(), // TEMELFATURA (e-Fatura) or EARSIVFATURA (e-Arşiv)
+    type: text("type").notNull(), // SATIS, IADE, ISTISNA …; IADE is left out of sales
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id),
+    netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
+    totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
+    fileName: text("file_name").notNull(),
+    fileSha256: text("file_sha256").notNull(),
+    // The PDF's text, so a better parser can re-read it; the PDF itself is not kept.
+    rawText: text("raw_text").notNull(),
+    uploadedBy: text("uploaded_by")
+      .notNull()
+      .references(() => user.id),
+    uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("invoice_issued_idx").on(t.issuedOn), index("invoice_customer_idx").on(t.customerId)],
+);
+
+export const invoiceLine = pgTable(
+  "invoice_line",
+  {
+    invoiceId: uuid("invoice_id")
+      .notNull()
+      .references(() => invoice.id),
+    seq: integer("seq").notNull(),
+    description: text("description").notNull(), // as typed on the invoice
+    productName: text("product_name").notNull(), // spelling-normalized, for grouping
+    productGroup: text("product_group").notNull(),
+    quantity: numeric("quantity", { precision: 14, scale: 3 }).notNull(),
+    unit: text("unit").notNull(),
+    unitPrice: numeric("unit_price", { precision: 14, scale: 4 }).notNull(),
+    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.invoiceId, t.seq] })],
 );

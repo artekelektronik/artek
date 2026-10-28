@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { queueFinanceReminders } from "@/lib/finance-reminders";
 import { processOutbox } from "@/lib/outbox";
 
 function authorized(request: Request) {
@@ -9,9 +10,10 @@ function authorized(request: Request) {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
-// Daily catch-up for unsent emails; Vercel Cron sends Bearer $CRON_SECRET.
+// Daily: queue the invoice reminder and CRM follow-ups, then send whatever is unsent. Vercel Cron sends Bearer $CRON_SECRET.
 export async function GET(request: Request) {
   if (!authorized(request)) return new Response("Yetkisiz", { status: 401 });
+  const queued = await queueFinanceReminders();
   const processed = await processOutbox();
-  return Response.json({ processed });
+  return Response.json({ queued, processed });
 }

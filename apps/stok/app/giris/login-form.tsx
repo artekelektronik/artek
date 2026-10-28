@@ -43,7 +43,7 @@ export function LoginForm({ notice }: { notice?: string }) {
       <CardContent>
         <form onSubmit={onSubmit}>
           <FieldGroup>
-            {notice && <p className="text-center text-sm text-green-700">{notice}</p>}
+            {notice && <p className="text-center text-sm text-green-700 dark:text-green-400">{notice}</p>}
             <Field>
               <FieldLabel htmlFor="email">E-posta</FieldLabel>
               <Input id="email" name="email" type="email" autoComplete="email" placeholder="ad@ferritnuve.com" required />

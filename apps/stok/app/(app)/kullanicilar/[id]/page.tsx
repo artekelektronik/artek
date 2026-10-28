@@ -2,9 +2,11 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { CapabilitySummary, GrantLegend } from "@/components/capabilities-view";
 import { NoAccess } from "@/components/no-access";
+import { capabilitiesOf } from "@/lib/capabilities";
 import { loadActor } from "@/lib/guard";
-import { auditActionLabels, formatDateTime, roleLabels } from "@/lib/labels";
+import { auditActionLabels, formatDateTime, panelLabels, panelLevelLabels, roleLabels } from "@/lib/labels";
 import { listLokasyon } from "@/lib/lokasyon";
 import { can, type Role } from "@/lib/permissions";
 import { getUserDetail } from "@/lib/user-admin";
@@ -15,8 +17,12 @@ import {
   reactivateUserAction,
   sendPasswordLinkAction,
   updateAccessAction,
+  updatePanelsAction,
 } from "../actions";
-import { AccessForm, UserActionButton } from "../user-forms";
+import { FormSelect } from "@/components/form-select";
+import { Label } from "@artek/ui/components/label";
+import type { Panel, PanelLevel } from "@/lib/permissions";
+import { AccessForm, PanelsForm, UserActionButton } from "../user-forms";
 
 export const metadata = { title: "Kullanıcı | Artek Stok" };
 
@@ -37,7 +43,18 @@ export default async function UserPage({
   // An audit snapshot in words.
   function describe(value: unknown) {
     if (!value || typeof value !== "object") return "—";
-    const v = value as { roles?: Role[]; lokasyonIds?: string[]; active?: boolean; kind?: string; sessions?: number };
+    const v = value as {
+      roles?: Role[];
+      lokasyonIds?: string[];
+      active?: boolean;
+      kind?: string;
+      sessions?: number;
+      panels?: Partial<Record<Panel, PanelLevel>>;
+    };
+    if (v.panels) {
+      const granted = (Object.keys(panelLabels) as Panel[]).filter((p) => v.panels![p]);
+      return granted.length ? granted.map((p) => `${panelLabels[p]}: ${panelLevelLabels[v.panels![p]!]}`).join(" · ") : "Panel izni yok";
+    }
     if (v.kind) return v.kind === "invite" ? "Davet bağlantısı" : "Şifre sıfırlama bağlantısı";
     if (v.sessions !== undefined) return `${v.sessions} oturum kapatıldı`;
     return [
@@ -60,14 +77,47 @@ export default async function UserPage({
           <UserStatus active={target.active} invited={target.invited} />
         </div>
         <p className="text-muted-foreground">{target.email}</p>
-        {davet && <p className="text-sm text-green-700">Davet e-postası gönderildi.</p>}
+        {davet && <p className="text-sm text-green-700 dark:text-green-400">Davet e-postası gönderildi.</p>}
       </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Neleri görüyor, neleri yapabiliyor</h2>
+        <GrantLegend />
+        <CapabilitySummary capabilities={capabilitiesOf(target, lokasyon)} />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Yetkiler</h2>
         <AccessForm action={updateAccessAction.bind(null, target.id)}>
           <AccessFields roles={target.roles} lokasyonIds={target.lokasyonIds} lokasyon={lokasyon} />
         </AccessForm>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Panel izinleri</h2>
+        <p className="text-muted-foreground max-w-xl text-sm">
+          Müşteri ve finans panelleri yalnızca burada izin verilen yöneticilere açılır. Yönetici rolü tek başına bu panelleri göstermez;
+          yöneticilik kaldırılırsa izinler de geçersiz olur.
+        </p>
+        {target.roles.includes("admin") ? (
+          <PanelsForm action={updatePanelsAction.bind(null, target.id)}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(Object.keys(panelLabels) as Panel[]).map((p) => (
+                <Label key={p} className="flex-col items-stretch gap-1">
+                  {panelLabels[p]}
+                  <FormSelect
+                    name={p}
+                    defaultValue={target.panels[p] ?? "yok"}
+                    options={Object.entries(panelLevelLabels).map(([value, label]) => ({ value, label }))}
+                    className="w-full"
+                  />
+                </Label>
+              ))}
+            </div>
+          </PanelsForm>
+        ) : (
+          <p className="text-sm">Bu kullanıcı yönetici olmadığı için panel izni verilemez.</p>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">
