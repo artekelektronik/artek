@@ -117,5 +117,22 @@
       "alt": "Catalog iron-powder toroid group labelled -52",
       "description": "Compare -26 and -52 iron-powder toroids by manufacturer, DC bias, core and winding losses, and temperature. Practical checks for replacement selection."
     }
+  },
+  {
+    "file": "08-uu-nuve-secimi.md",
+    "slug": "uu-nuve-secimi",
+    "category": "Güç elektroniği / UU nüveler",
+    "image": "/products-images/uu-cores.jpg",
+    "alt": "Katalogdaki UU ferrit nüve grubu",
+    "description": "UU ferrit nüve seçerken tam ölçü, UU/UI kombinasyonu, malzeme ve AL değerini kontrol edin. Hat filtresi bobini ve güç trafosu için talep rehberi.",
+    "publishedAt": "2026-10-28T00:00:00+03:00",
+    "modifiedAt": "2026-10-28T00:00:00+03:00",
+    "en": {
+      "file": "en/uu-core-selection.md",
+      "slug": "uu-core-selection",
+      "category": "Power electronics / UU cores",
+      "alt": "UU ferrite core group from the catalog",
+      "description": "Check full dimensions, UU/UI combination, material and AL value when choosing a UU ferrite core for a line filter choke or power transformer."
+    }
   }
 ]
