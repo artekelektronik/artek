@@ -123,6 +123,7 @@ export function productGuideSlug(category?: string, productTypes?: string[], nam
   if (productTypes?.includes("ETD")) return "etd-nuve-secimi";
   if (productTypes?.includes("EE")) return "ee-nuve-secimi";
   if (productTypes?.includes("YUVARLAK")) return "kablo-ferriti-secimi";
+  if (productTypes?.includes("YASSI")) return "yassi-kablo-ferriti-secimi";
   // UU cores have no Ürün Tipi in the catalog yet, so they are recognised by name.
   if (category === "Ferrit" && /^UUR?\s/.test(name)) return "uu-nuve-secimi";
 }
