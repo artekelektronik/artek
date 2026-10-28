@@ -3,7 +3,9 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getBlogPosts, getBlogPost, blogStructuredData } from "@/lib/blog";
+import { getBlogPosts, getBlogPost, blogStructuredData, relatedProducts } from "@/lib/blog";
+import { getProducts } from "@/lib/catalog";
+import { ProductCard } from "@/components/product-card";
 import { getSiteUrl } from "@/lib/seo";
 import styles from "../prose.module.css";
 
@@ -31,6 +33,7 @@ export default async function BlogPostPage({params}: Props) {
   const site = await getSiteUrl();
   const tr = locale === "tr";
   const blogPosts = getBlogPosts(locale);
+  const related = relatedProducts(await getProducts(), post.translations.tr);
   const published = new Date(post.publishedAt).toLocaleDateString(tr ? "tr-TR" : "en-GB", {day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul"});
   return <main className="mx-auto max-w-6xl px-6 pb-24 pt-24">
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify(blogStructuredData(post, site)).replace(/</g, "\\u003c")}} />
@@ -42,6 +45,7 @@ export default async function BlogPostPage({params}: Props) {
     <div className="mt-10 grid gap-10 lg:grid-cols-[230px_minmax(0,1fr)]">
       <aside className="self-start rounded-xl bg-slate-100 p-5 lg:sticky lg:top-24"><h2 className="mb-4 text-xs font-bold uppercase tracking-wider">{tr ? "Bu yazıda" : "In this guide"}</h2><nav aria-label={tr ? "Yazı içindekiler" : "Table of contents"}><ol className="space-y-3 text-sm leading-6 text-slate-600">{post.headings.map(heading => <li key={heading.id}><a href={`#${heading.id}`} className="hover:text-artek-violet">{heading.title}</a></li>)}</ol></nav></aside>
       <div className="min-w-0"><article className={styles.prose} dangerouslySetInnerHTML={{__html: post.html}} />
+        {related.products.length > 0 && <section className="mt-12 border-t border-slate-200 pt-9" aria-labelledby="related-products"><h2 id="related-products" className="text-2xl font-semibold">{tr ? "İlgili ürünler" : "Related products"}</h2><div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">{related.products.map(product => <ProductCard key={product.id} product={product} />)}</div><Link href={related.catalogHref} className="mt-5 inline-block py-2 font-medium underline underline-offset-4">{tr ? "Tüm ilgili ürünleri katalogda görün" : "See all related products in the catalog"} →</Link></section>}
         <section className="mt-12 border-t border-slate-200 pt-9" aria-labelledby="related-posts"><h2 id="related-posts" className="text-2xl font-semibold">{tr ? "İlgili teknik rehberler" : "Related technical guides"}</h2><ul className="mt-5 space-y-4">{blogPosts.filter(other => other.slug !== post.slug).map(other => <li key={other.slug}><Link href={`/blog/${other.slug}`} className="inline-block py-2 font-medium underline underline-offset-4">{other.title} →</Link></li>)}</ul></section>
       </div>
     </div>

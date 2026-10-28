@@ -99,3 +99,21 @@ test('published blog guides have working source anchors and safe rendered markup
     assert.ok(blogPosts.some(post => post.slug === productGuideSlug(category, type)));
   }
 });
+test('every blog guide lists its own catalog products and links to them in the catalog', () => {
+  const {blogPosts, productGuideSlug, relatedProducts} = require('../lib/blog.ts');
+  for (const post of blogPosts) {
+    const related = relatedProducts(products, post.slug);
+    assert.ok(related.products.length > 0 && related.products.length <= 4, post.slug);
+    for (const product of related.products) assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi']), post.slug);
+    const query = new URL(related.catalogHref, 'https://test.invalid').searchParams;
+    const categories = query.get('categories').split(',');
+    const types = query.get('productTypes')?.split(',');
+    for (const product of related.products) {
+      assert.ok(categories.includes(product.fields.Category));
+      if (types) assert.ok(types.includes(product.fields['Ürün Tipi'][0]));
+    }
+  }
+  // A comparison guide shows both sides, not just the first category in catalog order.
+  const toroids = relatedProducts(products, 'ferrit-demir-tozu-toroid').products;
+  assert.deepEqual(new Set(toroids.map(p => p.fields.Category)), new Set(['Ferrit', 'IRON-POWDER']));
+});
