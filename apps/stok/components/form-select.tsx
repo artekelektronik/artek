@@ -13,6 +13,7 @@ export function FormSelect({
   defaultValue,
   empty,
   className,
+  onValueChange,
   ...props
 }: {
   name: string;
@@ -20,12 +21,19 @@ export function FormSelect({
   defaultValue?: string;
   empty?: string;
   className?: string;
+  onValueChange?: (value: string) => void;
   "aria-label"?: string;
 }) {
   const [value, setValue] = useState(defaultValue || (empty ? none : (options[0]?.value ?? "")));
   return (
     <>
-      <Select value={value} onValueChange={setValue}>
+      <Select
+        value={value}
+        onValueChange={(v) => {
+          setValue(v);
+          onValueChange?.(v === none ? "" : v);
+        }}
+      >
         <SelectTrigger className={cn("font-normal", className)} aria-label={props["aria-label"]}>
           <SelectValue />
         </SelectTrigger>

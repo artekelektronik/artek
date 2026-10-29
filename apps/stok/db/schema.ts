@@ -524,6 +524,27 @@ export const invoiceLine = pgTable(
 // The morning assistant's suggestions: call this customer and ask this, or send this email. Nothing goes out
 // until a person approves it on the Bugün screen.
 export const suggestionKind = pgEnum("suggestion_kind", ["arama", "eposta"]);
+
+// What closing a suggestion with a reason does to the Müşteri: never again (closed down / not interested),
+// suggest again after `days`, or just a note.
+export const closeEffect = pgEnum("close_effect", ["kapandi", "ilgilenmiyor", "tekrar", "not"]);
+
+// Why a suggestion couldn't be done; people edit the list. Removed ones are archived, so old suggestions keep their label.
+export const closeReason = pgTable(
+  "close_reason",
+  {
+    id: text("id").primaryKey(), // the starting reasons have readable ids ("kapandi"); new ones a uuid
+    label: text("label").notNull(),
+    effect: closeEffect("effect").notNull(),
+    days: integer("days"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+  },
+  (t) => [check("close_reason_days_check", sql`(${t.effect} = 'tekrar') = (${t.days} is not null) and (${t.days} is null or ${t.days} between 1 and 365)`)],
+);
+
+// What the assistant read in a free note, for a person to apply or reject.
+export type NoteProposal = { effect: "kapandi" | "ilgilenmiyor" | "tekrar" | "not"; days: number | null; newName: string | null; explanation: string };
 // "atlandi" is only on suggestions closed before every close needed a reason.
 export const suggestionStatus = pgEnum("suggestion_status", [
   "bekliyor",
@@ -555,8 +576,10 @@ export const assistantSuggestion = pgTable(
     status: suggestionStatus("status").notNull().default("bekliyor"),
     scheduled: boolean("scheduled").notNull().default(false), // a person set this Takip date; otherwise the assistant picked it
     doneOn: date("done_on", { mode: "string" }), // when the email went or the call was made
-    closeReason: text("close_reason"), // why it couldn't be done, from the close reasons
+    closeReason: text("close_reason").references(() => closeReason.id), // why it couldn't be done
     closeNote: text("close_note"),
+    proposal: jsonb("proposal").$type<NoteProposal>(), // what the assistant made of closeNote
+    proposalDecidedAt: timestamp("proposal_decided_at", { withTimezone: true }),
     waitingFor: text("waiting_for"), // onay_bekliyor: what we wait for
     askAgainOn: date("ask_again_on", { mode: "string" }), // onay_bekliyor: when Bugün asks "Onaylandı mı?" again
     error: text("error"),

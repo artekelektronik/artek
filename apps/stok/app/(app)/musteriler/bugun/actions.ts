@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
-import type { CloseReason } from "@/lib/close-reasons";
 import { text } from "@/lib/form-data";
+import { acceptProposal, rejectProposal } from "@/lib/reasons";
 import { approvalArrived, closeUndone, completeCall, postponeSuggestion, sendSuggestionEmail, waitForApproval } from "@/lib/suggestions";
 
 function done(state: ActionState) {
@@ -42,7 +42,7 @@ export async function completeCallAction(_previous: ActionState, formData: FormD
 export async function closeUndoneAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
   return done(
     await runAction(async () =>
-      closeUndone(await headers(), { id: text(formData, "id"), reason: text(formData, "reason") as CloseReason, note: text(formData, "note") }),
+      closeUndone(await headers(), { id: text(formData, "id"), reason: text(formData, "reason"), note: text(formData, "note") }),
     ),
   );
 }
@@ -59,4 +59,12 @@ export async function waitForApprovalAction(_previous: ActionState, formData: Fo
 
 export async function approvalArrivedAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => approvalArrived(await headers(), id)));
+}
+
+export async function acceptProposalAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => acceptProposal(await headers(), id)));
+}
+
+export async function rejectProposalAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => rejectProposal(await headers(), id)));
 }

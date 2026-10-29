@@ -1,11 +1,13 @@
-import { and, eq, inArray } from "drizzle-orm";
+import Anthropic from "@anthropic-ai/sdk";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { assistantSuggestion, customer, customerNote } from "../db/schema";
-import { askAgainDays, closeReasons, type CloseReason } from "./close-reasons";
+import { assistantSuggestion, closeReason, customer, customerNote } from "../db/schema";
+import { askAgainDays, otherReasonId } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { applyEffect, interpretNote } from "./reasons";
 import { addDays, istanbulDate } from "./time";
 
 // What a person does with a morning suggestion. Every email goes out only from here, after someone pressed Gönder.
@@ -122,32 +124,45 @@ async function closable(id: string) {
 const undoneInput = z
   .object({
     id: z.uuid(),
-    reason: z.enum(Object.keys(closeReasons) as [CloseReason, ...CloseReason[]], { error: "Bir sebep seçin." }),
+    reason: z.string().min(1, { error: "Bir sebep seçin." }),
     note: z.string().trim().max(4000).default(""),
   })
-  .refine((v) => v.reason !== "diger" || v.note, { error: "\"Diğer\" için kısa bir not yazın.", path: ["note"] });
+  .refine((v) => v.reason !== otherReasonId || v.note, { error: "\"Diğer\" için kısa bir not yazın.", path: ["note"] });
 
-// Couldn't be done. The reason may close the Müşteri for good ("Şirket kapanmış", "İlgilenmiyor").
-export async function closeUndone(headers: Headers, input: z.input<typeof undoneInput>) {
+// Couldn't be done. The reason's effect may close the Müşteri for good or bring it back later. When the reason
+// itself does nothing and there's a note, the assistant reads the note and proposes what to do, for a person to accept.
+export async function closeUndone(headers: Headers, input: z.input<typeof undoneInput>, client?: Anthropic) {
   const actor = await requirePermission(headers, "crm.edit");
   const data = parseInput(undoneInput, input);
+  const [reason] = await db
+    .select()
+    .from(closeReason)
+    .where(and(eq(closeReason.id, data.reason), isNull(closeReason.archivedAt)));
+  if (!reason) throw new UserError("Bir sebep seçin.");
   const s = await closable(data.id);
-  const reason = closeReasons[data.reason];
   await db.transaction(async (tx) => {
     await tx
       .update(assistantSuggestion)
-      .set({ status: "yapilamadi", closeReason: data.reason, closeNote: data.note || null, decidedAt: new Date(), decidedBy: actor.userId })
+      .set({ status: "yapilamadi", closeReason: reason.id, closeNote: data.note || null, decidedAt: new Date(), decidedBy: actor.userId })
       .where(eq(assistantSuggestion.id, s.id));
     await tx.insert(customerNote).values({
       customerId: s.customerId,
       userId: actor.userId,
       body: `Yapılamadı: ${reason.label}${data.note ? `. ${data.note}` : ""}`,
     });
-    await tx
-      .update(customer)
-      .set({ ...(reason.status && { status: reason.status }), nextFollowUpOn: null, updatedAt: new Date() })
-      .where(eq(customer.id, s.customerId));
+    await applyEffect(tx, s.customerId, reason);
   });
+
+  if (reason.effect !== "not" || !data.note) return;
+  if (!client && !process.env.ANTHROPIC_API_KEY) return;
+  try {
+    const proposal = await interpretNote(client ?? new Anthropic(), data.note);
+    if (proposal.effect === "not" && !proposal.newName) return;
+    await db.update(assistantSuggestion).set({ proposal }).where(eq(assistantSuggestion.id, s.id));
+  } catch (error) {
+    // The close is saved either way; without a reading the note simply stays a note.
+    console.error("Not okunamadı:", error);
+  }
 }
 
 // Later: the day becomes the Müşteri's Takip date, so a fresh suggestion is prepared that morning.

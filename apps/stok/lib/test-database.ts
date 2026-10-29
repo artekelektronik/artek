@@ -27,6 +27,9 @@ export async function resetTestDatabase() {
     await db.execute(sql.raw(`truncate ${rows.map((r) => `"${r.tablename}"`).join(", ")} cascade`));
   }
   await db.execute(sql`update lokasyon set opened_at = now()`);
+  const { closeReason } = await import("../db/schema");
+  const { startingReasons } = await import("./close-reasons");
+  await db.insert(closeReason).values(startingReasons);
 }
 
 export async function lokasyonIdsByName() {

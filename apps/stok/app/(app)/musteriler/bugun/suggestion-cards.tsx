@@ -10,9 +10,18 @@ import { Textarea } from "@artek/ui/components/textarea";
 import { DatePicker } from "@/components/date-picker";
 import { FormSelect } from "@/components/form-select";
 import { FormStatus } from "@/components/form-status";
-import { closeReasons } from "@/lib/close-reasons";
+import { describeEffect, type ReasonView } from "@/lib/close-reasons";
 import { addDays } from "@/lib/time";
-import { approvalArrivedAction, closeUndoneAction, completeCallAction, postponeAction, sendEmailAction, waitForApprovalAction } from "./actions";
+import {
+  acceptProposalAction,
+  approvalArrivedAction,
+  closeUndoneAction,
+  completeCallAction,
+  postponeAction,
+  rejectProposalAction,
+  sendEmailAction,
+  waitForApprovalAction,
+} from "./actions";
 
 export type SuggestionView = {
   id: string;
@@ -47,7 +56,6 @@ function Findings({ items }: { items: SuggestionView["findings"] }) {
   );
 }
 
-const reasonOptions = Object.entries(closeReasons).map(([value, r]) => ({ value, label: r.label }));
 const quickDays = [
   { label: "3 gün", days: 3 },
   { label: "1 hafta", days: 7 },
@@ -55,7 +63,7 @@ const quickDays = [
 ];
 
 // The other ways to close a suggestion besides doing it; each needs its reason, day or what we wait for.
-function CloseOptions({ id, today }: { id: string; today: string }) {
+function CloseOptions({ id, today, reasons }: { id: string; today: string; reasons: ReasonView[] }) {
   const [mode, setMode] = useState<"yapilamadi" | "ertele" | "onay" | null>(null);
   const [undone, undoneAction, undonePending] = useActionState(closeUndoneAction, undefined);
   const [later, laterAction, laterPending] = useActionState(postponeAction, undefined);
@@ -77,8 +85,9 @@ function CloseOptions({ id, today }: { id: string; today: string }) {
       {mode === "yapilamadi" && (
         <form action={undoneAction} className="flex flex-col gap-2 rounded-lg border p-3">
           <input type="hidden" name="id" value={id} />
-          <FormSelect name="reason" options={reasonOptions} empty="Sebep seçin" aria-label="Sebep" />
-          <Textarea name="note" rows={2} placeholder="Not (isteğe bağlı; “Diğer” için gerekli)" aria-label="Not" />
+          <FormSelect name="reason" options={reasons.map((r) => ({ value: r.id, label: r.label }))} empty="Sebep seçin" aria-label="Sebep" />
+          <Textarea name="note" rows={2} placeholder="Ne oldu? (isteğe bağlı; “Diğer” için gerekli)" aria-label="Not" />
+          <p className="text-muted-foreground text-xs">Not yazarsanız asistan okur ve ne yapılacağını önerir; siz onaylamadan bir şey değişmez.</p>
           <div>
             <Button type="submit" size="sm" disabled={undonePending}>
               Kaydet ve kapat
@@ -153,7 +162,7 @@ function Head({ s, today }: { s: SuggestionView; today: string }) {
   );
 }
 
-export function CallCard({ s, today }: { s: SuggestionView; today: string }) {
+export function CallCard({ s, today, reasons }: { s: SuggestionView; today: string; reasons: ReasonView[] }) {
   const [state, action, pending] = useActionState(completeCallAction, undefined);
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border p-4">
@@ -194,12 +203,12 @@ export function CallCard({ s, today }: { s: SuggestionView; today: string }) {
         </div>
         <FormStatus state={state} saved="Kaydedildi." />
       </form>
-      <CloseOptions id={s.id} today={today} />
+      <CloseOptions id={s.id} today={today} reasons={reasons} />
     </article>
   );
 }
 
-export function EmailCard({ s, signature, today }: { s: SuggestionView; signature: string; today: string }) {
+export function EmailCard({ s, signature, today, reasons }: { s: SuggestionView; signature: string; today: string; reasons: ReasonView[] }) {
   const [state, action, pending] = useActionState(sendEmailAction, undefined);
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border p-4">
@@ -224,23 +233,23 @@ export function EmailCard({ s, signature, today }: { s: SuggestionView; signatur
         </div>
         <FormStatus state={state} saved="Gönderildi; müşterinin kartına not düşüldü." />
       </form>
-      <CloseOptions id={s.id} today={today} />
+      <CloseOptions id={s.id} today={today} reasons={reasons} />
     </article>
   );
 }
 
-export function FailedCard({ s, today }: { s: SuggestionView; today: string }) {
+export function FailedCard({ s, today, reasons }: { s: SuggestionView; today: string; reasons: ReasonView[] }) {
   return (
     <article className="bg-card flex flex-col gap-2 rounded-xl border border-dashed p-4">
       <Head s={s} today={today} />
       <p className="text-destructive text-xs">Öneri hazırlanamadı: {s.error}</p>
-      <CloseOptions id={s.id} today={today} />
+      <CloseOptions id={s.id} today={today} reasons={reasons} />
     </article>
   );
 }
 
 // Back from "Onay bekliyor": either it came, and the suggestion opens again, or we keep waiting.
-export function ApprovalCard({ s, today }: { s: SuggestionView; today: string }) {
+export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: string; reasons: ReasonView[] }) {
   const [state, setState] = useState<{ error?: string } | undefined>();
   const [pending, start] = useTransition();
   const [waiting, waitAction, waitPending] = useActionState(waitForApprovalAction, undefined);
@@ -264,7 +273,7 @@ export function ApprovalCard({ s, today }: { s: SuggestionView; today: string })
         {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
       </div>
       <FormStatus state={waiting} />
-      <CloseOptions id={s.id} today={today} />
+      <CloseOptions id={s.id} today={today} reasons={reasons} />
     </article>
   );
 }
@@ -303,5 +312,41 @@ export function PrepareButton() {
       </Button>
       {message && <span className="text-muted-foreground text-xs">{message}</span>}
     </div>
+  );
+}
+
+export type ProposalView = {
+  id: string;
+  customer: { id: string; name: string };
+  closeNote: string | null;
+  proposal: { effect: ReasonView["effect"]; days: number | null; newName: string | null; explanation: string };
+};
+
+// What the assistant made of a free note; nothing changes until someone presses Uygula.
+export function ProposalCard({ p }: { p: ProposalView }) {
+  const [state, setState] = useState<{ error?: string } | undefined>();
+  const [pending, start] = useTransition();
+  return (
+    <article className="bg-card flex flex-col gap-2 rounded-xl border p-4 text-sm">
+      <Link href={`/musteriler?secili=${p.customer.id}`} className="font-medium underline-offset-4 hover:underline">
+        {p.customer.name}
+      </Link>
+      <p className="text-muted-foreground">Not: “{p.closeNote}”</p>
+      <p>
+        <b>Öneri:</b> {p.proposal.effect !== "not" && describeEffect(p.proposal)}
+        {p.proposal.effect !== "not" && p.proposal.newName && " · "}
+        {p.proposal.newName && <>Yeni unvanı kaydet: {p.proposal.newName}</>}
+      </p>
+      <p className="text-muted-foreground text-xs">{p.proposal.explanation}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" disabled={pending} onClick={() => start(async () => setState(await acceptProposalAction(p.id)))}>
+          Uygula
+        </Button>
+        <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => start(async () => setState(await rejectProposalAction(p.id)))}>
+          Reddet
+        </Button>
+        {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
+      </div>
+    </article>
   );
 }

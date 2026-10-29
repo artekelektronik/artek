@@ -76,7 +76,7 @@ On `/musteriler/bugun` a person with Müşteri paneli edit rights works through 
 
 - **Calls:** record a call with a note and the day it was made.
 - **Emails:** edit a draft and press Gönder. The email goes from artek@ferritnuve.com, replies go to that inbox, and the signature and opt-out line are added automatically.
-- **Yapılamadı:** close it with a reason (`lib/close-reasons.ts`). "Şirket kapanmış" and "İlgilenmiyor" mean the customer is never suggested again.
+- **Yapılamadı:** close it with a reason. People manage the reasons at `/musteriler/sebepler` (`lib/reasons.ts`). Each reason has one effect: never suggest again (closed down, or not interested), suggest again after N days, or just a note. A removed reason is archived, so suggestions closed with it keep its label. When the reason does nothing and the person wrote a note, Claude (`claude-haiku-5-5`) reads the note and proposes an effect, and a new company name if there is one. The proposal shows under "Notlardan çıkan öneriler" and changes nothing until someone presses Uygula.
 - **Sonraya bırak:** the chosen day becomes the customer's Takip date, and that morning a fresh suggestion is prepared.
 - **Onay bekliyor:** note what we wait for. Every 3 days the card comes back to ask "Onaylandı mı?".
 
