@@ -12,7 +12,8 @@ import { FormSelect } from "@/components/form-select";
 import { FormStatus } from "@/components/form-status";
 import type { LeadContact, LeadSource } from "@/db/schema";
 import { leadStatusLabels } from "@/lib/lead-status";
-import { importLeadsAction, leadEventsAction, linkLeadAction, updateLeadAction } from "./actions";
+import { ArchiveControl } from "@/components/archive-control";
+import { archiveLeadAction, importLeadsAction, leadEventsAction, linkLeadAction, restoreLeadAction, updateLeadAction } from "./actions";
 
 type Status = keyof typeof leadStatusLabels;
 export type LeadRow = {
@@ -27,6 +28,8 @@ export type LeadRow = {
   status: Status;
   seenCount: number;
   lastSeenAt: string;
+  archivedAt: string | null;
+  archiveReason: string | null;
   customer: { id: string; name: string } | null;
   candidate: { id: string; name: string } | null;
 };
@@ -41,10 +44,12 @@ const tones: Record<Status, string> = {
 const dateText = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", timeZone: "Europe/Istanbul" });
 
 export function LeadsBoard({ rows, canEdit, initialOpen }: { rows: LeadRow[]; canEdit: boolean; initialOpen?: string }) {
-  const [filter, setFilter] = useState<Status | "">("");
+  const [filter, setFilter] = useState<Status | "" | "arsiv">("");
   const [openId, setOpenId] = useState<string | undefined>(rows.some((r) => r.id === initialOpen) ? initialOpen : undefined);
-  const counts = Object.fromEntries((Object.keys(leadStatusLabels) as Status[]).map((s) => [s, rows.filter((r) => r.status === s).length]));
-  const shown = rows.filter((r) => !filter || r.status === filter);
+  const live = rows.filter((r) => !r.archivedAt);
+  const archivedCount = rows.length - live.length;
+  const counts = Object.fromEntries((Object.keys(leadStatusLabels) as Status[]).map((s) => [s, live.filter((r) => r.status === s).length]));
+  const shown = filter === "arsiv" ? rows.filter((r) => r.archivedAt) : live.filter((r) => !filter || r.status === filter);
 
   return (
     <div className="flex flex-col gap-4">
@@ -57,13 +62,18 @@ export function LeadsBoard({ rows, canEdit, initialOpen }: { rows: LeadRow[]; ca
         <>
           <div className="flex flex-wrap gap-1">
             <Button type="button" size="sm" variant={filter === "" ? "secondary" : "ghost"} onClick={() => setFilter("")}>
-              Hepsi ({rows.length})
+              Hepsi ({live.length})
             </Button>
             {(Object.keys(leadStatusLabels) as Status[]).map((s) => (
               <Button key={s} type="button" size="sm" variant={filter === s ? "secondary" : "ghost"} onClick={() => setFilter(s)}>
                 {leadStatusLabels[s]} ({counts[s]})
               </Button>
             ))}
+            {archivedCount > 0 && (
+              <Button type="button" size="sm" variant={filter === "arsiv" ? "secondary" : "ghost"} onClick={() => setFilter("arsiv")}>
+                Arşiv ({archivedCount})
+              </Button>
+            )}
           </div>
           <ul className="bg-card divide-y overflow-hidden rounded-xl border">
             {shown.map((r) => (
@@ -242,6 +252,13 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
                 <FormStatus state={state} saved="Kaydedildi." />
               </div>
             </form>
+          </Section>
+        )}
+
+        {canEdit && (
+          <Section title="Arşiv">
+            {r.archivedAt && <p className="text-sm">Arşivde{r.archiveReason && `: ${r.archiveReason}`}</p>}
+            <ArchiveControl archived={Boolean(r.archivedAt)} onArchive={(reason) => archiveLeadAction(r.id, reason)} onRestore={() => restoreLeadAction(r.id)} />
           </Section>
         )}
 

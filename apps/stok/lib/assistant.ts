@@ -44,7 +44,7 @@ export async function pickCustomers(today: string): Promise<Pick[]> {
         .where(or(eq(assistantSuggestion.forDay, today), inArray(assistantSuggestion.status, ["bekliyor", "basarisiz", "onay_bekliyor"])))
     ).map((r) => r.id),
   );
-  const customers = await db.select().from(customer);
+  const customers = (await db.select().from(customer)).filter((c) => !c.archivedAt);
   const picks: Pick[] = [];
 
   const due = customers

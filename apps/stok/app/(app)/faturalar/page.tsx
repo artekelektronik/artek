@@ -29,7 +29,7 @@ export default async function InvoicesPage() {
       allowed={{ finance: true, crm: canSeeCustomers }}
       lede={
         <>
-          QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.length.toLocaleString("tr-TR")}</b> fatura
+          QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.filter((r) => !r.archivedAt).length.toLocaleString("tr-TR")}</b> fatura
           {lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}. {invoiceReminderDays} gün yeni fatura yüklenmezse {invoiceReminderTo}{" "}
           adresine hatırlatma gider.
         </>
@@ -72,7 +72,12 @@ export default async function InvoicesPage() {
       )}
 
       <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
-        <InvoiceTable rows={rows} today={istanbulDate(new Date())} linkCustomers={canSeeCustomers} />
+        <InvoiceTable
+          rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
+          today={istanbulDate(new Date())}
+          linkCustomers={canSeeCustomers}
+          canEdit={canUpload}
+        />
       </PanelCard>
     </PanelShell>
   );

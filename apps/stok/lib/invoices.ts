@@ -4,6 +4,7 @@ import { extractText, getDocumentProxy } from "unpdf";
 import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
 import { logActivity } from "./activity";
+import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
 import { requirePermission } from "./guard";
 import { linkLeadsByTaxId } from "./leads";
@@ -74,7 +75,14 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
       .onConflictDoNothing({ target: invoice.ettn })
       .returning({ id: invoice.id });
     const summary = { number: parsed.number, customer: customerRow.name, issuedOn: parsed.issuedOn };
-    if (!added) return { status: "tekrar" as const, ...summary };
+    // An invoice for an archived Müşteri brings the Müşteri back.
+    await restoreCustomerIn(tx, customerRow.id, { userId: null, why: `Yeni fatura geldi: ${parsed.number}` });
+    if (!added) {
+      // The same invoice uploaded again: if it was archived, it comes back.
+      const [existing] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.ettn, parsed.ettn));
+      const restored = await restoreInvoiceIn(tx, existing.id, { userId: actor.userId, why: "Aynı fatura tekrar yüklendi" });
+      return { status: restored ? ("eklendi" as const) : ("tekrar" as const), ...summary };
+    }
 
     await logActivity(tx, [
       { entity: "fatura", entityId: added.id, label: `${parsed.number} · ${customerRow.name}`, action: "eklendi", detail: input.fileName, userId: actor.userId },
@@ -127,6 +135,8 @@ export async function invoiceList(headers: Headers) {
       customerId: invoice.customerId,
       customer: customer.name,
       uploadedAt: invoice.uploadedAt,
+      archivedAt: invoice.archivedAt,
+      archiveReason: invoice.archiveReason,
     })
     .from(invoice)
     .innerJoin(customer, eq(customer.id, invoice.customerId))

@@ -29,6 +29,8 @@ import { fieldLabels, fieldValue, linkLabels, sourceLabels } from "@/lib/custome
 import type { LinkType } from "@/db/schema";
 import {
   addLinkAction,
+  archiveCustomerAction,
+  restoreCustomerAction,
   addNoteAction,
   customerHistoryAction,
   removeLinkAction,
@@ -37,6 +39,7 @@ import {
 } from "./actions";
 import type { CrmRow } from "./crm-board";
 import { NoteProposal } from "./note-proposal";
+import { ArchiveControl } from "@/components/archive-control";
 
 type History = Awaited<ReturnType<typeof customerHistoryAction>>;
 
@@ -513,6 +516,15 @@ function CustomerPanel({ c, canEdit, firms, onOpen }: { c: CrmRow; canEdit: bool
                 </li>
               ))}
             </ul>
+          </Section>
+        )}
+
+        {canEdit && (
+          <Section title="Arşiv">
+            <p className="text-muted-foreground text-xs">
+              Arşivlenen müşteri listeden, Bugün önerilerinden ve takiplerden çıkar; faturaları finansta kalır. Yeni faturası gelirse kendiliğinden geri döner.
+            </p>
+            <ArchiveControl archived={false} onArchive={(reason) => archiveCustomerAction(c.id, reason)} onRestore={() => restoreCustomerAction(c.id)} />
           </Section>
         )}
 

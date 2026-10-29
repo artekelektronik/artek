@@ -23,6 +23,7 @@ export async function loadSalesSummary() {
         number: invoice.number,
         scenario: invoice.scenario,
         type: invoice.type,
+        archivedAt: invoice.archivedAt,
       })
       .from(invoice),
     db
@@ -36,9 +37,12 @@ export async function loadSalesSummary() {
       .from(invoiceLine),
     db.select().from(customer),
   ]);
+  // Archived invoices leave every total but still count as issued, so they don't show up as missing numbers.
+  const live = invoices.filter((i) => !i.archivedAt);
+  const liveIds = new Set(live.map((i) => i.id));
   const summary = summarize(
-    invoices.filter((i) => i.type !== "IADE").map((i) => ({ ...i, netAmount: Number(i.netAmount) })),
-    lines.map((l) => ({ ...l, amount: Number(l.amount), quantity: Number(l.quantity) })),
+    live.filter((i) => i.type !== "IADE").map((i) => ({ ...i, netAmount: Number(i.netAmount) })),
+    lines.filter((l) => liveIds.has(l.invoiceId)).map((l) => ({ ...l, amount: Number(l.amount), quantity: Number(l.quantity) })),
     customers,
   );
   return { ...summary, customerRows: customers, gaps: missingNumbers(invoices) };

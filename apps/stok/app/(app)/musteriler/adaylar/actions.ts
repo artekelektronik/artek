@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
+import { archiveLead, restoreLead } from "@/lib/archive";
 import { importLeadsFile, leadEvents, linkLeadToCustomer, updateLead } from "@/lib/leads";
 
 export async function leadEventsAction(id: string) {
@@ -31,4 +32,16 @@ export async function importLeadsAction(records: unknown): Promise<ActionState &
   });
   revalidatePath("/musteriler/adaylar");
   return state.saved ? { ...state, ...result } : state;
+}
+
+export async function archiveLeadAction(id: string, reason: string): Promise<ActionState> {
+  const state = await runAction(async () => archiveLead(await headers(), { id, reason }));
+  revalidatePath("/musteriler/adaylar");
+  return state;
+}
+
+export async function restoreLeadAction(id: string): Promise<ActionState> {
+  const state = await runAction(async () => restoreLead(await headers(), id));
+  revalidatePath("/musteriler/adaylar");
+  return state;
 }

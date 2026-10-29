@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { asc, desc, eq, and, lte, isNotNull, inArray } from "drizzle-orm";
+import { asc, desc, eq, and, lte, isNotNull, isNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { customer, customerNote, customerStatus, followUpChannel, invoice, user } from "../db/schema";
@@ -66,7 +66,7 @@ export async function customerHistory(headers: Headers, id: string) {
     db
       .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
       .from(invoice)
-      .where(eq(invoice.customerId, id))
+      .where(and(eq(invoice.customerId, id), isNull(invoice.archivedAt)))
       .orderBy(desc(invoice.issuedOn)),
     db
       .select({
@@ -120,6 +120,7 @@ export async function followUpsDue(today: string) {
     .where(
       and(
         isNotNull(customer.nextFollowUpOn),
+        isNull(customer.archivedAt),
         lte(customer.nextFollowUpOn, today),
         inArray(customer.status, ["aranacak", "arandi", "ulasilamadi", "teklif_verildi"]),
       ),
