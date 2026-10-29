@@ -56,9 +56,11 @@ export default async function TodayPage() {
   const isOpen = (s: { status: string; askAgainOn: string | null }) =>
     s.status === "bekliyor" || s.status === "basarisiz" || (s.status === "onay_bekliyor" && (s.askAgainOn ?? "") <= today);
   // Our records and newer invoices are read now, so they are current even when the assistant's text isn't.
-  const openRows = rows.filter((r) => isOpen(r.s));
-  const [summary, newer] = openRows.length ? await Promise.all([loadSalesSummary(), newerInvoices(openRows.map((r) => r.s))]) : [null, new Map()];
-  const open: SuggestionView[] = openRows.map(({ s, c }) => {
+  // Waiting ones whose day to ask hasn't come yet: they don't block anything, but can be opened and changed any time.
+  const isWaiting = (s: { status: string; askAgainOn: string | null }) => s.status === "onay_bekliyor" && (s.askAgainOn ?? "") > today;
+  const shownRows = rows.filter((r) => isOpen(r.s) || isWaiting(r.s));
+  const [summary, newer] = shownRows.length ? await Promise.all([loadSalesSummary(), newerInvoices(shownRows.map((r) => r.s))]) : [null, new Map()];
+  const shown: SuggestionView[] = shownRows.map(({ s, c }) => {
     const r = summary?.byCustomer.get(c.id);
     return {
       ...s,
@@ -67,13 +69,14 @@ export default async function TodayPage() {
       newInvoice: newer.get(s.id) ?? null,
     };
   });
+  const open = shown.filter(isOpen);
+  const waiting = shown.filter(isWaiting);
   const earlier = open.filter((s) => s.forDay < today);
   const todays = open.filter((s) => s.forDay === today);
   const calls = todays.filter((s) => s.status === "bekliyor" && s.kind === "arama");
   const emails = todays.filter((s) => s.status === "bekliyor" && s.kind === "eposta");
   const failed = todays.filter((s) => s.status === "basarisiz");
-  const waiting = rows.filter((r) => r.s.status === "onay_bekliyor" && r.s.askAgainOn && r.s.askAgainOn > today);
-  const done = rows.filter((r) => r.s.decidedAt && r.s.decidedAt >= istanbulTimeOn(today) && !isOpen(r.s));
+  const done = rows.filter((r) => r.s.decidedAt && r.s.decidedAt >= istanbulTimeOn(today) && !isOpen(r.s) && !isWaiting(r.s));
   const dateText = new Date(`${today}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
 
   const entry = (s: SuggestionView): Entry => ({ key: s.id, type: "suggestion", s });
@@ -89,6 +92,7 @@ export default async function TodayPage() {
     { title: "Aranacaklar", entries: calls.map(entry) },
     { title: "Gönderilecek e-postalar", entries: emails.map(entry) },
     { title: "Hazırlanamayanlar", entries: canEdit ? failed.map(entry) : [] },
+    { title: "Onay bekleyenler", entries: waiting.map(entry) },
   ];
 
   return (
@@ -125,19 +129,6 @@ export default async function TodayPage() {
       )}
 
       <TodayBoard sections={sections} today={today} reasons={reasons} signature={emailSignature} canEdit={canEdit} />
-
-      {waiting.length > 0 && (
-        <details className="text-sm">
-          <summary className="text-muted-foreground cursor-pointer">Onay bekleyenler ({waiting.length})</summary>
-          <ul className="mt-2 flex flex-col gap-1">
-            {waiting.map(({ s, c }) => (
-              <li key={s.id}>
-                {c.name} · <span className="text-muted-foreground">{s.waitingFor}; {s.askAgainOn} günü tekrar sorulacak</span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
 
       {done.length > 0 && (
         <details className="text-sm">
