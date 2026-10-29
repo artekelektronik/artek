@@ -183,3 +183,51 @@ export async function linkLeadsByTaxId(tx: Tx, taxId: string, c: { id: string; n
   const found = await tx.select({ id: lead.id }).from(lead).where(and(eq(lead.taxId, taxId), isNull(lead.customerId)));
   for (const l of found) await markCustomer(tx, l.id, c, null);
 }
+
+const newLeadInput = z.object({
+  name: z.string().trim().min(2, { error: "Firma adını yazın." }).max(300),
+  website: z.string().trim().max(500).default(""),
+  city: z.string().trim().max(100).default(""),
+  sector: z.string().trim().max(200).default(""),
+  why: z.string().trim().max(2000).default(""),
+  phone: z.string().trim().max(100).default(""),
+  email: z.string().trim().max(200).default(""),
+  taxId: z
+    .string()
+    .trim()
+    .refine((v) => !v || /^\d{10,11}$/.test(v), { error: "VKN 10, TCKN 11 haneli olmalı." })
+    .default(""),
+});
+
+// An Aday added by hand. A firm that is already an Aday or a Müşteri is refused with its name. Returns the new id.
+export async function addLead(headers: Headers, input: z.input<typeof newLeadInput>) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(newLeadInput, input);
+  const normName = normFirm(data.name);
+  if (normName.length < 2) throw new UserError("Firma adını yazın.");
+  const customers = await db.select({ name: customer.name, taxId: customer.taxId }).from(customer);
+  const asCustomer = customers.find((c) => normFirm(c.name) === normName || (data.taxId && c.taxId === data.taxId));
+  if (asCustomer) throw new UserError(`Bu firma zaten müşterimiz: ${asCustomer.name}.`);
+  const [existing] = await db.select({ name: lead.name }).from(lead).where(eq(lead.normName, normName));
+  if (existing) throw new UserError(`Bu firma zaten Adaylar'da: ${existing.name}.`);
+  const contact = Object.fromEntries(Object.entries({ phone: data.phone, email: data.email }).filter(([, v]) => v));
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(lead)
+      .values({
+        name: data.name,
+        normName,
+        website: data.website || null,
+        city: data.city || null,
+        sector: data.sector || null,
+        why: data.why || null,
+        taxId: data.taxId || null,
+        contact,
+        sources: [{ report: "Elle eklendi", at: new Date().toISOString().slice(0, 10), links: [] }],
+      })
+      .returning({ id: lead.id });
+    await tx.insert(leadEvent).values({ leadId: row.id, kind: "eklendi", text: "Elle eklendi", userId: actor.userId });
+    await logActivity(tx, { entity: "aday", entityId: row.id, label: data.name, action: "eklendi", detail: "Elle", userId: actor.userId });
+    return row.id;
+  });
+}

@@ -540,7 +540,7 @@ function CustomerPanel({ c, canEdit, firms, onOpen }: { c: CrmRow; canEdit: bool
             </dd>
             <dt className="text-muted-foreground text-xs">İlk – son alım</dt>
             <dd className="tabular-nums">
-              {day(c.firstOn)} – {day(c.lastOn)}
+              {c.lastOn ? `${day(c.firstOn)} – ${day(c.lastOn)}` : "Henüz fatura yok"}
             </dd>
             <dt className="text-muted-foreground text-xs">Aldığı gruplar</dt>
             <dd>{c.groups.join(", ")}</dd>

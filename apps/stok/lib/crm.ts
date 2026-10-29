@@ -5,7 +5,9 @@ import { db } from "../db";
 import { customer, customerNote, customerStatus, followUpChannel, invoice, user } from "../db/schema";
 import { customerChanges, interpretCardNote, matchFirm, recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
+import { logActivity } from "./activity";
 import { linksFor } from "./firm-links";
+import { linkLeadsByTaxId } from "./leads";
 import { requirePermission } from "./guard";
 
 export { customerStatusLabels, type CustomerStatus } from "./finance-calc";
@@ -126,4 +128,33 @@ export async function followUpsDue(today: string) {
       ),
     )
     .orderBy(asc(customer.nextFollowUpOn));
+}
+
+const newCustomerInput = z.object({
+  name: z.string().trim().min(2, { error: "Firma unvanını yazın." }).max(300),
+  taxId: z
+    .string()
+    .trim()
+    .regex(/^\d{10,11}$/, { error: "VKN 10, TCKN 11 haneli olmalı." }),
+  city: z.string().trim().max(100).default(""),
+  phone: optional,
+  email: optional.refine((v) => !v || z.email().safeParse(v).success, { error: "E-posta adresi geçersiz." }),
+  website: optional,
+});
+
+// A Müşteri added by hand needs its VKN, so its invoices join it when they arrive. Returns the new id.
+export async function addCustomer(headers: Headers, input: z.input<typeof newCustomerInput>) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(newCustomerInput, input);
+  const [existing] = await db.select({ name: customer.name }).from(customer).where(eq(customer.taxId, data.taxId));
+  if (existing) throw new UserError(`Bu vergi numarasıyla zaten bir müşteri var: ${existing.name}.`);
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(customer)
+      .values({ ...data, taxIdType: data.taxId.length === 11 ? "TCKN" : "VKN", contactSource: "Elle eklendi" })
+      .returning({ id: customer.id, name: customer.name });
+    await logActivity(tx, { entity: "musteri", entityId: row.id, label: row.name, action: "eklendi", detail: "Elle", userId: actor.userId });
+    await linkLeadsByTaxId(tx, data.taxId, row);
+    return row.id;
+  });
 }
