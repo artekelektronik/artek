@@ -97,7 +97,7 @@ If a sales invoice for the customer is uploaded after the suggestion was written
 
 A suggestion that is not closed stays under "Önceki günlerden kalanlar", and a late Takip is marked "N gün gecikti". While any is open, the assistant proposes no customers of its own. Takip dates still come on their day. Once all are closed, "Daha fazla öneri hazırla" prepares more the same day.
 
-Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.
+Each task has a Notlar box: a note written there goes onto the customer's card and is read like any card note, and so is the note of a finished call, so a proposal (new number, new name, closed down) shows under it. Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.
 
 ## Public catalog
 

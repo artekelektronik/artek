@@ -95,15 +95,19 @@ export async function addCustomerNote(headers: Headers, input: z.input<typeof no
   const [c] = await db.select().from(customer).where(eq(customer.id, data.customerId));
   if (!c) throw new UserError("Müşteri bulunamadı.");
   const [note] = await db.insert(customerNote).values({ customerId: c.id, userId: actor.userId, body: data.body }).returning({ id: customerNote.id });
+  await readCardNote(note.id, c, data.body, client);
+}
 
+// The assistant's reading of a saved note, stored on it as a proposal. Also used for Bugün's call notes.
+// Without an API key, or if the model fails, the note simply stays a note.
+export async function readCardNote(noteId: string, c: typeof customer.$inferSelect, body: string, client?: Anthropic) {
   if (!client && !process.env.ANTHROPIC_API_KEY) return;
   try {
-    const proposal = await interpretCardNote(client ?? new Anthropic(), c, data.body);
+    const proposal = await interpretCardNote(client ?? new Anthropic(), c, body);
     if (!proposal.changes.length && !proposal.relatedFirm) return;
     const relatedFirmId = proposal.relatedFirm ? await matchFirm(proposal.relatedFirm, c.id) : null;
-    await db.update(customerNote).set({ proposal: { ...proposal, relatedFirmId } }).where(eq(customerNote.id, note.id));
+    await db.update(customerNote).set({ proposal: { ...proposal, relatedFirmId } }).where(eq(customerNote.id, noteId));
   } catch (error) {
-    // The note is saved either way; without a reading it simply stays a note.
     console.error("Not okunamadı:", error);
   }
 }

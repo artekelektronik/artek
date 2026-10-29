@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useOptimistic, useState, useTransition } from "react";
-import { AlertTriangle, Check, Database, Globe, History, Lightbulb, ListChecks, ListTodo, PenLine, type LucideIcon } from "lucide-react";
+import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
+import { AlertTriangle, Check, Database, Globe, History, Lightbulb, ListChecks, ListTodo, MessageSquareText, PenLine, type LucideIcon } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -30,6 +30,8 @@ import {
   toggleStepAction,
   waitForApprovalAction,
 } from "./actions";
+import { addNoteAction, customerHistoryAction } from "../actions";
+import { NoteProposal, type CardNote } from "../note-proposal";
 
 export type SuggestionView = {
   id: string;
@@ -62,6 +64,7 @@ const blockTones = {
   sorular: "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/40 [&>h3]:text-green-800 dark:[&>h3]:text-green-300",
   kayit: "border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-950/40 [&>h3]:text-violet-800 dark:[&>h3]:text-violet-300",
   yapilacak: "bg-card [&>h3]:text-foreground",
+  notlar: "bg-card [&>h3]:text-foreground",
   uyari: "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 [&>h3]:text-red-800 dark:[&>h3]:text-red-300",
 };
 
@@ -242,6 +245,52 @@ function Timeline({ s }: { s: SuggestionView }) {
   );
 }
 
+// Notes written here go onto the customer's card; the assistant reads them like card notes and may propose a change.
+function CardNotes({ customerId }: { customerId: string }) {
+  const [notes, setNotes] = useState<CardNote[] | null>(null);
+  const [reloads, setReloads] = useState(0);
+  const [, startLoading] = useTransition();
+  const [state, action, pending] = useActionState(async (previous: Parameters<typeof addNoteAction>[0], formData: FormData) => {
+    const result = await addNoteAction(previous, formData);
+    if (result?.saved) setReloads((x) => x + 1);
+    return result;
+  }, undefined);
+  useEffect(() => {
+    startLoading(async () => setNotes((await customerHistoryAction(customerId)).notes));
+  }, [customerId, reloads]);
+
+  return (
+    <Block tone="notlar" icon={MessageSquareText} title="Notlar">
+      <form key={reloads} action={action} className="flex flex-col gap-2">
+        <input type="hidden" name="customerId" value={customerId} />
+        <Textarea name="body" rows={2} placeholder="Ör. unvanı değişmiş, yeni telefon, başka firmaya satılmış…" aria-label="Not" />
+        <div className="flex items-center gap-2">
+          <Button type="submit" size="sm" variant="outline" disabled={pending}>
+            {pending ? "Kaydediliyor…" : "Not ekle"}
+          </Button>
+          <FormStatus state={state} saved="Not eklendi." />
+        </div>
+      </form>
+      {notes && notes.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {notes.slice(0, 3).map((n) => (
+            <li key={n.id} className="border-l-2 pl-3">
+              <p className="text-sm whitespace-pre-wrap">{n.body}</p>
+              <p className="text-muted-foreground text-xs">
+                {n.author} · {timeText(n.createdAt)}
+              </p>
+              <NoteProposal n={n} canEdit onDone={() => setReloads((x) => x + 1)} />
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link href={`/musteriler?secili=${customerId}`} className="text-muted-foreground self-start text-xs underline-offset-4 hover:underline">
+        Tüm notlar müşteri kartında
+      </Link>
+    </Block>
+  );
+}
+
 // The parts every waiting suggestion shows above its own form, in reading order.
 function Briefing({ s, today }: { s: SuggestionView; today: string }) {
   return (
@@ -251,6 +300,7 @@ function Briefing({ s, today }: { s: SuggestionView; today: string }) {
       <OurRecords s={s} today={today} />
       <Findings items={s.findings} />
       <Steps s={s} />
+      <CardNotes customerId={s.customer.id} />
     </>
   );
 }
