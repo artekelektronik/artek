@@ -162,6 +162,13 @@
       "when": 1793292559956,
       "tag": "0022_arsiv",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793294100253,
+      "tag": "0023_aday-arastirma",
+      "breakpoints": true
     }
   ]
 }

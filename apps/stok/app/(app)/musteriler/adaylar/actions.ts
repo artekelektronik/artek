@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
 import { archiveLead, restoreLead } from "@/lib/archive";
+import { addLeadFromLink, deepResearchLead } from "@/lib/lead-research";
 import { addLead, importLeadsFile, leadEvents, linkLeadToCustomer, updateLead } from "@/lib/leads";
 
 export async function leadEventsAction(id: string) {
@@ -62,4 +63,19 @@ export async function addLeadAction(_previous: unknown, formData: FormData): Pro
   });
   revalidatePath("/musteriler/adaylar");
   return { ...state, id };
+}
+
+export async function addLeadFromLinkAction(link: string): Promise<ActionState & { id?: string; existed?: boolean }> {
+  let result: { id: string; existed: boolean } | undefined;
+  const state = await runAction(async () => {
+    result = await addLeadFromLink(await headers(), { link });
+  });
+  revalidatePath("/musteriler/adaylar");
+  return { ...state, ...result };
+}
+
+export async function deepResearchAction(id: string): Promise<ActionState> {
+  const state = await runAction(async () => deepResearchLead(await headers(), id));
+  revalidatePath("/musteriler/adaylar");
+  return state;
 }

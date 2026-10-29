@@ -12,10 +12,10 @@ import { Textarea } from "@artek/ui/components/textarea";
 import { cn } from "@artek/ui/lib/utils";
 import { FormSelect } from "@/components/form-select";
 import { FormStatus } from "@/components/form-status";
-import type { LeadContact, LeadSource } from "@/db/schema";
+import type { LeadContact, LeadResearch, LeadSource } from "@/db/schema";
 import { leadStatusLabels } from "@/lib/lead-status";
 import { ArchiveControl } from "@/components/archive-control";
-import { addLeadAction, archiveLeadAction, importLeadsAction, leadEventsAction, linkLeadAction, restoreLeadAction, updateLeadAction } from "./actions";
+import { addLeadAction, addLeadFromLinkAction, archiveLeadAction, deepResearchAction, importLeadsAction, leadEventsAction, linkLeadAction, restoreLeadAction, updateLeadAction } from "./actions";
 
 type Status = keyof typeof leadStatusLabels;
 export type LeadRow = {
@@ -32,6 +32,8 @@ export type LeadRow = {
   lastSeenAt: string;
   archivedAt: string | null;
   archiveReason: string | null;
+  siteResearch: LeadResearch | null;
+  deepResearch: LeadResearch | null;
   customer: { id: string; name: string } | null;
   candidate: { id: string; name: string } | null;
 };
@@ -189,6 +191,18 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
           )
         )}
 
+        {r.siteResearch && (
+          <Section title="Siteden okunanlar">
+            <Research r={r.siteResearch} />
+          </Section>
+        )}
+
+        <Section title="Site + haber taraması">
+          {r.deepResearch && <Research r={r.deepResearch} />}
+          {canEdit && <DeepResearchButton id={r.id} again={Boolean(r.deepResearch)} />}
+          {!r.deepResearch && !canEdit && <p className="text-muted-foreground text-xs">Henüz yapılmadı.</p>}
+        </Section>
+
         {r.why && (
           <Section title="Neden ilginç">
             <p className="text-sm leading-relaxed">{r.why}</p>
@@ -334,6 +348,7 @@ function ImportArea({ children }: { children: React.ReactNode }) {
       }}
     >
     <div className="flex flex-wrap items-center gap-2">
+      <LinkAdd />
       <NewLead />
       <input
         ref={input}
@@ -360,6 +375,96 @@ function ImportArea({ children }: { children: React.ReactNode }) {
       </div>
     )}
     </div>
+  );
+}
+
+function Research({ r }: { r: LeadResearch }) {
+  return (
+    <div className="flex flex-col gap-2 text-sm">
+      <p className="leading-relaxed">{r.summary}</p>
+      {r.points.length > 0 && (
+        <ul className="list-disc pl-5 leading-relaxed">
+          {r.points.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
+      {r.productLines.length > 0 && (
+        <p>
+          <span className="text-muted-foreground">Uyabilecek ürün hatları:</span> {r.productLines.join(", ")}
+        </p>
+      )}
+      {r.sources.length > 0 && (
+        <ul className="flex flex-col gap-1">
+          {r.sources.map((s) => (
+            <li key={s.url} className="text-xs">
+              <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+                {s.title || s.url}
+              </a>
+              {s.date && <span className="text-muted-foreground"> · {s.date}</span>}
+              {s.summary && <span className="text-muted-foreground"> · {s.summary}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-muted-foreground text-xs">
+        {dateText(r.at)} · {r.seconds} sn sürdü
+      </p>
+    </div>
+  );
+}
+
+function DeepResearchButton({ id, again }: { id: string; again: boolean }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string>();
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            const s = await deepResearchAction(id);
+            setError(s?.error);
+            if (!s?.error) router.refresh();
+          })
+        }
+      >
+        {pending ? "Taranıyor… (1-2 dakika sürebilir)" : again ? "Tekrar tara" : "Site + haber taraması yap"}
+      </Button>
+      {error && <span className="text-destructive text-xs">{error}</span>}
+      {!pending && !again && <span className="text-muted-foreground text-xs">Siteye ve son haberlere bakar; sabahki asistanın modeliyle çalışır.</span>}
+    </div>
+  );
+}
+
+// "Linkle ekle": paste the firm's site; the assistant reads only that site and fills the card.
+function LinkAdd() {
+  const [link, setLink] = useState("");
+  const [pending, start] = useTransition();
+  const [result, setResult] = useState<{ id?: string; existed?: boolean; error?: string }>();
+  return (
+    <form
+      className="flex flex-wrap items-center gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        start(async () => setResult(await addLeadFromLinkAction(link)));
+      }}
+    >
+      <Input value={link} onChange={(e) => setLink(e.target.value)} placeholder="Şirket sitesi, ör. ornek.com.tr" aria-label="Şirket sitesi" className="h-8 w-64" />
+      <Button type="submit" size="sm" disabled={pending || !link.trim()}>
+        {pending ? "Site okunuyor…" : "Linkle ekle"}
+      </Button>
+      {result?.error && <span className="text-destructive text-xs">{result.error}</span>}
+      {result?.id && (
+        <a href={`/musteriler/adaylar?secili=${result.id}`} className="text-xs underline underline-offset-4">
+          {result.existed ? "Bu firma zaten Adaylar'da, kartı aç" : "Eklendi, kartı aç"}
+        </a>
+      )}
+    </form>
   );
 }
 
