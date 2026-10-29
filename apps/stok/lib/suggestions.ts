@@ -1,10 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { and, asc, eq, gt, inArray, isNull, lte, ne } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, isNull, lte, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { assistantSuggestion, closeReason, customer, customerNote, invoice } from "../db/schema";
+import { factsFor, redraftFor } from "./assistant";
 import { askAgainDays, otherReasonId } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
+import { loadSalesSummary } from "./finance";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { applyEffect, interpretNote } from "./reasons";
@@ -312,4 +314,82 @@ export async function setEmailOptOut(headers: Headers, customerId: string, optOu
     .where(eq(customer.id, customerId))
     .returning({ id: customer.id });
   if (!updated.length) throw new UserError("Müşteri bulunamadı.");
+}
+
+const stepInput = z.object({ id: z.uuid(), index: z.number().int().min(0), done: z.boolean() });
+
+// Ticks or unticks one step of the to-do list, with who and when.
+export async function toggleStep(headers: Headers, input: z.input<typeof stepInput>) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(stepInput, input);
+  const s = await closable(data.id);
+  if (!s.steps[data.index]) throw new UserError("Adım bulunamadı.");
+  const steps = s.steps.map((step, i) =>
+    i === data.index ? { ...step, doneAt: data.done ? new Date().toISOString() : null, doneBy: data.done ? actor.name : null } : step,
+  );
+  await db.update(assistantSuggestion).set({ steps }).where(eq(assistantSuggestion.id, s.id));
+}
+
+// For each open suggestion, the latest sales invoice uploaded after it was written: its records are out of date.
+export async function newerInvoices(suggestions: { id: string; customerId: string; createdAt: Date; refreshedAt: Date | null }[]) {
+  const found = new Map<string, { number: string; issuedOn: string }>();
+  for (const s of suggestions) {
+    const [latest] = await db
+      .select({ number: invoice.number, issuedOn: invoice.issuedOn })
+      .from(invoice)
+      .where(and(eq(invoice.customerId, s.customerId), gt(invoice.uploadedAt, s.refreshedAt ?? s.createdAt), ne(invoice.type, "IADE")))
+      .orderBy(desc(invoice.issuedOn))
+      .limit(1);
+    if (latest) found.set(s.id, latest);
+  }
+  return found;
+}
+
+// "Analizi güncelle": rewrites a waiting suggestion from today's records, keeping the morning's findings. The ticks
+// start over, since the steps are new.
+export async function refreshSuggestion(headers: Headers, id: string, client?: Anthropic) {
+  await requirePermission(headers, "crm.edit");
+  const [s] = await db
+    .select()
+    .from(assistantSuggestion)
+    .where(and(eq(assistantSuggestion.id, id), eq(assistantSuggestion.status, "bekliyor")));
+  if (!s) throw new UserError("Bu öneri bulunamadı ya da zaten kapatıldı.");
+  if (!client && !process.env.ANTHROPIC_API_KEY) throw new UserError("Asistan şu an kullanılamıyor.");
+  const { facts } = await factsFor(s.customerId, await loadSalesSummary());
+  let result;
+  try {
+    result = await redraftFor(client ?? new Anthropic(), facts, s.kind, s.findings);
+  } catch (error) {
+    console.error("Öneri güncellenemedi:", error);
+    throw new UserError("Asistan şu an cevap vermedi; birazdan tekrar deneyin.");
+  }
+  const { draft, model } = result;
+  await db
+    .update(assistantSuggestion)
+    .set({
+      reason: `${s.scheduled ? "Takip günü geldi. " : ""}${draft.reason}`,
+      analysis: draft.analysis,
+      steps: draft.steps.map((text) => ({ text, doneAt: null, doneBy: null })),
+      talkingPoints: draft.talking_points,
+      subject: s.kind === "eposta" ? draft.email_subject : null,
+      body: s.kind === "eposta" ? draft.email_body : null,
+      model,
+      refreshedAt: new Date(),
+    })
+    .where(eq(assistantSuggestion.id, s.id));
+}
+
+// "Artık gerek yok": a newer invoice shows the customer is buying, so the suggestion is closed without a contact.
+export async function closeNotNeeded(headers: Headers, id: string) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const s = await closable(id);
+  const latest = (await newerInvoices([s])).get(s.id);
+  const note = latest ? `Yeni fatura geldi: ${latest.number}, ${latest.issuedOn}.` : "Artık gerek yok.";
+  await db.transaction(async (tx) => {
+    await tx
+      .update(assistantSuggestion)
+      .set({ status: "atlandi", closeNote: note, decidedAt: new Date(), decidedBy: actor.userId })
+      .where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Öneri kapatıldı, gerek kalmadı. ${note}` });
+  });
 }

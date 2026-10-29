@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useState, useTransition } from "react";
-import { Globe, Lightbulb, ListChecks, PenLine, type LucideIcon } from "lucide-react";
+import { useActionState, useOptimistic, useState, useTransition } from "react";
+import { AlertTriangle, Check, Database, Globe, History, Lightbulb, ListChecks, ListTodo, PenLine, type LucideIcon } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -19,12 +19,15 @@ import {
   acceptProposalAction,
   approvalArrivedAction,
   askResultLaterAction,
+  closeNotNeededAction,
   closeUndoneAction,
   completeCallAction,
   postponeAction,
   recordResultAction,
+  refreshSuggestionAction,
   rejectProposalAction,
   sendEmailAction,
+  toggleStepAction,
   waitForApprovalAction,
 } from "./actions";
 
@@ -37,19 +40,29 @@ export type SuggestionView = {
   waitingFor: string | null;
   askAgainOn: string | null;
   reason: string;
+  analysis: string[];
+  steps: { text: string; doneAt: string | null; doneBy: string | null }[];
   talkingPoints: string[];
   subject: string | null;
   body: string | null;
   findings: { title: string; url: string; summary: string }[];
   error: string | null;
+  createdAt: Date;
+  refreshedAt: Date | null;
   customer: { id: string; name: string; city: string; phone: string | null; email: string | null };
+  records: Records | null; // from our invoices, worked out when the page loads
+  newInvoice: { number: string; issuedOn: string } | null; // a sales invoice uploaded after this was written
 };
+export type Records = { firstOn: string; lastOn: string; invoices: number; orderDays: number; groups: string[]; topProduct: string };
 
 // Each part of a suggestion in its own tinted box with a heading, so the eye finds it at a glance.
 const blockTones = {
   neden: "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 [&>h3]:text-amber-800 dark:[&>h3]:text-amber-300",
   bulgu: "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/40 [&>h3]:text-sky-800 dark:[&>h3]:text-sky-300",
   sorular: "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/40 [&>h3]:text-green-800 dark:[&>h3]:text-green-300",
+  kayit: "border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-950/40 [&>h3]:text-violet-800 dark:[&>h3]:text-violet-300",
+  yapilacak: "bg-card [&>h3]:text-foreground",
+  uyari: "border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/40 [&>h3]:text-red-800 dark:[&>h3]:text-red-300",
 };
 
 function Block({ tone, icon: Icon, title, children }: { tone: keyof typeof blockTones; icon: LucideIcon; title: string; children: React.ReactNode }) {
@@ -64,11 +77,181 @@ function Block({ tone, icon: Icon, title, children }: { tone: keyof typeof block
   );
 }
 
+// Suggestions written before the analysis existed show their one sentence instead.
 function Reason({ s }: { s: SuggestionView }) {
   return (
     <Block tone="neden" icon={Lightbulb} title="Neden bu müşteri">
-      <p className="text-sm leading-relaxed">{s.reason}</p>
+      {s.analysis.length ? (
+        <ul className="list-disc pl-5 text-sm leading-relaxed">
+          {s.analysis.map((a) => (
+            <li key={a}>{a}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm leading-relaxed">{s.reason}</p>
+      )}
     </Block>
+  );
+}
+
+function OurRecords({ s, today }: { s: SuggestionView; today: string }) {
+  const r = s.records;
+  return (
+    <Block tone="kayit" icon={Database} title="Bizim kayıtlarımız">
+      {r ? (
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
+          <dt className="text-muted-foreground">Son alım</dt>
+          <dd>
+            {dayText(r.lastOn, true)} <span className="text-muted-foreground">({daysBetween(r.lastOn, today)} gün önce)</span>
+          </dd>
+          <dt className="text-muted-foreground">İlk alım</dt>
+          <dd>{dayText(r.firstOn, true)}</dd>
+          <dt className="text-muted-foreground">Sipariş</dt>
+          <dd>
+            {r.orderDays} kez <span className="text-muted-foreground">({r.invoices} fatura)</span>
+          </dd>
+          {r.groups.length > 0 && (
+            <>
+              <dt className="text-muted-foreground">Ürün grupları</dt>
+              <dd>{r.groups.slice(0, 3).join(", ")}</dd>
+            </>
+          )}
+          {r.topProduct && (
+            <>
+              <dt className="text-muted-foreground">En çok aldığı</dt>
+              <dd>{r.topProduct}</dd>
+            </>
+          )}
+        </dl>
+      ) : (
+        <p className="text-muted-foreground text-sm">Faturalarımızda bu müşterinin satışı yok.</p>
+      )}
+    </Block>
+  );
+}
+
+// An invoice came in after the assistant wrote this, so what it says about purchases may be out of date.
+function NewerInvoice({ s }: { s: SuggestionView }) {
+  const [state, setState] = useState<{ error?: string } | undefined>();
+  const [pending, start] = useTransition();
+  const [busy, setBusy] = useState<"guncelle" | "kapat" | null>(null);
+  if (!s.newInvoice) return null;
+  const run = (which: "guncelle" | "kapat") =>
+    start(async () => {
+      setBusy(which);
+      setState(await (which === "guncelle" ? refreshSuggestionAction(s.id) : closeNotNeededAction(s.id)));
+      setBusy(null);
+    });
+  return (
+    <Block tone="uyari" icon={AlertTriangle} title="Yeni fatura geldi">
+      <p className="text-sm leading-relaxed">
+        Bu öneri yazıldıktan sonra <b>{s.newInvoice.number}</b> ({dayText(s.newInvoice.issuedOn, true)}) yüklendi. Aşağıdaki analiz bu faturayı bilmeden yazıldı.
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        {s.status === "bekliyor" && (
+          <Button type="button" size="sm" disabled={pending} onClick={() => run("guncelle")}>
+            {busy === "guncelle" ? "Güncelleniyor…" : "Analizi güncelle"}
+          </Button>
+        )}
+        <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => run("kapat")}>
+          Artık gerek yok, kapat
+        </Button>
+        {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
+      </div>
+      {s.status === "bekliyor" && (
+        <p className="text-muted-foreground text-xs">Güncelleme internete yeniden bakmaz; sabahki bulgularla ve güncel faturalarla yeniden yazar.</p>
+      )}
+    </Block>
+  );
+}
+
+const timeText = (t: Date | string) =>
+  new Date(t).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
+
+function Steps({ s }: { s: SuggestionView }) {
+  const [steps, setOptimistic] = useOptimistic(s.steps, (current, { index, done }: { index: number; done: boolean }) =>
+    current.map((step, i) => (i === index ? { ...step, doneAt: done ? new Date().toISOString() : null, doneBy: done ? "…" : null } : step)),
+  );
+  const [error, setError] = useState<string>();
+  const [, start] = useTransition();
+  if (!steps.length) return null;
+  const done = steps.filter((x) => x.doneAt).length;
+  return (
+    <Block tone="yapilacak" icon={ListTodo} title={`Yapılacaklar · ${done}/${steps.length}`}>
+      <ul className="flex flex-col">
+        {steps.map((step, i) => (
+          <li key={step.text} className="border-t first:border-t-0">
+            <button
+              type="button"
+              role="checkbox"
+              aria-checked={Boolean(step.doneAt)}
+              className="hover:bg-muted/60 flex w-full items-start gap-3 rounded-md px-1 py-2 text-left text-sm"
+              onClick={() =>
+                start(async () => {
+                  setOptimistic({ index: i, done: !step.doneAt });
+                  setError((await toggleStepAction(s.id, i, !step.doneAt))?.error);
+                })
+              }
+            >
+              <span
+                className={cn(
+                  "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border-2",
+                  step.doneAt ? "border-green-600 bg-green-600 text-white" : "border-muted-foreground/40",
+                )}
+              >
+                {step.doneAt && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className={cn("leading-relaxed", step.doneAt && "text-muted-foreground line-through")}>{step.text}</span>
+                {step.doneAt && step.doneBy && (
+                  <span className="text-muted-foreground text-xs">
+                    {step.doneBy} · {timeText(step.doneAt)}
+                  </span>
+                )}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {error && <p className="text-destructive text-xs">{error}</p>}
+    </Block>
+  );
+}
+
+// What happened to this suggestion so far, oldest first.
+function Timeline({ s }: { s: SuggestionView }) {
+  const events = [
+    { at: new Date(s.createdAt), text: "Asistan hazırladı" },
+    ...(s.refreshedAt ? [{ at: new Date(s.refreshedAt), text: "Yeni faturalarla güncellendi" }] : []),
+    ...s.steps.filter((x) => x.doneAt).map((x) => ({ at: new Date(x.doneAt!), text: `${x.doneBy ?? "Biri"} işaretledi: ${x.text}` })),
+  ].sort((a, b) => a.at.getTime() - b.at.getTime());
+  return (
+    <section className="flex flex-col gap-1 border-t pt-3">
+      <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+        <History className="size-4" aria-hidden />
+        Geçmiş
+      </h3>
+      <ul className="text-muted-foreground flex flex-col gap-0.5 text-xs">
+        {events.map((e) => (
+          <li key={`${e.at.getTime()}-${e.text}`}>
+            <span className="tabular-nums">{timeText(e.at)}</span> · {e.text}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// The parts every waiting suggestion shows above its own form, in reading order.
+function Briefing({ s, today }: { s: SuggestionView; today: string }) {
+  return (
+    <>
+      <NewerInvoice s={s} />
+      <Reason s={s} />
+      <OurRecords s={s} today={today} />
+      <Findings items={s.findings} />
+      <Steps s={s} />
+    </>
   );
 }
 
@@ -220,9 +403,8 @@ export function CallCard({ s, today, reasons }: { s: SuggestionView; today: stri
         <span className="text-muted-foreground text-xs">Telefon</span>
         <span className="font-medium tabular-nums">{s.customer.phone ?? "Kartta yok"}</span>
       </div>
-      <Reason s={s} />
+      <Briefing s={s} today={today} />
       <TalkingPoints items={s.talkingPoints} title="Aramada sorabilecekleriniz" />
-      <Findings items={s.findings} />
       <form action={action} className="flex flex-col gap-2 border-t pt-3">
         <input type="hidden" name="id" value={s.id} />
         <Label className="flex-col items-stretch gap-1 font-normal">
@@ -245,6 +427,7 @@ export function CallCard({ s, today, reasons }: { s: SuggestionView; today: stri
         <FormStatus state={state} saved="Kaydedildi." />
       </form>
       <CloseOptions id={s.id} today={today} reasons={reasons} />
+      <Timeline s={s} />
     </article>
   );
 }
@@ -254,8 +437,7 @@ export function EmailCard({ s, signature, today, reasons }: { s: SuggestionView;
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border p-4">
       <Head s={s} today={today} />
-      <Reason s={s} />
-      <Findings items={s.findings} />
+      <Briefing s={s} today={today} />
       <TalkingPoints items={s.talkingPoints} title="Cevap gelirse konuşulacaklar" />
       <form action={action} className="flex flex-col gap-2">
         <input type="hidden" name="id" value={s.id} />
@@ -281,6 +463,7 @@ export function EmailCard({ s, signature, today, reasons }: { s: SuggestionView;
         <FormStatus state={state} saved="Gönderildi; müşterinin kartına not düşüldü." />
       </form>
       <CloseOptions id={s.id} today={today} reasons={reasons} />
+      <Timeline s={s} />
     </article>
   );
 }
@@ -292,6 +475,7 @@ export function FailedCard({ s, today, reasons }: { s: SuggestionView; today: st
       <p className="text-muted-foreground text-sm">{s.reason}</p>
       <p className="text-destructive text-xs">Öneri hazırlanamadı: {s.error}</p>
       <CloseOptions id={s.id} today={today} reasons={reasons} />
+      <Timeline s={s} />
     </article>
   );
 }
@@ -304,7 +488,7 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border border-amber-300 p-4 dark:border-amber-800">
       <Head s={s} today={today} />
-      <Reason s={s} />
+      <Briefing s={s} today={today} />
       <p className="text-sm">
         <b>Onaylandı mı?</b> Beklenen: {s.waitingFor}
       </p>
@@ -323,6 +507,7 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
       </div>
       <FormStatus state={waiting} />
       <CloseOptions id={s.id} today={today} reasons={reasons} />
+      <Timeline s={s} />
     </article>
   );
 }
@@ -411,7 +596,8 @@ export type ResultView = {
 };
 
 const answers = (Object.keys(outcomeLabels) as Outcome[]).filter((o) => o !== "girilmedi");
-export const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+export const dayText = (day: string, withYear = false) =>
+  new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long", ...(withYear && { year: "numeric" }) });
 
 // A few working days after an email or call: what came of it. It doesn't hold up new suggestions.
 export function ResultCard({ r }: { r: ResultView }) {

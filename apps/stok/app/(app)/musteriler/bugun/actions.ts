@@ -8,11 +8,14 @@ import { acceptProposal, rejectProposal } from "@/lib/reasons";
 import {
   approvalArrived,
   askResultLater,
+  closeNotNeeded,
   closeUndone,
   completeCall,
   postponeSuggestion,
   recordResult,
+  refreshSuggestion,
   sendSuggestionEmail,
+  toggleStep,
   waitForApproval,
 } from "@/lib/suggestions";
 
@@ -94,4 +97,16 @@ export async function recordResultAction(_previous: ActionState, formData: FormD
 
 export async function askResultLaterAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => askResultLater(await headers(), id)));
+}
+
+export async function toggleStepAction(id: string, index: number, checked: boolean): Promise<ActionState> {
+  return done(await runAction(async () => toggleStep(await headers(), { id, index, done: checked })));
+}
+
+export async function refreshSuggestionAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => refreshSuggestion(await headers(), id)));
+}
+
+export async function closeNotNeededAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => closeNotNeeded(await headers(), id)));
 }
