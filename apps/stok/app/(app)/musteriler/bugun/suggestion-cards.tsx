@@ -296,7 +296,7 @@ const quickDays = [
 ];
 
 // The other ways to close a suggestion besides doing it; each needs its reason, day or what we wait for.
-function CloseOptions({ id, today, reasons }: { id: string; today: string; reasons: ReasonView[] }) {
+function CloseOptions({ id, today, reasons, waitingFor }: { id: string; today: string; reasons: ReasonView[]; waitingFor?: string | null }) {
   const [mode, setMode] = useState<"yapilamadi" | "ertele" | "onay" | null>(null);
   const [undone, undoneAction, undonePending] = useActionState(closeUndoneAction, undefined);
   const [later, laterAction, laterPending] = useActionState(postponeAction, undefined);
@@ -351,7 +351,7 @@ function CloseOptions({ id, today, reasons }: { id: string; today: string; reaso
       {mode === "onay" && (
         <form action={waitAction} className="flex flex-col gap-2 rounded-lg border p-3">
           <input type="hidden" name="id" value={id} />
-          <Input name="waitingFor" placeholder="Neyi bekliyoruz? Örn. patronun fiyat onayı" aria-label="Neyi bekliyoruz?" />
+          <Input name="waitingFor" defaultValue={waitingFor ?? ""} placeholder="Neyi bekliyoruz? Örn. patronun fiyat onayı" aria-label="Neyi bekliyoruz?" />
           <div className="flex flex-wrap items-center gap-2">
             <Button type="submit" size="sm" disabled={waitPending}>
               Kaydet
@@ -489,9 +489,16 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
     <article className="bg-card flex flex-col gap-3 rounded-xl border border-amber-300 p-4 dark:border-amber-800">
       <Head s={s} today={today} />
       <Briefing s={s} today={today} />
-      <p className="text-sm">
-        <b>Onaylandı mı?</b> Beklenen: {s.waitingFor}
-      </p>
+      {(s.askAgainOn ?? "") > today ? (
+        <p className="text-sm">
+          <b>Onay bekleniyor:</b> {s.waitingFor}. {s.askAgainOn && dayText(s.askAgainOn)} günü tekrar sorulacak; haber erken geldiyse şimdi işaretleyebilir ya da
+          aşağıdan değiştirebilirsiniz.
+        </p>
+      ) : (
+        <p className="text-sm">
+          <b>Onaylandı mı?</b> Beklenen: {s.waitingFor}
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" disabled={pending} onClick={() => start(async () => setState(await approvalArrivedAction(s.id)))}>
           Onaylandı, şimdi yapacağım
@@ -506,7 +513,7 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
         {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
       </div>
       <FormStatus state={waiting} />
-      <CloseOptions id={s.id} today={today} reasons={reasons} />
+      <CloseOptions id={s.id} today={today} reasons={reasons} waitingFor={s.waitingFor} />
       <Timeline s={s} />
     </article>
   );

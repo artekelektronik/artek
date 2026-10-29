@@ -110,7 +110,10 @@ function Row({ e, today }: { e: Entry; today: string }) {
     const s = e.s;
     name = s.customer.name;
     badge = <Age s={s} today={today} />;
-    if (s.status === "onay_bekliyor") [Icon, tone, line] = [Hourglass, tones.onay, `Onaylandı mı? ${s.waitingFor ?? ""}`];
+    if (s.status === "onay_bekliyor" && (s.askAgainOn ?? "") > today) {
+      [Icon, tone, line] = [Hourglass, tones.diger, `Bekleniyor: ${s.waitingFor ?? ""}`];
+      badge = <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs whitespace-nowrap">{dayText(s.askAgainOn!)} sorulacak</span>;
+    } else if (s.status === "onay_bekliyor") [Icon, tone, line] = [Hourglass, tones.onay, `Onaylandı mı? ${s.waitingFor ?? ""}`];
     else if (s.status === "basarisiz") [Icon, tone, line] = [AlertTriangle, tones.hata, "Öneri hazırlanamadı"];
     else if (s.kind === "arama") [Icon, tone, line] = [Phone, tones.arama, s.reason];
     else [Icon, tone, line] = [Mail, tones.eposta, s.reason];
