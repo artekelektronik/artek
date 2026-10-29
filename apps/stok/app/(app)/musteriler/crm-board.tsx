@@ -60,6 +60,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "no", dir: 1 });
   const [openId, setOpenId] = useState<string | undefined>(initialSelected);
+  const firms = useMemo(() => rows.map((r) => ({ id: r.id, name: r.name })), [rows]);
   const [lastBuy, setLastBuy] = useState<LastBuyPreset>("tumu");
   const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
   const [status, setStatus] = useState("");
@@ -250,7 +251,13 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
         )}
       </section>
 
-      <CustomerSheet customer={rows.find((r) => r.id === openId)} canEdit={canEdit} onClose={() => setOpenId(undefined)} />
+      <CustomerSheet
+        customer={rows.find((r) => r.id === openId)}
+        canEdit={canEdit}
+        onClose={() => setOpenId(undefined)}
+        firms={firms}
+        onOpen={setOpenId}
+      />
     </div>
   );
 }

@@ -63,6 +63,8 @@ Two private panels, ADR-0004. Each admin gets them one by one under Kullanıcıl
 
 A note written on a Müşteri card is read by `claude-haiku-5-5` (`lib/customer-changes.ts`). When it says the firm has a new name, phone, email, website, description or status, or that it went to another firm, a proposal shows under the note and changes nothing until someone presses Uygula. Every change to those fields is kept in `customer_change` and listed on the card as "Değişiklik geçmişi", whether it came from a note, a hand edit, a Bugün proposal or an invoice that brought a new name for the same VKN. Searching Müşteriler by an old name finds the firm.
 
+Firms can be linked (`lib/firm-links.ts`): sold to / taken over, carries on under a new company, works with, same owner or group, buys from, or other. A link is stored once, from → to, and reads right on both cards ("Satıldı / devredildi" on one, "Devraldı" on the other). The other firm's name opens its card. A note that names one of our Müşteriler proposes the link, and Uygula creates it. Adding and removing links goes into both firms' change history, and the morning assistant gets each firm's links with its facts.
+
 Contact routes researched outside the repo (`iletisim.json`) are loaded from Müşteriler → "İletişim bilgilerini yükle" (Müşteri paneli edit rights), or with `pnpm --filter stok import-crm-contacts <file.json>`. Either way, only empty fields are filled and weak matches are skipped. The script writes to whatever database `DATABASE_URL` names; `.env.local` points at the local database.
 
 ## Bugün: the morning assistant

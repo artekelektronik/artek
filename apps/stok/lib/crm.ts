@@ -3,8 +3,9 @@ import { asc, desc, eq, and, lte, isNotNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { customer, customerNote, customerStatus, followUpChannel, invoice, user } from "../db/schema";
-import { customerChanges, interpretCardNote, recordChanges } from "./customer-changes";
+import { customerChanges, interpretCardNote, matchFirm, recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
+import { linksFor } from "./firm-links";
 import { requirePermission } from "./guard";
 
 export { customerStatusLabels, type CustomerStatus } from "./finance-calc";
@@ -60,8 +61,8 @@ const noteInput = z.object({
 // The parts of a card the list doesn't carry: notes and invoices, loaded when the card opens.
 export async function customerHistory(headers: Headers, id: string) {
   await requirePermission(headers, "crm.view");
-  if (!isUuid(id)) return { notes: [], invoices: [], changes: [] };
-  const [invoices, notes, changes] = await Promise.all([
+  if (!isUuid(id)) return { notes: [], invoices: [], changes: [], links: [] };
+  const [invoices, notes, changes, links] = await Promise.all([
     db
       .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
       .from(invoice)
@@ -81,8 +82,9 @@ export async function customerHistory(headers: Headers, id: string) {
       .where(eq(customerNote.customerId, id))
       .orderBy(desc(customerNote.createdAt)),
     customerChanges(id),
+    linksFor(id),
   ]);
-  return { invoices, notes, changes };
+  return { invoices, notes, changes, links };
 }
 
 // Notes are a history: added, never edited. The assistant reads each one and may propose changes to the card,
@@ -98,7 +100,8 @@ export async function addCustomerNote(headers: Headers, input: z.input<typeof no
   try {
     const proposal = await interpretCardNote(client ?? new Anthropic(), c, data.body);
     if (!proposal.changes.length && !proposal.relatedFirm) return;
-    await db.update(customerNote).set({ proposal }).where(eq(customerNote.id, note.id));
+    const relatedFirmId = proposal.relatedFirm ? await matchFirm(proposal.relatedFirm, c.id) : null;
+    await db.update(customerNote).set({ proposal: { ...proposal, relatedFirmId } }).where(eq(customerNote.id, note.id));
   } catch (error) {
     // The note is saved either way; without a reading it simply stays a note.
     console.error("Not okunamadı:", error);

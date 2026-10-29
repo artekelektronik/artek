@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -25,12 +25,15 @@ import {
   tl,
   type FollowUpChannel,
 } from "@/lib/finance-calc";
-import { fieldLabels, fieldValue, sourceLabels } from "@/lib/customer-fields";
+import { fieldLabels, fieldValue, linkLabels, sourceLabels } from "@/lib/customer-fields";
+import type { LinkType } from "@/db/schema";
 import {
+  addLinkAction,
   addNoteAction,
   applyNoteProposalAction,
   customerHistoryAction,
   rejectNoteProposalAction,
+  removeLinkAction,
   setEmailOptOutAction,
   updateCustomerAction,
 } from "./actions";
@@ -65,21 +68,23 @@ function NoteProposal({ n, canEdit, onDone }: { n: Note; canEdit: boolean; onDon
         ))}
         {p.relatedFirm && (
           <li>
-            <span className="text-muted-foreground">Bağlantılı firma:</span> {p.relatedFirm}{" "}
-            <span className="text-muted-foreground text-xs">(firma bağlantıları gelince kurulacak; şimdilik not olarak kalır)</span>
+            <span className="text-muted-foreground">Bağlantı:</span> {linkLabels[p.relation ?? "diger"].from}: {p.relatedFirm}{" "}
+            <span className="text-muted-foreground text-xs">
+              {p.relatedFirmId ? "(müşterilerimizde bulundu; Uygula ile bağlanır)" : "(müşterilerimizde bulunamadı; elle bağlayabilirsiniz)"}
+            </span>
           </li>
         )}
       </ul>
       <p className="text-muted-foreground text-xs">{p.explanation}</p>
       {canEdit && (
         <div className="flex flex-wrap items-center gap-2">
-          {p.changes.length > 0 && (
+          {(p.changes.length > 0 || p.relatedFirmId) && (
             <Button type="button" size="sm" disabled={pending} onClick={() => run(applyNoteProposalAction)}>
               Uygula
             </Button>
           )}
           <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => run(rejectNoteProposalAction)}>
-            {p.changes.length > 0 ? "Reddet" : "Tamam"}
+            {p.changes.length > 0 || p.relatedFirmId ? "Reddet" : "Tamam"}
           </Button>
           {error && <span className="text-destructive text-xs">{error}</span>}
         </div>
@@ -126,21 +131,143 @@ function Section({
   );
 }
 
+type Firm = { id: string; name: string };
+const linkTypeOptions = (Object.keys(linkLabels) as LinkType[]).map((t) => ({ value: t, label: `Bu firma: ${linkLabels[t].from}` }));
+
+// The firms this one is linked to; a name opens that firm's card. Adding picks the other firm from our Müşteriler.
+function Links({
+  customerId,
+  links,
+  firms,
+  canEdit,
+  onOpen,
+  onChanged,
+}: {
+  customerId: string;
+  links: History["links"];
+  firms: Firm[];
+  canEdit: boolean;
+  onOpen: (id: string) => void;
+  onChanged: () => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [q, setQ] = useState("");
+  const [picked, setPicked] = useState<Firm | null>(null);
+  const [state, action, pending] = useActionState(async (previous: Parameters<typeof addLinkAction>[0], formData: FormData) => {
+    const result = await addLinkAction(previous, formData);
+    if (result?.saved) {
+      setAdding(false);
+      setPicked(null);
+      setQ("");
+      onChanged();
+    }
+    return result;
+  }, undefined);
+  const [removeError, setRemoveError] = useState<string>();
+  const [, start] = useTransition();
+  const needle = q.trim().toLocaleLowerCase("tr");
+  const matches = needle.length < 2 ? [] : firms.filter((f) => f.id !== customerId && f.name.toLocaleLowerCase("tr").includes(needle)).slice(0, 6);
+
+  return (
+    <Section title="Bağlantılı firmalar">
+      {links.length === 0 && !adding && <p className="text-muted-foreground text-xs">Henüz bağlantı yok.</p>}
+      {links.length > 0 && (
+        <ul className="flex flex-col gap-1.5 text-sm">
+          {links.map((l) => (
+            <li key={l.id} className="flex items-start gap-2">
+              <span className="flex-1">
+                <span className="text-muted-foreground">{l.label}:</span>{" "}
+                <button type="button" className="font-medium underline-offset-4 hover:underline" onClick={() => onOpen(l.other.id)}>
+                  {l.other.name}
+                </button>
+                {l.note && <span className="text-muted-foreground block text-xs">{l.note}</span>}
+              </span>
+              {canEdit && (
+                <button
+                  type="button"
+                  aria-label="Bağlantıyı kaldır"
+                  className="text-muted-foreground hover:text-destructive text-xs"
+                  onClick={() =>
+                    start(async () => {
+                      const s = await removeLinkAction(l.id);
+                      setRemoveError(s?.error);
+                      if (!s?.error) onChanged();
+                    })
+                  }
+                >
+                  Kaldır
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {removeError && <p className="text-destructive text-xs">{removeError}</p>}
+      {canEdit &&
+        (adding ? (
+          <form action={action} className="flex flex-col gap-2 rounded-lg border p-3">
+            <input type="hidden" name="fromId" value={customerId} />
+            <input type="hidden" name="toId" value={picked?.id ?? ""} />
+            <FormSelect name="type" options={linkTypeOptions} empty="Bağlantı türü" aria-label="Bağlantı türü" />
+            {picked ? (
+              <p className="text-sm">
+                {picked.name}{" "}
+                <button type="button" className="text-muted-foreground text-xs underline" onClick={() => setPicked(null)}>
+                  değiştir
+                </button>
+              </p>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Firma adı ara" aria-label="Bağlanacak firma" />
+                {matches.map((f) => (
+                  <button key={f.id} type="button" className="hover:bg-muted rounded px-2 py-1 text-left text-sm" onClick={() => setPicked(f)}>
+                    {f.name}
+                  </button>
+                ))}
+                {needle.length >= 2 && matches.length === 0 && (
+                  <p className="text-muted-foreground text-xs">Müşterilerimizde bulunamadı. Aday firmalar Adaylar sekmesi gelince bağlanabilecek.</p>
+                )}
+              </div>
+            )}
+            <Input name="note" placeholder="Not (isteğe bağlı), ör. 2025'te devraldılar" aria-label="Bağlantı notu" />
+            <div className="flex items-center gap-2">
+              <Button type="submit" size="sm" disabled={pending}>
+                Bağla
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setAdding(false)}>
+                Vazgeç
+              </Button>
+            </div>
+            <FormStatus state={state} />
+          </form>
+        ) : (
+          <Button type="button" size="sm" variant="outline" className="self-start" onClick={() => setAdding(true)}>
+            Bağlantı ekle
+          </Button>
+        ))}
+    </Section>
+  );
+}
+
 // The whole customer on one side panel: what to talk about, how to reach them, the next follow-up, notes, history.
 export function CustomerSheet({
   customer,
   canEdit,
   onClose,
+  firms,
+  onOpen,
 }: {
   customer: CrmRow | undefined;
   canEdit: boolean;
   onClose: () => void;
+  firms: Firm[];
+  onOpen: (id: string) => void;
 }) {
   return (
     <Sheet open={Boolean(customer)} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
         {customer && (
-          <CustomerPanel key={customer.id} c={customer} canEdit={canEdit} />
+          <CustomerPanel key={customer.id} c={customer} canEdit={canEdit} firms={firms} onOpen={onOpen} />
         )}
       </SheetContent>
     </Sheet>
@@ -148,7 +275,7 @@ export function CustomerSheet({
 }
 
 // Keyed by customer, so switching rows starts from that customer's saved values.
-function CustomerPanel({ c, canEdit }: { c: CrmRow; canEdit: boolean }) {
+function CustomerPanel({ c, canEdit, firms, onOpen }: { c: CrmRow; canEdit: boolean; firms: Firm[]; onOpen: (id: string) => void }) {
   const router = useRouter();
   const [history, setHistory] = useState<History | null>(null);
   const [, startLoading] = useTransition();
@@ -162,6 +289,7 @@ function CustomerPanel({ c, canEdit }: { c: CrmRow; canEdit: boolean }) {
   );
   const [channel, setChannel] = useState<FollowUpChannel>(c.followUpChannel);
   const [reloads, setReloads] = useState(0);
+  const reload = useCallback(() => setReloads((x) => x + 1), []);
 
   useEffect(() => {
     startLoading(async () => setHistory(await customerHistoryAction(c.id)));
@@ -402,13 +530,33 @@ function CustomerPanel({ c, canEdit }: { c: CrmRow; canEdit: boolean }) {
           )}
         </Section>
 
+        {history && (
+          <Links
+            customerId={c.id}
+            links={history.links}
+            firms={firms}
+            canEdit={canEdit}
+            onOpen={onOpen}
+            onChanged={reload}
+          />
+        )}
+
         {history && history.changes.length > 0 && (
           <Section title="Değişiklik geçmişi">
             <ul className="flex flex-col gap-1.5 text-sm">
               {history.changes.map((ch) => (
                 <li key={ch.id}>
-                  <span className="text-muted-foreground">{fieldLabels[ch.field]}:</span> {fieldValue(ch.field, ch.oldValue)} →{" "}
-                  <b className="font-medium">{fieldValue(ch.field, ch.newValue)}</b>
+                  {ch.field === "link" ? (
+                    <>
+                      <span className="text-muted-foreground">{ch.newValue ? "Bağlantı eklendi:" : "Bağlantı kaldırıldı:"}</span>{" "}
+                      {ch.newValue ?? ch.oldValue}
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-muted-foreground">{fieldLabels[ch.field]}:</span> {fieldValue(ch.field, ch.oldValue)} →{" "}
+                      <b className="font-medium">{fieldValue(ch.field, ch.newValue)}</b>
+                    </>
+                  )}
                   <span className="text-muted-foreground block text-xs">
                     {sourceLabels[ch.source]} · {ch.author ?? "fatura"} · {timeText(ch.createdAt)}
                   </span>

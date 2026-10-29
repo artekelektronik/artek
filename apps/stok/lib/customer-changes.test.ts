@@ -5,13 +5,13 @@ import { eq } from "drizzle-orm";
 import { openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
 
 // A made-up invoice in the QNB Dijital Köprü layout; no real customer.
-const invoiceText = (n: number, name: string, date: string) => `Vergi Hariç Tutar: 1.000,00 TL
+const invoiceText = (n: number, name: string, date: string, taxId = "1111111111") => `Vergi Hariç Tutar: 1.000,00 TL
 Vergiler Dahil Toplam Tutar: 1.200,00 TL
 SAYIN
 ${name}
 DENEME MAH. ÖRNEK SOK.
 NO:1 ÜMRANİYE/ İSTANBUL
-VKN: 1111111111
+VKN: ${taxId}
 ETTN: 00000000-0000-4000-8000-${String(n).padStart(12, "0")}
 Tarih: ${date}
 Fatura No: AAA2025${String(n).padStart(9, "0")}
@@ -32,10 +32,11 @@ describe("change history and smart card notes", { skip: skipWithoutDatabase }, (
 
   const theCustomer = async () => (await db.select().from(schema.customer))[0];
   const history = async () => db.select().from(schema.customerChange);
-  const upload = async (n: number, name: string, date: string) => {
+  const upload = async (n: number, name: string, date: string, taxId?: string) => {
     const { importInvoiceText } = await import("./invoices");
-    await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, name, date) });
+    await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, name, date, taxId) });
   };
+  const byName = async (prefix: string) => (await db.select().from(schema.customer)).find((c) => c.name.startsWith(prefix))!;
 
   before(async () => {
     db = await openTestDatabase();
@@ -139,5 +140,81 @@ describe("change history and smart card notes", { skip: skipWithoutDatabase }, (
       ["phone", "0212 111 11 11", "elle"],
       ["status", "arandi", "elle"],
     ]);
+  });
+
+  describe("firm links", () => {
+    beforeEach(async () => {
+      await upload(10, "BBB MAKİNA A.Ş", "05-01-2025", "2222222222");
+    });
+
+    test("a link reads right on both cards and goes into both histories", async () => {
+      const { addLink, linksFor, linkFacts } = await import("./firm-links");
+      const a = await byName("AAA");
+      const b = await byName("BBB");
+      await addLink(editor.headers, { fromId: a.id, toId: b.id, type: "satildi", note: "2025'te devraldılar" });
+      const [fromSide] = await linksFor(a.id);
+      const [toSide] = await linksFor(b.id);
+      assert.deepEqual([fromSide.label, fromSide.other.id, fromSide.note], ["Satıldı / devredildi", b.id, "2025'te devraldılar"]);
+      assert.deepEqual([toSide.label, toSide.other.id], ["Devraldı", a.id]);
+      assert.deepEqual(await linkFacts(b.id), [{ firma: a.name, iliski: "Devraldı", not: "2025'te devraldılar" }]);
+      const rows = await history();
+      assert.deepEqual(rows.map((r) => [r.customerId, r.field, r.newValue]).sort(), [
+        [a.id, "link", `Satıldı / devredildi: ${b.name}`],
+        [b.id, "link", `Devraldı: ${a.name}`],
+      ].sort());
+    });
+
+    test("the same link twice, its two-way mirror, or a firm to itself is refused", async () => {
+      const { addLink } = await import("./firm-links");
+      const a = await byName("AAA");
+      const b = await byName("BBB");
+      await addLink(editor.headers, { fromId: a.id, toId: b.id, type: "birlikte_calisiyor" });
+      await assert.rejects(addLink(editor.headers, { fromId: a.id, toId: b.id, type: "birlikte_calisiyor" }), /zaten var/);
+      await assert.rejects(addLink(editor.headers, { fromId: b.id, toId: a.id, type: "birlikte_calisiyor" }), /zaten var/);
+      await assert.rejects(addLink(editor.headers, { fromId: a.id, toId: a.id, type: "diger" }), /kendisine/);
+      // A one-way type the other way round is a different link.
+      await addLink(editor.headers, { fromId: b.id, toId: a.id, type: "musterimizin_musterisi" });
+    });
+
+    test("removing a link takes it off both cards and is recorded", async () => {
+      const { addLink, linksFor, removeLink } = await import("./firm-links");
+      const a = await byName("AAA");
+      const b = await byName("BBB");
+      await addLink(editor.headers, { fromId: a.id, toId: b.id, type: "ayni_sahip" });
+      const [link] = await linksFor(a.id);
+      await removeLink(editor.headers, link.id);
+      assert.equal((await linksFor(a.id)).length + (await linksFor(b.id)).length, 0);
+      const removed = (await history()).filter((r) => r.oldValue);
+      assert.deepEqual(removed.map((r) => r.customerId).sort(), [a.id, b.id].sort());
+    });
+
+    test("a note naming a firm we know proposes the link, and Uygula creates it; an unknown firm stays a note", async () => {
+      const { addCustomerNote } = await import("./crm");
+      const { applyNoteProposal } = await import("./customer-changes");
+      const { linksFor } = await import("./firm-links");
+      const a = await byName("AAA");
+      const b = await byName("BBB");
+      await addCustomerNote(
+        editor.headers,
+        { customerId: a.id, body: "Bbb Makina'ya satılmış." },
+        reading({ changes: [], related_firm: "Bbb Makina", relation: "satildi", explanation: "Satılmış." }),
+      );
+      await addCustomerNote(
+        editor.headers,
+        { customerId: a.id, body: "ZZZ ile çalışıyorlar." },
+        reading({ changes: [], related_firm: "ZZZ ENDÜSTRİ", relation: "birlikte_calisiyor", explanation: "Ortak çalışıyorlar." }),
+      );
+      const notes = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, a.id));
+      const known = notes.find((n) => n.body.startsWith("Bbb"))!;
+      const unknown = notes.find((n) => n.body.startsWith("ZZZ"))!;
+      assert.deepEqual([known.proposal?.relatedFirmId, known.proposal?.relation], [b.id, "satildi"]);
+      assert.equal(unknown.proposal?.relatedFirmId, null);
+
+      await applyNoteProposal(editor.headers, known.id);
+      const [link] = await linksFor(b.id);
+      assert.deepEqual([link.label, link.other.id], ["Devraldı", a.id]);
+      const fromNote = (await history()).filter((r) => r.noteId === known.id);
+      assert.equal(fromNote.length, 2);
+    });
   });
 });
