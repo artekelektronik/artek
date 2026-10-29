@@ -9,5 +9,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Skips public pages and APIs, Next internals and static files.
-  matcher: ["/((?!giris|sifremi-unuttum|sifre-belirle|api/auth|api/cron|api/catalog|_next|.*\\..*).*)"],
+  matcher: ["/((?!giris|sifremi-unuttum|sifre-belirle|api/auth|api/cron|api/catalog|api/adaylar|_next|.*\\..*).*)"],
 };
