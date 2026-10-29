@@ -80,6 +80,8 @@ On `/musteriler/bugun` a person with Müşteri paneli edit rights works through 
 - **Sonraya bırak:** the chosen day becomes the customer's Takip date, and that morning a fresh suggestion is prepared.
 - **Onay bekliyor:** note what we wait for. Every 3 days the card comes back to ask "Onaylandı mı?".
 
+Three working days after an email or call, a "Sonuç ne oldu?" card asks what came of it. The answers are Cevap geldi, Teklif istendi / verildi, Sipariş geldi, Cevap yok and İlgilenmiyor. Teklif, Sipariş and İlgilenmiyor also set the CRM status. Cevap yok can take a date and channel for the next try. If a sales invoice for that customer arrived after the contact, the card says so and preselects Sipariş geldi. "Sonra sor" asks again 3 working days later, twice at most; the third time it records "Sonuç girilmedi". These cards don't hold up new suggestions.
+
 A suggestion that is not closed stays under "Önceki günlerden kalanlar", and a late Takip is marked "N gün gecikti". While any is open, the assistant proposes no customers of its own. Takip dates still come on their day. Once all are closed, "Daha fazla öneri hazırla" prepares more the same day.
 
 Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.

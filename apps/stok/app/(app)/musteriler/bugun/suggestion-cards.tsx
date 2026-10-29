@@ -11,13 +11,16 @@ import { DatePicker } from "@/components/date-picker";
 import { FormSelect } from "@/components/form-select";
 import { FormStatus } from "@/components/form-status";
 import { describeEffect, type ReasonView } from "@/lib/close-reasons";
+import { maxResultReasks, outcomeLabels, type Outcome } from "@/lib/outcomes";
 import { addDays } from "@/lib/time";
 import {
   acceptProposalAction,
   approvalArrivedAction,
+  askResultLaterAction,
   closeUndoneAction,
   completeCallAction,
   postponeAction,
+  recordResultAction,
   rejectProposalAction,
   sendEmailAction,
   waitForApprovalAction,
@@ -347,6 +350,92 @@ export function ProposalCard({ p }: { p: ProposalView }) {
         </Button>
         {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
       </div>
+    </article>
+  );
+}
+
+export type ResultView = {
+  id: string;
+  kind: "arama" | "eposta";
+  doneOn: string | null;
+  subject: string | null;
+  resultAsks: number;
+  customer: { id: string; name: string; city: string };
+  invoiceAfter: { number: string; issuedOn: string } | null;
+};
+
+const answers = (Object.keys(outcomeLabels) as Outcome[]).filter((o) => o !== "girilmedi");
+const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+
+// A few working days after an email or call: what came of it. It doesn't hold up new suggestions.
+export function ResultCard({ r }: { r: ResultView }) {
+  const [outcome, setOutcome] = useState<Outcome | null>(r.invoiceAfter ? "siparis" : null);
+  const [state, action, pending] = useActionState(recordResultAction, undefined);
+  const [later, setLater] = useState<{ error?: string } | undefined>();
+  const [laterPending, start] = useTransition();
+  return (
+    <article className="bg-card flex flex-col gap-3 rounded-xl border p-4 text-sm">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <Link href={`/musteriler?secili=${r.customer.id}`} className="font-medium underline-offset-4 hover:underline">
+          {r.customer.name}
+        </Link>
+        <span className="text-muted-foreground text-xs">{r.customer.city}</span>
+      </div>
+      <p className="text-muted-foreground">
+        {r.kind === "eposta" ? "E-posta gönderildi" : "Arandı"}
+        {r.doneOn && `, ${dayText(r.doneOn)}`}
+        {r.subject && `: ${r.subject}`}
+      </p>
+      {r.invoiceAfter && (
+        <p className="rounded-lg bg-green-50 p-2 text-green-900 dark:bg-green-950 dark:text-green-100">
+          Bu temastan sonra fatura geldi: {r.invoiceAfter.number}, {dayText(r.invoiceAfter.issuedOn)}.
+        </p>
+      )}
+      <form action={action} className="flex flex-col gap-2">
+        <input type="hidden" name="id" value={r.id} />
+        <input type="hidden" name="outcome" value={outcome ?? ""} />
+        <div className="flex flex-wrap gap-1">
+          {answers.map((o) => (
+            <Button key={o} type="button" size="sm" variant={outcome === o ? "default" : "outline"} onClick={() => setOutcome(o)}>
+              {outcomeLabels[o]}
+            </Button>
+          ))}
+        </div>
+        {outcome === "cevap_yok" && (
+          <div className="flex flex-wrap items-end gap-2">
+            <Label className="flex-col items-start gap-1 text-xs font-normal">
+              Tekrar ne zaman denensin? (isteğe bağlı)
+              <DatePicker id={`tekrar-${r.id}`} name="nextFollowUpOn" />
+            </Label>
+            <FormSelect
+              name="followUpChannel"
+              options={[
+                { value: "telefon", label: "Telefonla" },
+                { value: "eposta", label: "E-postayla" },
+              ]}
+              aria-label="Nasıl"
+              className="w-36"
+            />
+          </div>
+        )}
+        <Textarea name="note" rows={2} placeholder="Not (isteğe bağlı)" aria-label="Not" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" size="sm" disabled={pending || !outcome}>
+            Kaydet
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={laterPending}
+            onClick={() => start(async () => setLater(await askResultLaterAction(r.id)))}
+          >
+            {r.resultAsks >= maxResultReasks ? "Bilmiyorum, kapat" : "Henüz belli değil, sonra sor"}
+          </Button>
+          {later?.error && <span className="text-destructive text-xs">{later.error}</span>}
+        </div>
+        <FormStatus state={state} saved="Kaydedildi." />
+      </form>
     </article>
   );
 }

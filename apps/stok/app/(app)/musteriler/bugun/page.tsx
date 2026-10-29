@@ -10,9 +10,9 @@ import { openSuggestion } from "@/lib/assistant";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { listReasons } from "@/lib/reasons";
-import { emailSignature } from "@/lib/suggestions";
+import { emailSignature, resultsDue } from "@/lib/suggestions";
 import { istanbulDate, istanbulTimeOn } from "@/lib/time";
-import { ApprovalCard, CallCard, EmailCard, FailedCard, PrepareButton, ProposalCard, type SuggestionView } from "./suggestion-cards";
+import { ApprovalCard, CallCard, EmailCard, FailedCard, PrepareButton, ProposalCard, ResultCard, type SuggestionView } from "./suggestion-cards";
 
 export const metadata = { title: "Bugün | Artek Müşteri Paneli" };
 
@@ -50,6 +50,7 @@ export default async function TodayPage() {
   const reasons = allReasons.filter((r) => !r.archivedAt);
   const reasonLabel = new Map(allReasons.map((r) => [r.id, r.label]));
   const proposals = rows.filter((r) => r.s.proposal && !r.s.proposalDecidedAt);
+  const results = await resultsDue(today);
   // Same rule as openSuggestion, for the rows already loaded.
   const isOpen = (s: { status: string; askAgainOn: string | null }) =>
     s.status === "bekliyor" || s.status === "basarisiz" || (s.status === "onay_bekliyor" && (s.askAgainOn ?? "") <= today);
@@ -116,6 +117,17 @@ export default async function TodayPage() {
         <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
           Bekleyen öneri yok. Müşteri kartlarından takip tarihi verdiğiniz müşteriler, o sabah burada görünür.
         </p>
+      )}
+
+      {canEdit && results.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-base font-medium">Sonuç ne oldu?</h2>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {results.map((r) => (
+              <ResultCard key={r.id} r={r} />
+            ))}
+          </div>
+        </section>
       )}
 
       {earlier.length > 0 && (
