@@ -1,0 +1,313 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { Upload } from "lucide-react";
+import { Button } from "@artek/ui/components/button";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@artek/ui/components/sheet";
+import { Textarea } from "@artek/ui/components/textarea";
+import { cn } from "@artek/ui/lib/utils";
+import { FormSelect } from "@/components/form-select";
+import { FormStatus } from "@/components/form-status";
+import type { LeadContact, LeadSource } from "@/db/schema";
+import { leadStatusLabels } from "@/lib/lead-status";
+import { importLeadsAction, leadEventsAction, linkLeadAction, updateLeadAction } from "./actions";
+
+type Status = keyof typeof leadStatusLabels;
+export type LeadRow = {
+  id: string;
+  name: string;
+  website: string | null;
+  city: string | null;
+  sector: string | null;
+  why: string | null;
+  contact: LeadContact;
+  sources: LeadSource[];
+  status: Status;
+  seenCount: number;
+  lastSeenAt: string;
+  customer: { id: string; name: string } | null;
+  candidate: { id: string; name: string } | null;
+};
+
+const tones: Record<Status, string> = {
+  yeni: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200",
+  ulasildi: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
+  gorusuluyor: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200",
+  musteri_oldu: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200",
+  ilgilenmiyor: "bg-muted text-muted-foreground",
+};
+const dateText = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", timeZone: "Europe/Istanbul" });
+
+export function LeadsBoard({ rows, canEdit }: { rows: LeadRow[]; canEdit: boolean }) {
+  const [filter, setFilter] = useState<Status | "">("");
+  const [openId, setOpenId] = useState<string>();
+  const counts = Object.fromEntries((Object.keys(leadStatusLabels) as Status[]).map((s) => [s, rows.filter((r) => r.status === s).length]));
+  const shown = rows.filter((r) => !filter || r.status === filter);
+
+  return (
+    <div className="flex flex-col gap-4">
+      {canEdit && <ImportButton />}
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
+          Henüz aday yok. Satış rutinleri bir sonraki raporlarında buldukları firmaları buraya ekleyecek.
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-1">
+            <Button type="button" size="sm" variant={filter === "" ? "secondary" : "ghost"} onClick={() => setFilter("")}>
+              Hepsi ({rows.length})
+            </Button>
+            {(Object.keys(leadStatusLabels) as Status[]).map((s) => (
+              <Button key={s} type="button" size="sm" variant={filter === s ? "secondary" : "ghost"} onClick={() => setFilter(s)}>
+                {leadStatusLabels[s]} ({counts[s]})
+              </Button>
+            ))}
+          </div>
+          <ul className="bg-card divide-y overflow-hidden rounded-xl border">
+            {shown.map((r) => (
+              <li key={r.id}>
+                <button type="button" onClick={() => setOpenId(r.id)} className="hover:bg-muted/60 flex w-full items-center gap-3 px-4 py-3 text-left">
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-sm font-medium">{r.name}</span>
+                    <span className="text-muted-foreground truncate text-xs">
+                      {[r.city, r.sector].filter(Boolean).join(" · ")}
+                      {r.why && ` — ${r.why}`}
+                    </span>
+                  </span>
+                  {r.candidate && (
+                    <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-800 dark:bg-green-950 dark:text-green-200">
+                      Müşteri olmuş olabilir
+                    </span>
+                  )}
+                  {r.seenCount > 1 && <span className="text-muted-foreground shrink-0 text-xs">{r.seenCount} kez görüldü</span>}
+                  <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", tones[r.status])}>{leadStatusLabels[r.status]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <Sheet open={Boolean(openId)} onOpenChange={(open) => !open && setOpenId(undefined)}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+          {openId && rows.find((r) => r.id === openId) && <LeadPanel key={openId} r={rows.find((r) => r.id === openId)!} canEdit={canEdit} />}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
+  const router = useRouter();
+  const [events, setEvents] = useState<Awaited<ReturnType<typeof leadEventsAction>> | null>(null);
+  const [, startLoading] = useTransition();
+  const [state, action, pending] = useActionState(updateLeadAction, undefined);
+  const [linkError, setLinkError] = useState<string>();
+  const [linking, startLinking] = useTransition();
+
+  useEffect(() => {
+    startLoading(async () => setEvents(await leadEventsAction(r.id)));
+  }, [r.id, state, r.customer]);
+  useEffect(() => {
+    if (state?.saved) router.refresh();
+  }, [state, router]);
+
+  const contact = [
+    r.contact.phone && ["Telefon", r.contact.phone],
+    r.contact.email && ["E-posta", r.contact.email],
+    r.contact.form && ["Form", r.contact.form],
+    r.contact.linkedin && ["LinkedIn", r.contact.linkedin],
+  ].filter(Boolean) as [string, string][];
+
+  return (
+    <>
+      <SheetHeader className="gap-2">
+        <span className={cn("self-start rounded-full px-2 py-0.5 text-xs font-medium", tones[r.status])}>{leadStatusLabels[r.status]}</span>
+        <SheetTitle className="font-serif text-2xl leading-tight font-normal">{r.name}</SheetTitle>
+        <SheetDescription>{[r.city, r.sector].filter(Boolean).join(" · ")}</SheetDescription>
+      </SheetHeader>
+      <div className="flex flex-col gap-6 px-4 pb-8">
+        {r.customer ? (
+          <p className="rounded-lg bg-green-50 p-3 text-sm text-green-900 dark:bg-green-950 dark:text-green-100">
+            Müşteri oldu:{" "}
+            <Link href={`/musteriler?secili=${r.customer.id}`} className="font-medium underline underline-offset-4">
+              {r.customer.name}
+            </Link>
+          </p>
+        ) : (
+          r.candidate && (
+            <div className="flex flex-col gap-2 rounded-lg border border-green-200 bg-green-50 p-3 text-sm dark:border-green-900 dark:bg-green-950/40">
+              <p>
+                Bu aday müşterimiz <b>{r.candidate.name}</b> olmuş olabilir (adlar benziyor).
+              </p>
+              {canEdit && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={linking}
+                    onClick={() =>
+                      startLinking(async () => {
+                        const s = await linkLeadAction(r.id, r.candidate!.id);
+                        setLinkError(s?.error);
+                        if (!s?.error) router.refresh();
+                      })
+                    }
+                  >
+                    Evet, bağla
+                  </Button>
+                  {linkError && <span className="text-destructive text-xs">{linkError}</span>}
+                </div>
+              )}
+            </div>
+          )
+        )}
+
+        {r.why && (
+          <Section title="Neden ilginç">
+            <p className="text-sm leading-relaxed">{r.why}</p>
+          </Section>
+        )}
+
+        <Section title="İletişim">
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm">
+            {r.website && (
+              <>
+                <dt className="text-muted-foreground">Web</dt>
+                <dd className="truncate">
+                  <a href={r.website.startsWith("http") ? r.website : `https://${r.website}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+                    {r.website}
+                  </a>
+                </dd>
+              </>
+            )}
+            {contact.map(([k, v]) => (
+              <span key={k} className="contents">
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="break-words">{v}</dd>
+              </span>
+            ))}
+          </dl>
+          {!r.website && contact.length === 0 && <p className="text-muted-foreground text-xs">Raporda iletişim bilgisi yok.</p>}
+        </Section>
+
+        <Section title={`Hangi raporlarda geçti (${r.sources.length})`}>
+          <ul className="flex flex-col gap-2 text-sm">
+            {r.sources.map((s) => (
+              <li key={`${s.report}-${s.at}`}>
+                <span className="font-medium">{s.report}</span> <span className="text-muted-foreground text-xs">{s.at}</span>
+                {s.links.length > 0 && (
+                  <ul className="mt-1 flex flex-col gap-0.5 pl-3">
+                    {s.links.map((l) => (
+                      <li key={l.url} className="text-xs">
+                        <a href={l.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+                          {l.title || l.url}
+                        </a>
+                        {l.date && <span className="text-muted-foreground"> · {l.date}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        {canEdit && r.status !== "musteri_oldu" && (
+          <Section title="Durum ve not">
+            <form action={action} className="flex flex-col gap-2">
+              <input type="hidden" name="id" value={r.id} />
+              <FormSelect
+                name="status"
+                defaultValue={r.status}
+                options={(Object.keys(leadStatusLabels) as Status[]).filter((s) => s !== "musteri_oldu").map((s) => ({ value: s, label: leadStatusLabels[s] }))}
+                aria-label="Durum"
+                className="w-48"
+              />
+              <Textarea name="note" rows={2} placeholder="Ne yapıldı, ne konuşuldu? (isteğe bağlı)" aria-label="Not" />
+              <div className="flex items-center gap-2">
+                <Button type="submit" size="sm" disabled={pending}>
+                  Kaydet
+                </Button>
+                <FormStatus state={state} saved="Kaydedildi." />
+              </div>
+            </form>
+          </Section>
+        )}
+
+        <Section title="Geçmiş">
+          {!events ? (
+            <p className="text-muted-foreground text-xs">Yükleniyor…</p>
+          ) : (
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {events.map((e) => (
+                <li key={e.id}>
+                  <span className={cn(e.kind === "not" && "whitespace-pre-wrap")}>{e.text}</span>
+                  <span className="text-muted-foreground block text-xs">
+                    {e.author ?? "rutin / fatura"} · {dateText(e.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      </div>
+    </>
+  );
+}
+
+// Loads a report's Adaylar from a JSON file, the same shape the routines send to /api/adaylar.
+function ImportButton() {
+  const router = useRouter();
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+
+  async function load(file: File) {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const result = await importLeadsAction(JSON.parse(await file.text()));
+      setMessage(
+        result.error
+          ? { text: result.error, error: true }
+          : { text: `${result.added} yeni aday eklendi, ${result.seen} tanesi tekrar görüldü, ${result.customers} tanesi zaten müşterimiz.` },
+      );
+      router.refresh();
+    } catch {
+      setMessage({ text: "Dosya okunamadı; rutinin yazdığı .json dosyasını seçtiğinizden emin olun.", error: true });
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input
+        ref={input}
+        type="file"
+        accept=".json,application/json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) load(file);
+        }}
+      />
+      <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+        <Upload />
+        {busy ? "Yükleniyor…" : "Adayları yükle"}
+      </Button>
+      {message && <span className={message.error ? "text-destructive text-xs" : "text-muted-foreground text-xs"}>{message.text}</span>}
+    </div>
+  );
+}

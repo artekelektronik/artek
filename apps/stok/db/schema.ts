@@ -664,3 +664,44 @@ export const assistantSuggestion = pgTable(
   },
   (t) => [uniqueIndex("assistant_suggestion_customer_day_idx").on(t.customerId, t.forDay), index("assistant_suggestion_day_idx").on(t.forDay)],
 );
+
+// Adaylar: firms we haven't invoiced yet, found by the sales routines or added by hand.
+export const leadStatus = pgEnum("lead_status", ["yeni", "ulasildi", "gorusuluyor", "musteri_oldu", "ilgilenmiyor"]);
+export type LeadSource = { report: string; at: string; links: { title: string; url: string; date?: string }[] };
+export type LeadContact = { phone?: string; email?: string; form?: string; linkedin?: string };
+
+export const lead = pgTable("lead", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  normName: text("norm_name").notNull().unique(), // lower-cased, without legal suffixes; how repeats are found
+  website: text("website"),
+  city: text("city"),
+  sector: text("sector"),
+  why: text("why"), // why it's interesting, from the latest report that named it
+  contact: jsonb("contact").$type<LeadContact>().notNull().default({}),
+  sources: jsonb("sources").$type<LeadSource[]>().notNull().default([]),
+  taxId: text("tax_id"), // VKN if known; the first invoice with it links the lead to its Müşteri
+  status: leadStatus("status").notNull().default("yeni"),
+  customerId: uuid("customer_id").references(() => customer.id),
+  seenCount: integer("seen_count").notNull().default(1),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const leadEventKind = pgEnum("lead_event_kind", ["eklendi", "gorundu", "durum", "not", "musteri"]);
+
+// Everything that happened to an Aday, with who and when; a null user is a routine or an invoice.
+export const leadEvent = pgTable(
+  "lead_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => lead.id),
+    kind: leadEventKind("kind").notNull(),
+    text: text("text").notNull(),
+    userId: text("user_id").references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("lead_event_lead_idx").on(t.leadId, t.createdAt)],
+);

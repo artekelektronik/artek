@@ -18,6 +18,7 @@ Names only; never commit values. Locally they live in `apps/stok/.env.local` (gi
 | `BLOB_READ_WRITE_TOKEN` | Product image uploads to Vercel Blob (store `artek-stok-images`, connected to this project only) |
 | `NEXT_PUBLIC_VITRIN_URL` | Optional; where image paths of old imports live (default `https://www.ferritnuve.com`) |
 | `CRON_SECRET` | Protects `/api/cron/*`; Vercel Cron sends it automatically |
+| `ADAYLAR_TOKEN` | Lets the sales routines add Adaylar at `/api/adaylar`; without it the route refuses everything |
 | `ANTHROPIC_API_KEY` | The morning assistant (Claude) that prepares call plans and email drafts; without it the Bugün screen stays empty |
 
 ## Local setup
@@ -66,6 +67,10 @@ A note written on a Müşteri card is read by `claude-haiku-5-5` (`lib/customer-
 Firms can be linked (`lib/firm-links.ts`): sold to / taken over, carries on under a new company, works with, same owner or group, buys from, or other. A link is stored once, from → to, and reads right on both cards ("Satıldı / devredildi" on one, "Devraldı" on the other). The other firm's name opens its card. A note that names one of our Müşteriler proposes the link, and Uygula creates it. Adding and removing links goes into both firms' change history, and the morning assistant gets each firm's links with its facts.
 
 Contact routes researched outside the repo (`iletisim.json`) are loaded from Müşteriler → "İletişim bilgilerini yükle" (Müşteri paneli edit rights), or with `pnpm --filter stok import-crm-contacts <file.json>`. Either way, only empty fields are filled and weak matches are skipped. The script writes to whatever database `DATABASE_URL` names; `.env.local` points at the local database.
+
+## Adaylar
+
+`/musteriler/adaylar` lists firms we haven't invoiced yet (`lib/leads.ts`). The sales routines post the firms in each report to `POST /api/adaylar` with `Authorization: Bearer $ADAYLAR_TOKEN`; the same JSON (`{ rapor, adaylar: [{ firma, sehir, sektor, web, neden, vkn, kaynaklar, iletisim }] }`) can be loaded with "Adayları yükle". Names are compared without legal words (`lib/lead-match.ts`), so a firm named again is marked "tekrar görüldü" instead of added twice, and firms that are already Müşteriler are left out. Each Aday keeps its reports and links, its contact routes, and a history of status changes and notes with who and when. When the first invoice with an Aday's VKN arrives, it is linked to that Müşteri and marked Müşteri oldu; without a VKN, the card suggests the Müşteri whose name fits and a person confirms.
 
 ## Bugün: the morning assistant
 

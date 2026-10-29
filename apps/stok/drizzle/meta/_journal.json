@@ -141,6 +141,13 @@
       "when": 1793281773680,
       "tag": "0019_firma-baglantilari",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793282604118,
+      "tag": "0020_adaylar",
+      "breakpoints": true
     }
   ]
 }

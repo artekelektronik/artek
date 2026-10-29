@@ -5,6 +5,7 @@ import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
 import { recordChanges } from "./customer-changes";
 import { requirePermission } from "./guard";
+import { linkLeadsByTaxId } from "./leads";
 import { missingNumbers } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
@@ -51,6 +52,7 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
       .returning({ id: customer.id, name: customer.name });
     const customerRow = c ?? (await tx.select({ id: customer.id, name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId)))[0];
     if (before) await recordChanges(tx, customerRow.id, { name: before.name }, { name: customerRow.name }, { source: "fatura" });
+    else await linkLeadsByTaxId(tx, buyer.taxId, customerRow);
 
     const [added] = await tx
       .insert(invoice)
