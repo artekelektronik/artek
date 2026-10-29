@@ -691,6 +691,8 @@ export const lead = pgTable("lead", {
   customerId: uuid("customer_id").references(() => customer.id),
   seenCount: integer("seen_count").notNull().default(1),
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    siteResearch: jsonb("site_research").$type<LeadResearch>(), // read from its own site ("Linkle ekle")
+    deepResearch: jsonb("deep_research").$type<LeadResearch>(), // site plus recent news, on request
     archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
     archivedBy: text("archived_by").references(() => user.id),
     archiveReason: text("archive_reason"),
@@ -735,3 +737,15 @@ export const activityLog = pgTable(
   },
   (t) => [index("activity_log_created_idx").on(t.createdAt), index("activity_log_entity_idx").on(t.entity, t.entityId)],
 );
+
+// What the assistant read about an Aday: from its own site when it was added by link, and from the deeper
+// "Site + haber taraması" when someone asked for it.
+export type LeadResearch = {
+  summary: string; // what the firm makes, in a sentence or two
+  points: string[]; // why it matters for Artek, a few short points
+  productLines: string[]; // Artek product lines that likely fit
+  sources: { title: string; url: string; date?: string; summary?: string }[];
+  at: string; // ISO time it ran
+  seconds: number;
+  model: string;
+};
