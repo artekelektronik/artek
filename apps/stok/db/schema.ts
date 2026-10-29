@@ -431,6 +431,7 @@ export const customerStatus = pgEnum("customer_status", [
   "teklif_verildi",
   "siparis_geldi",
   "ilgilenmiyor",
+  "kapandi", // the business closed; never suggested again
 ]);
 
 // How the next follow-up is made; the morning assistant suggests a call or drafts an email accordingly.
@@ -523,7 +524,17 @@ export const invoiceLine = pgTable(
 // The morning assistant's suggestions: call this customer and ask this, or send this email. Nothing goes out
 // until a person approves it on the Bugün screen.
 export const suggestionKind = pgEnum("suggestion_kind", ["arama", "eposta"]);
-export const suggestionStatus = pgEnum("suggestion_status", ["bekliyor", "gonderildi", "yapildi", "atlandi", "basarisiz"]);
+// "atlandi" is only on suggestions closed before every close needed a reason.
+export const suggestionStatus = pgEnum("suggestion_status", [
+  "bekliyor",
+  "gonderildi",
+  "yapildi",
+  "atlandi",
+  "basarisiz",
+  "yapilamadi",
+  "ertelendi",
+  "onay_bekliyor",
+]);
 
 type Finding = { title: string; url: string; summary: string };
 
@@ -542,6 +553,12 @@ export const assistantSuggestion = pgTable(
     body: text("body"),
     findings: jsonb("findings").$type<Finding[]>().notNull().default([]), // what it found online, with links
     status: suggestionStatus("status").notNull().default("bekliyor"),
+    scheduled: boolean("scheduled").notNull().default(false), // a person set this Takip date; otherwise the assistant picked it
+    doneOn: date("done_on", { mode: "string" }), // when the email went or the call was made
+    closeReason: text("close_reason"), // why it couldn't be done, from the close reasons
+    closeNote: text("close_note"),
+    waitingFor: text("waiting_for"), // onay_bekliyor: what we wait for
+    askAgainOn: date("ask_again_on", { mode: "string" }), // onay_bekliyor: when Bugün asks "Onaylandı mı?" again
     error: text("error"),
     model: text("model"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

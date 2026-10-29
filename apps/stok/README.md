@@ -68,15 +68,19 @@ Contact routes researched outside the repo (`iletisim.json`) are loaded from Mü
 Every morning at 08:00 Istanbul (`/api/cron/asistan`), `lib/assistant.ts` picks up to 10 customers:
 
 - customers whose Takip date has come, by the Takip channel on their card;
-- up to 5 lapsed or one-off customers it proposes itself, each at most once every 30 days.
+- up to 5 lapsed or one-off customers it proposes itself, each at most once every 30 days, and only when every earlier suggestion is closed.
 
 For each one, Claude (`claude-opus-5-5`, web search and fetch) reads the customer's site and recent news, combines them with our invoices and notes, and writes a call plan or an email draft. Nothing is sent automatically.
 
 On `/musteriler/bugun` a person with Müşteri paneli edit rights works through the list:
 
-- **Calls:** record a call with a note.
+- **Calls:** record a call with a note and the day it was made.
 - **Emails:** edit a draft and press Gönder. The email goes from artek@ferritnuve.com, replies go to that inbox, and the signature and opt-out line are added automatically.
-- **Bugün değil:** skip a suggestion for today.
+- **Yapılamadı:** close it with a reason (`lib/close-reasons.ts`). "Şirket kapanmış" and "İlgilenmiyor" mean the customer is never suggested again.
+- **Sonraya bırak:** the chosen day becomes the customer's Takip date, and that morning a fresh suggestion is prepared.
+- **Onay bekliyor:** note what we wait for. Every 3 days the card comes back to ask "Onaylandı mı?".
+
+A suggestion that is not closed stays under "Önceki günlerden kalanlar", and a late Takip is marked "N gün gecikti". While any is open, the assistant proposes no customers of its own. Takip dates still come on their day. Once all are closed, "Daha fazla öneri hazırla" prepares more the same day.
 
 Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.
 

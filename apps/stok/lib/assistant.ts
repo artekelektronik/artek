@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { desc, eq, gte } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { assistantSuggestion, customer, customerNote } from "../db/schema";
@@ -18,12 +18,29 @@ const openStatuses = ["aranacak", "arandi", "ulasilamadi", "teklif_verildi"] as 
 
 export type Pick = { customerId: string; kind: "arama" | "eposta"; why: "takip" | "oneri" };
 
+// Suggestions that still need a person: not done yet, failed, or back from "Onay bekliyor" to ask again.
+// Any day's count, so an unfinished one stays on Bugün until it is closed.
+export const openSuggestion = (today: string) =>
+  or(
+    inArray(assistantSuggestion.status, ["bekliyor", "basarisiz"]),
+    and(eq(assistantSuggestion.status, "onay_bekliyor"), lte(assistantSuggestion.askAgainOn, today)),
+  );
+
+export async function openSuggestionCount(today: string) {
+  return (await db.select({ id: assistantSuggestion.id }).from(assistantSuggestion).where(openSuggestion(today))).length;
+}
+
 // Today's list: scheduled follow-ups first (oldest date first), then lapsed and one-off customers it proposes itself.
+// It proposes its own only when every earlier suggestion is closed; scheduled follow-ups come on their day regardless.
 export async function pickCustomers(today: string): Promise<Pick[]> {
+  // Today's, plus any still waiting on a person (an open one, or one waiting for approval), so none is doubled.
   const already = new Set(
-    (await db.select({ id: assistantSuggestion.customerId }).from(assistantSuggestion).where(eq(assistantSuggestion.forDay, today))).map(
-      (r) => r.id,
-    ),
+    (
+      await db
+        .select({ id: assistantSuggestion.customerId })
+        .from(assistantSuggestion)
+        .where(or(eq(assistantSuggestion.forDay, today), inArray(assistantSuggestion.status, ["bekliyor", "basarisiz", "onay_bekliyor"])))
+    ).map((r) => r.id),
   );
   const customers = await db.select().from(customer);
   const picks: Pick[] = [];
@@ -42,6 +59,7 @@ export async function pickCustomers(today: string): Promise<Pick[]> {
       (r) => r.id,
     ),
   );
+  if (await openSuggestionCount(today)) return picks.slice(0, dailyLimit);
   const summary = await loadSalesSummary();
   const byId = new Map(customers.map((c) => [c.id, c]));
   let auto = 0;
@@ -175,11 +193,13 @@ async function factsFor(customerId: string, summary: Awaited<ReturnType<typeof l
   };
 }
 
-// Prepares today's suggestions; safe to run again (one suggestion per customer per day). Returns how many it wrote.
+// Prepares today's suggestions; safe to run again (one suggestion per customer per day). Returns how many it wrote,
+// and how many earlier ones are still open (then it proposed none of its own).
 export async function prepareDay(now = new Date(), client = new Anthropic()) {
   const today = istanbulDate(now);
+  const open = await openSuggestionCount(today);
   const picks = await pickCustomers(today);
-  if (!picks.length) return { today, prepared: 0, failed: 0 };
+  if (!picks.length) return { today, prepared: 0, failed: 0, open };
   const summary = await loadSalesSummary();
   let prepared = 0;
   let failed = 0;
@@ -189,7 +209,7 @@ export async function prepareDay(now = new Date(), client = new Anthropic()) {
     Array.from({ length: 3 }, async () => {
       for (let p = queue.shift(); p; p = queue.shift()) {
         const { c, facts } = await factsFor(p.customerId, summary);
-        const base = { customerId: c.id, forDay: today, kind: p.kind, model: assistantModel };
+        const base = { customerId: c.id, forDay: today, kind: p.kind, scheduled: p.why === "takip", model: assistantModel };
         try {
           const { draft, model } = await draftFor(client, facts, p.kind);
           await db
@@ -220,7 +240,7 @@ export async function prepareDay(now = new Date(), client = new Anthropic()) {
       }
     }),
   );
-  return { today, prepared, failed };
+  return { today, prepared, failed, open };
 }
 
 export async function suggestionsFor(day: string) {

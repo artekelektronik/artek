@@ -1,12 +1,15 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { assistantSuggestion, customer, customerNote } from "../db/schema";
+import { askAgainDays, closeReasons, type CloseReason } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { addDays, istanbulDate } from "./time";
 
 // What a person does with a morning suggestion. Every email goes out only from here, after someone pressed Gönder.
+// Each one is closed one of four ways: done, couldn't be done (with a reason), postponed to a day, or waiting for approval.
 
 export const customerEmailFrom = "Artek Elektronik <artek@ferritnuve.com>";
 export const customerEmailReplyTo = "artek@ferritnuve.com";
@@ -60,7 +63,15 @@ export async function sendSuggestionEmail(headers: Headers, input: z.input<typeo
   await db.transaction(async (tx) => {
     await tx
       .update(assistantSuggestion)
-      .set({ status: "gonderildi", subject: data.subject, body: data.body, decidedAt: new Date(), decidedBy: actor.userId, error: null })
+      .set({
+        status: "gonderildi",
+        subject: data.subject,
+        body: data.body,
+        doneOn: istanbulDate(new Date()),
+        decidedAt: new Date(),
+        decidedBy: actor.userId,
+        error: null,
+      })
       .where(eq(assistantSuggestion.id, s.id));
     await tx.insert(customerNote).values({
       customerId: c.id,
@@ -74,16 +85,23 @@ export async function sendSuggestionEmail(headers: Headers, input: z.input<typeo
 const callInput = z.object({
   id: z.uuid(),
   note: z.string().trim().min(1, { error: "Görüşmeden kısa bir not yazın." }).max(4000),
+  calledOn: day.optional(), // empty means today
   nextFollowUpOn: day,
 });
 
 export async function completeCall(headers: Headers, input: z.input<typeof callInput>) {
   const actor = await requirePermission(headers, "crm.edit");
   const data = parseInput(callInput, input);
+  const today = istanbulDate(new Date());
+  const calledOn = data.calledOn ?? today;
+  if (calledOn > today) throw new UserError("Arama günü ileri bir tarih olamaz.");
   const s = await pending(data.id, "arama");
   await db.transaction(async (tx) => {
-    await tx.update(assistantSuggestion).set({ status: "yapildi", decidedAt: new Date(), decidedBy: actor.userId }).where(eq(assistantSuggestion.id, s.id));
-    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Arandı: ${data.note}` });
+    await tx
+      .update(assistantSuggestion)
+      .set({ status: "yapildi", doneOn: calledOn, decidedAt: new Date(), decidedBy: actor.userId })
+      .where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Arandı (${calledOn}): ${data.note}` });
     await tx
       .update(customer)
       .set({ status: "arandi", nextFollowUpOn: data.nextFollowUpOn, updatedAt: new Date() })
@@ -91,16 +109,89 @@ export async function completeCall(headers: Headers, input: z.input<typeof callI
   });
 }
 
-// Not today. A scheduled follow-up is cleared so it doesn't come back every morning; give a date to move it.
-export async function skipSuggestion(headers: Headers, input: { id: string; nextFollowUpOn?: string }) {
+// Not done, failed, or back from waiting: what the other three ways of closing start from.
+async function closable(id: string) {
+  const [s] = await db
+    .select()
+    .from(assistantSuggestion)
+    .where(and(eq(assistantSuggestion.id, id), inArray(assistantSuggestion.status, ["bekliyor", "basarisiz", "onay_bekliyor"])));
+  if (!s) throw new UserError("Bu öneri bulunamadı ya da zaten kapatıldı.");
+  return s;
+}
+
+const undoneInput = z
+  .object({
+    id: z.uuid(),
+    reason: z.enum(Object.keys(closeReasons) as [CloseReason, ...CloseReason[]], { error: "Bir sebep seçin." }),
+    note: z.string().trim().max(4000).default(""),
+  })
+  .refine((v) => v.reason !== "diger" || v.note, { error: "\"Diğer\" için kısa bir not yazın.", path: ["note"] });
+
+// Couldn't be done. The reason may close the Müşteri for good ("Şirket kapanmış", "İlgilenmiyor").
+export async function closeUndone(headers: Headers, input: z.input<typeof undoneInput>) {
   const actor = await requirePermission(headers, "crm.edit");
-  const data = parseInput(z.object({ id: z.uuid(), nextFollowUpOn: day }), { nextFollowUpOn: "", ...input });
-  const [s] = await db.select().from(assistantSuggestion).where(eq(assistantSuggestion.id, data.id));
-  if (!s) throw new UserError("Öneri bulunamadı.");
-  if (s.status !== "bekliyor" && s.status !== "basarisiz") throw new UserError("Bu öneri zaten işlendi.");
+  const data = parseInput(undoneInput, input);
+  const s = await closable(data.id);
+  const reason = closeReasons[data.reason];
   await db.transaction(async (tx) => {
-    await tx.update(assistantSuggestion).set({ status: "atlandi", decidedAt: new Date(), decidedBy: actor.userId }).where(eq(assistantSuggestion.id, s.id));
-    await tx.update(customer).set({ nextFollowUpOn: data.nextFollowUpOn, updatedAt: new Date() }).where(eq(customer.id, s.customerId));
+    await tx
+      .update(assistantSuggestion)
+      .set({ status: "yapilamadi", closeReason: data.reason, closeNote: data.note || null, decidedAt: new Date(), decidedBy: actor.userId })
+      .where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({
+      customerId: s.customerId,
+      userId: actor.userId,
+      body: `Yapılamadı: ${reason.label}${data.note ? `. ${data.note}` : ""}`,
+    });
+    await tx
+      .update(customer)
+      .set({ ...(reason.status && { status: reason.status }), nextFollowUpOn: null, updatedAt: new Date() })
+      .where(eq(customer.id, s.customerId));
+  });
+}
+
+// Later: the day becomes the Müşteri's Takip date, so a fresh suggestion is prepared that morning.
+export async function postponeSuggestion(headers: Headers, input: { id: string; until: string }) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(z.object({ id: z.uuid(), until: day }), input);
+  if (!data.until) throw new UserError("Hangi güne bırakılacağını seçin.");
+  if (data.until <= istanbulDate(new Date())) throw new UserError("Bugünden sonraki bir gün seçin.");
+  const s = await closable(data.id);
+  await db.transaction(async (tx) => {
+    await tx.update(assistantSuggestion).set({ status: "ertelendi", decidedAt: new Date(), decidedBy: actor.userId }).where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Sonraya bırakıldı: ${data.until}` });
+    await tx.update(customer).set({ nextFollowUpOn: data.until, updatedAt: new Date() }).where(eq(customer.id, s.customerId));
+  });
+}
+
+const waitInput = z.object({ id: z.uuid(), waitingFor: z.string().trim().min(1, { error: "Neyi beklediğinizi kısaca yazın." }).max(500) });
+
+// Waiting for an approval or missing information; Bugün asks "Onaylandı mı?" every few days until it is answered.
+export async function waitForApproval(headers: Headers, input: z.input<typeof waitInput>) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(waitInput, input);
+  const s = await closable(data.id);
+  const askAgainOn = addDays(istanbulDate(new Date()), askAgainDays);
+  await db.transaction(async (tx) => {
+    await tx
+      .update(assistantSuggestion)
+      .set({ status: "onay_bekliyor", waitingFor: data.waitingFor, askAgainOn, decidedAt: new Date(), decidedBy: actor.userId })
+      .where(eq(assistantSuggestion.id, s.id));
+    if (s.status !== "onay_bekliyor" || s.waitingFor !== data.waitingFor) {
+      await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Onay bekleniyor: ${data.waitingFor}` });
+    }
+    await tx.update(customer).set({ nextFollowUpOn: null, updatedAt: new Date() }).where(eq(customer.id, s.customerId));
+  });
+}
+
+// "Onaylandı": the suggestion is open again, to send or call now.
+export async function approvalArrived(headers: Headers, id: string) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const s = await closable(id);
+  if (s.status !== "onay_bekliyor") throw new UserError("Bu öneri onay beklemiyor.");
+  await db.transaction(async (tx) => {
+    await tx.update(assistantSuggestion).set({ status: "bekliyor", askAgainOn: null, decidedAt: null, decidedBy: null }).where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Onay geldi: ${s.waitingFor}` });
   });
 }
 

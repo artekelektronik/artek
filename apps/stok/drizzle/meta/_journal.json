@@ -99,6 +99,13 @@
       "when": 1793203726293,
       "tag": "0013_crm-assistant",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793266521040,
+      "tag": "0014_bugun-kalan-oneriler",
+      "breakpoints": true
     }
   ]
 }

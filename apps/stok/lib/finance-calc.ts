@@ -231,6 +231,7 @@ export const customerStatusLabels = {
   teklif_verildi: "Teklif verildi",
   siparis_geldi: "Sipariş geldi",
   ilgilenmiyor: "İlgilenmiyor",
+  kapandi: "Kapandı",
 } as const;
 export type CustomerStatus = keyof typeof customerStatusLabels;
 
