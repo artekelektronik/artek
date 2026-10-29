@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
+import type { CloseReason } from "@/lib/close-reasons";
 import { text } from "@/lib/form-data";
-import { completeCall, sendSuggestionEmail, skipSuggestion } from "@/lib/suggestions";
+import { approvalArrived, closeUndone, completeCall, postponeSuggestion, sendSuggestionEmail, waitForApproval } from "@/lib/suggestions";
 
 function done(state: ActionState) {
   revalidatePath("/musteriler/bugun");
@@ -28,11 +29,34 @@ export async function sendEmailAction(_previous: ActionState, formData: FormData
 export async function completeCallAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
   return done(
     await runAction(async () =>
-      completeCall(await headers(), { id: text(formData, "id"), note: text(formData, "note"), nextFollowUpOn: text(formData, "nextFollowUpOn") }),
+      completeCall(await headers(), {
+        id: text(formData, "id"),
+        note: text(formData, "note"),
+        calledOn: text(formData, "calledOn"),
+        nextFollowUpOn: text(formData, "nextFollowUpOn"),
+      }),
     ),
   );
 }
 
-export async function skipAction(id: string): Promise<ActionState> {
-  return done(await runAction(async () => skipSuggestion(await headers(), { id })));
+export async function closeUndoneAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
+  return done(
+    await runAction(async () =>
+      closeUndone(await headers(), { id: text(formData, "id"), reason: text(formData, "reason") as CloseReason, note: text(formData, "note") }),
+    ),
+  );
+}
+
+export async function postponeAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
+  // "3 gün", "1 hafta"… submit their own day; otherwise the picked one.
+  const until = text(formData, "quick") || text(formData, "until");
+  return done(await runAction(async () => postponeSuggestion(await headers(), { id: text(formData, "id"), until })));
+}
+
+export async function waitForApprovalAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
+  return done(await runAction(async () => waitForApproval(await headers(), { id: text(formData, "id"), waitingFor: text(formData, "waitingFor") })));
+}
+
+export async function approvalArrivedAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => approvalArrived(await headers(), id)));
 }

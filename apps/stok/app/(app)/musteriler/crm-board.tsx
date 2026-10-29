@@ -46,7 +46,7 @@ export type CrmRow = {
 
 type Filter = "bugun" | Priority | null;
 type SortKey = "no" | "short" | "city" | "sales" | "lastOn" | "nextFollowUpOn";
-const closed: CustomerStatus[] = ["siparis_geldi", "ilgilenmiyor"];
+const closed: CustomerStatus[] = ["siparis_geldi", "ilgilenmiyor", "kapandi"];
 
 export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmRow[]; canEdit: boolean; today: string; initialSelected?: string }) {
   const due = (r: CrmRow) => Boolean(r.nextFollowUpOn && r.nextFollowUpOn <= today && !closed.includes(r.status));

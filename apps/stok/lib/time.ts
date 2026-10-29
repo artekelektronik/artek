@@ -20,3 +20,8 @@ export function istanbulDate(date: Date): string {
 export function istanbulTimeOn(day: string, time = "00:00:00"): Date {
   return new Date(`${day}T${time}+03:00`);
 }
+
+// A YYYY-MM-DD day moved by whole days.
+export function addDays(day: string, days: number): string {
+  return new Date(Date.parse(`${day}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
+}

@@ -3,6 +3,7 @@ import { before, beforeEach, describe, test } from "node:test";
 import type Anthropic from "@anthropic-ai/sdk";
 import { eq } from "drizzle-orm";
 import { openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
+import { addDays, istanbulDate } from "./time";
 
 // A made-up invoice in the QNB Dijital Köprü layout; no real customer.
 const invoiceText = (n: number, taxId: string, name: string, date: string) => `Vergi Hariç Tutar: 1.000,00 TL
@@ -147,21 +148,123 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
     assert.equal((await customerNamed("3333333333")).nextFollowUpOn, "2025-06-20");
   });
 
-  test("a finished call writes the note and marks the customer called; skipping clears the follow-up", async () => {
+  test("a finished call writes the note, the day it was made, and marks the customer called", async () => {
     await db.update(schema.customer).set({ followUpChannel: "telefon", email: null }); // no address: every pick is a call
     const { prepareDay } = await import("./assistant");
-    const { completeCall, skipSuggestion } = await import("./suggestions");
+    const { completeCall } = await import("./suggestions");
     await prepareDay(now, fakeClient());
     const calls = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.kind, "arama"));
     assert.ok(calls.length >= 2);
 
-    await completeCall(editor.headers, { id: calls[0].id, note: "Teklif istediler.", nextFollowUpOn: "" });
+    await completeCall(editor.headers, { id: calls[0].id, note: "Teklif istediler.", calledOn: "2025-06-01", nextFollowUpOn: "" });
     const called = (await db.select().from(schema.customer).where(eq(schema.customer.id, calls[0].customerId)))[0];
     assert.equal(called.status, "arandi");
+    const [s] = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.id, calls[0].id));
+    assert.equal(s.doneOn, "2025-06-01");
+    await assert.rejects(completeCall(editor.headers, { id: calls[1].id, note: "x", calledOn: "2999-01-01", nextFollowUpOn: "" }), /ileri bir tarih/);
+  });
 
-    await skipSuggestion(editor.headers, { id: calls[1].id });
-    const skipped = (await db.select().from(schema.customer).where(eq(schema.customer.id, calls[1].customerId)))[0];
-    assert.equal(skipped.nextFollowUpOn, null);
+  // These run on the real calendar, since closing checks dates against today.
+  describe("unfinished suggestions", () => {
+    const day0 = istanbulDate(new Date());
+    const at = (day: string) => new Date(`${day}T05:00:00Z`);
+    const suggestionsOf = async (taxId: string) =>
+      db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.customerId, (await customerNamed(taxId)).id));
+
+    beforeEach(async () => {
+      await db.update(schema.customer).set({ nextFollowUpOn: day0 }).where(eq(schema.customer.taxId, "3333333333"));
+    });
+
+    test("an open one blocks the assistant's own picks the next day, but a Takip date still comes, without doubling", async () => {
+      const { prepareDay } = await import("./assistant");
+      await prepareDay(at(day0), fakeClient());
+      const day1 = addDays(day0, 1);
+      // No invoices, so only its Takip date can bring it.
+      await db.insert(schema.customer).values({ taxId: "5555555555", taxIdType: "VKN", name: "EEE", email: "e@ornek.example", nextFollowUpOn: day1 });
+
+      const result = await prepareDay(at(day1), fakeClient());
+      assert.ok(result.open >= 1);
+      const day1Rows = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.forDay, day1));
+      assert.deepEqual(
+        day1Rows.map((s) => s.scheduled),
+        [true],
+      );
+      assert.equal(day1Rows[0].customerId, (await customerNamed("5555555555")).id);
+      // C was scheduled for day0 and is still open, so day1 doesn't prepare it again.
+      assert.equal((await suggestionsOf("3333333333")).length, 1);
+    });
+
+    test("once every one is closed, more can be prepared the same day", async () => {
+      const { prepareDay } = await import("./assistant");
+      const { closeUndone } = await import("./suggestions");
+      await prepareDay(at(day0), fakeClient());
+      for (const s of await db.select().from(schema.assistantSuggestion)) {
+        await closeUndone(editor.headers, { id: s.id, reason: "ulasilamadi" });
+      }
+      const { importInvoiceText } = await import("./invoices");
+      const before = await prepareDay(at(day0), fakeClient()); // nothing open, but nobody new to pick yet
+      assert.equal(before.open, 0);
+      await importInvoiceText(editor.headers, { fileName: "5.pdf", sha256: "s5", text: invoiceText(5, "4444444444", "DDD MAKİNA A.Ş", "05-01-2025") });
+      await db.update(schema.customer).set({ email: "d@ornek.example" }).where(eq(schema.customer.taxId, "4444444444"));
+      const again = await prepareDay(at(day0), fakeClient());
+      assert.equal(again.prepared, 1);
+      assert.equal((await suggestionsOf("4444444444"))[0].forDay, day0);
+    });
+
+    test("couldn't be done: the reason is kept, and a closed business is never suggested again", async () => {
+      const { prepareDay, pickCustomers } = await import("./assistant");
+      const { closeUndone } = await import("./suggestions");
+      await prepareDay(at(day0), fakeClient());
+      const [s] = await suggestionsOf("3333333333");
+      await assert.rejects(closeUndone(editor.headers, { id: s.id, reason: "diger" }), /Diğer/);
+      await closeUndone(editor.headers, { id: s.id, reason: "kapandi", note: "Tabela inmiş." });
+      const c = await customerNamed("3333333333");
+      assert.equal(c.status, "kapandi");
+      assert.equal(c.nextFollowUpOn, null);
+      const [closed] = await suggestionsOf("3333333333");
+      assert.equal(closed.status, "yapilamadi");
+      assert.equal(closed.closeReason, "kapandi");
+      await db.update(schema.customer).set({ nextFollowUpOn: addDays(day0, 2) }).where(eq(schema.customer.id, c.id));
+      assert.ok(!(await pickCustomers(addDays(day0, 40))).some((p) => p.customerId === c.id));
+      const notes = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, c.id));
+      assert.match(notes[0].body, /Şirket kapanmış\. Tabela inmiş\./);
+    });
+
+    test("postponed: it comes back as a Takip on the chosen day", async () => {
+      const { prepareDay, pickCustomers } = await import("./assistant");
+      const { postponeSuggestion } = await import("./suggestions");
+      await prepareDay(at(day0), fakeClient());
+      const [s] = await suggestionsOf("3333333333");
+      await assert.rejects(postponeSuggestion(editor.headers, { id: s.id, until: day0 }), /Bugünden sonraki/);
+      const day7 = addDays(day0, 7);
+      await postponeSuggestion(editor.headers, { id: s.id, until: day7 });
+      assert.equal((await customerNamed("3333333333")).nextFollowUpOn, day7);
+      const picks = await pickCustomers(day7);
+      assert.equal(picks.find((p) => p.customerId === s.customerId)?.why, "takip");
+    });
+
+    test("waiting for approval: out of the way, then asked again every 3 days until it comes", async () => {
+      const { prepareDay, openSuggestionCount } = await import("./assistant");
+      const { waitForApproval, approvalArrived, sendSuggestionEmail } = await import("./suggestions");
+      await prepareDay(at(day0), fakeClient());
+      for (const s of await db.select().from(schema.assistantSuggestion)) {
+        await waitForApproval(editor.headers, { id: s.id, waitingFor: "Fiyat onayı" });
+      }
+      assert.equal(await openSuggestionCount(day0), 0);
+      const day3 = addDays(day0, 3);
+      const back = await openSuggestionCount(day3);
+      assert.ok(back >= 1);
+
+      const [s] = await suggestionsOf("3333333333");
+      assert.equal(s.askAgainOn, day3);
+      await approvalArrived(editor.headers, s.id);
+      const send = async () => {};
+      await sendSuggestionEmail(editor.headers, { id: s.id, subject: "Konu", body: "Metin", nextFollowUpOn: "" }, send);
+      const [sent] = await suggestionsOf("3333333333");
+      assert.equal(sent.status, "gonderildi");
+      assert.equal(sent.doneOn, day0);
+      assert.equal(await openSuggestionCount(day3), back - 1);
+    });
   });
 });
 
