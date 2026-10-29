@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { likelyCustomer, normFirm } from "./lead-match";
 import { openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
 
+type Report = Parameters<typeof import("./leads").importLeads>[0];
+
 // Made-up firms only.
 const invoiceText = (n: number, taxId: string, name: string) => `Vergi Hariç Tutar: 1.000,00 TL
 Vergiler Dahil Toplam Tutar: 1.200,00 TL
@@ -42,7 +44,7 @@ describe("Adaylar", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
   let schema: typeof import("../db/schema");
   let editor: Awaited<ReturnType<typeof signedInAs>>;
-  const report = (rapor: string, adaylar: object[]) => ({ rapor, adaylar });
+  const report = (rapor: string, adaylar: Report["adaylar"]): Report => ({ rapor, adaylar });
   const leads = async () => db.select().from(schema.lead);
   const eventsOf = async (id: string) => db.select().from(schema.leadEvent).where(eq(schema.leadEvent.leadId, id));
 
