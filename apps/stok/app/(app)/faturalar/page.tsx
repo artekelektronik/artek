@@ -1,15 +1,15 @@
 import { headers } from "next/headers";
-import Link from "next/link";
 import { connection } from "next/server";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
-import { day, tl } from "@/lib/finance";
+import { day } from "@/lib/finance";
 import { invoiceReminderDays, invoiceReminderTo } from "@/lib/finance-reminders";
 import { loadActor } from "@/lib/guard";
 import { invoiceList } from "@/lib/invoices";
 import { can } from "@/lib/permissions";
-import { formatIstanbulTime } from "@/lib/time";
+import { formatIstanbulTime, istanbulDate } from "@/lib/time";
+import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
 
 export const metadata = { title: "Faturalar | Artek Stok" };
@@ -71,43 +71,8 @@ export default async function InvoicesPage() {
         </PanelCard>
       )}
 
-      <PanelCard title="Yüklenen faturalar" note="Yeniden eskiye. Tutarlar KDV hariç; iade faturaları satışa sayılmaz.">
-        <div className="max-h-[36rem] overflow-auto">
-          {rows.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Henüz fatura yok. Yukarıdan ilk faturaları yükleyin.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tarih</TableHead>
-                  <TableHead>Fatura no</TableHead>
-                  <TableHead>Müşteri</TableHead>
-                  <TableHead>Tür</TableHead>
-                  <TableHead className="text-right">Tutar</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="tabular-nums">{day(r.issuedOn)}</TableCell>
-                    <TableCell className="tabular-nums">{r.number}</TableCell>
-                    <TableCell className="max-w-80 truncate">
-                      {canSeeCustomers ? (
-                        <Link href={`/musteriler?secili=${r.customerId}`} className="underline-offset-4 hover:underline">
-                          {r.customer}
-                        </Link>
-                      ) : (
-                        r.customer
-                      )}
-                    </TableCell>
-                    <TableCell>{r.type === "IADE" ? "İade" : r.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura"}</TableCell>
-                    <TableCell className="text-right tabular-nums">{tl(Number(r.netAmount))}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
+      <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
+        <InvoiceTable rows={rows} today={istanbulDate(new Date())} linkCustomers={canSeeCustomers} />
       </PanelCard>
     </PanelShell>
   );

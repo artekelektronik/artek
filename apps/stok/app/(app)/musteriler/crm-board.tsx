@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { Input } from "@artek/ui/components/input";
 import { cn } from "@artek/ui/lib/utils";
+import { DatePicker } from "@/components/date-picker";
+import { FormSelect } from "@/components/form-select";
 import { PriorityBadge } from "@/components/priority-badge";
 import {
   customerStatusLabels,
@@ -15,6 +17,7 @@ import {
   type FollowUpChannel,
   type Priority,
 } from "@/lib/finance-calc";
+import { contactFilters, filterCustomers, lastBuyPresets, lastBuyRange, type ContactFilter, type LastBuyPreset } from "@/lib/list-filters";
 import { CustomerSheet } from "./customer-sheet";
 
 export type CrmRow = {
@@ -47,6 +50,7 @@ export type CrmRow = {
 type Filter = "bugun" | Priority | null;
 type SortKey = "no" | "short" | "city" | "sales" | "lastOn" | "nextFollowUpOn";
 const closed: CustomerStatus[] = ["siparis_geldi", "ilgilenmiyor", "kapandi"];
+const options = (entries: [string, string][]) => entries.map(([value, label]) => ({ value, label }));
 
 export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmRow[]; canEdit: boolean; today: string; initialSelected?: string }) {
   const due = (r: CrmRow) => Boolean(r.nextFollowUpOn && r.nextFollowUpOn <= today && !closed.includes(r.status));
@@ -55,10 +59,21 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "no", dir: 1 });
   const [openId, setOpenId] = useState<string | undefined>(initialSelected);
+  const [lastBuy, setLastBuy] = useState<LastBuyPreset>("tumu");
+  const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
+  const [status, setStatus] = useState("");
+  const [channel, setChannel] = useState("");
+  const [city, setCity] = useState("");
+  const [group, setGroup] = useState("");
+  const [contact, setContact] = useState<ContactFilter>("tumu");
+  const [resetKey, setResetKey] = useState(0); // remounts the selects, which keep their own value
+  const cities = useMemo(() => [...new Set(rows.map((r) => r.city).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr")), [rows]);
+  const groups = useMemo(() => [...new Set(rows.flatMap((r) => r.groups))].sort((a, b) => a.localeCompare(b, "tr")), [rows]);
+  const narrowed = lastBuy !== "tumu" || status || channel || city || group || contact !== "tumu";
 
   const visible = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr");
-    return rows
+    return filterCustomers(rows, { lastBuy: lastBuyRange(lastBuy, today, custom), status, channel, city, group, contact })
       .filter((r) => (filter === "bugun" ? due(r) : filter ? r.no === filter : true))
       .filter((r) => !needle || [r.name, r.city, r.district, r.phone, r.email, r.groups.join(" "), r.topProduct].join(" ").toLocaleLowerCase("tr").includes(needle))
       .sort((a, b) => {
@@ -69,7 +84,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
       });
     // due() reads only today, which never changes while the page is open.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, filter, q, sort]);
+  }, [rows, filter, q, sort, lastBuy, custom, status, channel, city, group, contact]);
 
   const header = (key: SortKey, label: string, numeric = false) => (
     <th aria-sort={sort.key === key ? (sort.dir === 1 ? "ascending" : "descending") : undefined} className={cn("px-3 py-2 font-medium", numeric && "text-right")}>
@@ -134,13 +149,21 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
             {visible.length} müşteri
             {filter === "bugun" ? " · bugün takip" : filter ? ` · ${priorities[filter - 1].label}` : ""}
           </span>
-          {(filter || q) && (
+          {(filter || q || narrowed) && (
             <button
               type="button"
               className="text-xs underline underline-offset-4"
               onClick={() => {
                 setFilter(null);
                 setQ("");
+                setLastBuy("tumu");
+                setCustom({});
+                setStatus("");
+                setChannel("");
+                setCity("");
+                setGroup("");
+                setContact("tumu");
+                setResetKey((k) => k + 1);
               }}
             >
               Hepsini göster
@@ -148,10 +171,39 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
           )}
           <span className="text-muted-foreground ml-auto hidden text-xs sm:inline">Kartı açmak için bir müşteriye tıklayın.</span>
         </div>
+        <div key={resetKey} className="flex flex-wrap items-center gap-2">
+          <FormSelect
+            name="sonAlim"
+            options={options(Object.entries(lastBuyPresets))}
+            defaultValue={lastBuy}
+            onValueChange={(v) => setLastBuy(v as LastBuyPreset)}
+            aria-label="Son alım"
+            className="w-60"
+          />
+          {lastBuy === "ozel" && (
+            <span className="flex flex-wrap items-center gap-1 text-sm">
+              <DatePicker id="son-alim-baslangic" name="from" onChange={(from) => setCustom((c) => ({ ...c, from: from || undefined }))} />
+              <span className="text-muted-foreground">–</span>
+              <DatePicker id="son-alim-bitis" name="to" onChange={(to) => setCustom((c) => ({ ...c, to: to || undefined }))} />
+            </span>
+          )}
+          <FormSelect name="durum" options={options(Object.entries(customerStatusLabels))} empty="Tüm durumlar" onValueChange={setStatus} aria-label="Durum" className="w-40" />
+          <FormSelect name="kanal" options={options(Object.entries(followUpChannelLabels))} empty="Takip: hepsi" onValueChange={setChannel} aria-label="Takip şekli" className="w-36" />
+          <FormSelect name="il" options={cities.map((c) => ({ value: c, label: c }))} empty="Tüm iller" onValueChange={setCity} aria-label="İl" className="w-36" />
+          <FormSelect name="grup" options={groups.map((g) => ({ value: g, label: g }))} empty="Tüm ürün grupları" onValueChange={setGroup} aria-label="Ürün grubu" className="w-48" />
+          <FormSelect
+            name="iletisim"
+            options={options(Object.entries(contactFilters))}
+            defaultValue={contact}
+            onValueChange={(v) => setContact(v as ContactFilter)}
+            aria-label="İletişim"
+            className="w-52"
+          />
+        </div>
 
         {visible.length === 0 ? (
           <p className="text-muted-foreground py-6 text-center text-sm">
-            {filter === "bugun" ? "Bugün takip edilecek müşteri yok. Kartlardan takip tarihi verebilirsiniz." : "Aramaya uyan müşteri yok."}
+            {filter === "bugun" && !narrowed && !q ? "Bugün takip edilecek müşteri yok. Kartlardan takip tarihi verebilirsiniz." : "Bu seçime uyan müşteri yok."}
           </p>
         ) : (
           <div className="max-h-[38rem] overflow-auto">

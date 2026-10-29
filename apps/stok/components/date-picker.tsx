@@ -11,8 +11,8 @@ const toDay = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 const fromDay = (day: string | undefined) => (day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T00:00:00`) : undefined);
 
-// Submits the picked day as yyyy-mm-dd under `name`, like <input type="date">.
-export function DatePicker({ name, defaultValue, id }: { name: string; defaultValue?: string; id?: string }) {
+// Submits the picked day as yyyy-mm-dd under `name`, like <input type="date">; `onChange` gets the same day ("" when cleared).
+export function DatePicker({ name, defaultValue, id, onChange }: { name: string; defaultValue?: string; id?: string; onChange?: (day: string) => void }) {
   const [date, setDate] = useState(() => fromDay(defaultValue));
   const [open, setOpen] = useState(false);
   return (
@@ -32,6 +32,7 @@ export function DatePicker({ name, defaultValue, id }: { name: string; defaultVa
           onSelect={(picked) => {
             setDate(picked);
             setOpen(false);
+            onChange?.(picked ? toDay(picked) : "");
           }}
         />
       </PopoverContent>
