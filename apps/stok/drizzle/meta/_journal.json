@@ -113,6 +113,13 @@
       "when": 1793267726116,
       "tag": "0015_sebep-listesi",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793268581405,
+      "tag": "0016_sonuc-takibi",
+      "breakpoints": true
     }
   ]
 }

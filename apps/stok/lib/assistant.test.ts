@@ -341,6 +341,87 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
         assert.equal((await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.id, other.id)))[0].proposal, null);
       });
     });
+
+    describe("results", () => {
+      // An email sent today and a call made today, each awaiting "Sonuç ne oldu?".
+      async function doneBoth() {
+        const { prepareDay } = await import("./assistant");
+        const { sendSuggestionEmail, completeCall } = await import("./suggestions");
+        await db.update(schema.customer).set({ email: null }).where(eq(schema.customer.taxId, "1111111111"));
+        await db.update(schema.customer).set({ nextFollowUpOn: day0, followUpChannel: "telefon" }).where(eq(schema.customer.taxId, "1111111111"));
+        await prepareDay(at(day0), fakeClient());
+        const [mail] = await suggestionsOf("3333333333");
+        const [call] = await suggestionsOf("1111111111");
+        await sendSuggestionEmail(editor.headers, { id: mail.id, subject: "Konu", body: "Metin", nextFollowUpOn: "" }, async () => {});
+        await completeCall(editor.headers, { id: call.id, note: "Konuştuk.", nextFollowUpOn: "" });
+        return { mail, call };
+      }
+
+      test("asked 3 working days after the contact, not before, and it doesn't block new suggestions", async () => {
+        const { resultsDue } = await import("./suggestions");
+        const { openSuggestionCount } = await import("./assistant");
+        const { addWorkingDays } = await import("./time");
+        const { mail } = await doneBoth();
+        const ask = addWorkingDays(day0, 3);
+        assert.equal((await suggestionsOf("3333333333"))[0].resultAskOn, ask);
+        assert.equal((await resultsDue(addDays(ask, -1))).length, 0);
+        assert.ok((await resultsDue(ask)).some((r) => r.id === mail.id));
+        assert.equal(await openSuggestionCount(ask), (await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.status, "bekliyor"))).length);
+      });
+
+      test("each answer is recorded and moves the CRM status; 'Cevap yok' can schedule the next try", async () => {
+        const { recordResult } = await import("./suggestions");
+        const { mail, call } = await doneBoth();
+        await recordResult(editor.headers, { id: mail.id, outcome: "siparis", note: "50 adet EE25." });
+        assert.equal((await customerNamed("3333333333")).status, "siparis_geldi");
+        assert.equal((await suggestionsOf("3333333333"))[0].outcome, "siparis");
+        await assert.rejects(recordResult(editor.headers, { id: mail.id, outcome: "teklif" }), /zaten girildi/);
+
+        const retry = addDays(day0, 10);
+        await recordResult(editor.headers, { id: call.id, outcome: "cevap_yok", nextFollowUpOn: retry, followUpChannel: "eposta" });
+        const c = await customerNamed("1111111111");
+        assert.equal(c.nextFollowUpOn, retry);
+        assert.equal(c.followUpChannel, "eposta");
+        const notes = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, c.id));
+        assert.ok(notes.some((n) => /Sonuç .*Cevap yok/.test(n.body)));
+      });
+
+      test("an invoice after the contact is pointed out", async () => {
+        const { resultsDue } = await import("./suggestions");
+        const { importInvoiceText } = await import("./invoices");
+        const { addWorkingDays } = await import("./time");
+        const { mail } = await doneBoth();
+        const [y, m, d] = addDays(day0, 1).split("-");
+        await importInvoiceText(editor.headers, { fileName: "9.pdf", sha256: "s9", text: invoiceText(9, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
+        const due = await resultsDue(addWorkingDays(day0, 3));
+        assert.equal(due.find((r) => r.id === mail.id)?.invoiceAfter?.issuedOn, addDays(day0, 1));
+        assert.equal(due.find((r) => r.customer.name.startsWith("AAA"))?.invoiceAfter, null);
+      });
+
+      test("'Sonra sor' asks again later, twice at most, then records 'girilmedi'", async () => {
+        const { askResultLater } = await import("./suggestions");
+        const { addWorkingDays } = await import("./time");
+        const { mail } = await doneBoth();
+        await askResultLater(editor.headers, mail.id);
+        let [s] = await suggestionsOf("3333333333");
+        assert.equal(s.resultAskOn, addWorkingDays(day0, 3));
+        assert.equal(s.resultAsks, 1);
+        await askResultLater(editor.headers, mail.id);
+        await askResultLater(editor.headers, mail.id);
+        [s] = await suggestionsOf("3333333333");
+        assert.equal(s.outcome, "girilmedi");
+        await assert.rejects(askResultLater(editor.headers, mail.id), /zaten girildi/);
+      });
+    });
+  });
+});
+
+describe("working days", () => {
+  test("weekends are skipped", async () => {
+    const { addWorkingDays } = await import("./time");
+    assert.equal(addWorkingDays("2026-10-26", 3), "2026-10-29"); // Monday → Thursday
+    assert.equal(addWorkingDays("2026-10-30", 3), "2026-11-04"); // Friday → Wednesday
+    assert.equal(addWorkingDays("2026-10-31", 3), "2026-11-04"); // Saturday → Wednesday
   });
 });
 

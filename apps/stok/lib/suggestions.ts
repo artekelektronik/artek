@@ -1,14 +1,15 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNull, lte, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { assistantSuggestion, closeReason, customer, customerNote } from "../db/schema";
+import { assistantSuggestion, closeReason, customer, customerNote, invoice } from "../db/schema";
 import { askAgainDays, otherReasonId } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { applyEffect, interpretNote } from "./reasons";
-import { addDays, istanbulDate } from "./time";
+import { maxResultReasks, outcomeLabels, resultAfterWorkingDays, type Outcome } from "./outcomes";
+import { addDays, addWorkingDays, istanbulDate } from "./time";
 
 // What a person does with a morning suggestion. Every email goes out only from here, after someone pressed Gönder.
 // Each one is closed one of four ways: done, couldn't be done (with a reason), postponed to a day, or waiting for approval.
@@ -70,6 +71,7 @@ export async function sendSuggestionEmail(headers: Headers, input: z.input<typeo
         subject: data.subject,
         body: data.body,
         doneOn: istanbulDate(new Date()),
+        resultAskOn: addWorkingDays(istanbulDate(new Date()), resultAfterWorkingDays),
         decidedAt: new Date(),
         decidedBy: actor.userId,
         error: null,
@@ -101,7 +103,13 @@ export async function completeCall(headers: Headers, input: z.input<typeof callI
   await db.transaction(async (tx) => {
     await tx
       .update(assistantSuggestion)
-      .set({ status: "yapildi", doneOn: calledOn, decidedAt: new Date(), decidedBy: actor.userId })
+      .set({
+        status: "yapildi",
+        doneOn: calledOn,
+        resultAskOn: addWorkingDays(calledOn, resultAfterWorkingDays),
+        decidedAt: new Date(),
+        decidedBy: actor.userId,
+      })
       .where(eq(assistantSuggestion.id, s.id));
     await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Arandı (${calledOn}): ${data.note}` });
     await tx
@@ -208,6 +216,91 @@ export async function approvalArrived(headers: Headers, id: string) {
     await tx.update(assistantSuggestion).set({ status: "bekliyor", askAgainOn: null, decidedAt: null, decidedBy: null }).where(eq(assistantSuggestion.id, s.id));
     await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Onay geldi: ${s.waitingFor}` });
   });
+}
+
+// Done ones whose result hasn't been entered; Bugün asks about them from resultAskOn on.
+async function awaitingResult(id: string) {
+  const [s] = await db
+    .select()
+    .from(assistantSuggestion)
+    .where(and(eq(assistantSuggestion.id, id), inArray(assistantSuggestion.status, ["gonderildi", "yapildi"]), isNull(assistantSuggestion.outcome)));
+  if (!s) throw new UserError("Bu temasın sonucu zaten girildi.");
+  return s;
+}
+
+const outcomeStatus = { teklif: "teklif_verildi", siparis: "siparis_geldi", ilgilenmiyor: "ilgilenmiyor" } as const;
+
+const resultInput = z.object({
+  id: z.uuid(),
+  outcome: z.enum(["cevap_geldi", "teklif", "siparis", "cevap_yok", "ilgilenmiyor"], { error: "Ne olduğunu seçin." }),
+  note: z.string().trim().max(4000).default(""),
+  nextFollowUpOn: day.optional(), // "Cevap yok": when to try again
+  followUpChannel: z.enum(["telefon", "eposta"]).optional(),
+});
+
+// "Sonuç ne oldu?": recorded on the suggestion and the customer's notes; some answers also move the CRM status.
+export async function recordResult(headers: Headers, input: z.input<typeof resultInput>) {
+  const actor = await requirePermission(headers, "crm.edit");
+  const data = parseInput(resultInput, input);
+  const s = await awaitingResult(data.id);
+  const status = outcomeStatus[data.outcome as keyof typeof outcomeStatus];
+  const retry = data.outcome === "cevap_yok" && data.nextFollowUpOn;
+  await db.transaction(async (tx) => {
+    await tx
+      .update(assistantSuggestion)
+      .set({ outcome: data.outcome, outcomeNote: data.note || null, outcomeAt: new Date() })
+      .where(eq(assistantSuggestion.id, s.id));
+    await tx.insert(customerNote).values({
+      customerId: s.customerId,
+      userId: actor.userId,
+      body: `Sonuç (${s.doneOn} temasından): ${outcomeLabels[data.outcome]}${data.note ? `. ${data.note}` : ""}`,
+    });
+    if (status || retry) {
+      await tx
+        .update(customer)
+        .set({
+          ...(status && { status }),
+          ...(retry && { nextFollowUpOn: data.nextFollowUpOn, ...(data.followUpChannel && { followUpChannel: data.followUpChannel }) }),
+          updatedAt: new Date(),
+        })
+        .where(eq(customer.id, s.customerId));
+    }
+  });
+}
+
+// Emails and calls whose "Sonuç ne oldu?" is due, each with the first sales invoice that came after the contact.
+export async function resultsDue(today: string) {
+  const rows = await db
+    .select({ s: assistantSuggestion, c: { id: customer.id, name: customer.name, city: customer.city } })
+    .from(assistantSuggestion)
+    .innerJoin(customer, eq(customer.id, assistantSuggestion.customerId))
+    .where(
+      and(inArray(assistantSuggestion.status, ["gonderildi", "yapildi"]), isNull(assistantSuggestion.outcome), lte(assistantSuggestion.resultAskOn, today)),
+    )
+    .orderBy(asc(assistantSuggestion.resultAskOn));
+  return Promise.all(
+    rows.map(async ({ s, c }) => {
+      const [after] = await db
+        .select({ number: invoice.number, issuedOn: invoice.issuedOn })
+        .from(invoice)
+        .where(and(eq(invoice.customerId, s.customerId), gt(invoice.issuedOn, s.doneOn!), ne(invoice.type, "IADE")))
+        .orderBy(asc(invoice.issuedOn))
+        .limit(1);
+      return { ...s, customer: c, invoiceAfter: after ?? null };
+    }),
+  );
+}
+
+// "Sonra sor": asks again a few working days later; after the last time it is recorded as "girilmedi".
+export async function askResultLater(headers: Headers, id: string) {
+  await requirePermission(headers, "crm.edit");
+  const s = await awaitingResult(id);
+  const today = istanbulDate(new Date());
+  const changes: { resultAsks: number; resultAskOn?: string; outcome?: Outcome; outcomeAt?: Date } =
+    s.resultAsks >= maxResultReasks
+      ? { resultAsks: s.resultAsks, outcome: "girilmedi", outcomeAt: new Date() }
+      : { resultAsks: s.resultAsks + 1, resultAskOn: addWorkingDays(today, resultAfterWorkingDays) };
+  await db.update(assistantSuggestion).set(changes).where(eq(assistantSuggestion.id, s.id));
 }
 
 // "İstemiyorum": no more email drafts for this customer; calls are still suggested.

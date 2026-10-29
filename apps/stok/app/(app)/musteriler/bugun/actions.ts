@@ -5,7 +5,16 @@ import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
 import { acceptProposal, rejectProposal } from "@/lib/reasons";
-import { approvalArrived, closeUndone, completeCall, postponeSuggestion, sendSuggestionEmail, waitForApproval } from "@/lib/suggestions";
+import {
+  approvalArrived,
+  askResultLater,
+  closeUndone,
+  completeCall,
+  postponeSuggestion,
+  recordResult,
+  sendSuggestionEmail,
+  waitForApproval,
+} from "@/lib/suggestions";
 
 function done(state: ActionState) {
   revalidatePath("/musteriler/bugun");
@@ -67,4 +76,22 @@ export async function acceptProposalAction(id: string): Promise<ActionState> {
 
 export async function rejectProposalAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => rejectProposal(await headers(), id)));
+}
+
+export async function recordResultAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
+  return done(
+    await runAction(async () =>
+      recordResult(await headers(), {
+        id: text(formData, "id"),
+        outcome: text(formData, "outcome") as "cevap_geldi",
+        note: text(formData, "note"),
+        nextFollowUpOn: text(formData, "nextFollowUpOn"),
+        followUpChannel: (text(formData, "followUpChannel") || undefined) as "telefon" | undefined,
+      }),
+    ),
+  );
+}
+
+export async function askResultLaterAction(id: string): Promise<ActionState> {
+  return done(await runAction(async () => askResultLater(await headers(), id)));
 }

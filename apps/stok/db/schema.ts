@@ -529,6 +529,9 @@ export const suggestionKind = pgEnum("suggestion_kind", ["arama", "eposta"]);
 // suggest again after `days`, or just a note.
 export const closeEffect = pgEnum("close_effect", ["kapandi", "ilgilenmiyor", "tekrar", "not"]);
 
+// What came of an email or call, answered on Bugün a few working days later; "girilmedi" after asking three times.
+export const suggestionOutcome = pgEnum("suggestion_outcome", ["cevap_geldi", "teklif", "siparis", "cevap_yok", "ilgilenmiyor", "girilmedi"]);
+
 // Why a suggestion couldn't be done; people edit the list. Removed ones are archived, so old suggestions keep their label.
 export const closeReason = pgTable(
   "close_reason",
@@ -580,6 +583,11 @@ export const assistantSuggestion = pgTable(
     closeNote: text("close_note"),
     proposal: jsonb("proposal").$type<NoteProposal>(), // what the assistant made of closeNote
     proposalDecidedAt: timestamp("proposal_decided_at", { withTimezone: true }),
+    resultAskOn: date("result_ask_on", { mode: "string" }), // done ones: when Bugün asks "Sonuç ne oldu?"
+    resultAsks: integer("result_asks").notNull().default(0), // how many times "Sonra sor" was pressed
+    outcome: suggestionOutcome("outcome"),
+    outcomeNote: text("outcome_note"),
+    outcomeAt: timestamp("outcome_at", { withTimezone: true }),
     waitingFor: text("waiting_for"), // onay_bekliyor: what we wait for
     askAgainOn: date("ask_again_on", { mode: "string" }), // onay_bekliyor: when Bugün asks "Onaylandı mı?" again
     error: text("error"),
