@@ -141,6 +141,9 @@ describe("Adaylar", { skip: skipWithoutDatabase }, () => {
     assert.deepEqual(await ok.json(), { added: 1, seen: 0, customers: 0, skipped: 0 });
     const bad = await POST(new Request("http://x/api/adaylar", { method: "POST", body: "{", headers: { authorization: "Bearer test-token" } }));
     assert.equal(bad.status, 400);
+    process.env.ADAYLAR_TOKEN = " test-token\n"; // pasted with a space and a line break
+    const padded = await POST(new Request("http://x/api/adaylar", { method: "POST", body: "{", headers: { authorization: "Bearer test-token" } }));
+    assert.equal(padded.status, 400);
     delete process.env.ADAYLAR_TOKEN;
   });
 });

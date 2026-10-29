@@ -10,7 +10,9 @@ export function leadsAuthorized(request: Request) {
   return bearerMatches(request, process.env.ADAYLAR_TOKEN);
 }
 
-function bearerMatches(request: Request, secret: string | undefined) {
+// A pasted secret may carry a stray space or line break; it never belongs to the value.
+function bearerMatches(request: Request, raw: string | undefined) {
+  const secret = raw?.trim();
   if (!secret) return false;
   const given = Buffer.from(request.headers.get("authorization") ?? "");
   const expected = Buffer.from(`Bearer ${secret}`);
