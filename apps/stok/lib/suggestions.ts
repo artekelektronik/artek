@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { assistantSuggestion, closeReason, customer, customerNote, invoice } from "../db/schema";
 import { factsFor, redraftFor } from "./assistant";
+import { readCardNote } from "./crm";
 import { askAgainDays, otherReasonId } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
 import { loadSalesSummary } from "./finance";
@@ -95,14 +96,14 @@ const callInput = z.object({
   nextFollowUpOn: day,
 });
 
-export async function completeCall(headers: Headers, input: z.input<typeof callInput>) {
+export async function completeCall(headers: Headers, input: z.input<typeof callInput>, client?: Anthropic) {
   const actor = await requirePermission(headers, "crm.edit");
   const data = parseInput(callInput, input);
   const today = istanbulDate(new Date());
   const calledOn = data.calledOn ?? today;
   if (calledOn > today) throw new UserError("Arama günü ileri bir tarih olamaz.");
   const s = await pending(data.id, "arama");
-  await db.transaction(async (tx) => {
+  const noteId = await db.transaction(async (tx) => {
     await tx
       .update(assistantSuggestion)
       .set({
@@ -113,12 +114,19 @@ export async function completeCall(headers: Headers, input: z.input<typeof callI
         decidedBy: actor.userId,
       })
       .where(eq(assistantSuggestion.id, s.id));
-    await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Arandı (${calledOn}): ${data.note}` });
+    const [n] = await tx
+      .insert(customerNote)
+      .values({ customerId: s.customerId, userId: actor.userId, body: `Arandı (${calledOn}): ${data.note}` })
+      .returning({ id: customerNote.id });
     await tx
       .update(customer)
       .set({ status: "arandi", nextFollowUpOn: data.nextFollowUpOn, updatedAt: new Date() })
       .where(eq(customer.id, s.customerId));
+    return n.id;
   });
+  // What was said on the call may change the card (a new name, number, or that the firm closed).
+  const [c] = await db.select().from(customer).where(eq(customer.id, s.customerId));
+  await readCardNote(noteId, c, data.note, client);
 }
 
 // Not done, failed, or back from waiting: what the other three ways of closing start from.

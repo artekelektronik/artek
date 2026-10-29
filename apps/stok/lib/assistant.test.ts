@@ -169,6 +169,20 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
     const [s] = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.id, calls[0].id));
     assert.equal(s.doneOn, "2025-06-01");
     await assert.rejects(completeCall(editor.headers, { id: calls[1].id, note: "x", calledOn: "2999-01-01", nextFollowUpOn: "" }), /ileri bir tarih/);
+
+    // The call note is read like a card note: a new phone number becomes a proposal on it.
+    const reading = {
+      beta: {
+        messages: {
+          create: async () => ({
+            content: [{ type: "text", text: JSON.stringify({ changes: [{ field: "phone", value: "0212 999 99 99" }], related_firm: null, relation: null, explanation: "Yeni numara." }) }],
+          }),
+        },
+      },
+    } as unknown as Anthropic;
+    await completeCall(editor.headers, { id: calls[1].id, note: "Yeni numaraları 0212 999 99 99.", nextFollowUpOn: "" }, reading);
+    const [callNote] = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, calls[1].customerId));
+    assert.deepEqual(callNote.proposal?.changes, [{ field: "phone", value: "0212 999 99 99" }]);
   });
 
   // These run on the real calendar, since closing checks dates against today.
