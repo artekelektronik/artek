@@ -5,6 +5,7 @@ import { db } from "../db";
 import { assistantSuggestion, customer, customerNote } from "../db/schema";
 import { channelFor } from "./contact-channel";
 import { loadSalesSummary, priorities, tl } from "./finance";
+import { linkFacts } from "./firm-links";
 import { istanbulDate } from "./time";
 
 // The morning assistant: picks today's customers, reads their site and recent news, and prepares a call plan or
@@ -116,7 +117,7 @@ const system = `Artek Elektronik için satış asistanısın. Artek, İstanbul K
 
 Görevin: sana verilen tek bir mevcut müşteri için bugün yapılacak temasa hazırlık.
 1. Firmanın web sitesi verildiyse oku. İnternette firmayla ilgili son 6 ayda çıkmış haberlere bak: yeni ürün, yatırım, fuar, ihale, yeni tesis, ödül, sorun.
-2. Bulduklarını bizim bildiklerimizle birleştir: ne aldı, ne zaman aldı, notlar.
+2. Bulduklarını bizim bildiklerimizle birleştir: ne aldı, ne zaman aldı, notlar, bağlı olduğu firmalar (bagli_firmalar: satıldığı, devraldığı, birlikte çalıştığı firmalar).
 3. İstenen temas şekline göre hazırlık yap.
 
 Kurallar:
@@ -223,6 +224,7 @@ export async function factsFor(customerId: string, summary: Awaited<ReturnType<t
       bizim_onerimiz: s?.talk,
       oncelik: s ? priorities[s.no - 1].label : undefined,
       son_notlar: notes.map((n) => ({ tarih: istanbulDate(n.createdAt), not: n.body })),
+      bagli_firmalar: await linkFacts(customerId),
     },
   };
 }

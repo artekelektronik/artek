@@ -2,15 +2,17 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { customer, customerChange, customerNote, customerStatus, user, type CardNoteProposal, type CustomerField } from "../db/schema";
+import { customer, customerChange, customerNote, customerStatus, linkType, user, type CardNoteProposal, type CustomerField } from "../db/schema";
 import { UserError } from "./errors";
+import { createLink } from "./firm-links";
 import { requirePermission } from "./guard";
 import { noteModel } from "./reasons";
 
 // What changed on a Müşteri and why, and the assistant's reading of notes written on the card.
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-type Values = Partial<Record<CustomerField, string | null>>;
+type CardField = Exclude<CustomerField, "link">;
+type Values = Partial<Record<CardField, string | null>>;
 type Source = (typeof customerChange.$inferInsert)["source"];
 
 // Writes one history row per field whose value actually changed.
@@ -21,7 +23,7 @@ export async function recordChanges(
   after: Values,
   by: { source: Source; userId?: string | null; noteId?: string | null },
 ) {
-  const rows = (Object.keys(after) as CustomerField[])
+  const rows = (Object.keys(after) as CardField[])
     .filter((f) => (before[f] ?? null) !== (after[f] ?? null))
     .map((field) => ({
       customerId,
@@ -67,7 +69,7 @@ const fields = ["name", "phone", "email", "website", "about", "status"] as const
 const proposalSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["changes", "related_firm", "explanation"],
+  required: ["changes", "related_firm", "relation", "explanation"],
   properties: {
     changes: {
       type: "array",
@@ -79,12 +81,14 @@ const proposalSchema = {
       },
     },
     related_firm: { type: ["string", "null"] },
+    relation: { type: ["string", "null"], enum: [...linkType.enumValues, null] },
     explanation: { type: "string" },
   },
 };
 const proposalParse = z.object({
   changes: z.array(z.object({ field: z.enum(fields), value: z.string().trim() })),
   related_firm: z.string().trim().min(1).nullable(),
+  relation: z.enum(linkType.enumValues).nullable().default(null),
   explanation: z.string(),
 });
 
@@ -96,7 +100,14 @@ Alanlar (field):
 - about: firmanın ne yaptığına dair notta açıkça geçen yeni bilgi (kısa, tek cümle).
 - status: yalnızca şu değerlerden biri: ${customerStatus.enumValues.join(", ")}. Firma kapanmışsa "kapandi", açıkça istemiyorsa "ilgilenmiyor".
 
-related_firm: Not, bu firmanın başka bir firmaya satıldığını, devredildiğini, birleştiğini ya da onunla yakın çalıştığını söylüyorsa o firmanın adı; yoksa null.
+related_firm: Not başka bir firmadan bu firmayla ilişkili olarak söz ediyorsa o firmanın adı; yoksa null.
+relation: related_firm varsa ilişki türü, yoksa null:
+- satildi: bu firma o firmaya satıldı, devredildi ya da onunla birleşti.
+- unvan_degisti: bu firma o firma adıyla, yeni bir şirket olarak devam ediyor.
+- birlikte_calisiyor: iki firma yakın çalışıyor (ortak proje, fason, tedarik).
+- ayni_sahip: aynı sahip ya da aynı grup.
+- musterimizin_musterisi: bu firma o firmadan alım yapıyor.
+- diger: başka bir ilişki.
 explanation: Türkçe, tek kısa cümle; ne önerdiğin ve neden.
 
 Kurallar:
@@ -125,7 +136,7 @@ export async function interpretCardNote(client: Anthropic, current: Current, not
       c.value !== (current[c.field] ?? "") &&
       (c.field !== "status" || (customerStatus.enumValues as readonly string[]).includes(c.value)),
   );
-  return { changes, relatedFirm: p.related_firm, explanation: p.explanation };
+  return { changes, relatedFirm: p.related_firm, relation: p.related_firm ? (p.relation ?? "diger") : null, explanation: p.explanation };
 }
 
 async function openNoteProposal(noteId: string) {
@@ -143,9 +154,13 @@ export async function applyNoteProposal(headers: Headers, noteId: string) {
   const n = await openNoteProposal(noteId);
   const [c] = await db.select().from(customer).where(eq(customer.id, n.customerId));
   const after: Values = Object.fromEntries(n.proposal.changes.map((ch) => [ch.field, ch.value]));
-  const before: Values = Object.fromEntries((Object.keys(after) as CustomerField[]).map((f) => [f, c[f]]));
+  const before: Values = Object.fromEntries((Object.keys(after) as CardField[]).map((f) => [f, c[f]]));
   await db.transaction(async (tx) => {
     await tx.update(customerNote).set({ proposalDecidedAt: new Date() }).where(eq(customerNote.id, n.id));
+    if (n.proposal.relatedFirmId) {
+      const link = { fromId: c.id, toId: n.proposal.relatedFirmId, type: n.proposal.relation ?? "diger" };
+      await createLink(tx, link, { source: "not", userId: actor.userId, noteId: n.id });
+    }
     if (!Object.keys(after).length) return;
     await tx
       .update(customer)
@@ -153,6 +168,16 @@ export async function applyNoteProposal(headers: Headers, noteId: string) {
       .where(eq(customer.id, c.id));
     await recordChanges(tx, c.id, before, after, { source: "not", userId: actor.userId, noteId: n.id });
   });
+}
+
+// The Müşteri a note's related firm most likely is: the only other one whose name contains it, or is contained in it.
+export async function matchFirm(name: string, exceptId: string) {
+  const norm = (v: string) => v.toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const needle = norm(name);
+  if (needle.length < 3) return null;
+  const all = await db.select({ id: customer.id, name: customer.name }).from(customer);
+  const hits = all.filter((c) => c.id !== exceptId && (norm(c.name).includes(needle) || needle.includes(norm(c.name))));
+  return hits.length === 1 ? hits[0].id : null;
 }
 
 export async function rejectNoteProposal(headers: Headers, noteId: string) {

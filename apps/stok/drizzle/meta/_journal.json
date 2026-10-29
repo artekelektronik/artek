@@ -134,6 +134,13 @@
       "when": 1793281059818,
       "tag": "0018_musteri-gecmisi",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793281773680,
+      "tag": "0019_firma-baglantilari",
+      "breakpoints": true
     }
   ]
 }

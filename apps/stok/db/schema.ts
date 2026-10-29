@@ -479,12 +479,42 @@ export const customerNote = pgTable(
 );
 
 // The Müşteri fields a note can change, and that the change history records.
-export type CustomerField = "name" | "phone" | "email" | "website" | "about" | "status";
+export type CustomerField = "name" | "phone" | "email" | "website" | "about" | "status" | "link";
 export type CardNoteProposal = {
-  changes: { field: CustomerField; value: string }[];
-  relatedFirm: string | null; // another firm the note says this one became or went to; a link comes with firm links
+  changes: { field: Exclude<CustomerField, "link">; value: string }[];
+  relatedFirm: string | null; // another firm the note names
+  relation?: LinkType | null; // how this firm relates to it
+  relatedFirmId?: string | null; // the Müşteri it matched, if exactly one; Uygula links them
   explanation: string;
 };
+
+// From → to: "satildi" A was sold to / taken over by B; "unvan_degisti" A carries on as B under a new VKN;
+// "musterimizin_musterisi" A buys from B. The rest read the same both ways.
+export const linkType = pgEnum("link_type", ["satildi", "unvan_degisti", "birlikte_calisiyor", "ayni_sahip", "musterimizin_musterisi", "diger"]);
+export type LinkType = (typeof linkType.enumValues)[number];
+
+// Links between firms, shown on both cards. Kept as from/to rows so a later map can walk them.
+export const firmLink = pgTable(
+  "firm_link",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fromId: uuid("from_id")
+      .notNull()
+      .references(() => customer.id),
+    toId: uuid("to_id")
+      .notNull()
+      .references(() => customer.id),
+    type: linkType("type").notNull(),
+    note: text("note"),
+    createdBy: text("created_by").references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("firm_link_pair_idx").on(t.fromId, t.toId, t.type),
+    index("firm_link_to_idx").on(t.toId),
+    check("firm_link_not_self", sql`${t.fromId} <> ${t.toId}`),
+  ],
+);
 
 export const changeSource = pgEnum("change_source", ["not", "fatura", "elle", "oneri"]);
 
