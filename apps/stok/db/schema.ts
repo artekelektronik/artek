@@ -471,9 +471,40 @@ export const customerNote = pgTable(
       .notNull()
       .references(() => user.id),
     body: text("body").notNull(),
+    proposal: jsonb("proposal").$type<CardNoteProposal>(), // what the assistant read in the note, for a person to apply
+    proposalDecidedAt: timestamp("proposal_decided_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("customer_note_customer_idx").on(t.customerId, t.createdAt)],
+);
+
+// The Müşteri fields a note can change, and that the change history records.
+export type CustomerField = "name" | "phone" | "email" | "website" | "about" | "status";
+export type CardNoteProposal = {
+  changes: { field: CustomerField; value: string }[];
+  relatedFirm: string | null; // another firm the note says this one became or went to; a link comes with firm links
+  explanation: string;
+};
+
+export const changeSource = pgEnum("change_source", ["not", "fatura", "elle", "oneri"]);
+
+// Every change to a Müşteri's name, contact routes or status: what it was, what it became, who and why.
+export const customerChange = pgTable(
+  "customer_change",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id),
+    field: text("field").$type<CustomerField>().notNull(),
+    oldValue: text("old_value"),
+    newValue: text("new_value"),
+    source: changeSource("source").notNull(),
+    noteId: uuid("note_id").references(() => customerNote.id), // the note it came from
+    userId: text("user_id").references(() => user.id), // null when an invoice brought it
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("customer_change_customer_idx").on(t.customerId, t.createdAt)],
 );
 
 // The ETTN is unique per invoice in GİB, so uploading the same invoice twice adds nothing.

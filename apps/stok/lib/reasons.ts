@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { assistantSuggestion, closeReason, customer, customerNote, type NoteProposal } from "../db/schema";
+import { assistantSuggestion, closeReason, customer, customerChange, customerNote, type NoteProposal } from "../db/schema";
 import { describeEffect, type CloseEffect } from "./close-reasons";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
@@ -150,6 +150,14 @@ export async function acceptProposal(headers: Headers, suggestionId: string) {
   await db.transaction(async (tx) => {
     await tx.update(assistantSuggestion).set({ proposalDecidedAt: new Date() }).where(eq(assistantSuggestion.id, s.id));
     if (p.effect !== "not") await applyEffect(tx, s.customerId, p);
+    if (p.newName) {
+      // Written here rather than through customer-changes, which imports this file.
+      const [c] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.id, s.customerId));
+      if (c.name !== p.newName) {
+        await tx.update(customer).set({ name: p.newName, updatedAt: new Date() }).where(eq(customer.id, s.customerId));
+        await tx.insert(customerChange).values({ customerId: s.customerId, field: "name", oldValue: c.name, newValue: p.newName, source: "oneri", userId: actor.userId });
+      }
+    }
     const parts = [p.effect !== "not" && describeEffect(p), p.newName && `Yeni unvan: ${p.newName}`].filter(Boolean);
     if (parts.length) await tx.insert(customerNote).values({ customerId: s.customerId, userId: actor.userId, body: `Nottan uygulandı: ${parts.join(". ")}` });
   });

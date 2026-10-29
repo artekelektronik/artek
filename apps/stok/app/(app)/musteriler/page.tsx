@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import { NoAccess } from "@/components/no-access";
 import { PanelShell, panelLede, panelWarning } from "@/components/panel";
+import { formerNames } from "@/lib/customer-changes";
 import { financeSummary, shortName } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
@@ -17,7 +18,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "crm.view")) return <NoAccess />;
   const allowed = { finance: can(actor, "finance.view"), crm: true };
-  const [s, { secili }] = await Promise.all([financeSummary(requestHeaders, "crm.view"), searchParams]);
+  const [s, { secili }, oldNames] = await Promise.all([financeSummary(requestHeaders, "crm.view"), searchParams, formerNames()]);
   const byId = new Map(s.customerRows.map((c) => [c.id, c]));
 
   const rows: CrmRow[] = s.customers.map((stats) => {
@@ -25,6 +26,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     return {
       id: c.id,
       name: c.name,
+      formerNames: oldNames.get(c.id) ?? [],
       short: shortName(c.name),
       city: c.city,
       district: c.district,

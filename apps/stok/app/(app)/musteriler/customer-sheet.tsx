@@ -25,15 +25,68 @@ import {
   tl,
   type FollowUpChannel,
 } from "@/lib/finance-calc";
+import { fieldLabels, fieldValue, sourceLabels } from "@/lib/customer-fields";
 import {
   addNoteAction,
+  applyNoteProposalAction,
   customerHistoryAction,
+  rejectNoteProposalAction,
   setEmailOptOutAction,
   updateCustomerAction,
 } from "./actions";
 import type { CrmRow } from "./crm-board";
 
 type History = Awaited<ReturnType<typeof customerHistoryAction>>;
+type Note = History["notes"][number];
+
+const timeText = (iso: string) =>
+  new Date(iso).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "medium", timeStyle: "short" });
+
+// What the assistant read in a note; nothing on the card changes until someone presses Uygula.
+function NoteProposal({ n, canEdit, onDone }: { n: Note; canEdit: boolean; onDone: () => void }) {
+  const [error, setError] = useState<string>();
+  const [pending, start] = useTransition();
+  if (!n.proposal || n.proposalDecidedAt) return null;
+  const p = n.proposal;
+  const run = (action: (id: string) => Promise<{ error?: string } | undefined>) =>
+    start(async () => {
+      const state = await action(n.id);
+      if (state?.error) setError(state.error);
+      else onDone();
+    });
+  return (
+    <div className="mt-2 flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40">
+      <p className="text-xs font-semibold tracking-wide text-amber-800 uppercase dark:text-amber-300">Asistanın önerisi</p>
+      <ul className="flex flex-col gap-1">
+        {p.changes.map((ch) => (
+          <li key={ch.field}>
+            <span className="text-muted-foreground">{fieldLabels[ch.field]}:</span> {fieldValue(ch.field, ch.value)}
+          </li>
+        ))}
+        {p.relatedFirm && (
+          <li>
+            <span className="text-muted-foreground">Bağlantılı firma:</span> {p.relatedFirm}{" "}
+            <span className="text-muted-foreground text-xs">(firma bağlantıları gelince kurulacak; şimdilik not olarak kalır)</span>
+          </li>
+        )}
+      </ul>
+      <p className="text-muted-foreground text-xs">{p.explanation}</p>
+      {canEdit && (
+        <div className="flex flex-wrap items-center gap-2">
+          {p.changes.length > 0 && (
+            <Button type="button" size="sm" disabled={pending} onClick={() => run(applyNoteProposalAction)}>
+              Uygula
+            </Button>
+          )}
+          <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => run(rejectNoteProposalAction)}>
+            {p.changes.length > 0 ? "Reddet" : "Tamam"}
+          </Button>
+          {error && <span className="text-destructive text-xs">{error}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Copy({ value }: { value: string }) {
   const [label, setLabel] = useState("Kopyala");
@@ -108,10 +161,11 @@ function CustomerPanel({ c, canEdit }: { c: CrmRow; canEdit: boolean }) {
     undefined,
   );
   const [channel, setChannel] = useState<FollowUpChannel>(c.followUpChannel);
+  const [reloads, setReloads] = useState(0);
 
   useEffect(() => {
     startLoading(async () => setHistory(await customerHistoryAction(c.id)));
-  }, [c.id, noteState]);
+  }, [c.id, noteState, saveState, reloads]);
 
   // After a save the list behind the panel shows the new status and follow-up date.
   useEffect(() => {
@@ -332,18 +386,37 @@ function CustomerPanel({ c, canEdit }: { c: CrmRow; canEdit: boolean }) {
                 <li key={n.id} className="border-l-2 pl-3">
                   <p className="text-sm whitespace-pre-wrap">{n.body}</p>
                   <p className="text-muted-foreground text-xs">
-                    {n.author} ·{" "}
-                    {new Date(n.createdAt).toLocaleString("tr-TR", {
-                      timeZone: "Europe/Istanbul",
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {n.author} · {timeText(n.createdAt)}
                   </p>
+                  <NoteProposal
+                    n={n}
+                    canEdit={canEdit}
+                    onDone={() => {
+                      setReloads((x) => x + 1);
+                      router.refresh();
+                    }}
+                  />
                 </li>
               ))}
             </ul>
           )}
         </Section>
+
+        {history && history.changes.length > 0 && (
+          <Section title="Değişiklik geçmişi">
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {history.changes.map((ch) => (
+                <li key={ch.id}>
+                  <span className="text-muted-foreground">{fieldLabels[ch.field]}:</span> {fieldValue(ch.field, ch.oldValue)} →{" "}
+                  <b className="font-medium">{fieldValue(ch.field, ch.newValue)}</b>
+                  <span className="text-muted-foreground block text-xs">
+                    {sourceLabels[ch.source]} · {ch.author ?? "fatura"} · {timeText(ch.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
 
         <Section title="Alışveriş">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
