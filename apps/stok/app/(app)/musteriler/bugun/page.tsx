@@ -12,7 +12,8 @@ import { can } from "@/lib/permissions";
 import { listReasons } from "@/lib/reasons";
 import { emailSignature, resultsDue } from "@/lib/suggestions";
 import { istanbulDate, istanbulTimeOn } from "@/lib/time";
-import { ApprovalCard, CallCard, EmailCard, FailedCard, PrepareButton, ProposalCard, ResultCard, type SuggestionView } from "./suggestion-cards";
+import { PrepareButton, type SuggestionView } from "./suggestion-cards";
+import { TodayBoard, type BoardSection, type Entry } from "./today-board";
 
 export const metadata = { title: "Bugün | Artek Müşteri Paneli" };
 
@@ -64,16 +65,20 @@ export default async function TodayPage() {
   const done = rows.filter((r) => r.s.decidedAt && r.s.decidedAt >= istanbulTimeOn(today) && !isOpen(r.s));
   const dateText = new Date(`${today}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
 
-  const card = (s: SuggestionView) => {
-    if (!canEdit) return <ReadOnly key={s.id} s={s} />;
-    if (s.status === "onay_bekliyor") return <ApprovalCard key={s.id} s={s} today={today} reasons={reasons} />;
-    if (s.status === "basarisiz") return <FailedCard key={s.id} s={s} today={today} reasons={reasons} />;
-    return s.kind === "arama" ? (
-      <CallCard key={s.id} s={s} today={today} reasons={reasons} />
-    ) : (
-      <EmailCard key={s.id} s={s} signature={emailSignature} today={today} reasons={reasons} />
-    );
-  };
+  const entry = (s: SuggestionView): Entry => ({ key: s.id, type: "suggestion", s });
+  const sections: BoardSection[] = [
+    {
+      title: "Notlardan çıkan öneriler",
+      entries: canEdit
+        ? proposals.map(({ s, c }) => ({ key: `not-${s.id}`, type: "proposal", p: { id: s.id, customer: c, closeNote: s.closeNote, proposal: s.proposal! } }))
+        : [],
+    },
+    { title: "Sonuç ne oldu?", entries: canEdit ? results.map((r) => ({ key: `sonuc-${r.id}`, type: "result", r })) : [] },
+    { title: "Önceki günlerden kalanlar", entries: earlier.map(entry) },
+    { title: "Aranacaklar", entries: calls.map(entry) },
+    { title: "Gönderilecek e-postalar", entries: emails.map(entry) },
+    { title: "Hazırlanamayanlar", entries: canEdit ? failed.map(entry) : [] },
+  ];
 
   return (
     <PanelShell
@@ -102,61 +107,13 @@ export default async function TodayPage() {
         </div>
       )}
 
-      {canEdit && proposals.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Notlardan çıkan öneriler</h2>
-          <div className="grid gap-3 lg:grid-cols-2">
-            {proposals.map(({ s, c }) => (
-              <ProposalCard key={s.id} p={{ id: s.id, customer: c, closeNote: s.closeNote, proposal: s.proposal! }} />
-            ))}
-          </div>
-        </section>
-      )}
-
       {open.length === 0 && (
         <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
           Bekleyen öneri yok. Müşteri kartlarından takip tarihi verdiğiniz müşteriler, o sabah burada görünür.
         </p>
       )}
 
-      {canEdit && results.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Sonuç ne oldu?</h2>
-          <div className="grid gap-3 lg:grid-cols-2">
-            {results.map((r) => (
-              <ResultCard key={r.id} r={r} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {earlier.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Önceki günlerden kalanlar</h2>
-          <div className="grid gap-3 lg:grid-cols-2">{earlier.map(card)}</div>
-        </section>
-      )}
-
-      {calls.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Aranacaklar</h2>
-          <div className="grid gap-3 lg:grid-cols-2">{calls.map(card)}</div>
-        </section>
-      )}
-
-      {emails.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-base font-medium">Gönderilecek e-postalar</h2>
-          <div className="grid gap-3 lg:grid-cols-2">{emails.map(card)}</div>
-        </section>
-      )}
-
-      {failed.length > 0 && canEdit && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-muted-foreground text-sm font-medium">Hazırlanamayanlar</h2>
-          <div className="grid gap-3 lg:grid-cols-2">{failed.map(card)}</div>
-        </section>
-      )}
+      <TodayBoard sections={sections} today={today} reasons={reasons} signature={emailSignature} canEdit={canEdit} />
 
       {waiting.length > 0 && (
         <details className="text-sm">
@@ -188,15 +145,5 @@ export default async function TodayPage() {
         </details>
       )}
     </PanelShell>
-  );
-}
-
-function ReadOnly({ s }: { s: SuggestionView }) {
-  return (
-    <article className="bg-card flex flex-col gap-2 rounded-xl border p-4 text-sm">
-      <span className="font-medium">{s.customer.name}</span>
-      <span className="text-muted-foreground">{s.reason}</span>
-      {s.subject && <span>Konu: {s.subject}</span>}
-    </article>
   );
 }

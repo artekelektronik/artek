@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useState, useTransition } from "react";
+import { Globe, Lightbulb, ListChecks, PenLine, type LucideIcon } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Textarea } from "@artek/ui/components/textarea";
+import { cn } from "@artek/ui/lib/utils";
 import { DatePicker } from "@/components/date-picker";
 import { FormSelect } from "@/components/form-select";
 import { FormStatus } from "@/components/form-status";
@@ -43,19 +45,64 @@ export type SuggestionView = {
   customer: { id: string; name: string; city: string; phone: string | null; email: string | null };
 };
 
-function Findings({ items }: { items: SuggestionView["findings"] }) {
-  if (!items.length) return <p className="text-muted-foreground text-xs">İnternette yeni bir şey bulunamadı; geçmişimize göre hazırlandı.</p>;
+// Each part of a suggestion in its own tinted box with a heading, so the eye finds it at a glance.
+const blockTones = {
+  neden: "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40 [&>h3]:text-amber-800 dark:[&>h3]:text-amber-300",
+  bulgu: "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/40 [&>h3]:text-sky-800 dark:[&>h3]:text-sky-300",
+  sorular: "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/40 [&>h3]:text-green-800 dark:[&>h3]:text-green-300",
+};
+
+function Block({ tone, icon: Icon, title, children }: { tone: keyof typeof blockTones; icon: LucideIcon; title: string; children: React.ReactNode }) {
   return (
-    <ul className="flex flex-col gap-1">
-      {items.map((f) => (
-        <li key={f.url} className="text-xs">
-          <a href={f.url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">
-            {f.title}
-          </a>
-          <span className="text-muted-foreground"> · {f.summary}</span>
-        </li>
-      ))}
-    </ul>
+    <section className={cn("flex flex-col gap-2 rounded-lg border p-3", blockTones[tone])}>
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+        <Icon className="size-4" aria-hidden />
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+function Reason({ s }: { s: SuggestionView }) {
+  return (
+    <Block tone="neden" icon={Lightbulb} title="Neden bu müşteri">
+      <p className="text-sm leading-relaxed">{s.reason}</p>
+    </Block>
+  );
+}
+
+function Findings({ items }: { items: SuggestionView["findings"] }) {
+  return (
+    <Block tone="bulgu" icon={Globe} title={`İnternette bulunanlar${items.length ? ` (${items.length})` : ""}`}>
+      {items.length ? (
+        <ul className="flex flex-col gap-2.5">
+          {items.map((f) => (
+            <li key={f.url} className="flex flex-col gap-0.5 text-sm">
+              <a href={f.url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">
+                {f.title}
+              </a>
+              <span className="text-muted-foreground leading-relaxed">{f.summary}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted-foreground text-sm">İnternette yeni bir şey bulunamadı; geçmişimize göre hazırlandı.</p>
+      )}
+    </Block>
+  );
+}
+
+function TalkingPoints({ items, title }: { items: string[]; title: string }) {
+  if (!items.length) return null;
+  return (
+    <Block tone="sorular" icon={ListChecks} title={title}>
+      <ul className="list-disc pl-5 text-sm leading-relaxed">
+        {items.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    </Block>
   );
 }
 
@@ -160,7 +207,6 @@ function Head({ s, today }: { s: SuggestionView; today: string }) {
           <span className="text-muted-foreground text-xs">{s.customer.city}</span>
         </span>
       </div>
-      <p className="text-muted-foreground text-sm">{s.reason}</p>
     </div>
   );
 }
@@ -174,16 +220,8 @@ export function CallCard({ s, today, reasons }: { s: SuggestionView; today: stri
         <span className="text-muted-foreground text-xs">Telefon</span>
         <span className="font-medium tabular-nums">{s.customer.phone ?? "Kartta yok"}</span>
       </div>
-      {s.talkingPoints.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <span className="text-muted-foreground text-xs">Sorabilecekleriniz</span>
-          <ul className="list-disc pl-5 text-sm">
-            {s.talkingPoints.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <Reason s={s} />
+      <TalkingPoints items={s.talkingPoints} title="Aramada sorabilecekleriniz" />
       <Findings items={s.findings} />
       <form action={action} className="flex flex-col gap-2 border-t pt-3">
         <input type="hidden" name="id" value={s.id} />
@@ -216,9 +254,15 @@ export function EmailCard({ s, signature, today, reasons }: { s: SuggestionView;
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border p-4">
       <Head s={s} today={today} />
+      <Reason s={s} />
       <Findings items={s.findings} />
-      <form action={action} className="flex flex-col gap-2 border-t pt-3">
+      <TalkingPoints items={s.talkingPoints} title="Cevap gelirse konuşulacaklar" />
+      <form action={action} className="flex flex-col gap-2">
         <input type="hidden" name="id" value={s.id} />
+        <h3 className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wide uppercase">
+          <PenLine className="size-4" aria-hidden />
+          E-posta taslağı
+        </h3>
         <p className="text-muted-foreground text-xs">
           Kime: <span className="text-foreground">{s.customer.email}</span> · Gönderen: artek@ferritnuve.com
         </p>
@@ -245,6 +289,7 @@ export function FailedCard({ s, today, reasons }: { s: SuggestionView; today: st
   return (
     <article className="bg-card flex flex-col gap-2 rounded-xl border border-dashed p-4">
       <Head s={s} today={today} />
+      <p className="text-muted-foreground text-sm">{s.reason}</p>
       <p className="text-destructive text-xs">Öneri hazırlanamadı: {s.error}</p>
       <CloseOptions id={s.id} today={today} reasons={reasons} />
     </article>
@@ -259,6 +304,7 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
   return (
     <article className="bg-card flex flex-col gap-3 rounded-xl border border-amber-300 p-4 dark:border-amber-800">
       <Head s={s} today={today} />
+      <Reason s={s} />
       <p className="text-sm">
         <b>Onaylandı mı?</b> Beklenen: {s.waitingFor}
       </p>
@@ -365,7 +411,7 @@ export type ResultView = {
 };
 
 const answers = (Object.keys(outcomeLabels) as Outcome[]).filter((o) => o !== "girilmedi");
-const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+export const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
 // A few working days after an email or call: what came of it. It doesn't hold up new suggestions.
 export function ResultCard({ r }: { r: ResultView }) {

@@ -72,7 +72,7 @@ Every morning at 08:00 Istanbul (`/api/cron/asistan`), `lib/assistant.ts` picks 
 
 For each one, Claude (`claude-opus-5-5`, web search and fetch) reads the customer's site and recent news, combines them with our invoices and notes, and writes a call plan or an email draft. Nothing is sent automatically.
 
-On `/musteriler/bugun` a person with Müşteri paneli edit rights works through the list:
+On `/musteriler/bugun` every open item is one short row; the picked one opens on the right (on narrower screens, in place of the list), and when it is closed the next one opens. A person with Müşteri paneli edit rights works through the list:
 
 - **Calls:** record a call with a note and the day it was made.
 - **Emails:** edit a draft and press Gönder. The email goes from artek@ferritnuve.com, replies go to that inbox, and the signature and opt-out line are added automatically.
