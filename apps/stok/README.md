@@ -72,6 +72,10 @@ Contact routes researched outside the repo (`iletisim.json`) are loaded from Mü
 
 `/musteriler/adaylar` lists firms we haven't invoiced yet (`lib/leads.ts`). The sales routines post the firms in each report to `POST /api/adaylar` with `Authorization: Bearer $ADAYLAR_TOKEN`; the same JSON (`{ rapor, adaylar: [{ firma, sehir, sektor, web, neden, vkn, kaynaklar, iletisim }] }`) can be loaded with "Adayları yükle". Names are compared without legal words (`lib/lead-match.ts`), so a firm named again is marked "tekrar görüldü" instead of added twice, and firms that are already Müşteriler are left out. Each Aday keeps its reports and links, its contact routes, and a history of status changes and notes with who and when. When the first invoice with an Aday's VKN arrives, it is linked to that Müşteri and marked Müşteri oldu; without a VKN, the card suggests the Müşteri whose name fits and a person confirms.
 
+## İşlem geçmişi
+
+`/musteriler/gecmis` lists what happened to Faturalar, Müşteriler and Adaylar, newest first (`lib/activity.ts`, table `activity_log`): an invoice uploaded, a Müşteri added by its first invoice, edited by hand or from a note or a newer invoice, linked to another firm, and an Aday added, updated or turned into a Müşteri. Each row says who did it, or "Rutin" / "Fatura" when no person did, and links to the record. Field-level details stay in the Müşteri's change history. Invoice rows are shown only to people who may see Faturalar.
+
 ## Bugün: the morning assistant
 
 Every morning at 08:00 Istanbul (`/api/cron/asistan`), `lib/assistant.ts` picks up to 10 customers:

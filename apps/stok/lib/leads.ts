@@ -4,6 +4,7 @@ import { db } from "../db";
 import { customer, lead, leadEvent, leadStatus, user, type LeadSource } from "../db/schema";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { logActivity } from "./activity";
 import { normFirm } from "./lead-match";
 import { leadStatusLabels } from "./lead-status";
 
@@ -102,6 +103,7 @@ export async function importLeads(input: z.input<typeof reportInput>, by: { user
           })
           .returning({ id: lead.id });
         await tx.insert(leadEvent).values({ leadId: row.id, kind: "eklendi", text: `Eklendi: ${data.rapor}`, userId: by.userId });
+        await logActivity(tx, { entity: "aday", entityId: row.id, label: a.firma, action: "eklendi", detail: data.rapor, userId: by.userId, via: by.userId ? null : "rutin" });
         counts.added++;
       }
     }
@@ -154,11 +156,14 @@ export async function updateLead(headers: Headers, input: z.input<typeof statusI
       });
     }
     if (data.note) await tx.insert(leadEvent).values({ leadId: l.id, kind: "not", text: data.note, userId: actor.userId });
+    const detail = [l.status !== data.status && `${leadStatusLabels[l.status]} → ${leadStatusLabels[data.status]}`, data.note && "not eklendi"].filter(Boolean).join(", ");
+    if (detail) await logActivity(tx, { entity: "aday", entityId: l.id, label: l.name, action: "duzenlendi", detail, userId: actor.userId });
   });
 }
 
 async function markCustomer(tx: Tx, leadId: string, c: { id: string; name: string }, userId: string | null) {
-  await tx.update(lead).set({ customerId: c.id, status: "musteri_oldu" }).where(eq(lead.id, leadId));
+  const [l] = await tx.update(lead).set({ customerId: c.id, status: "musteri_oldu" }).where(eq(lead.id, leadId)).returning({ name: lead.name });
+  await logActivity(tx, { entity: "aday", entityId: leadId, label: l.name, action: "musteri_oldu", detail: c.name, userId, via: userId ? null : "fatura" });
   await tx.insert(leadEvent).values({ leadId, kind: "musteri", text: `Müşteri oldu: ${c.name}`, userId });
 }
 

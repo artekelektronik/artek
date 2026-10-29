@@ -705,3 +705,24 @@ export const leadEvent = pgTable(
   },
   (t) => [index("lead_event_lead_idx").on(t.leadId, t.createdAt)],
 );
+
+// One append-only log of what happened to Faturalar, Müşteriler and Adaylar, for the İşlem geçmişi page. Field-level
+// changes of a Müşteri stay in customer_change; a row here only summarises them.
+export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday"]);
+export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu"]);
+
+export const activityLog = pgTable(
+  "activity_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entity: activityEntity("entity").notNull(),
+    entityId: uuid("entity_id").notNull(),
+    label: text("label").notNull(), // readable name at the time, e.g. invoice number and customer
+    action: activityAction("action").notNull(),
+    detail: text("detail"),
+    userId: text("user_id").references(() => user.id),
+    via: text("via"), // who acted when there is no user: "rutin" or "fatura"
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("activity_log_created_idx").on(t.createdAt), index("activity_log_entity_idx").on(t.entity, t.entityId)],
+);
