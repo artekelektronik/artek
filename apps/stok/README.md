@@ -82,6 +82,10 @@ On `/musteriler/bugun` every open item is one short row; the picked one opens on
 
 Three working days after an email or call, a "Sonuç ne oldu?" card asks what came of it. The answers are Cevap geldi, Teklif istendi / verildi, Sipariş geldi, Cevap yok and İlgilenmiyor. Teklif, Sipariş and İlgilenmiyor also set the CRM status. Cevap yok can take a date and channel for the next try. If a sales invoice for that customer arrived after the contact, the card says so and preselects Sipariş geldi. "Sonra sor" asks again 3 working days later, twice at most; the third time it records "Sonuç girilmedi". These cards don't hold up new suggestions.
 
+Each suggestion opens with its parts in colored boxes: why this customer (3-5 points), our records (first and last purchase, orders, product groups; read from the invoices on every page load), what was found online, and a to-do list. Ticking a step saves who and when, and the Geçmiş list at the bottom shows it, so work someone else did is visible.
+
+If a sales invoice for the customer is uploaded after the suggestion was written, the page says so. "Analizi güncelle" rewrites it with `claude-haiku-5-5` from today's records and the morning's findings, without searching the web again (and the ticks start over). "Artık gerek yok, kapat" closes it as Atlandı with the invoice in the note.
+
 A suggestion that is not closed stays under "Önceki günlerden kalanlar", and a late Takip is marked "N gün gecikti". While any is open, the assistant proposes no customers of its own. Takip dates still come on their day. Once all are closed, "Daha fazla öneri hazırla" prepares more the same day.
 
 Every action is written to the customer's notes. A customer marked "e-posta istemiyor" gets no more email drafts. The 09:00 morning email lists the day's suggestions.

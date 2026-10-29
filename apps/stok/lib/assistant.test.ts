@@ -24,6 +24,8 @@ QNB FİNANSBANK`;
 
 const draft = {
   reason: "Son haberlerinde yeni bir üretim hattı var.",
+  analysis: ["Şubattan beri alım yok.", "Yeni bir üretim hattı kurdular."],
+  steps: ["Yeni hattı e-postada an", "Numune isteyip istemediğini sor"],
   findings: [{ title: "Yeni hat", url: "https://ornek.example/haber", summary: "Yeni bir hat kurdular." }],
   talking_points: ["Yeni hatta hangi nüveleri kullanacaklar?"],
   email_subject: "Yeni hattınız için nüve",
@@ -110,6 +112,11 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
     const [s] = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.customerId, c.id));
     assert.equal(s.subject, draft.email_subject);
     assert.deepEqual(s.findings, draft.findings);
+    assert.deepEqual(s.analysis, draft.analysis);
+    assert.deepEqual(
+      s.steps.map((x) => [x.text, x.doneAt]),
+      draft.steps.map((t) => [t, null]),
+    );
   });
 
   test("a refused draft is kept as failed with the reason", async () => {
@@ -339,6 +346,63 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
         const [other] = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.status, "bekliyor"));
         await closeUndone(editor.headers, { id: other.id, reason: "diger", note: "Telefonu meşgul." }, noteClient({ effect: "not", days: null, new_name: null, explanation: "-" }));
         assert.equal((await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.id, other.id)))[0].proposal, null);
+      });
+    });
+
+    describe("steps and newer invoices", () => {
+      const uploadFor = async (n: number, day: string) => {
+        const { importInvoiceText } = await import("./invoices");
+        const [y, m, d] = day.split("-");
+        await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
+      };
+
+      test("a ticked step keeps who and when; unticking clears it", async () => {
+        const { prepareDay } = await import("./assistant");
+        const { toggleStep } = await import("./suggestions");
+        await prepareDay(at(day0), fakeClient());
+        const [s] = await suggestionsOf("3333333333");
+        await toggleStep(editor.headers, { id: s.id, index: 1, done: true });
+        let [after] = await suggestionsOf("3333333333");
+        assert.equal(after.steps[1].doneBy, editor.user.name);
+        assert.ok(after.steps[1].doneAt);
+        assert.equal(after.steps[0].doneAt, null);
+        await toggleStep(editor.headers, { id: s.id, index: 1, done: false });
+        [after] = await suggestionsOf("3333333333");
+        assert.equal(after.steps[1].doneAt, null);
+        await assert.rejects(toggleStep(editor.headers, { id: s.id, index: 9, done: true }), /Adım bulunamadı/);
+      });
+
+      test("an invoice uploaded after the suggestion is pointed out until it is rewritten, which keeps the findings", async () => {
+        const { prepareDay } = await import("./assistant");
+        const { newerInvoices, refreshSuggestion, toggleStep } = await import("./suggestions");
+        await prepareDay(at(day0), fakeClient());
+        const [s] = await suggestionsOf("3333333333");
+        assert.equal((await newerInvoices([s])).size, 0);
+
+        await uploadFor(20, day0);
+        assert.equal((await newerInvoices([s])).get(s.id)?.issuedOn, day0);
+
+        await toggleStep(editor.headers, { id: s.id, index: 0, done: true });
+        await refreshSuggestion(editor.headers, s.id, fakeClient());
+        const [after] = await suggestionsOf("3333333333");
+        assert.ok(after.refreshedAt);
+        assert.deepEqual(after.findings, draft.findings);
+        assert.equal(after.steps[0].doneAt, null);
+        assert.match(after.reason, /^Takip günü geldi\. /);
+        assert.equal((await newerInvoices([after])).size, 0);
+      });
+
+      test("'Artık gerek yok' closes it with the new invoice in the note", async () => {
+        const { prepareDay } = await import("./assistant");
+        const { closeNotNeeded } = await import("./suggestions");
+        await prepareDay(at(day0), fakeClient());
+        const [s] = await suggestionsOf("3333333333");
+        await uploadFor(21, day0);
+        await closeNotNeeded(editor.headers, s.id);
+        const [after] = await suggestionsOf("3333333333");
+        assert.equal(after.status, "atlandi");
+        assert.match(after.closeNote ?? "", /Yeni fatura geldi: AAA2025000000021/);
+        await assert.rejects(closeNotNeeded(editor.headers, s.id), /zaten kapatıldı/);
       });
     });
 

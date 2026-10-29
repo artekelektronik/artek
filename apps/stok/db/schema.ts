@@ -561,6 +561,8 @@ export const suggestionStatus = pgEnum("suggestion_status", [
 ]);
 
 type Finding = { title: string; url: string; summary: string };
+// One step of a suggestion's to-do list; who ticked it and when, so work done by someone else (or an agent) shows.
+export type SuggestionStep = { text: string; doneAt: string | null; doneBy: string | null };
 
 export const assistantSuggestion = pgTable(
   "assistant_suggestion",
@@ -572,6 +574,8 @@ export const assistantSuggestion = pgTable(
     forDay: date("for_day", { mode: "string" }).notNull(), // Istanbul day it was prepared for
     kind: suggestionKind("kind").notNull(),
     reason: text("reason").notNull(), // why this customer today, in one sentence
+    analysis: text("analysis").array().notNull().default(sql`'{}'::text[]`), // the same, as 3-5 points
+    steps: jsonb("steps").$type<SuggestionStep[]>().notNull().default([]), // the to-do list
     talkingPoints: text("talking_points").array().notNull().default(sql`'{}'::text[]`), // what to ask on the call
     subject: text("subject"),
     body: text("body"),
@@ -593,6 +597,7 @@ export const assistantSuggestion = pgTable(
     error: text("error"),
     model: text("model"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    refreshedAt: timestamp("refreshed_at", { withTimezone: true }), // rewritten with invoices uploaded after createdAt
     decidedAt: timestamp("decided_at", { withTimezone: true }),
     decidedBy: text("decided_by").references(() => user.id),
   },

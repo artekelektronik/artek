@@ -11,6 +11,7 @@ import { istanbulDate } from "./time";
 // an email draft for each. It only writes suggestions; a person approves every email on the Bugün screen.
 
 export const assistantModel = "claude-opus-5-5";
+export const redraftModel = "claude-haiku-5-5"; // rewrites a draft after new invoices, without searching the web again
 export const dailyLimit = 10;
 const autoPickLimit = 5; // customers it suggests on its own, besides the follow-ups people scheduled
 const autoPickCooldownDays = 30;
@@ -79,6 +80,8 @@ export async function pickCustomers(today: string): Promise<Pick[]> {
 
 const draftSchema = z.object({
   reason: z.string(),
+  analysis: z.array(z.string()).default([]),
+  steps: z.array(z.string()).default([]),
   findings: z.array(z.object({ title: z.string(), url: z.string(), summary: z.string() })),
   talking_points: z.array(z.string()),
   email_subject: z.string(),
@@ -89,9 +92,11 @@ export type Draft = z.infer<typeof draftSchema>;
 const outputSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["reason", "findings", "talking_points", "email_subject", "email_body"],
+  required: ["reason", "analysis", "steps", "findings", "talking_points", "email_subject", "email_body"],
   properties: {
     reason: { type: "string" },
+    analysis: { type: "array", items: { type: "string" } },
+    steps: { type: "array", items: { type: "string" } },
     findings: {
       type: "array",
       items: {
@@ -122,13 +127,15 @@ Kurallar:
 - Türkçe, "siz" diliyle, samimi ama resmi. Emoji yok.
 
 Çıktı alanları:
-- reason: Bugün neden bu müşteri, tek cümle. Bizim içindir.
+- reason: Bugün neden bu müşteri, tek kısa cümle; listede başlığın altında görünür. Bizim içindir.
+- analysis: Aynı sorunun ayrıntısı, 3-5 madde; her madde tek kısa cümle. Bizim kayıtlarımızdan (ne aldı, ne zaman, ne sıklıkla, notlar) ve bulgulardan somut bilgiler ver. Bizim içindir.
+- steps: Bu temas için yapılacaklar, 3-6 madde; her biri fiille başlayan kısa bir iş (ör. "Yeni seriyi e-postada an", "Numune isteyip istemediğini sor"). Göndermeyi veya aramayı ayrıca yazma, onun düğmesi var.
 - findings: Okuduğun kaynaklar: başlık, adres, bir cümlelik özet.
 - talking_points: Aramada sorulacak 2-4 kısa soru veya konu. E-posta için de 1-2 madde yaz.
 - email_subject ve email_body: Temas şekli e-posta ise doldur, arama ise boş bırak. Gövde en fazla 120 kelime; selamlama ile başlasın, imza ve iletişim bilgisi yazma (biz ekliyoruz). Varsa bulduğun güncel bir gelişmeye kısaca değin, bir somut soru veya öneriyle bitir.`;
 
-function contextFor(facts: Record<string, unknown>, kind: "arama" | "eposta") {
-  return JSON.stringify({ temas_sekli: kind === "eposta" ? "e-posta" : "telefon", musteri: facts }, null, 2);
+function contextFor(facts: Record<string, unknown>, kind: "arama" | "eposta", extra: Record<string, unknown> = {}) {
+  return JSON.stringify({ temas_sekli: kind === "eposta" ? "e-posta" : "telefon", musteri: facts, ...extra }, null, 2);
 }
 
 // One customer: Claude with web search and fetch, structured output. Returns the draft or throws with a reason.
@@ -163,8 +170,35 @@ export async function draftFor(client: Anthropic, facts: Record<string, unknown>
   throw new Error("Araştırma çok uzun sürdü; yarın tekrar denenecek.");
 }
 
+const redraftSchema = {
+  ...outputSchema,
+  required: outputSchema.required.filter((k) => k !== "findings"),
+  properties: Object.fromEntries(Object.entries(outputSchema.properties).filter(([k]) => k !== "findings")),
+};
+const redraftSystem = `${system}
+
+Bu sefer internete bakma. Sabah bulunanlar "onceki_bulgular" içinde; onlara güvenebilirsin ama yenisini ekleme. O zamandan beri bizim kayıtlarımıza yeni fatura eklendi, yani "musteri" içindeki bilgiler daha güncel. Hazırlığı bu güncel kayıtlara göre baştan yaz; eski bilgiye dayanan cümleleri tekrar etme.`;
+
+// After new invoices: a cheaper model rewrites the draft from fresh records and the morning's findings, no web search.
+export async function redraftFor(client: Anthropic, facts: Record<string, unknown>, kind: "arama" | "eposta", findings: Draft["findings"]) {
+  const response = await client.beta.messages.create({
+    model: redraftModel,
+    max_tokens: 4000,
+    system: redraftSystem,
+    output_config: { format: { type: "json_schema", schema: redraftSchema } },
+    messages: [{ role: "user", content: contextFor(facts, kind, { onceki_bulgular: findings }) }],
+  });
+  if (response.stop_reason === "refusal") throw new Error("Model bu müşteri için öneri hazırlamayı reddetti.");
+  if (response.stop_reason === "max_tokens") throw new Error("Cevap yarıda kesildi.");
+  const text = response.content.filter((b) => b.type === "text").at(-1);
+  if (!text || text.type !== "text") throw new Error("Modelden metin gelmedi.");
+  const parsed = draftSchema.omit({ findings: true }).safeParse(JSON.parse(text.text));
+  if (!parsed.success) throw new Error("Modelin cevabı beklenen biçimde değil.");
+  return { draft: parsed.data, model: response.model };
+}
+
 // The facts we share with the model: our own records only, no tax id.
-async function factsFor(customerId: string, summary: Awaited<ReturnType<typeof loadSalesSummary>>) {
+export async function factsFor(customerId: string, summary: Awaited<ReturnType<typeof loadSalesSummary>>) {
   const s = summary.byCustomer.get(customerId);
   const [c] = await db.select().from(customer).where(eq(customer.id, customerId));
   const notes = await db
@@ -218,6 +252,8 @@ export async function prepareDay(now = new Date(), client = new Anthropic()) {
               ...base,
               model,
               reason: `${p.why === "takip" ? "Takip günü geldi. " : ""}${draft.reason}`,
+              analysis: draft.analysis,
+              steps: draft.steps.map((text) => ({ text, doneAt: null, doneBy: null })),
               talkingPoints: draft.talking_points,
               subject: p.kind === "eposta" ? draft.email_subject : null,
               body: p.kind === "eposta" ? draft.email_body : null,

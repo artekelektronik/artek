@@ -7,10 +7,11 @@ import { PanelShell } from "@/components/panel";
 import { db } from "@/db";
 import { assistantSuggestion, customer } from "@/db/schema";
 import { openSuggestion } from "@/lib/assistant";
+import { loadSalesSummary } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { listReasons } from "@/lib/reasons";
-import { emailSignature, resultsDue } from "@/lib/suggestions";
+import { emailSignature, newerInvoices, resultsDue } from "@/lib/suggestions";
 import { istanbulDate, istanbulTimeOn } from "@/lib/time";
 import { PrepareButton, type SuggestionView } from "./suggestion-cards";
 import { TodayBoard, type BoardSection, type Entry } from "./today-board";
@@ -46,7 +47,6 @@ export default async function TodayPage() {
       ),
     )
     .orderBy(asc(assistantSuggestion.forDay), asc(assistantSuggestion.createdAt));
-  const items: SuggestionView[] = rows.map(({ s, c }) => ({ ...s, customer: c }));
   const allReasons = await listReasons({ archived: true });
   const reasons = allReasons.filter((r) => !r.archivedAt);
   const reasonLabel = new Map(allReasons.map((r) => [r.id, r.label]));
@@ -55,7 +55,18 @@ export default async function TodayPage() {
   // Same rule as openSuggestion, for the rows already loaded.
   const isOpen = (s: { status: string; askAgainOn: string | null }) =>
     s.status === "bekliyor" || s.status === "basarisiz" || (s.status === "onay_bekliyor" && (s.askAgainOn ?? "") <= today);
-  const open = items.filter(isOpen);
+  // Our records and newer invoices are read now, so they are current even when the assistant's text isn't.
+  const openRows = rows.filter((r) => isOpen(r.s));
+  const [summary, newer] = openRows.length ? await Promise.all([loadSalesSummary(), newerInvoices(openRows.map((r) => r.s))]) : [null, new Map()];
+  const open: SuggestionView[] = openRows.map(({ s, c }) => {
+    const r = summary?.byCustomer.get(c.id);
+    return {
+      ...s,
+      customer: c,
+      records: r ? { firstOn: r.firstOn, lastOn: r.lastOn, invoices: r.invoices, orderDays: r.orderDays, groups: r.groups, topProduct: r.topProduct } : null,
+      newInvoice: newer.get(s.id) ?? null,
+    };
+  });
   const earlier = open.filter((s) => s.forDay < today);
   const todays = open.filter((s) => s.forDay === today);
   const calls = todays.filter((s) => s.status === "bekliyor" && s.kind === "arama");
