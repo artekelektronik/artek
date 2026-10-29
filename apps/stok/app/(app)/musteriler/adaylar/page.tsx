@@ -30,6 +30,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     status: l.status,
     seenCount: l.seenCount,
     lastSeenAt: l.lastSeenAt.toISOString(),
+    archivedAt: l.archivedAt?.toISOString() ?? null,
+    archiveReason: l.archiveReason,
     customer: l.customerId ? { id: l.customerId, name: names.get(l.customerId) ?? "" } : null,
     // Unlinked ones that look like one of our Müşteriler: a person confirms.
     candidate: l.customerId ? null : likelyCustomer(l.name, customers),

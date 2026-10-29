@@ -76,6 +76,10 @@ Contact routes researched outside the repo (`iletisim.json`) are loaded from Mü
 
 `/musteriler/gecmis` lists what happened to Faturalar, Müşteriler and Adaylar, newest first (`lib/activity.ts`, table `activity_log`): an invoice uploaded, a Müşteri added by its first invoice, edited by hand or from a note or a newer invoice, linked to another firm, and an Aday added, updated or turned into a Müşteri. Each row says who did it, or "Rutin" / "Fatura" when no person did, and links to the record. Field-level details stay in the Müşteri's change history. Invoice rows are shown only to people who may see Faturalar.
 
+## Arşiv
+
+Nothing is deleted by hand; it is archived with a reason (`lib/archive.ts`). An archived invoice leaves every total, list and check but still counts in the invoice-number sequence, and uploading it again restores it. An archived Müşteri leaves Müşteriler, Bugün and follow-ups (its open suggestions close), keeps its invoices in Finans, and comes back when a new invoice arrives for its VKN. An archived Aday leaves Adaylar; a routine naming it again only marks it seen. Each list has an archive view with "Geri al", and every archive and restore goes into İşlem geçmişi.
+
 ## Bugün: the morning assistant
 
 Every morning at 08:00 Istanbul (`/api/cron/asistan`), `lib/assistant.ts` picks up to 10 customers:

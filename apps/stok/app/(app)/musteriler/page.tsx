@@ -8,6 +8,7 @@ import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { istanbulDate } from "@/lib/time";
 import { ContactImportButton } from "./contact-import-button";
+import { ArchivedCustomers } from "./archived-customers";
 import { CrmBoard, type CrmRow } from "./crm-board";
 
 export const metadata = { title: "Müşteriler | Artek Müşteri Paneli" };
@@ -21,7 +22,8 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const [s, { secili }, oldNames] = await Promise.all([financeSummary(requestHeaders, "crm.view"), searchParams, formerNames()]);
   const byId = new Map(s.customerRows.map((c) => [c.id, c]));
 
-  const rows: CrmRow[] = s.customers.map((stats) => {
+  const archived = s.customerRows.filter((c) => c.archivedAt);
+  const rows: CrmRow[] = s.customers.filter((stats) => !byId.get(stats.customerId)?.archivedAt).map((stats) => {
     const c = byId.get(stats.customerId)!;
     return {
       id: c.id,
@@ -63,6 +65,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           canEdit={can(actor, "crm.edit")}
           today={istanbulDate(new Date())}
           initialSelected={secili && byId.has(secili) ? secili : undefined}
+        />
+      )}
+      {archived.length > 0 && (
+        <ArchivedCustomers
+          rows={archived.map((c) => ({ id: c.id, name: c.name, reason: c.archiveReason, at: c.archivedAt!.toISOString() }))}
+          canEdit={can(actor, "crm.edit")}
         />
       )}
       <p className="text-muted-foreground text-xs">

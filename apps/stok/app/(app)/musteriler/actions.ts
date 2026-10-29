@@ -7,6 +7,7 @@ import { importContactsFile } from "@/lib/contact-import";
 import { addCustomerNote, customerHistory, updateCustomer } from "@/lib/crm";
 import { applyNoteProposal, rejectNoteProposal } from "@/lib/customer-changes";
 import { addLink, removeLink } from "@/lib/firm-links";
+import { archiveCustomer, restoreCustomer } from "@/lib/archive";
 import type { CustomerStatus, FollowUpChannel } from "@/lib/finance-calc";
 import { text } from "@/lib/form-data";
 import { setEmailOptOut } from "@/lib/suggestions";
@@ -87,6 +88,19 @@ export async function addLinkAction(_previous: ActionState, formData: FormData):
 
 export async function removeLinkAction(id: string): Promise<ActionState> {
   const state = await runAction(async () => removeLink(await headers(), id));
+  revalidatePath("/musteriler");
+  return state;
+}
+
+export async function archiveCustomerAction(id: string, reason: string): Promise<ActionState> {
+  const state = await runAction(async () => archiveCustomer(await headers(), { id, reason }));
+  revalidatePath("/musteriler");
+  revalidatePath("/musteriler/bugun");
+  return state;
+}
+
+export async function restoreCustomerAction(id: string): Promise<ActionState> {
+  const state = await runAction(async () => restoreCustomer(await headers(), id));
   revalidatePath("/musteriler");
   return state;
 }

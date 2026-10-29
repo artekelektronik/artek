@@ -155,6 +155,13 @@
       "when": 1793290409169,
       "tag": "0021_islem-gecmisi",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793292559956,
+      "tag": "0022_arsiv",
+      "breakpoints": true
     }
   ]
 }

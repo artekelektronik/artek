@@ -6,8 +6,10 @@ import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { cn } from "@artek/ui/lib/utils";
 import { DatePicker } from "@/components/date-picker";
+import { ArchiveControl } from "@/components/archive-control";
 import { FormSelect } from "@/components/form-select";
 import { day, tl } from "@/lib/finance-calc";
+import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
 import { filterInvoices, invoiceDatePresets, invoiceRange, invoiceTotals, type InvoiceDatePreset, type InvoiceFilter } from "@/lib/list-filters";
 
 export type InvoiceRow = {
@@ -19,6 +21,8 @@ export type InvoiceRow = {
   netAmount: string;
   customerId: string;
   customer: string;
+  archivedAt: string | null;
+  archiveReason: string | null;
 };
 
 type SortKey = "issuedOn" | "number" | "customer" | "netAmount";
@@ -28,7 +32,10 @@ const typeOptions = [
   { value: "iade", label: "Sadece iade" },
 ];
 
-export function InvoiceTable({ rows, today, linkCustomers }: { rows: InvoiceRow[]; today: string; linkCustomers: boolean }) {
+export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { rows: InvoiceRow[]; today: string; linkCustomers: boolean; canEdit: boolean }) {
+  const [showArchived, setShowArchived] = useState(false);
+  const archivedCount = all.filter((r) => r.archivedAt).length;
+  const rows = useMemo(() => all.filter((r) => Boolean(r.archivedAt) === showArchived), [all, showArchived]);
   const [preset, setPreset] = useState<InvoiceDatePreset>("tumu");
   const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
   const [q, setQ] = useState("");
@@ -92,6 +99,11 @@ export function InvoiceTable({ rows, today, linkCustomers }: { rows: InvoiceRow[
           aria-label="Tür"
           className="w-40"
         />
+        {(archivedCount > 0 || showArchived) && (
+          <button type="button" className="text-muted-foreground text-xs underline-offset-4 hover:underline" onClick={() => setShowArchived((v) => !v)}>
+            {showArchived ? "Faturalara dön" : `Arşivdekiler (${archivedCount})`}
+          </button>
+        )}
       </div>
       <p className="text-muted-foreground text-xs tabular-nums">
         <b className="text-foreground font-medium">{visible.length.toLocaleString("tr-TR")}</b> fatura · satış <b className="text-foreground font-medium">{tl(totals.sales)}</b>
@@ -102,7 +114,7 @@ export function InvoiceTable({ rows, today, linkCustomers }: { rows: InvoiceRow[
       <div className="max-h-[36rem] overflow-auto">
         {visible.length === 0 ? (
           <p className="text-muted-foreground py-6 text-center text-sm">
-            {rows.length === 0 ? "Henüz fatura yok. Yukarıdan ilk faturaları yükleyin." : "Bu seçime uyan fatura yok."}
+            {showArchived ? "Arşivde fatura yok." : all.length === 0 ? "Henüz fatura yok. Yukarıdan ilk faturaları yükleyin." : "Bu seçime uyan fatura yok."}
           </p>
         ) : (
           <Table>
@@ -113,6 +125,7 @@ export function InvoiceTable({ rows, today, linkCustomers }: { rows: InvoiceRow[
                 {header("customer", "Müşteri")}
                 <TableHead>Tür</TableHead>
                 {header("netAmount", "Tutar", true)}
+                {canEdit && <TableHead className="w-0" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -131,6 +144,17 @@ export function InvoiceTable({ rows, today, linkCustomers }: { rows: InvoiceRow[
                   </TableCell>
                   <TableCell>{r.type === "IADE" ? "İade" : r.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura"}</TableCell>
                   <TableCell className="text-right tabular-nums">{tl(Number(r.netAmount))}</TableCell>
+                  {canEdit && (
+                    <TableCell className="text-right whitespace-nowrap">
+                      {r.archiveReason && <span className="text-muted-foreground mr-2 text-xs">{r.archiveReason}</span>}
+                      <ArchiveControl
+                        compact
+                        archived={Boolean(r.archivedAt)}
+                        onArchive={(reason) => archiveInvoiceAction(r.id, reason)}
+                        onRestore={() => restoreInvoiceAction(r.id)}
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

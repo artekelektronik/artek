@@ -457,6 +457,9 @@ export const customer = pgTable("customer", {
   // Asked not to get emails ("istemiyorum"); the assistant never drafts one for them again.
   emailOptOutAt: timestamp("email_opt_out_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
+    archivedBy: text("archived_by").references(() => user.id),
+    archiveReason: text("archive_reason"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -559,6 +562,9 @@ export const invoice = pgTable(
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => user.id),
+    archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
+    archivedBy: text("archived_by").references(() => user.id),
+    archiveReason: text("archive_reason"),
     uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("invoice_issued_idx").on(t.issuedOn), index("invoice_customer_idx").on(t.customerId)],
@@ -685,6 +691,9 @@ export const lead = pgTable("lead", {
   customerId: uuid("customer_id").references(() => customer.id),
   seenCount: integer("seen_count").notNull().default(1),
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
+    archivedBy: text("archived_by").references(() => user.id),
+    archiveReason: text("archive_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
