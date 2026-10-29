@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
 import { archiveLead, restoreLead } from "@/lib/archive";
-import { importLeadsFile, leadEvents, linkLeadToCustomer, updateLead } from "@/lib/leads";
+import { addLead, importLeadsFile, leadEvents, linkLeadToCustomer, updateLead } from "@/lib/leads";
 
 export async function leadEventsAction(id: string) {
   return (await leadEvents(await headers(), id)).map((e) => ({ ...e, createdAt: e.createdAt.toISOString() }));
@@ -44,4 +44,22 @@ export async function restoreLeadAction(id: string): Promise<ActionState> {
   const state = await runAction(async () => restoreLead(await headers(), id));
   revalidatePath("/musteriler/adaylar");
   return state;
+}
+
+export async function addLeadAction(_previous: unknown, formData: FormData): Promise<ActionState & { id?: string }> {
+  let id: string | undefined;
+  const state = await runAction(async () => {
+    id = await addLead(await headers(), {
+      name: text(formData, "name"),
+      website: text(formData, "website"),
+      city: text(formData, "city"),
+      sector: text(formData, "sector"),
+      why: text(formData, "why"),
+      phone: text(formData, "phone"),
+      email: text(formData, "email"),
+      taxId: text(formData, "taxId"),
+    });
+  });
+  revalidatePath("/musteriler/adaylar");
+  return { ...state, id };
 }

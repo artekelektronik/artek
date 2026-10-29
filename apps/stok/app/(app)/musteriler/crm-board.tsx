@@ -238,7 +238,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
                     </td>
                     <td className="text-muted-foreground px-3 py-2 whitespace-nowrap">{r.city}</td>
                     <td className="px-3 py-2 text-right whitespace-nowrap">{tl(r.sales)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">{day(r.lastOn)}</td>
+                    <td className="px-3 py-2 whitespace-nowrap">{r.lastOn ? day(r.lastOn) : "—"}</td>
                     <td className={cn("px-3 py-2 whitespace-nowrap", due(r) && "text-destructive font-medium")}>
                       {r.nextFollowUpOn ? `${day(r.nextFollowUpOn)} · ${followUpChannelLabels[r.followUpChannel]}` : ""}
                     </td>

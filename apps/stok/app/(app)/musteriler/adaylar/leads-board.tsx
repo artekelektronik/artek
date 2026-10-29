@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { Upload } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
+import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
 import { Button } from "@artek/ui/components/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@artek/ui/components/sheet";
 import { Textarea } from "@artek/ui/components/textarea";
@@ -13,7 +15,7 @@ import { FormStatus } from "@/components/form-status";
 import type { LeadContact, LeadSource } from "@/db/schema";
 import { leadStatusLabels } from "@/lib/lead-status";
 import { ArchiveControl } from "@/components/archive-control";
-import { archiveLeadAction, importLeadsAction, leadEventsAction, linkLeadAction, restoreLeadAction, updateLeadAction } from "./actions";
+import { addLeadAction, archiveLeadAction, importLeadsAction, leadEventsAction, linkLeadAction, restoreLeadAction, updateLeadAction } from "./actions";
 
 type Status = keyof typeof leadStatusLabels;
 export type LeadRow = {
@@ -50,10 +52,8 @@ export function LeadsBoard({ rows, canEdit, initialOpen }: { rows: LeadRow[]; ca
   const archivedCount = rows.length - live.length;
   const counts = Object.fromEntries((Object.keys(leadStatusLabels) as Status[]).map((s) => [s, live.filter((r) => r.status === s).length]));
   const shown = filter === "arsiv" ? rows.filter((r) => r.archivedAt) : live.filter((r) => !filter || r.status === filter);
-
-  return (
-    <div className="flex flex-col gap-4">
-      {canEdit && <ImportButton />}
+  const list = (
+    <>
       {rows.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
           Henüz aday yok. Satış rutinleri bir sonraki raporlarında buldukları firmaları buraya ekleyecek.
@@ -99,6 +99,12 @@ export function LeadsBoard({ rows, canEdit, initialOpen }: { rows: LeadRow[]; ca
           </ul>
         </>
       )}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      {canEdit ? <ImportArea>{list}</ImportArea> : list}
       <Sheet open={Boolean(openId)} onOpenChange={(open) => !open && setOpenId(undefined)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           {openId && rows.find((r) => r.id === openId) && <LeadPanel key={openId} r={rows.find((r) => r.id === openId)!} canEdit={canEdit} />}
@@ -284,10 +290,12 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
 }
 
 // Loads a report's Adaylar from a JSON file, the same shape the routines send to /api/adaylar.
-function ImportButton() {
+// The routines' JSON from Drive "Adaylar (yüklenecek)": chosen with the button or dropped anywhere on the board.
+function ImportArea({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   async function load(file: File) {
@@ -308,7 +316,25 @@ function ImportButton() {
   }
 
   return (
+    <div
+      className={cn("relative flex flex-col gap-4 rounded-xl", dragging && "ring-primary ring-2 ring-offset-4")}
+      onDragOver={(e) => {
+        if (!e.dataTransfer.types.includes("Files")) return;
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file) load(file);
+      }}
+    >
     <div className="flex flex-wrap items-center gap-2">
+      <NewLead />
       <input
         ref={input}
         type="file"
@@ -325,6 +351,64 @@ function ImportButton() {
         {busy ? "Yükleniyor…" : "Adayları yükle"}
       </Button>
       {message && <span className={message.error ? "text-destructive text-xs" : "text-muted-foreground text-xs"}>{message.text}</span>}
+      {!message && <span className="text-muted-foreground text-xs">Drive&apos;daki dosyayı buraya sürükleyip bırakabilirsin.</span>}
     </div>
+    {children}
+    {dragging && (
+      <div className="bg-background/80 pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl text-sm font-medium">
+        Bırak, adaylar eklensin
+      </div>
+    )}
+    </div>
+  );
+}
+
+// "Yeni aday": a firm found by hand; repeats and existing Müşteriler are refused with their name.
+function NewLead() {
+  const [open, setOpen] = useState(false);
+  const [state, action, pending] = useActionState(addLeadAction, undefined);
+  if (!open)
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Plus /> Yeni aday
+      </Button>
+    );
+  const field = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
+    <Label className="flex-col items-stretch gap-1 text-xs font-normal">
+      {label}
+      <Input name={name} {...props} />
+    </Label>
+  );
+  return (
+    <form action={action} className="bg-card flex w-full flex-col gap-3 rounded-xl border p-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {field("name", "Firma adı", { required: true })}
+        {field("website", "Web sitesi", { placeholder: "ornek.com.tr" })}
+        {field("city", "Şehir")}
+        {field("sector", "Sektör", { placeholder: "Ör. UPS / redresör" })}
+        {field("phone", "Telefon (santral)")}
+        {field("email", "Genel e-posta", { type: "email" })}
+        {field("taxId", "Vergi numarası (biliyorsan)", { inputMode: "numeric" })}
+      </div>
+      <Label className="flex-col items-stretch gap-1 text-xs font-normal">
+        Neden ilginç?
+        <Textarea name="why" rows={2} placeholder="Ör. yeni fabrika açtı, güç kaynağı üretiyor" />
+      </Label>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="submit" disabled={pending}>
+          Adayı ekle
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+          Kapat
+        </Button>
+        {state?.saved && state.id ? (
+          <a href={`/musteriler/adaylar?secili=${state.id}`} className="text-sm underline underline-offset-4">
+            Eklendi, kartı aç
+          </a>
+        ) : (
+          <FormStatus state={state} />
+        )}
+      </div>
+    </form>
   );
 }

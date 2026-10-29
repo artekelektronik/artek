@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { importContactsFile } from "@/lib/contact-import";
-import { addCustomerNote, customerHistory, updateCustomer } from "@/lib/crm";
+import { addCustomer, addCustomerNote, customerHistory, updateCustomer } from "@/lib/crm";
+import { addLead } from "@/lib/leads";
 import { applyNoteProposal, rejectNoteProposal } from "@/lib/customer-changes";
 import { addLink, removeLink } from "@/lib/firm-links";
 import { archiveCustomer, restoreCustomer } from "@/lib/archive";
@@ -103,4 +104,16 @@ export async function restoreCustomerAction(id: string): Promise<ActionState> {
   const state = await runAction(async () => restoreCustomer(await headers(), id));
   revalidatePath("/musteriler");
   return state;
+}
+
+// "Yeni müşteri": with a VKN it becomes a Müşteri; "Aday olarak kaydet" sends the same fields to Adaylar.
+export async function addCustomerAction(_previous: unknown, formData: FormData): Promise<ActionState & { id?: string; as?: "musteri" | "aday" }> {
+  let id: string | undefined;
+  const asLead = text(formData, "as") === "aday";
+  const fields = { name: text(formData, "name"), city: text(formData, "city"), phone: text(formData, "phone"), email: text(formData, "email"), website: text(formData, "website") };
+  const state = await runAction(async () => {
+    id = asLead ? await addLead(await headers(), fields) : await addCustomer(await headers(), { ...fields, taxId: text(formData, "taxId") });
+  });
+  revalidatePath(asLead ? "/musteriler/adaylar" : "/musteriler");
+  return { ...state, id, as: asLead ? "aday" : "musteri" };
 }
