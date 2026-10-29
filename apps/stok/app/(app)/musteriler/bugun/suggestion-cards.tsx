@@ -46,9 +46,9 @@ export type SuggestionView = {
 function Findings({ items }: { items: SuggestionView["findings"] }) {
   if (!items.length) return <p className="text-muted-foreground text-xs">İnternette yeni bir şey bulunamadı; geçmişimize göre hazırlandı.</p>;
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="flex flex-col gap-1.5">
       {items.map((f) => (
-        <li key={f.url} className="text-xs">
+        <li key={f.url} className="text-sm">
           <a href={f.url} target="_blank" rel="noopener noreferrer" className="font-medium underline underline-offset-4">
             {f.title}
           </a>
@@ -160,7 +160,7 @@ function Head({ s, today }: { s: SuggestionView; today: string }) {
           <span className="text-muted-foreground text-xs">{s.customer.city}</span>
         </span>
       </div>
-      <p className="text-muted-foreground text-sm">{s.reason}</p>
+      <p className="text-sm leading-relaxed">{s.reason}</p>
     </div>
   );
 }

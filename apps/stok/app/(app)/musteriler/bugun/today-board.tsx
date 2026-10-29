@@ -25,7 +25,7 @@ export type Entry =
   | { key: string; type: "proposal"; p: ProposalView };
 export type BoardSection = { title: string; entries: Entry[] };
 
-// Every open item as one short row on the left; the picked one opens in full on the right (on a phone, in place of the list).
+// Every open item as one short row on the left; the picked one opens in full on the right (on narrower screens, in place of the list).
 export function TodayBoard({
   sections,
   today,
@@ -47,8 +47,8 @@ export function TodayBoard({
   if (!current) return null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start">
-      <nav aria-label="Bugünün işleri" className={cn("flex flex-col gap-4", detailOnPhone && "hidden lg:flex")}>
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:items-start">
+      <nav aria-label="Bugünün işleri" className={cn("flex flex-col gap-4", detailOnPhone && "hidden xl:flex")}>
         {sections
           .filter((sec) => sec.entries.length > 0)
           .map((sec) => (
@@ -68,7 +68,7 @@ export function TodayBoard({
                       }}
                       className={cn(
                         "hover:bg-muted/60 flex w-full items-center gap-3 px-3 py-2.5 text-left",
-                        e.key === current.key && "bg-muted lg:shadow-[inset_3px_0_0_var(--color-primary)]",
+                        e.key === current.key && "bg-muted xl:shadow-[inset_3px_0_0_var(--color-primary)]",
                       )}
                     >
                       <Row e={e} today={today} />
@@ -80,8 +80,8 @@ export function TodayBoard({
           ))}
       </nav>
 
-      <div className={cn("flex flex-col gap-2 lg:sticky lg:top-4", !detailOnPhone && "hidden lg:flex")}>
-        <Button type="button" variant="ghost" size="sm" className="self-start lg:hidden" onClick={() => setDetailOnPhone(false)}>
+      <div className={cn("flex flex-col gap-2", !detailOnPhone && "hidden xl:flex")}>
+        <Button type="button" variant="ghost" size="sm" className="self-start xl:hidden" onClick={() => setDetailOnPhone(false)}>
           <ChevronLeft /> Listeye dön
         </Button>
         <div key={current.key}>
