@@ -365,7 +365,7 @@ export type ResultView = {
 };
 
 const answers = (Object.keys(outcomeLabels) as Outcome[]).filter((o) => o !== "girilmedi");
-const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+export const dayText = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
 
 // A few working days after an email or call: what came of it. It doesn't hold up new suggestions.
 export function ResultCard({ r }: { r: ResultView }) {
