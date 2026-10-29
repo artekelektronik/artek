@@ -106,6 +106,13 @@
       "when": 1793266521040,
       "tag": "0014_bugun-kalan-oneriler",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793267726116,
+      "tag": "0015_sebep-listesi",
+      "breakpoints": true
     }
   ]
 }

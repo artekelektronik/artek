@@ -1,17 +1,18 @@
 import { headers } from "next/headers";
 import { connection } from "next/server";
-import { and, asc, eq, gte, inArray, or } from "drizzle-orm";
+import Link from "next/link";
+import { and, asc, eq, gte, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { NoAccess } from "@/components/no-access";
 import { PanelShell } from "@/components/panel";
 import { db } from "@/db";
 import { assistantSuggestion, customer } from "@/db/schema";
 import { openSuggestion } from "@/lib/assistant";
-import { closeReasons, type CloseReason } from "@/lib/close-reasons";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { listReasons } from "@/lib/reasons";
 import { emailSignature } from "@/lib/suggestions";
 import { istanbulDate, istanbulTimeOn } from "@/lib/time";
-import { ApprovalCard, CallCard, EmailCard, FailedCard, PrepareButton, type SuggestionView } from "./suggestion-cards";
+import { ApprovalCard, CallCard, EmailCard, FailedCard, PrepareButton, ProposalCard, type SuggestionView } from "./suggestion-cards";
 
 export const metadata = { title: "Bugün | Artek Müşteri Paneli" };
 
@@ -40,10 +41,15 @@ export default async function TodayPage() {
         openSuggestion(today),
         eq(assistantSuggestion.status, "onay_bekliyor"),
         and(inArray(assistantSuggestion.status, closedStatuses), gte(assistantSuggestion.decidedAt, istanbulTimeOn(today))),
+        and(isNotNull(assistantSuggestion.proposal), isNull(assistantSuggestion.proposalDecidedAt)),
       ),
     )
     .orderBy(asc(assistantSuggestion.forDay), asc(assistantSuggestion.createdAt));
   const items: SuggestionView[] = rows.map(({ s, c }) => ({ ...s, customer: c }));
+  const allReasons = await listReasons({ archived: true });
+  const reasons = allReasons.filter((r) => !r.archivedAt);
+  const reasonLabel = new Map(allReasons.map((r) => [r.id, r.label]));
+  const proposals = rows.filter((r) => r.s.proposal && !r.s.proposalDecidedAt);
   // Same rule as openSuggestion, for the rows already loaded.
   const isOpen = (s: { status: string; askAgainOn: string | null }) =>
     s.status === "bekliyor" || s.status === "basarisiz" || (s.status === "onay_bekliyor" && (s.askAgainOn ?? "") <= today);
@@ -59,9 +65,13 @@ export default async function TodayPage() {
 
   const card = (s: SuggestionView) => {
     if (!canEdit) return <ReadOnly key={s.id} s={s} />;
-    if (s.status === "onay_bekliyor") return <ApprovalCard key={s.id} s={s} today={today} />;
-    if (s.status === "basarisiz") return <FailedCard key={s.id} s={s} today={today} />;
-    return s.kind === "arama" ? <CallCard key={s.id} s={s} today={today} /> : <EmailCard key={s.id} s={s} signature={emailSignature} today={today} />;
+    if (s.status === "onay_bekliyor") return <ApprovalCard key={s.id} s={s} today={today} reasons={reasons} />;
+    if (s.status === "basarisiz") return <FailedCard key={s.id} s={s} today={today} reasons={reasons} />;
+    return s.kind === "arama" ? (
+      <CallCard key={s.id} s={s} today={today} reasons={reasons} />
+    ) : (
+      <EmailCard key={s.id} s={s} signature={emailSignature} today={today} reasons={reasons} />
+    );
   };
 
   return (
@@ -82,7 +92,25 @@ export default async function TodayPage() {
         </p>
       )}
 
-      {canEdit && <PrepareButton />}
+      {canEdit && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <PrepareButton />
+          <Link href="/musteriler/sebepler" className="text-muted-foreground text-xs underline-offset-4 hover:underline">
+            Kapatma sebeplerini düzenle
+          </Link>
+        </div>
+      )}
+
+      {canEdit && proposals.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-base font-medium">Notlardan çıkan öneriler</h2>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {proposals.map(({ s, c }) => (
+              <ProposalCard key={s.id} p={{ id: s.id, customer: c, closeNote: s.closeNote, proposal: s.proposal! }} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {open.length === 0 && (
         <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">
@@ -140,7 +168,7 @@ export default async function TodayPage() {
                 {c.name} ·{" "}
                 <span className="text-muted-foreground">
                   {doneText[s.status as keyof typeof doneText]}
-                  {s.closeReason && `: ${closeReasons[s.closeReason as CloseReason]?.label ?? s.closeReason}`}
+                  {s.closeReason && `: ${reasonLabel.get(s.closeReason) ?? s.closeReason}`}
                 </span>
               </li>
             ))}

@@ -265,6 +265,82 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
       assert.equal(sent.doneOn, day0);
       assert.equal(await openSuggestionCount(day3), back - 1);
     });
+
+    describe("close reasons", () => {
+      const noteClient = (reply: object) =>
+        ({
+          beta: { messages: { create: async () => ({ stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(reply) }] }) } },
+        }) as unknown as Anthropic;
+      async function openOne() {
+        const { prepareDay } = await import("./assistant");
+        await prepareDay(at(day0), fakeClient());
+        return (await suggestionsOf("3333333333"))[0];
+      }
+
+      test("a new reason with 'tekrar öner' brings the customer back that many days later", async () => {
+        const { saveReason, listReasons } = await import("./reasons");
+        const { closeUndone } = await import("./suggestions");
+        const { pickCustomers } = await import("./assistant");
+        const { Forbidden } = await import("./guard");
+        const viewer = await adminWith("gorur");
+        await assert.rejects(saveReason(viewer.headers, { id: "", label: "Tatilde", effect: "tekrar", days: "14" }), Forbidden);
+        await assert.rejects(saveReason(editor.headers, { id: "", label: "Tatilde", effect: "tekrar", days: "0" }), /1 ile 365/);
+        await saveReason(editor.headers, { id: "", label: "Tatilde", effect: "tekrar", days: "14" });
+        const tatil = (await listReasons()).at(-1)!;
+        assert.equal(tatil.label, "Tatilde");
+
+        const s = await openOne();
+        await closeUndone(editor.headers, { id: s.id, reason: tatil.id });
+        assert.equal((await customerNamed("3333333333")).nextFollowUpOn, addDays(day0, 14));
+        assert.equal((await pickCustomers(addDays(day0, 14))).find((p) => p.customerId === s.customerId)?.why, "takip");
+      });
+
+      test("a removed reason is no longer offered, and suggestions closed with it keep it", async () => {
+        const { archiveReason, listReasons, moveReason } = await import("./reasons");
+        const { closeUndone } = await import("./suggestions");
+        const s = await openOne();
+        await closeUndone(editor.headers, { id: s.id, reason: "rakip" });
+        await archiveReason(editor.headers, "rakip");
+        assert.ok(!(await listReasons()).some((r) => r.id === "rakip"));
+        assert.ok((await listReasons({ archived: true })).some((r) => r.id === "rakip"));
+        assert.equal((await suggestionsOf("3333333333"))[0].closeReason, "rakip");
+
+        await moveReason(editor.headers, "kapandi", "up");
+        assert.deepEqual((await listReasons()).slice(0, 2).map((r) => r.id), ["kapandi", "ulasilamadi"]);
+      });
+
+      test("a free note is read into a proposal, which changes nothing until someone applies it", async () => {
+        const { closeUndone } = await import("./suggestions");
+        const { acceptProposal, rejectProposal } = await import("./reasons");
+        const s = await openOne();
+        const reply = { effect: "kapandi", days: null, new_name: "FFF ELEKTRONİK", explanation: "Firma kapanmış, yerine başka firma gelmiş." };
+        await closeUndone(editor.headers, { id: s.id, reason: "diger", note: "Firma kapanmış, yerine FFF Elektronik açılmış." }, noteClient(reply));
+        const [closed] = await suggestionsOf("3333333333");
+        assert.deepEqual(closed.proposal, { effect: "kapandi", days: null, newName: "FFF ELEKTRONİK", explanation: reply.explanation });
+        assert.notEqual((await customerNamed("3333333333")).status, "kapandi");
+
+        await acceptProposal(editor.headers, closed.id);
+        assert.equal((await customerNamed("3333333333")).status, "kapandi");
+        const notes = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, s.customerId));
+        assert.ok(notes.some((n) => /Yeni unvan: FFF ELEKTRONİK/.test(n.body)));
+        await assert.rejects(rejectProposal(editor.headers, closed.id), /zaten değerlendirildi/);
+      });
+
+      test("a rejected proposal leaves the customer as it was; a note with nothing to do makes no proposal", async () => {
+        const { closeUndone } = await import("./suggestions");
+        const { rejectProposal } = await import("./reasons");
+        const s = await openOne();
+        await closeUndone(editor.headers, { id: s.id, reason: "diger", note: "Ay sonu arayın." }, noteClient({ effect: "tekrar", days: 20, new_name: null, explanation: "Ay sonu." }));
+        const [closed] = await suggestionsOf("3333333333");
+        assert.equal(closed.proposal?.days, 20);
+        await rejectProposal(editor.headers, closed.id);
+        assert.equal((await customerNamed("3333333333")).nextFollowUpOn, null);
+
+        const [other] = await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.status, "bekliyor"));
+        await closeUndone(editor.headers, { id: other.id, reason: "diger", note: "Telefonu meşgul." }, noteClient({ effect: "not", days: null, new_name: null, explanation: "-" }));
+        assert.equal((await db.select().from(schema.assistantSuggestion).where(eq(schema.assistantSuggestion.id, other.id)))[0].proposal, null);
+      });
+    });
   });
 });
 
