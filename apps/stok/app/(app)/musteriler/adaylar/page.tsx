@@ -12,7 +12,7 @@ import { LeadsBoard, type LeadRow } from "./leads-board";
 
 export const metadata = { title: "Adaylar | Artek Müşteri Paneli" };
 
-export default async function LeadsPage() {
+export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ secili?: string }> }) {
   await connection();
   const actor = await loadActor(await headers());
   if (!can(actor, "crm.view")) return <NoAccess />;
@@ -46,7 +46,7 @@ export default async function LeadsPage() {
         </>
       }
     >
-      <LeadsBoard rows={rows} canEdit={can(actor, "crm.edit")} />
+      <LeadsBoard rows={rows} canEdit={can(actor, "crm.edit")} initialOpen={(await searchParams).secili} />
     </PanelShell>
   );
 }

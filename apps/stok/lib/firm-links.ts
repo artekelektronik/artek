@@ -3,6 +3,7 @@ import { alias } from "drizzle-orm/pg-core";
 import { z } from "zod";
 import { db } from "../db";
 import { customer, customerChange, firmLink, linkType, user, type LinkType } from "../db/schema";
+import { logActivity } from "./activity";
 import { linkLabels } from "./customer-fields";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
@@ -60,6 +61,17 @@ async function recordLink(
       source: by.source,
       userId: by.userId,
       noteId: by.noteId ?? null,
+    })),
+  );
+  await logActivity(
+    tx,
+    (["from", "to"] as const).map((side) => ({
+      entity: "musteri" as const,
+      entityId: side === "from" ? link.fromId : link.toId,
+      label: name.get(side === "from" ? link.fromId : link.toId) ?? "",
+      action: "duzenlendi" as const,
+      detail: `Bağlantı ${change === "added" ? "eklendi" : "kaldırıldı"}: ${text(side)}`,
+      userId: by.userId,
     })),
   );
 }

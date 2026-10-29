@@ -4,6 +4,8 @@ import { z } from "zod";
 import { db } from "../db";
 import { customer, customerChange, customerNote, customerStatus, linkType, user, type CardNoteProposal, type CustomerField } from "../db/schema";
 import { UserError } from "./errors";
+import { logActivity } from "./activity";
+import { fieldLabels, sourceLabels } from "./customer-fields";
 import { createLink } from "./firm-links";
 import { requirePermission } from "./guard";
 import { noteModel } from "./reasons";
@@ -34,7 +36,18 @@ export async function recordChanges(
       userId: by.userId ?? null,
       noteId: by.noteId ?? null,
     }));
-  if (rows.length) await tx.insert(customerChange).values(rows);
+  if (!rows.length) return;
+  await tx.insert(customerChange).values(rows);
+  const [c] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.id, customerId));
+  await logActivity(tx, {
+    entity: "musteri",
+    entityId: customerId,
+    label: c.name,
+    action: "duzenlendi",
+    detail: `${sourceLabels[by.source].replace(/^./, (ch) => ch.toLocaleUpperCase("tr"))}: ${rows.map((r) => fieldLabels[r.field]).join(", ")}`,
+    userId: by.userId ?? null,
+    via: by.userId ? null : "fatura",
+  });
 }
 
 export async function customerChanges(customerId: string) {

@@ -148,6 +148,13 @@
       "when": 1793282604118,
       "tag": "0020_adaylar",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1793290409169,
+      "tag": "0021_islem-gecmisi",
+      "breakpoints": true
     }
   ]
 }

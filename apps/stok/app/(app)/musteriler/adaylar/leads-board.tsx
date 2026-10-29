@@ -40,9 +40,9 @@ const tones: Record<Status, string> = {
 };
 const dateText = (iso: string) => new Date(iso).toLocaleDateString("tr-TR", { day: "numeric", month: "long", timeZone: "Europe/Istanbul" });
 
-export function LeadsBoard({ rows, canEdit }: { rows: LeadRow[]; canEdit: boolean }) {
+export function LeadsBoard({ rows, canEdit, initialOpen }: { rows: LeadRow[]; canEdit: boolean; initialOpen?: string }) {
   const [filter, setFilter] = useState<Status | "">("");
-  const [openId, setOpenId] = useState<string>();
+  const [openId, setOpenId] = useState<string | undefined>(rows.some((r) => r.id === initialOpen) ? initialOpen : undefined);
   const counts = Object.fromEntries((Object.keys(leadStatusLabels) as Status[]).map((s) => [s, rows.filter((r) => r.status === s).length]));
   const shown = rows.filter((r) => !filter || r.status === filter);
 

@@ -3,6 +3,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
+import { logActivity } from "./activity";
 import { recordChanges } from "./customer-changes";
 import { requirePermission } from "./guard";
 import { linkLeadsByTaxId } from "./leads";
@@ -74,6 +75,13 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
       .returning({ id: invoice.id });
     const summary = { number: parsed.number, customer: customerRow.name, issuedOn: parsed.issuedOn };
     if (!added) return { status: "tekrar" as const, ...summary };
+
+    await logActivity(tx, [
+      { entity: "fatura", entityId: added.id, label: `${parsed.number} · ${customerRow.name}`, action: "eklendi", detail: input.fileName, userId: actor.userId },
+      ...(before
+        ? []
+        : [{ entity: "musteri" as const, entityId: customerRow.id, label: customerRow.name, action: "eklendi" as const, detail: "İlk faturasıyla", userId: actor.userId }]),
+    ]);
 
     if (parsed.lines.length) {
       await tx.insert(invoiceLine).values(

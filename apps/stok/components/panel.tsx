@@ -8,6 +8,7 @@ const tabs = [
   { key: "bugun", label: "Bugün", href: "/musteriler/bugun", needs: "crm" },
   { key: "crm", label: "Müşteriler (CRM)", href: "/musteriler", needs: "crm" },
   { key: "adaylar", label: "Adaylar", href: "/musteriler/adaylar", needs: "crm" },
+  { key: "gecmis", label: "İşlem geçmişi", href: "/musteriler/gecmis", needs: "crm" },
   { key: "urun", label: "Ürünler", href: "/finans/urunler", needs: "finance" },
   { key: "fatura", label: "Faturalar", href: "/faturalar", needs: "finance" },
 ] as const;

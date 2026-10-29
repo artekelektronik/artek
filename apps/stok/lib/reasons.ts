@@ -2,7 +2,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { assistantSuggestion, closeReason, customer, customerChange, customerNote, type NoteProposal } from "../db/schema";
+import { activityLog, assistantSuggestion, closeReason, customer, customerChange, customerNote, type NoteProposal } from "../db/schema";
 import { describeEffect, type CloseEffect } from "./close-reasons";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
@@ -156,6 +156,14 @@ export async function acceptProposal(headers: Headers, suggestionId: string) {
       if (c.name !== p.newName) {
         await tx.update(customer).set({ name: p.newName, updatedAt: new Date() }).where(eq(customer.id, s.customerId));
         await tx.insert(customerChange).values({ customerId: s.customerId, field: "name", oldValue: c.name, newValue: p.newName, source: "oneri", userId: actor.userId });
+        await tx.insert(activityLog).values({
+          entity: "musteri",
+          entityId: s.customerId,
+          label: p.newName,
+          action: "duzenlendi",
+          detail: `Bugün önerisinden: Unvan (${c.name} → ${p.newName})`,
+          userId: actor.userId,
+        });
       }
     }
     const parts = [p.effect !== "not" && describeEffect(p), p.newName && `Yeni unvan: ${p.newName}`].filter(Boolean);
