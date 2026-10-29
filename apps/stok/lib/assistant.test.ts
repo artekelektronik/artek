@@ -330,6 +330,9 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
         assert.equal((await customerNamed("3333333333")).status, "kapandi");
         const notes = await db.select().from(schema.customerNote).where(eq(schema.customerNote.customerId, s.customerId));
         assert.ok(notes.some((n) => /Yeni unvan: FFF ELEKTRONİK/.test(n.body)));
+        assert.equal((await customerNamed("3333333333")).name, "FFF ELEKTRONİK");
+        const [renamed] = await db.select().from(schema.customerChange).where(eq(schema.customerChange.customerId, s.customerId));
+        assert.deepEqual([renamed.field, renamed.oldValue, renamed.newValue, renamed.source], ["name", "CCC TRAFO LİMİTED ŞİRKETİ", "FFF ELEKTRONİK", "oneri"]);
         await assert.rejects(rejectProposal(editor.headers, closed.id), /zaten değerlendirildi/);
       });
 

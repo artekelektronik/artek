@@ -3,6 +3,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
+import { recordChanges } from "./customer-changes";
 import { requirePermission } from "./guard";
 import { missingNumbers } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
@@ -31,7 +32,9 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
   const { buyer } = parsed;
 
   return db.transaction(async (tx) => {
-    // The newest invoice's name and address win, so a renamed company shows its current name.
+    const [before] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId));
+    // The newest invoice's name and address win, so a renamed company shows its current name; the old one goes
+    // into the change history.
     const [c] = await tx
       .insert(customer)
       .values({ taxId: buyer.taxId, taxIdType: buyer.taxIdType, name: buyer.name, city: buyer.city, district: buyer.district, email: buyer.email })
@@ -47,6 +50,7 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
       })
       .returning({ id: customer.id, name: customer.name });
     const customerRow = c ?? (await tx.select({ id: customer.id, name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId)))[0];
+    if (before) await recordChanges(tx, customerRow.id, { name: before.name }, { name: customerRow.name }, { source: "fatura" });
 
     const [added] = await tx
       .insert(invoice)

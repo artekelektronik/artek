@@ -23,6 +23,7 @@ import { CustomerSheet } from "./customer-sheet";
 export type CrmRow = {
   id: string;
   name: string;
+  formerNames: string[]; // from the change history, so search finds a renamed firm
   short: string;
   city: string;
   district: string;
@@ -75,7 +76,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
     const needle = q.trim().toLocaleLowerCase("tr");
     return filterCustomers(rows, { lastBuy: lastBuyRange(lastBuy, today, custom), status, channel, city, group, contact })
       .filter((r) => (filter === "bugun" ? due(r) : filter ? r.no === filter : true))
-      .filter((r) => !needle || [r.name, r.city, r.district, r.phone, r.email, r.groups.join(" "), r.topProduct].join(" ").toLocaleLowerCase("tr").includes(needle))
+      .filter((r) => !needle || [r.name, ...r.formerNames, r.city, r.district, r.phone, r.email, r.groups.join(" "), r.topProduct].join(" ").toLocaleLowerCase("tr").includes(needle))
       .sort((a, b) => {
         const x = a[sort.key] ?? "";
         const y = b[sort.key] ?? "";

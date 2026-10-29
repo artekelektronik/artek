@@ -1,7 +1,9 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { asc, desc, eq, and, lte, isNotNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
 import { customer, customerNote, customerStatus, followUpChannel, invoice, user } from "../db/schema";
+import { customerChanges, interpretCardNote, recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 
@@ -38,11 +40,16 @@ const updateInput = z.object({
 });
 
 export async function updateCustomer(headers: Headers, input: z.input<typeof updateInput>) {
-  await requirePermission(headers, "crm.edit");
+  const actor = await requirePermission(headers, "crm.edit");
   const data = parseInput(updateInput, input);
   const { id, ...fields } = data;
-  const updated = await db.update(customer).set({ ...fields, updatedAt: new Date() }).where(eq(customer.id, id)).returning({ id: customer.id });
-  if (!updated.length) throw new UserError("Müşteri bulunamadı.");
+  const [before] = await db.select().from(customer).where(eq(customer.id, id));
+  if (!before) throw new UserError("Müşteri bulunamadı.");
+  await db.transaction(async (tx) => {
+    await tx.update(customer).set({ ...fields, updatedAt: new Date() }).where(eq(customer.id, id));
+    const tracked = { phone: fields.phone, email: fields.email, website: fields.website, about: fields.about, status: fields.status };
+    await recordChanges(tx, id, before, tracked, { source: "elle", userId: actor.userId });
+  });
 }
 
 const noteInput = z.object({
@@ -53,30 +60,49 @@ const noteInput = z.object({
 // The parts of a card the list doesn't carry: notes and invoices, loaded when the card opens.
 export async function customerHistory(headers: Headers, id: string) {
   await requirePermission(headers, "crm.view");
-  if (!isUuid(id)) return { notes: [], invoices: [] };
-  const [invoices, notes] = await Promise.all([
+  if (!isUuid(id)) return { notes: [], invoices: [], changes: [] };
+  const [invoices, notes, changes] = await Promise.all([
     db
       .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
       .from(invoice)
       .where(eq(invoice.customerId, id))
       .orderBy(desc(invoice.issuedOn)),
     db
-      .select({ id: customerNote.id, body: customerNote.body, createdAt: customerNote.createdAt, author: user.name })
+      .select({
+        id: customerNote.id,
+        body: customerNote.body,
+        createdAt: customerNote.createdAt,
+        author: user.name,
+        proposal: customerNote.proposal,
+        proposalDecidedAt: customerNote.proposalDecidedAt,
+      })
       .from(customerNote)
       .innerJoin(user, eq(user.id, customerNote.userId))
       .where(eq(customerNote.customerId, id))
       .orderBy(desc(customerNote.createdAt)),
+    customerChanges(id),
   ]);
-  return { invoices, notes };
+  return { invoices, notes, changes };
 }
 
-// Notes are a history: added, never edited.
-export async function addCustomerNote(headers: Headers, input: z.input<typeof noteInput>) {
+// Notes are a history: added, never edited. The assistant reads each one and may propose changes to the card,
+// which wait under the note until someone applies or rejects them.
+export async function addCustomerNote(headers: Headers, input: z.input<typeof noteInput>, client?: Anthropic) {
   const actor = await requirePermission(headers, "crm.edit");
   const data = parseInput(noteInput, input);
-  const [exists] = await db.select({ id: customer.id }).from(customer).where(eq(customer.id, data.customerId));
-  if (!exists) throw new UserError("Müşteri bulunamadı.");
-  await db.insert(customerNote).values({ customerId: data.customerId, userId: actor.userId, body: data.body });
+  const [c] = await db.select().from(customer).where(eq(customer.id, data.customerId));
+  if (!c) throw new UserError("Müşteri bulunamadı.");
+  const [note] = await db.insert(customerNote).values({ customerId: c.id, userId: actor.userId, body: data.body }).returning({ id: customerNote.id });
+
+  if (!client && !process.env.ANTHROPIC_API_KEY) return;
+  try {
+    const proposal = await interpretCardNote(client ?? new Anthropic(), c, data.body);
+    if (!proposal.changes.length && !proposal.relatedFirm) return;
+    await db.update(customerNote).set({ proposal }).where(eq(customerNote.id, note.id));
+  } catch (error) {
+    // The note is saved either way; without a reading it simply stays a note.
+    console.error("Not okunamadı:", error);
+  }
 }
 
 // Customers whose follow-up date has come, oldest first; closed ones (sipariş geldi, ilgilenmiyor) are left out.

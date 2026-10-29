@@ -5,15 +5,17 @@ import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { importContactsFile } from "@/lib/contact-import";
 import { addCustomerNote, customerHistory, updateCustomer } from "@/lib/crm";
+import { applyNoteProposal, rejectNoteProposal } from "@/lib/customer-changes";
 import type { CustomerStatus, FollowUpChannel } from "@/lib/finance-calc";
 import { text } from "@/lib/form-data";
 import { setEmailOptOut } from "@/lib/suggestions";
 
 export async function customerHistoryAction(id: string) {
-  const { invoices, notes } = await customerHistory(await headers(), id);
+  const { invoices, notes, changes } = await customerHistory(await headers(), id);
   return {
     invoices: invoices.map((i) => ({ ...i, netAmount: Number(i.netAmount) })),
-    notes: notes.map((n) => ({ ...n, createdAt: n.createdAt.toISOString() })),
+    notes: notes.map((n) => ({ ...n, createdAt: n.createdAt.toISOString(), proposalDecidedAt: n.proposalDecidedAt?.toISOString() ?? null })),
+    changes: changes.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() })),
   };
 }
 
@@ -54,4 +56,16 @@ export async function importContactsAction(records: unknown): Promise<ActionStat
   });
   revalidatePath("/musteriler");
   return state.saved ? { ...state, ...result } : state;
+}
+
+export async function applyNoteProposalAction(noteId: string): Promise<ActionState> {
+  const state = await runAction(async () => applyNoteProposal(await headers(), noteId));
+  revalidatePath("/musteriler");
+  return state;
+}
+
+export async function rejectNoteProposalAction(noteId: string): Promise<ActionState> {
+  const state = await runAction(async () => rejectNoteProposal(await headers(), noteId));
+  revalidatePath("/musteriler");
+  return state;
 }
