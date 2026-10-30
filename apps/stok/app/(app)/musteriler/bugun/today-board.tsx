@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { AlertTriangle, ChevronLeft, Hourglass, Lightbulb, Mail, MessageSquareReply, Phone, type LucideIcon } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { AlertTriangle, ChevronDown, ChevronLeft, Hourglass, Lightbulb, Mail, MessageSquareReply, Phone, PanelLeftClose, PanelLeftOpen, type LucideIcon } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { cn } from "@artek/ui/lib/utils";
 import type { ReasonView } from "@/lib/close-reasons";
@@ -26,6 +26,19 @@ export type Entry =
 export type BoardSection = { title: string; entries: Entry[] };
 
 // Every open item as one short row on the left; the picked one opens in full on the right (on narrower screens, in place of the list).
+// Like Mail: the list keeps its place while the detail scrolls, its groups fold, and it can be widened or put away.
+const widths = { dar: "xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]", genis: "xl:grid-cols-[minmax(0,30rem)_minmax(0,1fr)]", gizli: "" } as const;
+type Width = keyof typeof widths;
+// The chosen width is a per-person convenience; it survives reloads in this browser only.
+const noSubscribe = () => () => {};
+const savedWidth = () => {
+  try {
+    const w = localStorage.getItem("bugun-liste");
+    return w && w in widths ? (w as Width) : null;
+  } catch {
+    return null;
+  }
+};
 export function TodayBoard({
   sections,
   today,
@@ -42,48 +55,93 @@ export function TodayBoard({
   const all = sections.flatMap((s) => s.entries);
   const [picked, setPicked] = useState<string | null>(null);
   const [detailOnPhone, setDetailOnPhone] = useState(false);
+  const [chosen, setChosen] = useState<Width | null>(null);
+  const saved = useSyncExternalStore(noSubscribe, savedWidth, () => null);
+  const width = chosen ?? saved ?? "dar";
+  const [folded, setFolded] = useState<string[]>([]);
+  const pick = (w: Width) => {
+    setChosen(w);
+    try {
+      localStorage.setItem("bugun-liste", w);
+    } catch {}
+  };
   // When the picked item is closed it leaves the list, and the first remaining one opens.
   const current = all.find((e) => e.key === picked) ?? all[0];
   if (!current) return null;
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] xl:items-start">
-      <nav aria-label="Bugünün işleri" className={cn("flex flex-col gap-4", detailOnPhone && "hidden xl:flex")}>
+    <div className={cn("grid grid-cols-[minmax(0,1fr)] gap-4 xl:items-start", widths[width])}>
+      <nav
+        aria-label="Bugünün işleri"
+        className={cn(
+          "flex flex-col gap-3 xl:sticky xl:top-4 xl:max-h-[calc(100svh-2rem)] xl:overflow-y-auto xl:pr-1",
+          detailOnPhone && "hidden xl:flex",
+          width === "gizli" && "xl:hidden",
+        )}
+      >
+        <div className="hidden items-center justify-between px-1 xl:flex">
+          <span className="text-muted-foreground text-xs">{all.length} iş</span>
+          <span className="flex gap-0.5">
+            <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => pick(width === "dar" ? "genis" : "dar")}>
+              {width === "dar" ? "Genişlet" : "Daralt"}
+            </Button>
+            <Button type="button" variant="ghost" size="icon" className="size-7" title="Listeyi gizle" aria-label="Listeyi gizle" onClick={() => pick("gizli")}>
+              <PanelLeftClose />
+            </Button>
+          </span>
+        </div>
         {sections
           .filter((sec) => sec.entries.length > 0)
-          .map((sec) => (
-            <section key={sec.title} className="flex flex-col gap-1">
-              <h2 className="text-muted-foreground px-1 text-xs font-medium">
-                {sec.title} ({sec.entries.length})
-              </h2>
-              <ul className="bg-card divide-y overflow-hidden rounded-xl border">
-                {sec.entries.map((e) => (
-                  <li key={e.key}>
-                    <button
-                      type="button"
-                      aria-current={e.key === current.key ? "true" : undefined}
-                      onClick={() => {
-                        setPicked(e.key);
-                        setDetailOnPhone(true);
-                      }}
-                      className={cn(
-                        "hover:bg-muted/60 flex w-full items-center gap-3 px-3 py-2.5 text-left",
-                        e.key === current.key && "bg-muted xl:shadow-[inset_3px_0_0_var(--color-primary)]",
-                      )}
-                    >
-                      <Row e={e} today={today} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
+          .map((sec) => {
+            const open = !folded.includes(sec.title);
+            return (
+              <section key={sec.title} className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  onClick={() => setFolded(open ? [...folded, sec.title] : folded.filter((t) => t !== sec.title))}
+                  className="text-muted-foreground hover:text-foreground flex items-center gap-1 px-1 text-left text-xs font-medium"
+                >
+                  <ChevronDown className={cn("size-3.5 transition-transform", !open && "-rotate-90")} aria-hidden />
+                  {sec.title}
+                  <span className="ml-auto tabular-nums">{sec.entries.length}</span>
+                </button>
+                {open && (
+                  <ul className="bg-card divide-y overflow-hidden rounded-xl border">
+                    {sec.entries.map((e) => (
+                      <li key={e.key}>
+                        <button
+                          type="button"
+                          aria-current={e.key === current.key ? "true" : undefined}
+                          onClick={() => {
+                            setPicked(e.key);
+                            setDetailOnPhone(true);
+                          }}
+                          className={cn(
+                            "hover:bg-muted/60 flex w-full items-center gap-3 px-3 py-2.5 text-left",
+                            e.key === current.key && "bg-muted xl:shadow-[inset_3px_0_0_var(--color-primary)]",
+                          )}
+                        >
+                          <Row e={e} today={today} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })}
       </nav>
 
       <div className={cn("flex flex-col gap-2", !detailOnPhone && "hidden xl:flex")}>
         <Button type="button" variant="ghost" size="sm" className="self-start xl:hidden" onClick={() => setDetailOnPhone(false)}>
           <ChevronLeft /> Listeye dön
         </Button>
+        {width === "gizli" && (
+          <Button type="button" variant="ghost" size="sm" className="hidden self-start xl:inline-flex" onClick={() => pick("dar")}>
+            <PanelLeftOpen /> Listeyi göster ({all.length})
+          </Button>
+        )}
         <div key={current.key}>
           <Detail e={current} today={today} reasons={reasons} signature={signature} canEdit={canEdit} />
         </div>

@@ -3,14 +3,15 @@
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@artek/ui/components/chart";
 
-type Month = { month: string; sales: number; invoices: number; customers: number; newCustomers: number; incomplete: boolean; best: boolean };
+type Month = { month: string; sales: number; invoices: number; customers: number; newCustomers: number; incomplete: boolean };
 
 const config = { sales: { label: "Satış (KDV hariç)", color: "var(--chart-1)" } } satisfies ChartConfig;
 const short = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 const long = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 const label = (ym: string) => `${short[Number(ym.slice(5, 7)) - 1]} ${ym.slice(2, 4)}`;
-const compact = new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 });
 const full = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
+const oneDecimal = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
+const axis = (v: number) => (v >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon` : v >= 1e3 ? `${full.format(v / 1e3)} bin` : full.format(v));
 
 function Tip({ active, payload }: { active?: boolean; payload?: { payload: Month }[] }) {
   const m = payload?.[0]?.payload;
@@ -29,14 +30,14 @@ function Tip({ active, payload }: { active?: boolean; payload?: { payload: Month
   );
 }
 
-// Muted bars: months with missing invoice numbers. Outlined bar: the best month.
+// Muted bars: months with missing invoice numbers.
 export function SalesChart({ data }: { data: Month[] }) {
   return (
     <ChartContainer config={config} className="aspect-auto h-64 w-full">
       <BarChart data={data} margin={{ left: 0, right: 8, top: 8 }}>
         <CartesianGrid vertical={false} />
         <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={8} tickFormatter={label} />
-        <YAxis tickLine={false} axisLine={false} width={76} tickFormatter={(v: number) => `${compact.format(v)} TL`} />
+        <YAxis tickLine={false} axisLine={false} width={76} tickFormatter={axis} />
         <ChartTooltip cursor={{ fill: "var(--muted)", opacity: 0.5 }} content={<Tip />} />
         <Bar dataKey="sales" radius={[4, 4, 0, 0]}>
           {data.map((d) => (
@@ -44,8 +45,6 @@ export function SalesChart({ data }: { data: Month[] }) {
               key={d.month}
               fill={d.incomplete ? "var(--muted-foreground)" : "var(--color-sales)"}
               fillOpacity={d.incomplete ? 0.3 : 1}
-              stroke={d.best ? "var(--foreground)" : "none"}
-              strokeWidth={1.5}
             />
           ))}
         </Bar>

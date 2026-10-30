@@ -76,10 +76,10 @@ export function InvoiceUpload() {
           setDragging(false);
           if (!busy) upload([...e.dataTransfer.files]);
         }}
-        className={`flex flex-col items-center gap-3 rounded-lg border-2 border-dashed p-8 text-center ${dragging ? "border-primary bg-muted" : "border-border"}`}
+        className={`flex flex-wrap items-center gap-3 rounded-lg border border-dashed px-4 py-3 ${dragging ? "border-primary bg-muted" : "border-border"}`}
       >
-        <FileUp className="text-muted-foreground size-8" />
-        <p className="text-sm">
+        <FileUp className="text-muted-foreground size-5" />
+        <p className="text-muted-foreground flex-1 text-sm">
           Fatura PDF’lerini veya zip dosyasını buraya bırakın. Aynı fatura iki kez yüklenirse ikincisi eklenmez.
         </p>
         <input
@@ -95,7 +95,7 @@ export function InvoiceUpload() {
             if (files.length) upload(files);
           }}
         />
-        <Button type="button" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
+        <Button type="button" disabled={busy} onClick={() => input.current?.click()}>
           Dosya seç
         </Button>
       </div>

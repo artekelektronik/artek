@@ -3,7 +3,6 @@
 import { Separator } from "@artek/ui/components/separator";
 import { SidebarTrigger } from "@artek/ui/components/sidebar";
 import { useScreenTitle } from "./app-sidebar";
-import { ThemeToggle } from "./theme-toggle";
 
 export function AppHeader() {
   const title = useScreenTitle();
@@ -12,9 +11,6 @@ export function AppHeader() {
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
       <span className="text-sm font-medium">{title}</span>
-      <div className="ml-auto">
-        <ThemeToggle />
-      </div>
     </header>
   );
 }

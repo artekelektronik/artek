@@ -9,19 +9,19 @@ import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { SalesChart } from "./sales-chart";
 
-export const metadata = { title: "Finans | Artek Stok" };
+export const metadata = { title: "Finansal özet | Artek" };
 
 export default async function FinancePage() {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
-  const allowed = { finance: true, crm: can(actor, "crm.view") };
+  const crm = can(actor, "crm.view");
   const s = await financeSummary(requestHeaders, "finance.view");
 
   if (s.invoiceCount === 0) {
     return (
-      <PanelShell active="ozet" allowed={allowed} lede="Henüz satış faturası yok.">
+      <PanelShell title="Finansal özet" lede="Henüz satış faturası yok.">
         <p className="text-muted-foreground">
           <Link href="/faturalar" className="text-foreground underline underline-offset-4">
             Faturaları yükleyin
@@ -48,16 +48,40 @@ export default async function FinancePage() {
   const hot = (k: string, n: number) => (k !== "Tek sefer" && n ? "text-destructive font-semibold" : "");
 
   return (
-    <PanelShell active="ozet" allowed={allowed} lede={panelLede(s, true)} warning={panelWarning(s.gaps, s.asOf)}>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatTile label="Toplam satış (KDV hariç)" value={tlShort(s.total)} note={`${monthLabel(s.firstOn.slice(0, 7))} – ${monthLabel(s.asOf.slice(0, 7))}`} />
+    <PanelShell title="Finansal özet" lede={panelLede(s)} warning={panelWarning(s.gaps)}>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-6">
+        <StatTile large label="Toplam satış (KDV hariç)" value={tl(s.total)} note={`${monthLabel(s.firstOn.slice(0, 7))} – ${monthLabel(s.asOf.slice(0, 7))}`} />
         <StatTile label="Satış faturası" value={s.invoiceCount.toLocaleString("tr-TR")} note="Tekrarlar ve iadeler çıkarıldı" />
         <StatTile label="Müşteri" value={s.customerCount.toLocaleString("tr-TR")} note="Farklı firma ve şahıs" />
-        <StatTile label="Tekrar gelen müşteri" value={s.repeatCount.toLocaleString("tr-TR")} note="En az iki farklı günde sipariş" />
+        <StatTile label="Birden fazla kez alan" value={s.repeatCount.toLocaleString("tr-TR")} note="En az iki farklı günde sipariş" />
         <StatTile label="Ortalama fatura" value={tl(s.total / s.invoiceCount)} note="KDV hariç" />
       </div>
 
-      <PanelCard title="Aylık satış" note="KDV hariç, fatura tarihine göre. Soluk çubuklar eksik verisi olan aylar.">
+      <PanelCard title="Bu veriler ne söylüyor">
+        <ul className="flex flex-col gap-3">
+          <Insight color={chartColors[0]} todo="Büyük müşterilerle düzenli görüş; biri giderse ciro hızla düşer." href={crm ? "/musteriler" : undefined} action="Müşterilere git">
+            Ciro birkaç müşteride toplanıyor: ilk 5 müşteri cironun <b>{pct(s.insights.top5)}</b>’ini, ilk 20 müşteri <b>{pct(s.insights.top20)}</b>’ini
+            getiriyor. En büyük müşteri tek başına <b>{pct(s.insights.top1)}</b>.
+          </Insight>
+          <Insight color={chartColors[1]} todo="Her ilk siparişten 4–6 hafta sonra kısa bir takip araması yap.">
+            Müşterilerin <b>{pct(s.insights.oneOff)}</b>’i bir kez alıp tekrar gelmedi. Buna karşılık iki ve daha fazla kez alanlar cironun büyük kısmını
+            getiriyor.
+          </Insight>
+          <Insight color={chartColors[2]} todo="Önce bunları ara." href={crm ? "/musteriler" : undefined} action="Geri kazan listesi">
+            <b>{s.insights.lapsedCount}</b> müşteri eskiden birden fazla kez alıyordu ama 3 aydır sipariş vermiyor. Dönem içinde toplam{" "}
+            <b>{tl(s.insights.lapsedSales)}</b> almışlardı.
+          </Insight>
+          <Insight color={chartColors[3]} todo="Nüve alan müşterilere hazır sarılı trafo ve bobin teklif et; en kolay ek satış bu.">
+            Özel trafo cironun <b>{pct(s.insights.trafoShare)}</b>’ini getiriyor ama yalnızca <b>{s.insights.trafoCustomers}</b> müşteri alıyor. Nüveyi{" "}
+            <b>{s.insights.coreCustomers}</b> müşteri alıyor; bunların sadece <b>{pct(s.insights.coreAlsoTrafo)}</b>’i trafo da alıyor.
+          </Insight>
+          <Insight color={chartColors[4]} todo="İstanbul’daki “Geri kazan” müşterilerini ziyaret listesine koy." href={crm ? "/musteriler" : undefined} action="Müşterilere git">
+            Müşterilerin <b>{pct(s.customerCount ? istanbul / s.customerCount : 0)}</b>’i İstanbul’da. Kocaeli, Ankara ve İzmir sonra geliyor.
+          </Insight>
+        </ul>
+      </PanelCard>
+
+      <PanelCard title="Aylık satış" note="KDV hariç, fatura tarihine göre. Gri çubuklar eksik faturası olan aylar.">
         <SalesChart
           data={s.monthly.map((m) => ({
             month: m.month,
@@ -66,36 +90,11 @@ export default async function FinancePage() {
             customers: m.customers,
             newCustomers: m.newCustomers,
             incomplete: incomplete(m.month),
-            best: m.month === best[0].month,
           }))}
         />
         <p className="text-muted-foreground text-xs">
-          En güçlü aylar: {best.slice(0, 3).map((m) => monthLabel(m.month)).join(", ")}. Çerçeveli çubuk en yüksek ay.
+          En güçlü aylar: {best.slice(0, 3).map((m) => monthLabel(m.month)).join(", ")}.
         </p>
-      </PanelCard>
-
-      <PanelCard title="Bu veriler ne söylüyor">
-        <ul className="flex flex-col gap-3">
-          <Insight todo="Büyük müşterilerle düzenli görüş; biri giderse ciro hızla düşer.">
-            Ciro birkaç müşteride toplanıyor: ilk 5 müşteri cironun <b>{pct(s.insights.top5)}</b>’ini, ilk 20 müşteri <b>{pct(s.insights.top20)}</b>’ini
-            getiriyor. En büyük müşteri tek başına <b>{pct(s.insights.top1)}</b>.
-          </Insight>
-          <Insight todo="Her ilk siparişten 4–6 hafta sonra kısa bir takip araması yap.">
-            Müşterilerin <b>{pct(s.insights.oneOff)}</b>’i bir kez alıp tekrar gelmedi. Buna karşılık iki ve daha fazla kez alanlar cironun büyük kısmını
-            getiriyor.
-          </Insight>
-          <Insight todo="Önce bunları ara. Müşteriler sekmesinde “Geri kazan” grubunda.">
-            <b>{s.insights.lapsedCount}</b> müşteri eskiden birden fazla kez alıyordu ama 3 aydır sipariş vermiyor. Dönem içinde toplam{" "}
-            <b>{tl(s.insights.lapsedSales)}</b> almışlardı.
-          </Insight>
-          <Insight todo="Nüve alan müşterilere hazır sarılı trafo ve bobin teklif et; en kolay ek satış bu.">
-            Özel trafo cironun <b>{pct(s.insights.trafoShare)}</b>’ini getiriyor ama yalnızca <b>{s.insights.trafoCustomers}</b> müşteri alıyor. Nüveyi{" "}
-            <b>{s.insights.coreCustomers}</b> müşteri alıyor; bunların sadece <b>{pct(s.insights.coreAlsoTrafo)}</b>’i trafo da alıyor.
-          </Insight>
-          <Insight todo="İstanbul’daki “Geri kazan” müşterilerini ziyaret listesine koy.">
-            Müşterilerin <b>{pct(s.customerCount ? istanbul / s.customerCount : 0)}</b>’i İstanbul’da. Kocaeli, Ankara ve İzmir sonra geliyor.
-          </Insight>
-        </ul>
       </PanelCard>
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -107,7 +106,7 @@ export default async function FinancePage() {
               value: c.sales,
               display: tlShort(c.sales),
               color: i === 0 ? chartColors[0] : undefined,
-              href: allowed.crm ? `/musteriler?secili=${c.customerId}` : undefined,
+              href: crm ? `/musteriler?secili=${c.customerId}` : undefined,
             }))}
           />
         </PanelCard>

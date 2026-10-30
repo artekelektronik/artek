@@ -7,7 +7,7 @@ import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { ActivityList, type ActivityRow } from "./activity-list";
 
-export const metadata = { title: "İşlem geçmişi | Artek Müşteri Paneli" };
+export const metadata = { title: "İşlem geçmişi | Artek" };
 
 export default async function ActivityPage() {
   await connection();
@@ -26,8 +26,7 @@ export default async function ActivityPage() {
   }));
   return (
     <PanelShell
-      active="gecmis"
-      allowed={{ finance: can(actor, "finance.view"), crm: true }}
+      title="İşlem geçmişi"
       lede={<>Faturalar, Müşteriler ve Adaylar&apos;da kim neyi ne zaman ekledi, değiştirdi ya da arşivledi. En yenisi en üstte.</>}
     >
       <ActivityList rows={rows} />

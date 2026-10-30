@@ -12,6 +12,7 @@ import {
 } from "@artek/ui/components/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@artek/ui/components/sidebar";
 import { signOut } from "@/app/(app)/actions";
+import { ThemeToggle } from "./theme-toggle";
 
 function initials(name: string) {
   return name
@@ -60,6 +61,11 @@ export function NavUser({ user }: { user: { name: string; email: string } }) {
                 <UserLabel user={user} />
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="flex items-center justify-between gap-2 px-2 py-1.5 text-sm">
+              Görünüm
+              <ThemeToggle />
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => signOut()}>
               <LogOut />

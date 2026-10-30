@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
-import { AlertTriangle, Check, Database, Globe, History, Lightbulb, ListChecks, ListTodo, MessageSquareText, PenLine, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Check, Database, Globe, History, Lightbulb, ListChecks, ListTodo, MessageSquareText, PenLine, Phone, type LucideIcon } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -368,7 +368,12 @@ function CloseOptions({ id, today, reasons, waitingFor }: { id: string; today: s
       {mode === "yapilamadi" && (
         <form action={undoneAction} className="flex flex-col gap-2 rounded-lg border p-3">
           <input type="hidden" name="id" value={id} />
-          <FormSelect name="reason" options={reasons.map((r) => ({ value: r.id, label: r.label }))} empty="Sebep seçin" aria-label="Sebep" />
+          <div className="flex items-center gap-3">
+            <FormSelect name="reason" options={reasons.map((r) => ({ value: r.id, label: r.label }))} empty="Sebep seçin" aria-label="Sebep" />
+            <Link href="/musteriler/sebepler" className="text-muted-foreground shrink-0 text-xs underline-offset-4 hover:underline">
+              Listeyi düzenle
+            </Link>
+          </div>
           <Textarea name="note" rows={2} placeholder="Ne oldu? (isteğe bağlı; “Diğer” için gerekli)" aria-label="Not" />
           <p className="text-muted-foreground text-xs">Not yazarsanız asistan okur ve ne yapılacağını önerir; siz onaylamadan bir şey değişmez.</p>
           <div>
@@ -424,7 +429,7 @@ export function Age({ s, today }: { s: SuggestionView; today: string }) {
   return s.scheduled ? (
     <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-200">{days} gün gecikti</span>
   ) : (
-    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">{days} gün önce hazırlandı</span>
+    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">{days} gün önce</span>
   );
 }
 
@@ -432,7 +437,7 @@ function Head({ s, today }: { s: SuggestionView; today: string }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <Link href={`/musteriler?secili=${s.customer.id}`} className="font-medium underline-offset-4 hover:underline">
+        <Link href={`/musteriler?secili=${s.customer.id}`} className="text-lg leading-snug font-semibold underline-offset-4 hover:underline">
           {s.customer.name}
         </Link>
         <span className="flex items-center gap-2">
@@ -450,8 +455,14 @@ export function CallCard({ s, today, reasons }: { s: SuggestionView; today: stri
     <article className="bg-card flex flex-col gap-3 rounded-xl border p-4">
       <Head s={s} today={today} />
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground text-xs">Telefon</span>
-        <span className="font-medium tabular-nums">{s.customer.phone ?? "Kartta yok"}</span>
+        <Phone className="text-muted-foreground size-4" aria-hidden />
+        {s.customer.phone ? (
+          <a href={`tel:${s.customer.phone.replace(/\s/g, "")}`} className="font-medium tabular-nums underline-offset-4 hover:underline">
+            {s.customer.phone}
+          </a>
+        ) : (
+          <span className="text-muted-foreground">Telefon kartta yok</span>
+        )}
       </div>
       <Briefing s={s} today={today} />
       <TalkingPoints items={s.talkingPoints} title="Aramada sorabilecekleriniz" />
@@ -601,7 +612,7 @@ export function PrepareButton() {
       >
         Daha fazla öneri hazırla
       </Button>
-      {message && <span className="text-muted-foreground text-xs">{message}</span>}
+      {message && <span className="text-muted-foreground max-w-xs text-xs">{message}</span>}
     </div>
   );
 }

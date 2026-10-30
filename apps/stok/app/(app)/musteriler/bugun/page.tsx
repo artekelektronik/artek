@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { connection } from "next/server";
-import Link from "next/link";
 import { and, asc, eq, gte, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { NoAccess } from "@/components/no-access";
 import { PanelShell } from "@/components/panel";
@@ -16,7 +15,7 @@ import { istanbulDate, istanbulTimeOn } from "@/lib/time";
 import { PrepareButton, type SuggestionView } from "./suggestion-cards";
 import { TodayBoard, type BoardSection, type Entry } from "./today-board";
 
-export const metadata = { title: "Bugün | Artek Müşteri Paneli" };
+export const metadata = { title: "Takipler | Artek" };
 
 const doneText = {
   gonderildi: "E-posta gönderildi",
@@ -97,30 +96,23 @@ export default async function TodayPage() {
 
   return (
     <PanelShell
-      active="bugun"
-      allowed={{ finance: can(actor, "finance.view"), crm: true }}
+      title="Takipler"
       lede={
         <>
-          <b>{dateText}</b>: {calls.length} arama, {emails.length} e-posta önerisi. Asistan her sabah 08:00’de takip günü gelen müşterilere ve
-          uzun süredir almayanlara bakar; sitelerini ve son haberlerini okuyup hazırlar. <b>E-postalar siz “Gönder” demeden gitmez.</b>
+          <b>{dateText}</b> · {calls.length} arama, {emails.length} e-posta. Asistan her sabah 08:00’de müşterilerin sitelerini ve haberlerini
+          okuyup hazırlar; e-postalar siz “Gönder” demeden gitmez.
         </>
       }
+      warning={
+        earlier.length > 0 && (
+          <>
+            <b>{earlier.length} öneri önceki günlerden açık.</b> Yapın, sonraya bırakın ya da neden yapılamadığını yazın; kapattıkça asistan yeni
+            müşteri önerir.
+          </>
+        )
+      }
+      actions={canEdit && <PrepareButton />}
     >
-      {earlier.length > 0 && (
-        <p role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
-          <b>{earlier.length} öneri önceki günlerden kapatılmadı.</b> Bunları kapatınca asistan yeni müşteri önerir. Her öneri için yapın, ya da
-          neden yapılamadığını, ne zamana bırakıldığını veya neyi beklediğinizi yazın. Takip günü gelen müşteriler yine gelir.
-        </p>
-      )}
-
-      {canEdit && (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <PrepareButton />
-          <Link href="/musteriler/sebepler" className="text-muted-foreground text-xs underline-offset-4 hover:underline">
-            Kapatma sebeplerini düzenle
-          </Link>
-        </div>
-      )}
 
       {open.length === 0 && (
         <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-center text-sm">

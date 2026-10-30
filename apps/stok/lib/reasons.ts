@@ -161,7 +161,7 @@ export async function acceptProposal(headers: Headers, suggestionId: string) {
           entityId: s.customerId,
           label: p.newName,
           action: "duzenlendi",
-          detail: `Bugün önerisinden: Unvan (${c.name} → ${p.newName})`,
+          detail: `Takipler önerisinden: Unvan (${c.name} → ${p.newName})`,
           userId: actor.userId,
         });
       }

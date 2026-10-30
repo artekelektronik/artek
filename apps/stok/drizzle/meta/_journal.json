@@ -169,6 +169,13 @@
       "when": 1793294100253,
       "tag": "0023_aday-arastirma",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793362755613,
+      "tag": "0024_sohbet",
+      "breakpoints": true
     }
   ]
 }

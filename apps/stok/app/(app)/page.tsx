@@ -12,7 +12,7 @@ import { unitLabels } from "@/lib/quantity";
 import { formatIstanbulTime } from "@/lib/time";
 import { MovementsChart } from "./movements-chart";
 
-export const metadata = { title: "Ana sayfa | Artek Stok" };
+export const metadata = { title: "Ana sayfa | Artek" };
 
 function StatCard({
   label,

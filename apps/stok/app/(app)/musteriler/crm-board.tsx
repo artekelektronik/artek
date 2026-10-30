@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { cn } from "@artek/ui/lib/utils";
 import { DatePicker } from "@/components/date-picker";
@@ -69,9 +71,11 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
   const [group, setGroup] = useState("");
   const [contact, setContact] = useState<ContactFilter>("tumu");
   const [resetKey, setResetKey] = useState(0); // remounts the selects, which keep their own value
+  const [showFilters, setShowFilters] = useState(false);
   const cities = useMemo(() => [...new Set(rows.map((r) => r.city).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr")), [rows]);
   const groups = useMemo(() => [...new Set(rows.flatMap((r) => r.groups))].sort((a, b) => a.localeCompare(b, "tr")), [rows]);
   const narrowed = lastBuy !== "tumu" || status || channel || city || group || contact !== "tumu";
+  const activeFilters = [lastBuy !== "tumu", status, channel, city, group, contact !== "tumu"].filter(Boolean).length;
 
   const visible = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr");
@@ -114,7 +118,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
         )}
       >
         {top}
-        <span className="font-serif text-3xl leading-none tabular-nums">{count}</span>
+        <span className="text-3xl leading-none font-semibold tracking-tight tabular-nums">{count}</span>
         <span className="text-muted-foreground text-xs">{sub}</span>
       </button>
     );
@@ -147,6 +151,10 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
             aria-label="Müşteri ara"
             className="max-w-sm flex-1"
           />
+          {/* The selects stay mounted while hidden, so what they show matches the filter in use. */}
+          <Button type="button" variant={showFilters || activeFilters ? "secondary" : "outline"} size="sm" aria-expanded={showFilters} onClick={() => setShowFilters(!showFilters)}>
+            <SlidersHorizontal /> Filtreler{activeFilters > 0 && ` (${activeFilters})`}
+          </Button>
           <span className="text-muted-foreground text-xs tabular-nums">
             {visible.length} müşteri
             {filter === "bugun" ? " · bugün takip" : filter ? ` · ${priorities[filter - 1].label}` : ""}
@@ -171,9 +179,8 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
               Hepsini göster
             </button>
           )}
-          <span className="text-muted-foreground ml-auto hidden text-xs sm:inline">Kartı açmak için bir müşteriye tıklayın.</span>
         </div>
-        <div key={resetKey} className="flex flex-wrap items-center gap-2">
+        <div key={resetKey} className={cn("flex flex-wrap items-center gap-2", !showFilters && "hidden")}>
           <FormSelect
             name="sonAlim"
             options={options(Object.entries(lastBuyPresets))}

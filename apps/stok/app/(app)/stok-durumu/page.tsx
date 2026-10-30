@@ -10,7 +10,7 @@ import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 import { OverviewTable } from "./overview-table";
 
-export const metadata = { title: "Stok durumu | Artek Stok" };
+export const metadata = { title: "Stok durumu | Artek" };
 
 type Params = { lokasyon?: string; kritik?: string };
 

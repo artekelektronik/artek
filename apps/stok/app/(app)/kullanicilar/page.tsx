@@ -11,7 +11,7 @@ import { can } from "@/lib/permissions";
 import { listUsers } from "@/lib/user-admin";
 import { PermissionsSheet } from "./permissions-sheet";
 
-export const metadata = { title: "Kullanıcılar | Artek Stok" };
+export const metadata = { title: "Kullanıcılar | Artek" };
 
 export default async function UsersPage() {
   const requestHeaders = await headers();

@@ -12,7 +12,7 @@ import { formatIstanbulTime, istanbulDate } from "@/lib/time";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
 
-export const metadata = { title: "Faturalar | Artek Stok" };
+export const metadata = { title: "Faturalar | Artek" };
 
 export default async function InvoicesPage() {
   await connection();
@@ -25,8 +25,15 @@ export default async function InvoicesPage() {
 
   return (
     <PanelShell
-      active="fatura"
-      allowed={{ finance: true, crm: canSeeCustomers }}
+      title="Faturalar"
+      warning={
+        gaps.length > 0 && (
+          <>
+            <b>{gaps.reduce((n, g) => n + g.to - g.from + 1, 0)} fatura numarası eksik.</b> Yüklenmedi ya da iptal edildi.{" "}
+            <a href="#eksik">Listeyi gör</a>
+          </>
+        )
+      }
       lede={
         <>
           QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.filter((r) => !r.archivedAt).length.toLocaleString("tr-TR")}</b> fatura
@@ -35,14 +42,20 @@ export default async function InvoicesPage() {
         </>
       }
     >
-      {canUpload && (
-        <PanelCard title="Fatura yükle" note="PDF veya zip. Finans ve müşteri paneli yükleme biter bitmez güncellenir.">
-          <InvoiceUpload />
-        </PanelCard>
-      )}
+      {canUpload && <InvoiceUpload />}
+
+      <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
+        <InvoiceTable
+          rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
+          today={istanbulDate(new Date())}
+          linkCustomers={canSeeCustomers}
+          canEdit={canUpload}
+        />
+      </PanelCard>
 
       {gaps.length > 0 && (
         <PanelCard
+          id="eksik"
           title="Eksik fatura numaraları"
           note="Numara sırasında boşluk var: bu faturalar henüz yüklenmedi ya da iptal edildi. İptal değilse PDF’lerini yükleyin."
         >
@@ -70,15 +83,6 @@ export default async function InvoicesPage() {
             </Table>
         </PanelCard>
       )}
-
-      <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
-        <InvoiceTable
-          rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
-          today={istanbulDate(new Date())}
-          linkCustomers={canSeeCustomers}
-          canEdit={canUpload}
-        />
-      </PanelCard>
     </PanelShell>
   );
 }

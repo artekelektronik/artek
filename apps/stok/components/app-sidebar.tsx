@@ -6,16 +6,21 @@ import {
   ArrowLeftRight,
   Bell,
   Boxes,
+  CalendarCheck,
   ClipboardCheck,
   ClipboardList,
   Contact,
   FileText,
+  History,
   LineChart,
   LayoutDashboard,
   Package,
   PackageMinus,
   PackagePlus,
+  Sparkles,
+  ShoppingBag,
   Truck,
+  UserPlus,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -34,7 +39,8 @@ import {
 import { NavUser } from "./nav-user";
 
 // shadcn sidebar-07; `requires` only hides links, the server checks every action.
-const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: "notifications" | "users" | "finance" | "crm" }[] = [
+type Need = "notifications" | "users" | "finance" | "crm";
+const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: Need }[] = [
   { group: "Genel", label: "Ana sayfa", href: "/", icon: LayoutDashboard },
   { group: "Stok", label: "Stok durumu", href: "/stok-durumu", icon: Boxes },
   { group: "Stok", label: "Stok hareketleri", href: "/hareketler", icon: ArrowLeftRight },
@@ -44,12 +50,28 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "İşlemler", label: "Sayım", href: "/sayim", icon: ClipboardList },
   { group: "İşlemler", label: "Açılış sayımı", href: "/acilis-sayimi", icon: ClipboardCheck },
   { group: "Katalog", label: "Ürünler", href: "/urunler", icon: Package },
-  { group: "Satış", label: "Finans", href: "/finans", icon: LineChart, requires: "finance" },
+  { group: "Satış", label: "Bugün", href: "/bugun", icon: Sparkles, requires: "crm" },
+  { group: "Satış", label: "Takipler", href: "/musteriler/bugun", icon: CalendarCheck, requires: "crm" },
   { group: "Satış", label: "Müşteriler", href: "/musteriler", icon: Contact, requires: "crm" },
-  { group: "Satış", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
+  { group: "Satış", label: "Adaylar", href: "/musteriler/adaylar", icon: UserPlus, requires: "crm" },
+  { group: "Finans", label: "Finansal özet", href: "/finans", icon: LineChart, requires: "finance" },
+  { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
+  { group: "Finans", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
+  { group: "Yönetim", label: "İşlem geçmişi", href: "/musteriler/gecmis", icon: History, requires: "crm" },
   { group: "Yönetim", label: "Bildirimler", href: "/bildirimler", icon: Bell, requires: "notifications" },
   { group: "Yönetim", label: "Kullanıcılar", href: "/kullanicilar", icon: Users, requires: "users" },
 ];
+
+// Each group's icons in its own colour, as in Apple's sidebars, so a section is found by colour before it is read.
+const groupColors: Record<string, string> = {
+  Genel: "text-slate-500",
+  Stok: "text-blue-600 dark:text-blue-400",
+  İşlemler: "text-orange-600 dark:text-orange-400",
+  Katalog: "text-violet-600 dark:text-violet-400",
+  Satış: "text-green-600 dark:text-green-400",
+  Finans: "text-teal-600 dark:text-teal-400",
+  Yönetim: "text-slate-500",
+};
 
 export function AppSidebar({
   user,
@@ -57,7 +79,7 @@ export function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: { name: string; email: string };
-  allowed: { notifications: boolean; users: boolean; finance: boolean; crm: boolean };
+  allowed: Record<Need, boolean>;
 }) {
   const pathname = usePathname();
   const visible = screens.filter((s) => !s.requires || allowed[s.requires]);
@@ -74,8 +96,8 @@ export function AppSidebar({
                   <Boxes className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Artek Stok</span>
-                  <span className="truncate text-xs">Stok takibi</span>
+                  <span className="truncate font-medium">Artek</span>
+                  <span className="truncate text-xs">Stok, satış ve finans</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -91,9 +113,9 @@ export function AppSidebar({
                 .filter((s) => s.group === group)
                 .map((s) => (
                   <SidebarMenuItem key={s.href}>
-                    <SidebarMenuButton asChild tooltip={s.label} isActive={isCurrent(pathname, s.href)}>
+                    <SidebarMenuButton asChild tooltip={s.label} isActive={s === current(pathname)}>
                       <Link href={s.href}>
-                        <s.icon />
+                        <s.icon className={groupColors[s.group]} />
                         <span>{s.label}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -113,9 +135,14 @@ export function AppSidebar({
 
 export function useScreenTitle() {
   const pathname = usePathname();
-  return screens.find((s) => isCurrent(pathname, s.href))?.label ?? "Artek Stok";
+  return current(pathname)?.label ?? "Artek";
 }
 
-function isCurrent(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+// The longest matching link wins, so /musteriler/bugun marks Takipler and not Müşteriler.
+function current(pathname: string) {
+  // Yapılamadı sebepleri is opened from Takipler and belongs to it.
+  if (pathname.startsWith("/musteriler/sebepler")) return screens.find((s) => s.href === "/musteriler/bugun");
+  return screens
+    .filter((s) => (s.href === "/" ? pathname === "/" : pathname === s.href || pathname.startsWith(`${s.href}/`)))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 }

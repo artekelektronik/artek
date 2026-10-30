@@ -4,7 +4,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { auth } from "@/lib/auth";
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Giriş | Artek Stok" };
+export const metadata = { title: "Giriş | Artek" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ sifre?: string }> }) {
   if (await auth.api.getSession({ headers: await headers() })) redirect("/");

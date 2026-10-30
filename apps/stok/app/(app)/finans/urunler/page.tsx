@@ -7,7 +7,7 @@ import { financeSummary, pct, tl } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
 
-export const metadata = { title: "Ürünler | Artek Müşteri Paneli" };
+export const metadata = { title: "Ürün satışları | Artek" };
 
 export default async function ProductSalesPage() {
   await connection();
@@ -17,12 +17,7 @@ export default async function ProductSalesPage() {
   const s = await financeSummary(requestHeaders, "finance.view");
 
   return (
-    <PanelShell
-      active="urun"
-      allowed={{ finance: true, crm: can(actor, "crm.view") }}
-      lede={panelLede(s, true)}
-      warning={panelWarning(s.gaps, s.asOf)}
-    >
+    <PanelShell title="Ürün satışları" lede={panelLede(s)} warning={panelWarning(s.gaps)}>
       <PanelCard title="Ürün grupları">
         <Table className="text-xs">
           <TableHeader>

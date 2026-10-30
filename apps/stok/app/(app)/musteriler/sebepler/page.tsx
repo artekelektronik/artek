@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { connection } from "next/server";
 import { NoAccess } from "@/components/no-access";
 import { PanelShell } from "@/components/panel";
@@ -7,7 +8,7 @@ import { can } from "@/lib/permissions";
 import { listReasons } from "@/lib/reasons";
 import { ReasonForm, ReasonRow } from "./reasons-editor";
 
-export const metadata = { title: "Kapatma sebepleri | Artek Müşteri Paneli" };
+export const metadata = { title: "Yapılamadı sebepleri | Artek" };
 
 export default async function ReasonsPage() {
   await connection();
@@ -17,11 +18,15 @@ export default async function ReasonsPage() {
 
   return (
     <PanelShell
-      active="bugun"
-      allowed={{ finance: can(actor, "finance.view"), crm: true }}
+      title="Yapılamadı sebepleri"
+      actions={
+        <Link href="/musteriler/bugun" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
+          ← Takipler’e dön
+        </Link>
+      }
       lede={
         <>
-          Bugün ekranında bir öneriyi <b>Yapılamadı</b> diye kapatırken seçilen sebepler. Her sebebin müşteriye etkisi var: bir daha önerilmez, birkaç
+          Takipler’de bir öneriyi <b>Yapılamadı</b> diye kapatırken seçilen sebepler. Her sebebin müşteriye etkisi var: bir daha önerilmez, birkaç
           gün sonra tekrar önerilir ya da sadece not düşülür. Kaldırdığınız bir sebep, onunla kapatılmış önerilerde görünmeye devam eder.
         </>
       }

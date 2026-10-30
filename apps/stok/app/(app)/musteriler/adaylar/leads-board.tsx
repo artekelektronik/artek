@@ -151,7 +151,7 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
     <>
       <SheetHeader className="gap-2">
         <span className={cn("self-start rounded-full px-2 py-0.5 text-xs font-medium", tones[r.status])}>{leadStatusLabels[r.status]}</span>
-        <SheetTitle className="font-serif text-2xl leading-tight font-normal">{r.name}</SheetTitle>
+        <SheetTitle className="text-xl leading-tight font-semibold">{r.name}</SheetTitle>
         <SheetDescription>{[r.city, r.sector].filter(Boolean).join(" · ")}</SheetDescription>
       </SheetHeader>
       <div className="flex flex-col gap-6 px-4 pb-8">
@@ -349,7 +349,7 @@ function ImportArea({ children }: { children: React.ReactNode }) {
     >
     <div className="flex flex-wrap items-center gap-2">
       <LinkAdd />
-      <NewLead />
+      <span className="flex-1" />
       <input
         ref={input}
         type="file"
@@ -361,12 +361,19 @@ function ImportArea({ children }: { children: React.ReactNode }) {
           if (file) load(file);
         }}
       />
-      <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => input.current?.click()}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={busy}
+        title="Drive'daki dosyayı bu sayfaya sürükleyip de bırakabilirsin."
+        onClick={() => input.current?.click()}
+      >
         <Upload />
         {busy ? "Yükleniyor…" : "Adayları yükle"}
       </Button>
-      {message && <span className={message.error ? "text-destructive text-xs" : "text-muted-foreground text-xs"}>{message.text}</span>}
-      {!message && <span className="text-muted-foreground text-xs">Drive&apos;daki dosyayı buraya sürükleyip bırakabilirsin.</span>}
+      <NewLead />
+      {message && <span className={cn("basis-full text-xs", message.error ? "text-destructive" : "text-muted-foreground")}>{message.text}</span>}
     </div>
     {children}
     {dragging && (
@@ -474,7 +481,7 @@ function NewLead() {
   const [state, action, pending] = useActionState(addLeadAction, undefined);
   if (!open)
     return (
-      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button type="button" size="sm" onClick={() => setOpen(true)}>
         <Plus /> Yeni aday
       </Button>
     );

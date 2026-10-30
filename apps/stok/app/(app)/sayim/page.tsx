@@ -6,7 +6,7 @@ import { listCategories } from "@/lib/products";
 import { OpenCountForm } from "./open-count-form";
 import { CountsTable } from "./counts-table";
 
-export const metadata = { title: "Sayım | Artek Stok" };
+export const metadata = { title: "Sayım | Artek" };
 
 export default async function CountsPage() {
   const requestHeaders = await headers();

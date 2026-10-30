@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/auth-shell";
 import { setPasswordAction } from "./actions";
 import { SetPasswordForm } from "./set-password-form";
 
-export const metadata = { title: "Şifre belirle | Artek Stok" };
+export const metadata = { title: "Şifre belirle | Artek" };
 
 // The emailed token is checked when the form is sent.
 export default async function SetPasswordPage({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
