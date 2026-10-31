@@ -16,7 +16,7 @@ export function NewCustomer() {
 
   if (!open)
     return (
-      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button type="button" size="sm" onClick={() => setOpen(true)}>
         <Plus /> Yeni müşteri
       </Button>
     );
@@ -28,7 +28,7 @@ export function NewCustomer() {
   );
   const done = state?.saved && state.id;
   return (
-    <form action={action} className="bg-card flex flex-col gap-3 rounded-xl border p-4">
+    <form action={action} className="bg-card flex w-full flex-col gap-3 rounded-xl border p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         {field("name", "Firma unvanı", { required: true, placeholder: "Ör. ÖRNEK ELEKTRONİK LTD. ŞTİ." })}
         <Label className="flex-col items-stretch gap-1 text-xs font-normal">

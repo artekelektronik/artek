@@ -8,7 +8,7 @@ import { can } from "@/lib/permissions";
 import { listCategories, listProducts } from "@/lib/products";
 import { ProductsTable, type ProductRow, type ProductStatus } from "./products-table";
 
-export const metadata = { title: "Ürünler | Artek Stok" };
+export const metadata = { title: "Ürünler | Artek" };
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ arsiv?: string }> }) {
   const { arsiv } = await searchParams;

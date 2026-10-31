@@ -1,9 +1,11 @@
 // Pure calculations for the Finans and Müşteriler screens; no database, so tests can import it directly.
 
 const tlFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
-const tlCompact = new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 });
+const oneDecimal = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
 export const tl = (v: number) => `${tlFormat.format(v)} TL`;
-export const tlShort = (v: number) => `${tlCompact.format(v)} TL`;
+// "7,3 milyon TL", "843 bin TL": the compact "Mn"/"B" reads as billion to many.
+export const tlShort = (v: number) =>
+  Math.abs(v) >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon TL` : Math.abs(v) >= 1e3 ? `${tlFormat.format(v / 1e3)} bin TL` : `${tlFormat.format(v)} TL`;
 export const pct = (v: number) => `%${tlFormat.format(v * 100)}`;
 export const day = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];

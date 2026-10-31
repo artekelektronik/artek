@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@arte
 import { AuthShell } from "@/components/auth-shell";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
-export const metadata = { title: "Şifremi unuttum | Artek Stok" };
+export const metadata = { title: "Şifremi unuttum | Artek" };
 
 export default function ForgotPasswordPage() {
   return (

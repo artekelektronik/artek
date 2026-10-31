@@ -9,7 +9,7 @@ import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { OpenCountForm } from "../sayim/open-count-form";
 
-export const metadata = { title: "Açılış sayımı | Artek Stok" };
+export const metadata = { title: "Açılış sayımı | Artek" };
 
 export default async function OpeningCountPage() {
   const requestHeaders = await headers();

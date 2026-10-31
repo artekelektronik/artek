@@ -749,3 +749,23 @@ export type LeadResearch = {
   seconds: number;
   model: string;
 };
+
+// One message of a person's chat with the assistant on Bugün; private to that person, grouped by Istanbul day.
+export type ChatProposal = { customerId: string; name: string; kind: "arama" | "eposta"; on: string; why: string };
+export const chatRole = pgEnum("chat_role", ["user", "assistant"]);
+
+export const chatMessage = pgTable(
+  "chat_message",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    day: date("day", { mode: "string" }).notNull(),
+    role: chatRole("role").notNull(),
+    text: text("text").notNull(),
+    proposals: jsonb("proposals").$type<ChatProposal[]>().notNull().default([]), // "Takiplere ekle" buttons under an answer
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("chat_message_user_day_idx").on(t.userId, t.day)],
+);

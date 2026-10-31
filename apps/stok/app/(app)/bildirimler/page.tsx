@@ -8,7 +8,7 @@ import { SendNowButton } from "./send-now-button";
 import { NotificationsTable } from "./notifications-table";
 import { RecipientsForm } from "./recipients-form";
 
-export const metadata = { title: "Bildirimler | Artek Stok" };
+export const metadata = { title: "Bildirimler | Artek" };
 
 export default async function NotificationsPage() {
   const requestHeaders = await headers();

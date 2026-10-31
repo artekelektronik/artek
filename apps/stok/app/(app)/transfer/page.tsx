@@ -11,7 +11,7 @@ import { listTransfers } from "@/lib/transfers";
 import { sendTransferAction } from "./actions";
 import { TransfersTable } from "./transfers-table";
 
-export const metadata = { title: "Transfer | Artek Stok" };
+export const metadata = { title: "Transfer | Artek" };
 
 export default async function TransfersPage() {
   const requestHeaders = await headers();

@@ -9,7 +9,7 @@ import { listMovements, movementLimit } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { istanbulTimeOn } from "@/lib/time";
 
-export const metadata = { title: "Stok hareketleri | Artek Stok" };
+export const metadata = { title: "Stok hareketleri | Artek" };
 
 const istanbulDay = (day: string | undefined, time: string) =>
   day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? istanbulTimeOn(day, time) : undefined;

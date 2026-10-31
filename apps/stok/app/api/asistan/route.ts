@@ -4,7 +4,7 @@ import { Forbidden, NotSignedIn, requirePermission } from "@/lib/guard";
 
 export const maxDuration = 300;
 
-// "Daha fazla öneri hazırla" on the Bugün screen; does what the morning run does, for whoever may edit customers.
+// "Daha fazla öneri hazırla" on the Takipler screen; does what the morning run does, for whoever may edit customers.
 export async function POST(request: Request) {
   try {
     await requirePermission(request.headers, "crm.edit");

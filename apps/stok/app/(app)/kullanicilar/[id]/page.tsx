@@ -24,7 +24,7 @@ import { Label } from "@artek/ui/components/label";
 import type { Panel, PanelLevel } from "@/lib/permissions";
 import { AccessForm, PanelsForm, UserActionButton } from "../user-forms";
 
-export const metadata = { title: "Kullanıcı | Artek Stok" };
+export const metadata = { title: "Kullanıcı | Artek" };
 
 export default async function UserPage({
   params,

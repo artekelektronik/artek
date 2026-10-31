@@ -13,7 +13,7 @@ export const fieldLabels: Record<CustomerField, string> = {
   link: "Bağlantı",
 };
 
-export const sourceLabels = { not: "nottan", fatura: "faturadan", elle: "elle", oneri: "Bugün önerisinden" } as const;
+export const sourceLabels = { not: "nottan", fatura: "faturadan", elle: "elle", oneri: "Takipler önerisinden" } as const;
 
 export const fieldValue = (field: CustomerField, value: string | null) =>
   value === null || value === "" ? "boş" : field === "status" ? (customerStatusLabels[value as CustomerStatus] ?? value) : value;

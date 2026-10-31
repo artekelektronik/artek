@@ -1,63 +1,47 @@
 import Link from "next/link";
 import { cn } from "@artek/ui/lib/utils";
 
-// The look of the Müşteri and Finans panels: one header, tabs per permission, tiles, bars and cards.
+// The look of the Müşteri and Finans screens: one header, tiles, bars and cards. The sidebar is the only navigation.
 
-const tabs = [
-  { key: "ozet", label: "Finansal özet", href: "/finans", needs: "finance" },
-  { key: "bugun", label: "Bugün", href: "/musteriler/bugun", needs: "crm" },
-  { key: "crm", label: "Müşteriler (CRM)", href: "/musteriler", needs: "crm" },
-  { key: "adaylar", label: "Adaylar", href: "/musteriler/adaylar", needs: "crm" },
-  { key: "gecmis", label: "İşlem geçmişi", href: "/musteriler/gecmis", needs: "crm" },
-  { key: "urun", label: "Ürünler", href: "/finans/urunler", needs: "finance" },
-  { key: "fatura", label: "Faturalar", href: "/faturalar", needs: "finance" },
-] as const;
-
+// `actions`: the screen's own buttons, top right, the primary one last.
 export function PanelShell({
-  active,
-  allowed,
+  title,
   lede,
   warning,
+  actions,
   children,
 }: {
-  active: (typeof tabs)[number]["key"];
-  allowed: { finance: boolean; crm: boolean };
-  lede: React.ReactNode;
+  title: string;
+  lede?: React.ReactNode;
   warning?: React.ReactNode;
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <h1 className="font-serif text-3xl font-normal tracking-tight text-balance">Artek Müşteri Paneli</h1>
-        <p className="max-w-3xl text-sm leading-relaxed [&_b]:font-semibold [&_b]:tabular-nums">{lede}</p>
-        {warning && <p className="text-muted-foreground max-w-3xl text-xs [&_strong]:font-medium [&_strong]:text-amber-700 dark:[&_strong]:text-amber-400">{warning}</p>}
+      <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="text-2xl font-semibold">{title}</h1>
+          {lede && <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed [&_b]:text-foreground [&_b]:font-semibold [&_b]:tabular-nums">{lede}</p>}
+        </div>
+        {actions && <div className="flex flex-wrap items-start gap-2">{actions}</div>}
       </header>
-      <nav aria-label="Bölümler" className="flex flex-wrap gap-1 border-b">
-        {tabs
-          .filter((t) => allowed[t.needs])
-          .map((t) => (
-            <Link
-              key={t.key}
-              href={t.href}
-              aria-current={t.key === active ? "page" : undefined}
-              className={cn(
-                "-mb-px border-b-2 px-3 py-2 text-sm",
-                t.key === active ? "border-foreground text-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent",
-              )}
-            >
-              {t.label}
-            </Link>
-          ))}
-      </nav>
+      {warning && (
+        <p
+          role="status"
+          className="max-w-3xl rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-4"
+        >
+          {warning}
+        </p>
+      )}
       {children}
     </div>
   );
 }
 
-export function PanelCard({ title, note, className, children }: { title: string; note?: string; className?: string; children: React.ReactNode }) {
+export function PanelCard({ id, title, note, className, children }: { id?: string; title: string; note?: string; className?: string; children: React.ReactNode }) {
   return (
-    <section className={cn("bg-card flex min-w-0 flex-col gap-3 rounded-xl border p-5", className)}>
+    <section id={id} className={cn("bg-card flex min-w-0 scroll-mt-6 flex-col gap-3 rounded-xl border p-5", className)}>
       <h2 className="text-base font-medium">{title}</h2>
       {note && <p className="text-muted-foreground -mt-2 text-xs">{note}</p>}
       {children}
@@ -65,11 +49,12 @@ export function PanelCard({ title, note, className, children }: { title: string;
   );
 }
 
-export function StatTile({ label, value, note }: { label: string; value: string; note: string }) {
+// `large`: the one figure the screen is about; it takes two columns.
+export function StatTile({ label, value, note, large }: { label: string; value: string; note: string; large?: boolean }) {
   return (
-    <div className="bg-card flex min-w-0 flex-col gap-1 rounded-xl border px-5 py-4">
+    <div className={cn("bg-card flex min-w-0 flex-col gap-1 rounded-xl border px-5 py-4", large && "col-span-2 justify-center")}>
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span className="font-serif text-2xl leading-tight font-normal whitespace-nowrap tabular-nums xl:text-3xl">{value}</span>
+      <span className={cn("leading-tight font-semibold tracking-tight whitespace-nowrap tabular-nums", large ? "text-4xl" : "text-2xl")}>{value}</span>
       <span className="text-muted-foreground text-xs">{note}</span>
     </div>
   );
@@ -107,12 +92,20 @@ export function HBars({ rows }: { rows: { key: string; label: string; value: num
   );
 }
 
-export function Insight({ children, todo }: { children: React.ReactNode; todo: string }) {
+export function Insight({ children, todo, href, action, color }: { children: React.ReactNode; todo: string; href?: string; action?: string; color?: string }) {
   return (
-    <li className="flex flex-col gap-0.5 border-l-2 pl-3">
+    <li className="flex flex-col gap-0.5 border-l-[3px] pl-3" style={color ? { borderColor: color } : undefined}>
       <span className="text-sm [&_b]:font-semibold [&_b]:tabular-nums">{children}</span>
       <span className="text-muted-foreground text-xs">
         <strong className="text-foreground font-medium">Ne yapmalı:</strong> {todo}
+        {href && (
+          <>
+            {" "}
+            <Link href={href} className="text-foreground font-medium whitespace-nowrap underline-offset-4 hover:underline">
+              {action} →
+            </Link>
+          </>
+        )}
       </span>
     </li>
   );
@@ -120,35 +113,28 @@ export function Insight({ children, todo }: { children: React.ReactNode; todo: s
 
 type Gap = { series: string; from: number; to: number; after: string; before: string };
 
-export function panelLede(s: { firstOn: string; asOf: string; total: number; repeatShare: number; repeatCount: number }, showMoney: boolean) {
-  const range = `${dayText(s.firstOn)} – ${dayText(s.asOf)}`;
-  return showMoney ? (
+// The figures themselves are in the tiles; the lede only says what they are computed from.
+export function panelLede(s: { firstOn: string; asOf: string }) {
+  return (
     <>
-      <b>{range}</b> arasında <b>{moneyText(s.total)}</b> satış yapıldı (KDV hariç). Cironun <b>%{Math.round(s.repeatShare * 100)}</b>’i, birden
-      fazla kez alan <b>{s.repeatCount}</b> müşteriden geliyor. En büyük fırsat, bir kez alıp geri gelmeyen müşterileri yeniden kazanmak.
-    </>
-  ) : (
-    <>
-      <b>{range}</b> arasında fatura kesilen müşteriler. En büyük fırsat, bir kez alıp geri gelmeyen müşterileri yeniden kazanmak.
+      <b>
+        {dayText(s.firstOn)} – {dayText(s.asOf)}
+      </b>{" "}
+      arası satış faturalarından, KDV hariç. Son alım süreleri en son fatura tarihine göre hesaplanır.
     </>
   );
 }
 
-export function panelWarning(gaps: Gap[], asOf: string) {
+export function panelWarning(gaps: Gap[]) {
   const big = gaps.filter((g) => g.to - g.from + 1 >= 5).sort((a, b) => b.to - b.from - (a.to - a.from));
   const missing = big.reduce((n, g) => n + g.to - g.from + 1, 0);
+  if (!missing) return undefined;
   return (
     <>
-      {missing > 0 && (
-        <>
-          <strong>Eksik veri:</strong> numara sırasında {missing} fatura yok (en büyüğü {big[0].series} no {big[0].from}–{big[0].to},{" "}
-          {dayText(big[0].after)} – {dayText(big[0].before)}). Bu faturalar yüklenince rakamlar güncellenir.{" "}
-        </>
-      )}
-      Son alım süreleri, en son fatura tarihine ({dayText(asOf)}) göre hesaplanır.
+      <b>{missing} fatura eksik</b> (en büyük boşluk {big[0].series} no {big[0].from}–{big[0].to}, {dayText(big[0].after)} – {dayText(big[0].before)}).
+      Yüklenince rakamlar güncellenir. <Link href="/faturalar">Eksik faturaları gör</Link>
     </>
   );
 }
 
 const dayText = (iso: string) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}` : "");
-const moneyText = (v: number) => `${new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 }).format(v)} TL`;

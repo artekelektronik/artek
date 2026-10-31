@@ -11,7 +11,7 @@ import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { stockOutTypes } from "@/lib/stock-out";
 import { recordStockOutAction } from "./actions";
 
-export const metadata = { title: "Stok çıkışı | Artek Stok" };
+export const metadata = { title: "Stok çıkışı | Artek" };
 
 export default async function StockOutPage() {
   const actor = await loadActor(await headers());

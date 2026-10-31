@@ -9,7 +9,7 @@ import { loadActor } from "@/lib/guard";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { recordReceiptAction } from "./actions";
 
-export const metadata = { title: "Mal kabul | Artek Stok" };
+export const metadata = { title: "Mal kabul | Artek" };
 
 export default async function ReceiptPage() {
   const actor = await loadActor(await headers());

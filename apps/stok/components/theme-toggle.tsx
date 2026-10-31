@@ -33,14 +33,14 @@ export function ThemeToggle() {
             role="radio"
             aria-checked={on}
             title={label}
+            aria-label={label}
             onClick={() => setTheme(value)}
             className={cn(
-              "flex items-center gap-1 rounded-md px-2 py-1 text-xs",
+              "flex items-center rounded-md px-2 py-1",
               on ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Icon className="size-3.5" />
-            <span className="hidden sm:inline">{label}</span>
           </button>
         );
       })}

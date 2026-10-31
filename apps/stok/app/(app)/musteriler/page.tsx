@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { connection } from "next/server";
 import { NoAccess } from "@/components/no-access";
-import { PanelShell, panelLede, panelWarning } from "@/components/panel";
+import { PanelShell } from "@/components/panel";
 import { formerNames } from "@/lib/customer-changes";
 import { financeSummary, shortName } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
@@ -12,14 +12,13 @@ import { NewCustomer } from "./new-customer";
 import { ArchivedCustomers } from "./archived-customers";
 import { CrmBoard, type CrmRow } from "./crm-board";
 
-export const metadata = { title: "Müşteriler | Artek Müşteri Paneli" };
+export const metadata = { title: "Müşteriler | Artek" };
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ secili?: string }> }) {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "crm.view")) return <NoAccess />;
-  const allowed = { finance: can(actor, "finance.view"), crm: true };
   const [s, { secili }, oldNames] = await Promise.all([financeSummary(requestHeaders, "crm.view"), searchParams, formerNames()]);
   const byId = new Map(s.customerRows.map((c) => [c.id, c]));
 
@@ -72,10 +71,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   });
 
   return (
-    <PanelShell active="crm" allowed={allowed} lede={panelLede(s, allowed.finance)} warning={panelWarning(s.gaps, s.asOf)}>
+    <PanelShell title="Müşteriler" lede="Fatura kestiğimiz ve elle eklenen firmalar. En büyük fırsat, bir kez alıp geri gelmeyenleri yeniden kazanmak.">
       {can(actor, "crm.edit") && (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2">{rows.length > 0 && <ContactImportButton />}</div>
+        <div className="flex flex-wrap items-start justify-end gap-2">
+          {rows.length > 0 && <ContactImportButton />}
           <NewCustomer />
         </div>
       )}

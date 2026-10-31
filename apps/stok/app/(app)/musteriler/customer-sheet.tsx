@@ -262,7 +262,7 @@ function CustomerPanel({ c, canEdit, firms, onOpen }: { c: CrmRow; canEdit: bool
             {customerStatusLabels[c.status]}
           </span>
         </div>
-        <SheetTitle className="font-serif text-2xl font-normal leading-tight">
+        <SheetTitle className="text-xl leading-tight font-semibold">
           {c.name}
         </SheetTitle>
         <SheetDescription>
@@ -522,7 +522,7 @@ function CustomerPanel({ c, canEdit, firms, onOpen }: { c: CrmRow; canEdit: bool
         {canEdit && (
           <Section title="Arşiv">
             <p className="text-muted-foreground text-xs">
-              Arşivlenen müşteri listeden, Bugün önerilerinden ve takiplerden çıkar; faturaları finansta kalır. Yeni faturası gelirse kendiliğinden geri döner.
+              Arşivlenen müşteri listeden ve Takipler’den çıkar; faturaları finansta kalır. Yeni faturası gelirse kendiliğinden geri döner.
             </p>
             <ArchiveControl archived={false} onArchive={(reason) => archiveCustomerAction(c.id, reason)} onRestore={() => restoreCustomerAction(c.id)} />
           </Section>

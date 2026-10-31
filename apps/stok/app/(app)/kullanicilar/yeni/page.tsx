@@ -7,7 +7,7 @@ import { AccessFields } from "../access-fields";
 import { inviteUserAction } from "../actions";
 import { InviteForm } from "../user-forms";
 
-export const metadata = { title: "Kullanıcı davet et | Artek Stok" };
+export const metadata = { title: "Kullanıcı davet et | Artek" };
 
 export default async function InviteUserPage() {
   // UX only; inviteUser enforces the permission.

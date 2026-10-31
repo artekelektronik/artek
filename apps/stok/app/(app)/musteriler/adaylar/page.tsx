@@ -10,7 +10,7 @@ import { listLeads } from "@/lib/leads";
 import { can } from "@/lib/permissions";
 import { LeadsBoard, type LeadRow } from "./leads-board";
 
-export const metadata = { title: "Adaylar | Artek Müşteri Paneli" };
+export const metadata = { title: "Adaylar | Artek" };
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ secili?: string }> }) {
   await connection();
@@ -41,12 +41,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
 
   return (
     <PanelShell
-      active="adaylar"
-      allowed={{ finance: can(actor, "finance.view"), crm: true }}
+      title="Adaylar"
       lede={
         <>
-          Henüz fatura kesmediğimiz firmalar. Satış rutinleri (günlük sinyal, haftalık radar, perşembe hedef firma) buldukları firmaları buraya
-          ekler; aynı firma tekrar gelirse yeni kayıt açılmaz, <b>tekrar görüldü</b> diye işaretlenir. Bir aday müşteri olunca kartı müşteriye bağlanır.
+          Henüz fatura kesmediğimiz firmalar. Satış rutinlerinin bulduğu firmalar buraya düşer; aynı firma yeniden gelirse yeni kayıt açılmaz,{" "}
+          <b>tekrar görüldü</b> olarak işaretlenir.
         </>
       }
     >

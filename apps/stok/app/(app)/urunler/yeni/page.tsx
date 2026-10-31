@@ -7,7 +7,7 @@ import { listCategories } from "@/lib/products";
 import { createProductAction } from "../actions";
 import { ProductForm } from "../product-form";
 
-export const metadata = { title: "Yeni ürün | Artek Stok" };
+export const metadata = { title: "Yeni ürün | Artek" };
 
 export default async function NewProductPage() {
   const requestHeaders = await headers();
