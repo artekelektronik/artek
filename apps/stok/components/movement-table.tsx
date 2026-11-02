@@ -30,7 +30,7 @@ export function MovementTable({
   const reversed = new Set(movements.map((m) => m.reversesId).filter(Boolean));
 
   const columns = column.columns([
-    searchColumn<Movement>((m) => [m.productCode, m.productName, document(m), m.userName].join(" "), "Ürün, belge veya neden"),
+    searchColumn<Movement>((m) => [m.productCode, m.productName, m.productCategory, document(m), m.userName].join(" "), "Ürün, kategori, belge veya neden"),
     column.accessor("createdAt", {
       id: "zaman",
       size: 160,
@@ -54,11 +54,20 @@ export function MovementTable({
       id: "urun",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Ürün" />,
       cell: ({ row }) => (
-        <Link href={`/urunler/${row.original.productId}`} className="font-mono underline-offset-4 hover:underline">
-          {row.original.productCode}
-        </Link>
+        <div className="flex max-w-64 flex-col whitespace-normal">
+          <Link href={`/urunler/${row.original.productId}`} className="font-mono underline-offset-4 hover:underline">
+            {row.original.productCode}
+          </Link>
+          <span className="text-muted-foreground text-xs">{row.original.productName}</span>
+        </div>
       ),
       meta: { label: "Ürün" },
+    }),
+    column.accessor("productCategory", {
+      id: "kategori",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Kategori" />,
+      enableColumnFilter: true,
+      meta: { label: "Kategori", variant: "multiSelect", options: options(movements.map((m) => m.productCategory)) },
     }),
     column.accessor((m) => m.lokasyonName ?? "Yolda", {
       id: "lokasyon",
