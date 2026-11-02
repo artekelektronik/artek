@@ -129,6 +129,25 @@ describe("manual stock-out", { skip: skipWithoutDatabase }, () => {
     assert.equal((await db.select().from(schema.stockDocument)).filter((d) => d.kind === "stok_cikisi").length, 0);
   });
 
+  test("the picker's available figure follows the balance, per Lokasyon", async () => {
+    const { availableByLokasyon } = await import("./pickers");
+    const karakoy = lokasyon["Karaköy Mağaza"];
+    const cekmekoy = lokasyon["Çekmeköy İmalathane"];
+    await receive(core, "50");
+    await receive(core, "7", "Çekmeköy İmalathane");
+    await stockOut.recordStockOut(karakoyUser.headers, {
+      type: "fire",
+      lokasyonId: karakoy,
+      reason: "Kırık",
+      lines: [{ productId: core, quantity: "20" }],
+      idempotencyKey: key(),
+    });
+    const available = await availableByLokasyon([karakoy, cekmekoy]);
+    assert.equal(available[karakoy][core], "30");
+    assert.equal(available[cekmekoy][core], "7");
+    assert.deepEqual(Object.keys(await availableByLokasyon([cekmekoy])), [cekmekoy]);
+  });
+
   test("two simultaneous requests for the last unit: exactly one succeeds", async () => {
     await receive(core, "1");
     const attempt = () =>
