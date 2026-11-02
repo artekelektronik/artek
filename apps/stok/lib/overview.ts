@@ -24,7 +24,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
 
   const search = filters.q?.trim();
   const products = await db
-    .select({ id: product.id, code: product.code, name: product.name, category: product.category, unit: product.unit })
+    .select({ id: product.id, code: product.code, name: product.name, category: product.category, unit: product.unit, manufacturerCode: product.manufacturerCode, images: product.images })
     .from(product)
     .where(
       and(

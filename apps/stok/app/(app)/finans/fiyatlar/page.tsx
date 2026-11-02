@@ -29,6 +29,8 @@ export default async function PricesPage() {
             id: r.id,
             code: r.code,
             name: r.name,
+            image: r.images[0] ?? null,
+            details: [r.manufacturerCode, r.category, r.code].filter(Boolean).join(" · "),
             stock: `${displayQuantity(r.total)} ${unitLabels[r.unit]}`,
             purchasePrice: displayPrice(price?.purchasePrice ?? null),
             purchaseCurrency: price?.purchaseCurrency ?? "USD",
