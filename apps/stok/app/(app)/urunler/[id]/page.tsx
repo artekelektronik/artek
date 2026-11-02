@@ -71,7 +71,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold">Stok</h2>
           <Link href={`/stok-girisi?q=${encodeURIComponent(product.code)}`} className="text-sm underline underline-offset-4">
-            Stok gir
+            Stok gir veya düzelt
           </Link>
         </div>
         <Table className="max-w-2xl">

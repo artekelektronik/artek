@@ -129,6 +129,8 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
       <div className="flex items-center gap-1">
         <Input
           defaultValue={initial}
+          // The current balance shows in the box: typing over it corrects it, leaving it alone changes nothing.
+          placeholder={current !== "0" ? displayQuantity(current) : undefined}
           inputMode="decimal"
           data-column={lokasyon.id}
           aria-label={`${row.code} ${lokasyon.name} miktarı`}
@@ -149,6 +151,11 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
       </div>
       {error && <p className="text-destructive max-w-40 text-xs">{error}</p>}
       {current !== "0" && <span className="text-muted-foreground text-xs">Stokta: {displayQuantity(current)}</span>}
+      {entered !== null && (
+        <span className="text-xs font-medium">
+          {lokasyon.opened ? `Onaylanınca ${displayQuantity(current)} → ${displayQuantity(entered)} olacak` : "Onay bekliyor"}
+        </span>
+      )}
     </div>
   );
 }

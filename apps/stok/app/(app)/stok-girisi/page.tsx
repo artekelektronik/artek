@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { Badge } from "@artek/ui/components/badge";
 import { NoAccess } from "@/components/no-access";
 import { StockForm } from "@/components/stock-form";
@@ -27,9 +28,14 @@ export default async function StockEntryPage({ searchParams }: { searchParams: P
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Stok girişi</h1>
         <p className="text-muted-foreground max-w-3xl text-sm">
-          Elinizdeki sayımı ürün ürün girin: her ürünün ne kadarı nerede, yan yana yazın. Yazdığınız sayı kendiliğinden kaydedilir,
-          değiştirebilir veya silebilirsiniz. Stok, siz onaylayınca değişir. Onaydan sonra düzeltmek için yine buraya doğru sayıyı yazıp
-          onaylayın; fark hareket olarak kaydedilir. Stok miktarları sitede görünmez.
+          Elinizdeki sayımı ürün ürün girin. Yazdığınız sayı o yerdeki <strong className="text-foreground">toplam stok</strong> olur, üstüne eklenmez; kendiliğinden
+          kaydedilir, stok siz onaylayınca değişir. Yanlış girdiyseniz doğru toplamı yazıp onaylayın. Stok miktarları sitede görünmez.
+          <br />
+          <strong className="text-foreground">Yeni mal geldiyse</strong> buraya değil,{" "}
+          <Link href="/mal-kabul" className="text-foreground underline underline-offset-4">
+            Mal kabul
+          </Link>
+          &apos;e yazın: mevcut stoğun üstüne ekler.
         </p>
       </div>
 
