@@ -7,6 +7,7 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { FormSelect } from "@/components/form-select";
+import { ProductImage } from "@/components/product-image";
 import { QuickAddProduct } from "@/components/quick-add-product";
 import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
@@ -39,7 +40,7 @@ export function StockEntrySheet({
   const search = query.trim().toLocaleLowerCase("tr");
   const rows = sheet.rows.filter(
     (r) =>
-      (!search || `${r.code} ${r.name}`.toLocaleLowerCase("tr").includes(search)) &&
+      (!search || `${r.code} ${r.name} ${r.manufacturerCode ?? ""}`.toLocaleLowerCase("tr").includes(search)) &&
       (!type || (type === "malzeme" ? r.isMaterial : r.isTradeGoods)) &&
       (!category || r.category === category) &&
       (!onlyFilled || Object.values(r.cells).some((c) => c.entered !== null || c.current !== "0")),
@@ -48,7 +49,7 @@ export function StockEntrySheet({
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ürün kodu veya adı" className="w-64" aria-label="Ürün ara" />
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ürün adı veya kodu" className="w-64" aria-label="Ürün ara" />
         <FormSelect name="tur" options={types} empty="Tüm türler" onValueChange={setType} aria-label="Tür" />
         <FormSelect name="kategori" options={categories.map((c) => ({ value: c, label: c }))} empty="Tüm kategoriler" onValueChange={setCategory} aria-label="Kategori" />
         <Label className="font-normal">
@@ -77,8 +78,15 @@ export function StockEntrySheet({
             {rows.map((row) => (
               <TableRow key={row.id}>
                 <TableCell className="whitespace-normal">
-                  <span className="font-mono">{row.code}</span> {row.name}{" "}
-                  <span className="text-muted-foreground text-xs">{unitLabels[row.unit]}</span>
+                  <div className="flex items-center gap-3">
+                    <ProductImage path={row.images[0]} alt={row.name} className="size-14" />
+                    <div className="flex min-w-0 flex-col">
+                      <span className="font-medium">{row.name}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {[row.manufacturerCode, row.category, row.code, unitLabels[row.unit]].filter(Boolean).join(" · ")}
+                      </span>
+                    </div>
+                  </div>
                 </TableCell>
                 {sheet.lokasyon.map((l) => (
                   <TableCell key={l.id} className="align-top">

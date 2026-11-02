@@ -51,6 +51,14 @@ describe("stok girişi: one sheet across Lokasyon", { skip: skipWithoutDatabase 
     assert.ok(sheet.lokasyon.every((l) => l.opened));
   });
 
+  test("each row carries what identifies the product at a glance: image and Üretici kodu", async () => {
+    const { eq } = await import("drizzle-orm");
+    await db.update(schema.product).set({ images: ["urunler/ee-25.jpg", "urunler/ee-25-b.jpg"], manufacturerCode: "EE25/13/7" }).where(eq(schema.product.id, core));
+    const row = (await entry.getStockEntrySheet(muhendis.headers)).rows.find((r) => r.id === core)!;
+    assert.deepEqual(row.images, ["urunler/ee-25.jpg", "urunler/ee-25-b.jpg"]);
+    assert.equal(row.manufacturerCode, "EE25/13/7");
+  });
+
   test("an entry can be changed or taken back before approval", async () => {
     const lokasyonId = lokasyon["Çekmeköy İmalathane"];
     await entry.saveStockEntry(muhendis.headers, { productId: core, lokasyonId, counted: "40" });
