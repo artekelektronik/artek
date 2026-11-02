@@ -70,6 +70,12 @@ The first Sayım that establishes starting balances when the system goes live.
 **Stok girişi** (Stock entry):
 The screen where counted stock is typed per product, side by side for every Lokasyon. Until a Lokasyon is open it fills its Açılış sayımı; after that, approved quantities add to the balance. Goods bought from a supplier go through Mal kabul instead.
 
+**Alış fiyatı / Satış fiyatı** (Purchase / sale price):
+The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans paneli sees them.
+
+**Stok değeri** (Stock value):
+Stok times a price, converted to TL at today's TCMB döviz satış rate. It is worked out when shown, never stored. Products with no price are left out and counted.
+
 ## Sales and manufacturing
 
 **Sipariş** (Order):

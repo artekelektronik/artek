@@ -19,7 +19,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const requestHeaders = await headers();
   // Lokasyon and Kritik seviye change what is loaded; the table filters the rest.
   const [overview, categories, actor, allLokasyon] = await Promise.all([
-    getOverview(requestHeaders, { lokasyonId: params.lokasyon || undefined, belowMinimum: params.kritik === "1" }),
+    getOverview(requestHeaders, { lokasyonId: params.lokasyon || undefined, belowMinimum: params.kritik === "1", noMinimum: params.kritik === "yok" }),
     listCategories(requestHeaders),
     loadActor(requestHeaders),
     listLokasyon(),
@@ -29,6 +29,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok durumu</h1>
+      {params.kritik === "yok" && (
+        <p className="text-muted-foreground text-sm">Kritik seviyesi girilmemiş ürünler. Seviyeyi ürünün sayfasındaki Ürün bilgileri bölümünden girin.</p>
+      )}
       <form className="flex flex-wrap items-center gap-2">
         <FormSelect
           name="lokasyon"
