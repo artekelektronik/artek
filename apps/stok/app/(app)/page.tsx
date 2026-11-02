@@ -275,7 +275,7 @@ export default async function HomePage() {
                       {r.productName}
                     </span>
                     <span className="text-muted-foreground text-xs">
-                      {movementTypeLabels[r.type]} · {r.reason} · {r.userName} · {r.lokasyonName} · {formatDateTime(r.createdAt)}
+                      {movementTypeLabels[r.type]} · {r.productCategory} · {r.reason} · {r.userName} · {r.lokasyonName} · {formatDateTime(r.createdAt)}
                     </span>
                   </div>
                   <span className="flex shrink-0 flex-col text-right tabular-nums">

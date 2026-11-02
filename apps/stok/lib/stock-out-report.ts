@@ -43,6 +43,7 @@ async function listStockOuts(from: Date, to: Date, visible: string[] | undefined
       productId: product.id,
       productCode: product.code,
       productName: product.name,
+      productCategory: product.category,
       lokasyonName: lokasyon.name,
       userName: user.name,
     })
@@ -114,6 +115,7 @@ function lineText(r: Row, withAmounts: boolean) {
   return [
     formatDateTime(r.createdAt),
     `${r.productCode} ${r.productName}`,
+    r.productCategory,
     `${displayQuantity(r.quantity)} ${unitLabels[r.unit]}`,
     r.lokasyonName,
     r.userName,
@@ -147,7 +149,7 @@ function reportBody(rows: Row[], from: string, to: string, withAmounts: boolean)
       }),
     ...(exits.length ? ["", "Kişiye göre:", ...[...people].sort((a, b) => b[1] - a[1]).map(([name, n]) => `- ${name}: ${n} kayıt`)] : []),
     ...(exits.length
-      ? ["", "Ürüne göre:", ...[...products.values()].map((l) => `- ${l[0].productCode} ${l[0].productName}: ${perUnitText(totalsPerUnit(l))}`)]
+      ? ["", "Ürüne göre:", ...[...products.values()].map((l) => `- ${l[0].productCode} ${l[0].productName} (${l[0].productCategory}): ${perUnitText(totalsPerUnit(l))}`)]
       : []),
     ...(exits.length ? ["", "Tüm çıkışlar:", ...exits.map((r) => `- ${lineText(r, withAmounts)}`)] : []),
     ...(corrections.length ? ["", "Düzeltme veya sayımla azalanlar:", ...corrections.map((r) => `- ${lineText(r, false)}`)] : []),
