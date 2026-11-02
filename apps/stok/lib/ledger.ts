@@ -178,6 +178,7 @@ type MovementFilters = {
   lokasyonId?: string;
   userId?: string;
   type?: MovementType;
+  types?: readonly MovementType[];
   from?: Date;
   to?: Date;
   limit?: number;
@@ -192,6 +193,7 @@ export async function listMovements(headers: Headers, filters: MovementFilters) 
     filters.lokasyonId ? eq(stockMovement.lokasyonId, filters.lokasyonId) : undefined,
     filters.userId ? eq(stockMovement.userId, filters.userId) : undefined,
     filters.type ? eq(stockMovement.type, filters.type) : undefined,
+    filters.types ? inArray(stockMovement.type, [...filters.types]) : undefined,
     filters.from ? gte(stockMovement.createdAt, filters.from) : undefined,
     filters.to ? lte(stockMovement.createdAt, filters.to) : undefined,
   ];

@@ -10,5 +10,6 @@ export function FormStatus({ state, saved, className }: { state: ActionState; sa
       </p>
     );
   }
-  return state?.saved && saved ? <p className={cn("text-sm text-green-700 dark:text-green-400", className)}>{saved}</p> : null;
+  const message = state?.message ?? saved;
+  return state?.saved && message ? <p className={cn("text-sm whitespace-pre-line text-green-700 dark:text-green-400", className)}>{message}</p> : null;
 }
