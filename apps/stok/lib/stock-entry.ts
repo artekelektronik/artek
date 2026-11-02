@@ -48,6 +48,8 @@ export async function getStockEntrySheet(headers: Headers) {
         code: product.code,
         name: product.name,
         category: product.category,
+        manufacturerCode: product.manufacturerCode,
+        images: product.images,
         unit: product.unit,
         isMaterial: product.isMaterial,
         isTradeGoods: product.isTradeGoods,
