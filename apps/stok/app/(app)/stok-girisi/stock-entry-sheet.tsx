@@ -1,0 +1,146 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { Check } from "lucide-react";
+import { Checkbox } from "@artek/ui/components/checkbox";
+import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { FormSelect } from "@/components/form-select";
+import { QuickAddProduct } from "@/components/quick-add-product";
+import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
+import { unitLabels } from "@/lib/quantity";
+import type { StockEntrySheet as Sheet } from "@/lib/stock-entry";
+import { saveStockEntryAction } from "./actions";
+
+type Row = Sheet["rows"][number];
+
+const types = [
+  { value: "malzeme", label: "Malzeme" },
+  { value: "ticari", label: "Ticari mal" },
+];
+
+export function StockEntrySheet({
+  sheet,
+  categories,
+  initialQuery,
+  canAddProduct,
+}: {
+  sheet: Sheet;
+  categories: string[];
+  initialQuery: string;
+  canAddProduct: boolean;
+}) {
+  const [query, setQuery] = useState(initialQuery);
+  const [type, setType] = useState("");
+  const [category, setCategory] = useState("");
+  const [onlyFilled, setOnlyFilled] = useState(false);
+
+  const search = query.trim().toLocaleLowerCase("tr");
+  const rows = sheet.rows.filter(
+    (r) =>
+      (!search || `${r.code} ${r.name}`.toLocaleLowerCase("tr").includes(search)) &&
+      (!type || (type === "malzeme" ? r.isMaterial : r.isTradeGoods)) &&
+      (!category || r.category === category) &&
+      (!onlyFilled || Object.values(r.cells).some((c) => c.entered !== null || c.current !== "0")),
+  );
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ürün kodu veya adı" className="w-64" aria-label="Ürün ara" />
+        <FormSelect name="tur" options={types} empty="Tüm türler" onValueChange={setType} aria-label="Tür" />
+        <FormSelect name="kategori" options={categories.map((c) => ({ value: c, label: c }))} empty="Tüm kategoriler" onValueChange={setCategory} aria-label="Kategori" />
+        <Label className="font-normal">
+          <Checkbox checked={onlyFilled} onCheckedChange={(checked) => setOnlyFilled(checked === true)} />
+          Yalnızca stoku veya girişi olanlar
+        </Label>
+        <span className="text-muted-foreground text-sm">{rows.length} ürün</span>
+      </div>
+
+      {canAddProduct && <QuickAddProduct categories={categories} onAdded={setQuery} />}
+
+      <div className="max-h-[70vh] overflow-auto rounded-lg border [&_[data-slot=table-container]]:overflow-visible">
+        <Table>
+          <TableHeader className="bg-background sticky top-0 z-10">
+            <TableRow>
+              <TableHead>Ürün</TableHead>
+              {sheet.lokasyon.map((l) => (
+                <TableHead key={l.id} className="h-auto py-2">
+                  <div>{l.name}</div>
+                  <div className="text-muted-foreground text-xs font-normal">{lokasyonPurpose[l.name]}</div>
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell className="whitespace-normal">
+                  <span className="font-mono">{row.code}</span> {row.name}{" "}
+                  <span className="text-muted-foreground text-xs">{unitLabels[row.unit]}</span>
+                </TableCell>
+                {sheet.lokasyon.map((l) => (
+                  <TableCell key={l.id} className="align-top">
+                    <EntryCell key={l.round} row={row} lokasyon={l} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </section>
+  );
+}
+
+// Saves when the cursor leaves the cell; Enter moves down the column, like a spreadsheet.
+function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][number] }) {
+  const { current, entered } = row.cells[lokasyon.id];
+  const initial = entered === null ? "" : displayQuantity(entered);
+  const lastSaved = useRef(initial);
+  const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [error, setError] = useState<string>();
+
+  async function save(value: string) {
+    if (value.trim() === lastSaved.current) return;
+    setStatus("saving");
+    setError(undefined);
+    const result = await saveStockEntryAction({ productId: row.id, lokasyonId: lokasyon.id, counted: value });
+    if (result?.error) {
+      setStatus("idle");
+      setError(result.error);
+      return;
+    }
+    lastSaved.current = value.trim();
+    setStatus("saved");
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1">
+        <Input
+          defaultValue={initial}
+          inputMode="decimal"
+          data-column={lokasyon.id}
+          aria-label={`${row.code} ${lokasyon.name} miktarı`}
+          aria-invalid={error ? true : undefined}
+          className="h-8 w-24"
+          onBlur={(e) => save(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            const column = [...document.querySelectorAll<HTMLInputElement>(`input[data-column="${lokasyon.id}"]`)];
+            const next = column[column.indexOf(e.currentTarget) + 1];
+            if (next) next.focus();
+            else e.currentTarget.blur();
+          }}
+        />
+        {status === "saved" && <Check className="text-muted-foreground size-4" aria-label="Kaydedildi" />}
+        {status === "saving" && <span className="text-muted-foreground text-xs">…</span>}
+      </div>
+      {error && <p className="text-destructive max-w-40 text-xs">{error}</p>}
+      {current !== "0" && <span className="text-muted-foreground text-xs">Stokta: {displayQuantity(current)}</span>}
+    </div>
+  );
+}

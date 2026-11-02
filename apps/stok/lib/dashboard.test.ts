@@ -66,6 +66,7 @@ describe("dashboard", { skip: skipWithoutDatabase }, () => {
       [
         ["Çekmeköy İmalathane", 2, true],
         ["Karaköy Mağaza", 1, true],
+        ["Yedek", 0, true],
       ],
     );
     assert.equal(d.transfersOnTheWay, 1);

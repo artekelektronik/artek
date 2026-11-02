@@ -1,4 +1,4 @@
-import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, type Tx } from "../db";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
@@ -75,6 +75,16 @@ export async function createProduct(headers: Headers, input: ProductInput) {
       return created;
     }),
   );
+}
+
+// For products with no site record, such as Malzeme entered during a count: off the site, with the next ART code unless given one.
+export async function quickAddProduct(
+  headers: Headers,
+  input: Pick<ProductInput, "name" | "category" | "unit" | "isMaterial" | "isTradeGoods"> & { code?: string },
+) {
+  const [{ last }] = await db.select({ last: sql<number | null>`max(substring(${product.code} from '^ART-([0-9]+)$')::int)` }).from(product);
+  const code = input.code?.trim() || `ART-${String((last ?? 0) + 1).padStart(4, "0")}`;
+  return createProduct(headers, { ...input, code, showOnSite: false });
 }
 
 export async function updateProduct(headers: Headers, id: string, input: ProductInput) {

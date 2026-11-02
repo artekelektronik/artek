@@ -9,7 +9,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import type { DataTableFeatures } from "@/lib/data-table-features";
-import { displayQuantity } from "@/lib/labels";
+import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
 import type { Overview } from "@/lib/overview";
 import { totalsByUnit } from "@/lib/overview-totals";
 import { unitLabels } from "@/lib/quantity";
@@ -52,7 +52,12 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
     ...overview.lokasyon.map((l) =>
       column.group({
         id: `lokasyon-${l.id}`,
-        header: () => <div className="text-center">{l.name}</div>,
+        header: () => (
+          <div className="py-1 text-right leading-tight whitespace-normal">
+            <div>{l.name}</div>
+            <div className="text-muted-foreground text-xs font-normal">{lokasyonPurpose[l.name]}</div>
+          </div>
+        ),
         columns: column.columns(
           pileFields.map(([field, label]) =>
           column.accessor((r) => Number(r.stock[l.id][field]), {
@@ -79,7 +84,9 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
     }),
   ]);
 
-  const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50 });
+  // Lokasyon stay side by side at a glance; the Görünüm menu brings the other piles back.
+  const hidden = overview.lokasyon.flatMap((l) => [`${l.id}-reserved`, `${l.id}-available`]);
+  const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50, hidden });
 
   return (
     <div className="flex flex-col gap-3">

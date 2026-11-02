@@ -66,7 +66,7 @@ describe("stock overview", { skip: skipWithoutDatabase }, () => {
 
   test("stock per Lokasyon, with stock on the way shown separately", async () => {
     const result = await overview.getOverview(muhendis.headers, {});
-    assert.deepEqual(result.lokasyon.map((l) => l.name), ["Çekmeköy İmalathane", "Karaköy Mağaza"]);
+    assert.deepEqual(result.lokasyon.map((l) => l.name), ["Çekmeköy İmalathane", "Karaköy Mağaza", "Yedek"]);
     const row = result.rows.find((r) => r.code === "T-CORE")!;
     assert.equal(row.stock[lokasyon["Çekmeköy İmalathane"]].physical, "90");
     assert.equal(row.stock[lokasyon["Karaköy Mağaza"]].available, "40");
