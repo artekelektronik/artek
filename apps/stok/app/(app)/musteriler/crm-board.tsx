@@ -19,6 +19,8 @@ import {
   type FollowUpChannel,
   type Priority,
 } from "@/lib/finance-calc";
+import { SortBar, type SortField } from "@/components/sort-bar";
+import { sortRows, type Sort } from "@/lib/sorting";
 import { contactFilters, filterCustomers, lastBuyPresets, lastBuyRange, type ContactFilter, type LastBuyPreset } from "@/lib/list-filters";
 import { CustomerSheet } from "./customer-sheet";
 
@@ -52,6 +54,14 @@ export type CrmRow = {
 
 type Filter = "bugun" | Priority | null;
 type SortKey = "no" | "short" | "city" | "sales" | "lastOn" | "nextFollowUpOn";
+const sortFields: SortField[] = [
+  { id: "no", label: "Öncelik", kind: "number" },
+  { id: "short", label: "Müşteri", kind: "text" },
+  { id: "city", label: "İl", kind: "text" },
+  { id: "sales", label: "Satış", kind: "number" },
+  { id: "lastOn", label: "Son alım", kind: "date" },
+  { id: "nextFollowUpOn", label: "Takip", kind: "date" },
+];
 const closed: CustomerStatus[] = ["siparis_geldi", "ilgilenmiyor", "kapandi"];
 const options = (entries: [string, string][]) => entries.map(([value, label]) => ({ value, label }));
 
@@ -60,7 +70,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
   const dueCount = rows.filter(due).length;
   const [filter, setFilter] = useState<Filter>(dueCount ? "bugun" : null);
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "no", dir: 1 });
+  const [sorts, setSorts] = useState<Sort[]>([{ id: "no", desc: false }]);
   const [openId, setOpenId] = useState<string | undefined>(initialSelected);
   const firms = useMemo(() => rows.map((r) => ({ id: r.id, name: r.name })), [rows]);
   const [lastBuy, setLastBuy] = useState<LastBuyPreset>("tumu");
@@ -79,25 +89,20 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
 
   const visible = useMemo(() => {
     const needle = q.trim().toLocaleLowerCase("tr");
-    return filterCustomers(rows, { lastBuy: lastBuyRange(lastBuy, today, custom), status, channel, city, group, contact })
+    const shown = filterCustomers(rows, { lastBuy: lastBuyRange(lastBuy, today, custom), status, channel, city, group, contact })
       .filter((r) => (filter === "bugun" ? due(r) : filter ? r.no === filter : true))
-      .filter((r) => !needle || [r.name, ...r.formerNames, r.city, r.district, r.phone, r.email, r.groups.join(" "), r.topProduct].join(" ").toLocaleLowerCase("tr").includes(needle))
-      .sort((a, b) => {
-        const x = a[sort.key] ?? "";
-        const y = b[sort.key] ?? "";
-        const c = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), "tr");
-        return c !== 0 ? c * sort.dir : b.sales - a.sales;
-      });
+      .filter((r) => !needle || [r.name, ...r.formerNames, r.city, r.district, r.phone, r.email, r.groups.join(" "), r.topProduct].join(" ").toLocaleLowerCase("tr").includes(needle));
+    return sortRows(shown, [...sorts, { id: "sales", desc: true }], (r, id) => r[id as SortKey]);
     // due() reads only today, which never changes while the page is open.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, filter, q, sort, lastBuy, custom, status, channel, city, group, contact]);
+  }, [rows, filter, q, sorts, lastBuy, custom, status, channel, city, group, contact]);
 
   const header = (key: SortKey, label: string, numeric = false) => (
-    <th aria-sort={sort.key === key ? (sort.dir === 1 ? "ascending" : "descending") : undefined} className={cn("px-3 py-2 font-medium", numeric && "text-right")}>
+    <th aria-sort={sorts[0]?.id === key ? (sorts[0].desc ? "descending" : "ascending") : undefined} className={cn("px-3 py-2 font-medium", numeric && "text-right")}>
       <button
         type="button"
         className="hover:text-foreground"
-        onClick={() => setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: key === "sales" || key === "lastOn" ? -1 : 1 }))}
+        onClick={() => setSorts((s) => [{ id: key, desc: s[0]?.id === key ? !s[0].desc : key === "sales" || key === "lastOn" }])}
       >
         {label}
       </button>
@@ -180,6 +185,7 @@ export function CrmBoard({ rows, canEdit, today, initialSelected }: { rows: CrmR
             </button>
           )}
         </div>
+        <SortBar fields={sortFields} sorts={sorts} onChange={setSorts} />
         <div key={resetKey} className={cn("flex flex-wrap items-center gap-2", !showFilters && "hidden")}>
           <FormSelect
             name="sonAlim"

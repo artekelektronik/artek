@@ -58,6 +58,9 @@ _Avoid_: Changing a balance without a movement
 **Stok düzenleme** (Stock correction):
 An admin setting a wrongly entered balance to the right number at once. It posts a Stok hareketi for the difference, so the change stays on record.
 
+**İşlem geçmişi** (Activity history):
+Who did what and when across the whole system, for admins: Ürün, Fiyat, Stok hareketi, Fatura, Müşteri, Aday and Kullanıcı. Fiyat and Fatura rows need the Finans paneli, Müşteri and Aday rows the Müşteri paneli. Admins get it as a daily email and a Monday summary.
+
 **Transfer**:
 Moving stock between two Lokasyon in two steps, sent and received; while on the way it belongs to neither.
 

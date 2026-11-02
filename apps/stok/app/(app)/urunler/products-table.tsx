@@ -259,6 +259,13 @@ export function ProductsTable({
         </div>
       ),
       enableHiding: false,
+      meta: { label: "Ürün adı" },
+    }),
+    column.accessor("code", {
+      id: "kod",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Kod" />,
+      enableHiding: false,
+      meta: { label: "Kod" },
     }),
     column.accessor("category", {
       id: "kategori",
@@ -346,7 +353,7 @@ export function ProductsTable({
     }),
   ]);
 
-  const { table } = useClientDataTable({ data: shown, columns, hidden: ["kategori"] });
+  const { table } = useClientDataTable({ data: shown, columns, hidden: ["kategori", "kod"] });
 
   return (
     <ExpandedRows.Provider value={{ open: expanded, toggle }}>

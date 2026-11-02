@@ -40,7 +40,7 @@ import {
 import { NavUser } from "./nav-user";
 
 // shadcn sidebar-07; `requires` only hides links, the server checks every action.
-type Need = "notifications" | "users" | "finance" | "crm";
+type Need = "notifications" | "users" | "finance" | "crm" | "activity";
 const screens: { group: string; label: string; href: string; icon: LucideIcon; requires?: Need }[] = [
   { group: "Genel", label: "Ana sayfa", href: "/", icon: LayoutDashboard },
   { group: "Stok", label: "Stok durumu", href: "/stok-durumu", icon: Boxes },
@@ -59,7 +59,7 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
   { group: "Finans", label: "Fiyatlar", href: "/finans/fiyatlar", icon: Tag, requires: "finance" },
   { group: "Finans", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
-  { group: "Yönetim", label: "İşlem geçmişi", href: "/musteriler/gecmis", icon: History, requires: "crm" },
+  { group: "Yönetim", label: "İşlem geçmişi", href: "/islem-gecmisi", icon: History, requires: "activity" },
   { group: "Yönetim", label: "Bildirimler", href: "/bildirimler", icon: Bell, requires: "notifications" },
   { group: "Yönetim", label: "Kullanıcılar", href: "/kullanicilar", icon: Users, requires: "users" },
 ];
