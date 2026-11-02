@@ -321,6 +321,8 @@ export const stockCount = pgTable(
     kind: countKind("kind").notNull(),
     status: countStatus("status").notNull().default("taslak"),
     category: text("category"), // null: every active product
+    // Stok girişi on an open Lokasyon: counted quantities add to the balance instead of replacing it.
+    addsToStock: boolean("adds_to_stock").notNull().default(false),
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),

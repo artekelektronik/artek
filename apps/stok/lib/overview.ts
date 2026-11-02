@@ -69,7 +69,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     return { ...p, stock: perLokasyon, inTransit, total };
   });
 
-  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, canFilterBelowMinimum: visible.length === all.length };
+  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name, canCorrect: l.openedAt !== null && can(actor, "stock.correct", l.id) })), rows, canFilterBelowMinimum: visible.length === all.length };
 }
 
 export type Overview = Awaited<ReturnType<typeof getOverview>>;

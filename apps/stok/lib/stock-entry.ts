@@ -3,14 +3,15 @@ import { z } from "zod";
 import { db, type Tx } from "../db";
 import { lokasyon, product, productShelf, stock, stockCount, stockCountLine } from "../db/schema";
 import { approveCount, recordCountLines } from "./counts";
+import { postDocument } from "./ledger";
 import { parseInput, UserError } from "./errors";
 import { loadActor, requirePermission } from "./guard";
 import { listLokasyon } from "./lokasyon";
 import { can } from "./permissions";
-import { formatQuantity } from "./quantity";
+import { formatQuantity, parseQuantityOrZero, subtractQuantity } from "./quantity";
 
-// Stok girişi: one sheet across Lokasyon. Quantities go on each Lokasyon's open count, whose approval posts them
-// as usual: an Açılış sayımı until the Lokasyon is open, a Sayım (correcting the balance) after that.
+// Stok girişi: one sheet across Lokasyon. Quantities go on each Lokasyon's open count, whose approval posts them:
+// an Açılış sayımı until the Lokasyon is open, and additions to the balance after that.
 
 const draftKind = (place: { openedAt: Date | null }) => (place.openedAt ? "sayim" : "acilis");
 
@@ -20,6 +21,7 @@ function findDraft(tx: typeof db | Tx, place: { id: string; openedAt: Date | nul
       eq(stockCount.lokasyonId, place.id),
       eq(stockCount.kind, draftKind(place)),
       eq(stockCount.status, "taslak"),
+      eq(stockCount.addsToStock, place.openedAt !== null),
       isNull(stockCount.category),
     ),
     orderBy: desc(stockCount.createdAt),
@@ -70,6 +72,7 @@ export async function getStockEntrySheet(headers: Headers) {
         name: l.name,
         opened: l.openedAt !== null,
         canApprove: can(actor, "count.approve", l.id),
+        canCorrect: l.openedAt !== null && can(actor, "stock.correct", l.id),
         pending: draft ? lines.filter((line) => line.countId === draft.id && line.counted !== null).length : 0,
         // Changes when an approval empties the sheet, so the page can start its inputs afresh.
         round: approved.find((a) => a.lokasyonId === l.id)?.total ?? 0,
@@ -116,7 +119,7 @@ export async function saveStockEntry(headers: Headers, input: z.input<typeof ent
     const draft = await findDraft(tx, place);
     const id =
       draft?.id ??
-      (await tx.insert(stockCount).values({ lokasyonId, kind: draftKind(place), createdBy: actor.userId }).returning({ id: stockCount.id }))[0].id;
+      (await tx.insert(stockCount).values({ lokasyonId, kind: draftKind(place), addsToStock: place.openedAt !== null, createdBy: actor.userId }).returning({ id: stockCount.id }))[0].id;
     const shelf = await tx.query.productShelf.findFirst({
       where: and(eq(productShelf.productId, productId), eq(productShelf.lokasyonId, lokasyonId)),
     });
@@ -139,4 +142,41 @@ export async function approveStockEntries(headers: Headers, lokasyonId: string, 
     }));
   if (!hasEntries) throw new UserError("Onaylanacak giriş yok.");
   return approveCount(headers, draft.id, { idempotencyKey });
+}
+
+const correctionInput = z.object({
+  productId: z.uuid({ error: "Ürün bulunamadı." }),
+  lokasyonId: z.uuid({ error: "Lokasyon bulunamadı." }),
+  quantity: z.string().trim().min(1, { error: "Doğru sayıyı yazın." }),
+  idempotencyKey: z.string().min(1),
+});
+
+// Sets a wrongly entered balance to the right number at once. Like any stock change it is a movement, so it stays on record.
+export async function correctStock(headers: Headers, input: z.input<typeof correctionInput>) {
+  const { productId, lokasyonId, quantity, idempotencyKey } = parseInput(correctionInput, input);
+  const actor = await requirePermission(headers, "stock.correct", lokasyonId);
+  const found = await db.query.product.findFirst({ where: eq(product.id, productId), columns: { code: true, unit: true } });
+  if (!found) throw new UserError("Ürün bulunamadı.");
+  const parsed = parseQuantityOrZero(quantity, found.unit);
+  if (!parsed.ok) throw new UserError(parsed.error);
+
+  return postDocument({ kind: "sayim", lokasyonId, reason: "Stok düzenleme", userId: actor.userId, idempotencyKey }, async (tx) => {
+    const [pile] = await tx
+      .select()
+      .from(stock)
+      .where(and(eq(stock.productId, productId), eq(stock.lokasyonId, lokasyonId)))
+      .for("update");
+    const difference = subtractQuantity(parsed.value, pile?.physical ?? "0");
+    if (difference === "0") return [];
+    return [
+      {
+        productId,
+        lokasyonId,
+        direction: difference.startsWith("-") ? ("out" as const) : ("in" as const),
+        quantity: difference.replace("-", ""),
+        type: "sayim_duzeltmesi" as const,
+        reason: "Stok düzenleme",
+      },
+    ];
+  });
 }

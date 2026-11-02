@@ -28,14 +28,12 @@ export default async function StockEntryPage({ searchParams }: { searchParams: P
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Stok girişi</h1>
         <p className="text-muted-foreground max-w-3xl text-sm">
-          Elinizdeki sayımı ürün ürün girin. Yazdığınız sayı o yerdeki <strong className="text-foreground">toplam stok</strong> olur, üstüne eklenmez; kendiliğinden
-          kaydedilir, stok siz onaylayınca değişir. Yanlış girdiyseniz doğru toplamı yazıp onaylayın. Stok miktarları sitede görünmez.
-          <br />
-          <strong className="text-foreground">Yeni mal geldiyse</strong> buraya değil,{" "}
+          Sayılan stoğu kutuya yazın, üstteki karttan onaylayın: <strong className="text-foreground">mevcut stoğun üstüne eklenir</strong> ve Stok hareketleri&apos;nde
+          görünür. Yanlış sayıyı düzeltmek için <strong className="text-foreground">Düzenle</strong>&apos;ye basın. Satın alınan mallar{" "}
           <Link href="/mal-kabul" className="text-foreground underline underline-offset-4">
             Mal kabul
           </Link>
-          &apos;e yazın: mevcut stoğun üstüne ekler.
+          &apos;e yazılır.
         </p>
       </div>
 
@@ -54,7 +52,7 @@ export default async function StockEntryPage({ searchParams }: { searchParams: P
                   submitLabel={`${l.pending} girişi onayla`}
                   savedMessage="Onaylandı, stoka işlendi."
                 >
-                  <p className="text-sm">{l.opened ? "Onaylanınca stok yazdığınız sayıya düzeltilir." : "Onaylanınca açılış stoku olur."}</p>
+                  <p className="text-sm">{l.opened ? "Onaylanınca mevcut stoğun üstüne eklenir." : "Onaylanınca açılış stoku olur."}</p>
                 </StockForm>
               ) : (
                 <p className="text-sm">{l.pending} giriş onay bekliyor.</p>

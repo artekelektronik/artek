@@ -10,6 +10,7 @@ export type Action =
   | "products.view"
   | "stock.view" // balances and movement history
   | "stock.reverse" // ters kayıt of a confirmed movement
+  | "stock.correct" // setting a wrongly entered balance to the right number
   | "stock.receive" // Mal kabul
   | "stock.transfer"
   | "stock.out" // satış teslimatı, üretim tüketimi, fire
@@ -36,6 +37,7 @@ const rules: Record<Action, Partial<Record<Role, Scope>>> = {
   "products.view": { admin: "any", muhendis: "any", magaza_sorumlusu: "any", depo_sorumlusu: "any" },
   "stock.view": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "stock.reverse": { admin: "any", muhendis: "any" },
+  "stock.correct": { admin: "any" },
   "stock.receive": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "stock.transfer": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "stock.out": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },

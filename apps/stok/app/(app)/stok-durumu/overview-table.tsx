@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Subscribe, type ReactTable } from "@tanstack/react-table";
 import { Button } from "@artek/ui/components/button";
 import { DataTable } from "@/components/data-table/data-table";
+import { EditStock } from "@/components/edit-stock";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
@@ -63,7 +64,14 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
           column.accessor((r) => Number(r.stock[l.id][field]), {
             id: `${l.id}-${field}`,
             header: ({ column }) => <DataTableColumnHeader column={column} label={label} className="ml-auto" />,
-            cell: ({ row }) => <Quantity value={row.original.stock[l.id][field]} />,
+            cell: ({ row }) => (
+              <div className="flex items-center justify-end gap-1">
+                {field === "physical" && l.canCorrect && (
+                  <EditStock productId={row.original.id} lokasyonId={l.id} label={`${row.original.code} ${l.name}`} current={row.original.stock[l.id].physical} />
+                )}
+                <Quantity value={row.original.stock[l.id][field]} />
+              </div>
+            ),
             meta: { label: `${l.name} · ${label}` },
           }),
           ),

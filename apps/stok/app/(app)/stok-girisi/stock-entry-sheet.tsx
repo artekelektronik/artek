@@ -6,11 +6,12 @@ import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { EditStock } from "@/components/edit-stock";
 import { FormSelect } from "@/components/form-select";
 import { ProductImage } from "@/components/product-image";
 import { QuickAddProduct } from "@/components/quick-add-product";
 import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
-import { unitLabels } from "@/lib/quantity";
+import { addQuantities, unitLabels } from "@/lib/quantity";
 import type { StockEntrySheet as Sheet } from "@/lib/stock-entry";
 import { saveStockEntryAction } from "./actions";
 
@@ -129,8 +130,7 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
       <div className="flex items-center gap-1">
         <Input
           defaultValue={initial}
-          // The current balance shows in the box: typing over it corrects it, leaving it alone changes nothing.
-          placeholder={current !== "0" ? displayQuantity(current) : undefined}
+          placeholder={current !== "0" ? "+ ekle" : undefined}
           inputMode="decimal"
           data-column={lokasyon.id}
           aria-label={`${row.code} ${lokasyon.name} miktarı`}
@@ -150,10 +150,17 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
         {status === "saving" && <span className="text-muted-foreground text-xs">…</span>}
       </div>
       {error && <p className="text-destructive max-w-40 text-xs">{error}</p>}
-      {current !== "0" && <span className="text-muted-foreground text-xs">Stokta: {displayQuantity(current)}</span>}
+      {(current !== "0" || lokasyon.canCorrect) && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-muted-foreground">Stokta: {displayQuantity(current)}</span>
+          {lokasyon.canCorrect && <EditStock productId={row.id} lokasyonId={lokasyon.id} label={`${row.code} ${lokasyon.name}`} current={current} />}
+        </div>
+      )}
       {entered !== null && (
         <span className="text-xs font-medium">
-          {lokasyon.opened ? `Onaylanınca ${displayQuantity(current)} → ${displayQuantity(entered)} olacak` : "Onay bekliyor"}
+          {current !== "0"
+            ? `Onaylanınca ${displayQuantity(current)} + ${displayQuantity(entered)} = ${displayQuantity(addQuantities(current, entered))}`
+            : "Onay bekliyor"}
         </span>
       )}
     </div>

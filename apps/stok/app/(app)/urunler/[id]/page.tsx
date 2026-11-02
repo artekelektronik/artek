@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@artek/ui/components/table";
+import { EditStock } from "@/components/edit-stock";
 import { MovementTable } from "@/components/movement-table";
 import { loadActor } from "@/lib/guard";
 import { displayQuantity } from "@/lib/labels";
@@ -71,7 +72,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold">Stok</h2>
           <Link href={`/stok-girisi?q=${encodeURIComponent(product.code)}`} className="text-sm underline underline-offset-4">
-            Stok gir veya düzelt
+            Stok gir
           </Link>
         </div>
         <Table className="max-w-2xl">
@@ -87,7 +88,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {balances.lokasyon.map((b) => (
               <TableRow key={b.lokasyonId}>
                 <TableCell>{b.name}</TableCell>
-                <TableCell className="text-right tabular-nums">{displayQuantity(b.physical)}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  <div className="flex items-center justify-end gap-1">
+                    {lokasyon.find((l) => l.id === b.lokasyonId)?.openedAt && can(actor, "stock.correct", b.lokasyonId) && (
+                      <EditStock productId={product.id} lokasyonId={b.lokasyonId} label={`${product.code} ${b.name}`} current={b.physical} />
+                    )}
+                    {displayQuantity(b.physical)}
+                  </div>
+                </TableCell>
                 <TableCell className="text-right tabular-nums">{displayQuantity(b.reserved)}</TableCell>
                 <TableCell className="text-right tabular-nums">{displayQuantity(b.available)}</TableCell>
               </TableRow>
