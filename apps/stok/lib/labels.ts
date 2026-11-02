@@ -43,6 +43,13 @@ export const notificationStatusLabels: Record<(typeof notificationStatus.enumVal
   failed: "Gönderilemedi",
 };
 
+// What each Lokasyon's stock is for, shown beside its name on stock screens.
+export const lokasyonPurpose: Record<string, string> = {
+  "Çekmeköy İmalathane": "Trafo üretimi için",
+  "Karaköy Mağaza": "Satış için",
+  Yedek: "Sakladığımız yedek mal",
+};
+
 export const countKindLabels: Record<CountKind, string> = { sayim: "Sayım", acilis: "Açılış sayımı" };
 
 export const countStatusLabels: Record<(typeof countStatus.enumValues)[number], string> = {

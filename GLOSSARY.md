@@ -5,7 +5,7 @@ Artek's internal system for stock, custom transformer manufacturing, sales and c
 ## Places and channels
 
 **Lokasyon** (Location):
-A physical place where stock sits. Today: Çekmeköy İmalathane and Karaköy Mağaza.
+A place where stock sits. Today: Çekmeköy İmalathane (usable for production), Karaköy Mağaza (usable for sale) and Yedek (kept back; released by Transfer).
 _Avoid_: Depo, ana depo, mağaza (on its own)
 
 **Raf kodu** (Shelf code):
@@ -63,6 +63,9 @@ A physical count of products at a Lokasyon; each counted line is compared with t
 
 **Açılış sayımı** (Opening count):
 The first Sayım that establishes starting balances when the system goes live.
+
+**Stok girişi** (Stock entry):
+The screen where one product's quantities are typed side by side for every Lokasyon. It fills each Lokasyon's open Açılış sayımı or, once that is approved, its Sayım.
 
 ## Sales and manufacturing
 

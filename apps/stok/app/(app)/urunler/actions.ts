@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
-import { archiveProduct, createProduct, restoreProduct, setShowOnSite, updateProduct, type ProductInput } from "@/lib/products";
+import { archiveProduct, createProduct, quickAddProduct, restoreProduct, setShowOnSite, updateProduct, type ProductInput } from "@/lib/products";
 
 function lines(value: FormDataEntryValue | null) {
   return String(value ?? "")
@@ -72,6 +72,23 @@ export async function restoreProductAction(id: string) {
 
 export async function setShowOnSiteAction(id: string, showOnSite: boolean): Promise<ActionState> {
   const state = await runAction(async () => setShowOnSite(await headers(), id, showOnSite));
+  revalidatePath("/urunler");
+  return state;
+}
+
+export async function quickAddProductAction(formData: FormData): Promise<ActionState> {
+  const state = await runAction(async () =>
+    quickAddProduct(await headers(), {
+      code: text(formData, "code"),
+      name: text(formData, "name"),
+      category: text(formData, "category"),
+      unit: text(formData, "unit") as ProductInput["unit"],
+      isMaterial: formData.has("isMaterial"),
+      isTradeGoods: formData.has("isTradeGoods"),
+    }),
+  );
+  revalidatePath("/stok-girisi");
+  revalidatePath("/mal-kabul");
   revalidatePath("/urunler");
   return state;
 }

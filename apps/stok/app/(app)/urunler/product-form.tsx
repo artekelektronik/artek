@@ -42,7 +42,7 @@ const empty: Product = {
   isTradeGoods: true,
   isMaterial: false,
   unit: "adet",
-  showOnSite: true,
+  showOnSite: false,
   productType: null,
   subCategory: null,
   manufacturer: null,
@@ -125,11 +125,16 @@ export function ProductForm({
           <Label className="font-normal">
             <Checkbox name="showOnSite" defaultChecked={product.showOnSite} /> Sitede göster
           </Label>
+          <p className="text-muted-foreground w-full text-sm">
+            Stok miktarları sitede hiçbir zaman görünmez. Stok girmek için Stok girişi ekranını kullanın.
+          </p>
         </div>
       </fieldset>
 
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-2 text-lg font-semibold">Sitede görünen bilgiler</legend>
+        <legend className="mb-2 text-lg font-semibold">
+          Ürün detayları <span className="text-muted-foreground text-sm font-normal">(yalnızca “Sitede göster” işaretliyse sitede görünür)</span>
+        </legend>
         <Field label="Tip">
           <Input name="productType" defaultValue={product.productType ?? ""} className={input} />
         </Field>

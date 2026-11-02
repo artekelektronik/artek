@@ -54,7 +54,7 @@ export async function openCount(headers: Headers, input: z.input<typeof openInpu
   });
 }
 
-// Lines keep the balance at count time; unchanged lines keep their time (sheets are re-saved).
+// Lines keep the balance at count time; unchanged lines keep their time (sheets are re-saved). An emptied line goes back to uncounted.
 export async function recordCountLines(headers: Headers, countId: string, entries: { productId: string; counted: string }[]) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.perform", count.lokasyonId);
@@ -62,6 +62,13 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
   await db.transaction(async (tx) => {
     const [current] = await tx.select().from(stockCount).where(eq(stockCount.id, countId)).for("share");
     if (current.status !== "taslak") throw new UserError("Bu sayım açık değil; satır kaydedilemez.");
+    const emptied = entries.filter((e) => e.counted.trim() === "" && isUuid(e.productId)).map((e) => e.productId);
+    if (emptied.length) {
+      await tx
+        .update(stockCountLine)
+        .set({ counted: null, balanceAtCount: null, countedAt: null, countedBy: null })
+        .where(and(eq(stockCountLine.countId, countId), inArray(stockCountLine.productId, emptied), isNotNull(stockCountLine.counted)));
+    }
     for (const entry of entries.filter((e) => e.counted.trim() !== "")) {
       if (!isUuid(entry.productId)) throw new UserError("Bu ürün sayım listesinde yok.");
       const [line] = await tx

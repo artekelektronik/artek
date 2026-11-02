@@ -73,8 +73,8 @@ export default async function HomePage() {
               {notOpened.map((l) => l.name).join(" ve ")} henüz açılmadı; açılış sayımı onaylanana kadar bu Lokasyonda stok hareketi
               kaydedilemez.
             </p>
-            <Link href="/acilis-sayimi" className="text-foreground font-medium underline underline-offset-4">
-              Açılış sayımına git
+            <Link href="/stok-girisi" className="text-foreground font-medium underline underline-offset-4">
+              Stok girişine git
             </Link>
           </AlertDescription>
         </Alert>
