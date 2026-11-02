@@ -8,7 +8,9 @@ import { cn } from "@artek/ui/lib/utils";
 import { DatePicker } from "@/components/date-picker";
 import { ArchiveControl } from "@/components/archive-control";
 import { FormSelect } from "@/components/form-select";
+import { SortBar, type SortField } from "@/components/sort-bar";
 import { day, tl } from "@/lib/finance-calc";
+import { sortRows, type Sort } from "@/lib/sorting";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
 import { filterInvoices, invoiceDatePresets, invoiceRange, invoiceTotals, type InvoiceDatePreset, type InvoiceFilter } from "@/lib/list-filters";
 
@@ -26,6 +28,12 @@ export type InvoiceRow = {
 };
 
 type SortKey = "issuedOn" | "number" | "customer" | "netAmount";
+const sortFields: SortField[] = [
+  { id: "issuedOn", label: "Tarih", kind: "date" },
+  { id: "number", label: "Fatura no", kind: "text" },
+  { id: "customer", label: "Müşteri", kind: "text" },
+  { id: "netAmount", label: "Tutar", kind: "number" },
+];
 const typeOptions = [
   { value: "tumu", label: "Satış ve iade" },
   { value: "satis", label: "Sadece satış" },
@@ -40,27 +48,24 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
   const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
   const [q, setQ] = useState("");
   const [type, setType] = useState<InvoiceFilter["type"]>("tumu");
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "issuedOn", dir: -1 });
+  const [sorts, setSorts] = useState<Sort[]>([{ id: "issuedOn", desc: true }]);
 
   const visible = useMemo(() => {
     const shown = filterInvoices(rows, { range: invoiceRange(preset, today, custom), q, type });
-    return shown.sort((a, b) => {
-      const c = sort.key === "netAmount" ? Number(a.netAmount) - Number(b.netAmount) : a[sort.key].localeCompare(b[sort.key], "tr");
-      return c !== 0 ? c * sort.dir : b.issuedOn.localeCompare(a.issuedOn);
-    });
-  }, [rows, preset, custom, q, type, sort, today]);
+    return sortRows(shown, [...sorts, { id: "issuedOn", desc: true }], (r, id) => (id === "netAmount" ? Number(r.netAmount) : r[id as SortKey]));
+  }, [rows, preset, custom, q, type, sorts, today]);
   const totals = invoiceTotals(visible);
   const filtered = preset !== "tumu" || q || type !== "tumu";
 
   const header = (key: SortKey, label: string, numeric = false) => (
-    <TableHead aria-sort={sort.key === key ? (sort.dir === 1 ? "ascending" : "descending") : undefined} className={cn(numeric && "text-right")}>
+    <TableHead aria-sort={sorts[0]?.id === key ? (sorts[0].desc ? "descending" : "ascending") : undefined} className={cn(numeric && "text-right")}>
       <button
         type="button"
         className="hover:text-foreground"
-        onClick={() => setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: key === "issuedOn" || key === "netAmount" ? -1 : 1 }))}
+        onClick={() => setSorts((s) => [{ id: key, desc: s[0]?.id === key ? !s[0].desc : key === "issuedOn" || key === "netAmount" }])}
       >
         {label}
-        {sort.key === key && (sort.dir === 1 ? " ↑" : " ↓")}
+        {sorts[0]?.id === key && (sorts[0].desc ? " ↓" : " ↑")}
       </button>
     </TableHead>
   );
@@ -105,6 +110,7 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
           </button>
         )}
       </div>
+      <SortBar fields={sortFields} sorts={sorts} onChange={setSorts} />
       <p className="text-muted-foreground text-xs tabular-nums">
         <b className="text-foreground font-medium">{visible.length.toLocaleString("tr-TR")}</b> fatura · satış <b className="text-foreground font-medium">{tl(totals.sales)}</b>
         {totals.returns > 0 && <> · iade {tl(totals.returns)}</>}

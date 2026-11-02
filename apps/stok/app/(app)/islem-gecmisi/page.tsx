@@ -5,6 +5,7 @@ import { PanelShell } from "@/components/panel";
 import { listActivity } from "@/lib/activity";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { addDays, istanbulDate, istanbulTimeOn } from "@/lib/time";
 import { ActivityList, type ActivityRow } from "./activity-list";
 
 export const metadata = { title: "İşlem geçmişi | Artek" };
@@ -13,23 +14,15 @@ export default async function ActivityPage() {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
-  if (!can(actor, "crm.view")) return <NoAccess />;
-  const rows: ActivityRow[] = (await listActivity(requestHeaders)).map((r) => ({
-    id: r.id,
-    entity: r.entity,
-    entityId: r.entityId,
-    label: r.label,
-    action: r.action,
-    detail: r.detail,
-    who: r.author ?? (r.via === "rutin" ? "Rutin" : r.via === "fatura" ? "Fatura" : "Sistem"),
-    at: r.createdAt.toISOString(),
-  }));
+  if (!can(actor, "activity.view")) return <NoAccess />;
+  const rows: ActivityRow[] = (await listActivity(requestHeaders)).map((r) => ({ ...r, at: r.at.toISOString() }));
+  const today = istanbulDate(new Date());
   return (
     <PanelShell
       title="İşlem geçmişi"
-      lede={<>Faturalar, Müşteriler ve Adaylar&apos;da kim neyi ne zaman ekledi, değiştirdi ya da arşivledi. En yenisi en üstte.</>}
+      lede="Sistemde kim neyi ne zaman yaptı: ürünler, fiyatlar, stok, faturalar, müşteriler, adaylar ve kullanıcılar. En yenisi en üstte. Fiyat, fatura ve müşteri kayıtlarını yalnızca o panelin izni olanlar görür."
     >
-      <ActivityList rows={rows} />
+      <ActivityList rows={rows} todayStart={istanbulTimeOn(today).toISOString()} weekAgo={istanbulTimeOn(addDays(today, -6)).toISOString()} />
     </PanelShell>
   );
 }

@@ -17,6 +17,7 @@ export function CountsTable({ counts }: { counts: Count[] }) {
     column.accessor("createdAt", {
       id: "acilis",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Açılış" />,
+      meta: { label: "Açılış" },
       cell: ({ row }) => (
         <Link href={`/sayim/${row.original.id}`} className="underline-offset-4 hover:underline">
           {formatDateTime(row.original.createdAt)}

@@ -1,6 +1,7 @@
 import { createColumnHelper, type RowData, type SortingState } from "@tanstack/react-table";
 import { useDataTable, type UseDataTableProps } from "@/hooks/use-data-table";
 import type { DataTableFeatures } from "@/lib/data-table-features";
+import { compareValues } from "@/lib/sorting";
 
 export function columnHelperFor<TData extends RowData>() {
   return createColumnHelper<DataTableFeatures, TData>();
@@ -43,6 +44,7 @@ export function useClientDataTable<TData extends { id: string }>({
     autoResetPageIndex: false, // the URL owns the page; the hook resets it when filters change
     data,
     columns,
+    defaultColumn: { sortFn: (a, b, id) => compareValues(a.getValue(id), b.getValue(id)) },
     initialState: {
       columnVisibility: Object.fromEntries(hide.map((id) => [id, false])),
       sorting,

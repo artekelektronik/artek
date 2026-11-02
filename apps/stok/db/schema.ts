@@ -736,9 +736,9 @@ export const leadEvent = pgTable(
   (t) => [index("lead_event_lead_idx").on(t.leadId, t.createdAt)],
 );
 
-// One append-only log of what happened to Faturalar, Müşteriler and Adaylar, for the İşlem geçmişi page. Field-level
+// One append-only log of what happened to Faturalar, Müşteriler, Adaylar, Ürünler and Fiyatlar, for the İşlem geçmişi page. Field-level
 // changes of a Müşteri stay in customer_change; a row here only summarises them.
-export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday"]);
+export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat"]);
 export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu"]);
 
 export const activityLog = pgTable(
