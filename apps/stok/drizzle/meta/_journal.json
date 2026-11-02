@@ -176,6 +176,27 @@
       "when": 1793362755613,
       "tag": "0024_sohbet",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793611270316,
+      "tag": "0025_yedek-lokasyon",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793615149224,
+      "tag": "0026_stok-girisi-ekler",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793623485495,
+      "tag": "0027_fiyatlar",
+      "breakpoints": true
     }
   ]
 }

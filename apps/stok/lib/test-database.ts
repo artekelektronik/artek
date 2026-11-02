@@ -17,7 +17,7 @@ export async function openTestDatabase() {
   return db;
 }
 
-// Empties all tables but lokasyon and marks both opened; opening tests close one explicitly.
+// Empties all tables but lokasyon and marks them all opened; opening tests close one explicitly.
 export async function resetTestDatabase() {
   const { db } = await import("../db");
   const { rows } = await db.execute<{ tablename: string }>(
@@ -37,7 +37,7 @@ export async function lokasyonIdsByName() {
   const { lokasyon } = await import("../db/schema");
   const rows = await db.select().from(lokasyon);
   return Object.fromEntries(rows.map((row) => [row.name, row.id])) as Record<
-    "Çekmeköy İmalathane" | "Karaköy Mağaza",
+    "Çekmeköy İmalathane" | "Karaköy Mağaza" | "Yedek",
     string
   >;
 }

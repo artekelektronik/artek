@@ -7,6 +7,7 @@ import { isUuid } from "@/lib/errors";
 import { loadActor } from "@/lib/guard";
 import { listMovements, movementLimit } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
+import { exitValues } from "@/lib/stock-out-report";
 import { istanbulTimeOn } from "@/lib/time";
 
 export const metadata = { title: "Stok hareketleri | Artek" };
@@ -31,6 +32,8 @@ export default async function MovementsPage({
     productId: id(params.urun),
   });
 
+  const values = await exitValues(actor, movements);
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok hareketleri</h1>
@@ -52,6 +55,7 @@ export default async function MovementsPage({
         key={[params.baslangic, params.bitis, params.urun].join("|")}
         movements={movements}
         canReverse={can(actor, "stock.reverse")}
+        values={values}
       />
       {movements.length === movementLimit && (
         <p className="text-muted-foreground text-sm">En yeni {movementLimit} hareket yüklendi; tarih aralığını daraltın.</p>

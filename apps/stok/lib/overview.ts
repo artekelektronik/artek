@@ -7,7 +7,7 @@ import { can } from "./permissions";
 import { addQuantities, formatQuantity, subtractQuantity } from "./quantity";
 import { belowMinimumLevel } from "./kritik-seviye";
 
-type OverviewFilters = { q?: string; category?: string | string[]; lokasyonId?: string; belowMinimum?: boolean };
+type OverviewFilters = { q?: string; category?: string | string[]; lokasyonId?: string; belowMinimum?: boolean; noMinimum?: boolean };
 
 type Pile = { physical: string; reserved: string; available: string };
 const empty: Pile = { physical: "0", reserved: "0", available: "0" };
@@ -24,7 +24,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
 
   const search = filters.q?.trim();
   const products = await db
-    .select({ id: product.id, code: product.code, name: product.name, category: product.category, unit: product.unit })
+    .select({ id: product.id, code: product.code, name: product.name, category: product.category, unit: product.unit, manufacturerCode: product.manufacturerCode, images: product.images })
     .from(product)
     .where(
       and(
@@ -32,6 +32,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
         categoryCondition(filters.category),
         search ? or(ilike(product.code, `%${search}%`), ilike(product.name, `%${search}%`)) : undefined,
         belowMinimum ? belowMinimumLevel : undefined,
+        filters.noMinimum ? isNull(product.minLevel) : undefined,
       ),
     )
     .orderBy(asc(product.code));
@@ -69,7 +70,7 @@ export async function getOverview(headers: Headers, filters: OverviewFilters) {
     return { ...p, stock: perLokasyon, inTransit, total };
   });
 
-  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name })), rows, canFilterBelowMinimum: visible.length === all.length };
+  return { lokasyon: shown.map((l) => ({ id: l.id, name: l.name, canCorrect: l.openedAt !== null && can(actor, "stock.correct", l.id) })), rows, canFilterBelowMinimum: visible.length === all.length };
 }
 
 export type Overview = Awaited<ReturnType<typeof getOverview>>;

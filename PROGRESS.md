@@ -84,7 +84,7 @@ Rules the code and database enforce:
   1. The production build has run the migrations.
   2. `pnpm --filter stok import-products`
   3. `pnpm --filter stok create-admin`
-  4. An Açılış sayımı per Lokasyon.
+  4. An Açılış sayımı per Lokasyon, on the Stok girişi screen (`/stok-girisi`). There are now three: Çekmeköy İmalathane, Karaköy Mağaza and Yedek (ADR-0005).
 - The local dev database (`artek_stok`) was reset on 24 October 2026; it keeps the 92 products and the local admin. Karaköy was opened with a test count (ART-0003 = 12, then a stock-out of 3).
 
 ## Local setup

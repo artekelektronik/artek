@@ -23,6 +23,7 @@ export default async function CountPage({ params }: { params: Promise<{ id: stri
   const canApprove = open && can(actor, "count.approve", count.lokasyonId);
   const countedLines = count.lines.filter((l) => l.counted !== null).length;
   const isOpening = count.kind === "acilis";
+  const showDifference = !isOpening && !count.addsToStock;
 
   const table = (
     <Table>
@@ -31,8 +32,8 @@ export default async function CountPage({ params }: { params: Promise<{ id: stri
           <TableHead>Raf</TableHead>
           <TableHead>Ürün</TableHead>
           <TableHead>Sayılan</TableHead>
-          {!isOpening && <TableHead className="text-right">Sayım anındaki stok</TableHead>}
-          {!isOpening && <TableHead className="text-right">Fark</TableHead>}
+          {showDifference && <TableHead className="text-right">Sayım anındaki stok</TableHead>}
+          {showDifference && <TableHead className="text-right">Fark</TableHead>}
           <TableHead>Sayan</TableHead>
         </TableRow>
       </TableHeader>
@@ -53,12 +54,12 @@ export default async function CountPage({ params }: { params: Promise<{ id: stri
               )}{" "}
               <span className="text-muted-foreground text-sm">{unitLabels[line.unit]}</span>
             </TableCell>
-            {!isOpening && (
+            {showDifference && (
               <TableCell className="text-right tabular-nums">
                 {line.balanceAtCount !== null ? displayQuantity(line.balanceAtCount) : ""}
               </TableCell>
             )}
-            {!isOpening && (
+            {showDifference && (
               <TableCell className="text-right tabular-nums">
                 {line.difference !== null && line.difference !== "0" ? displayQuantity(line.difference) : line.difference === "0" ? "0" : ""}
               </TableCell>
@@ -96,13 +97,15 @@ export default async function CountPage({ params }: { params: Promise<{ id: stri
         <div className="flex flex-wrap items-start gap-6 border-t pt-4">
           <StockForm
             action={approveCountAction.bind(null, count.id)}
-            submitLabel={isOpening ? "Açılış sayımını onayla" : "Farkları onayla"}
+            submitLabel={isOpening ? "Açılış sayımını onayla" : count.addsToStock ? "Girişleri onayla" : "Farkları onayla"}
             savedMessage="Onaylandı."
           >
             <p className="text-muted-foreground max-w-md text-sm">
               {isOpening
                 ? "Onaylandığında sayılan miktarlar açılış stoku olur ve bu Lokasyonda diğer hareketler başlar."
-                : "Onaylandığında sayılan satırların farkı bir kez düzeltme hareketi olarak kaydedilir. Sayılmayan satırlar değişmez."}
+                : count.addsToStock
+                  ? "Onaylandığında yazılan miktarlar mevcut stoğun üstüne eklenir."
+                  : "Onaylandığında sayılan satırların farkı bir kez düzeltme hareketi olarak kaydedilir. Sayılmayan satırlar değişmez."}
             </p>
           </StockForm>
           <form action={async () => {

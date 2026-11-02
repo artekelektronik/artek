@@ -22,6 +22,7 @@ import {
   Truck,
   UserPlus,
   Users,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -47,8 +48,8 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "İşlemler", label: "Mal kabul", href: "/mal-kabul", icon: PackagePlus },
   { group: "İşlemler", label: "Stok çıkışı", href: "/stok-cikisi", icon: PackageMinus },
   { group: "İşlemler", label: "Transfer", href: "/transfer", icon: Truck },
+  { group: "İşlemler", label: "Stok girişi", href: "/stok-girisi", icon: ClipboardCheck },
   { group: "İşlemler", label: "Sayım", href: "/sayim", icon: ClipboardList },
-  { group: "İşlemler", label: "Açılış sayımı", href: "/acilis-sayimi", icon: ClipboardCheck },
   { group: "Katalog", label: "Ürünler", href: "/urunler", icon: Package },
   { group: "Satış", label: "Bugün", href: "/bugun", icon: Sparkles, requires: "crm" },
   { group: "Satış", label: "Takipler", href: "/musteriler/bugun", icon: CalendarCheck, requires: "crm" },
@@ -56,6 +57,7 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "Satış", label: "Adaylar", href: "/musteriler/adaylar", icon: UserPlus, requires: "crm" },
   { group: "Finans", label: "Finansal özet", href: "/finans", icon: LineChart, requires: "finance" },
   { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
+  { group: "Finans", label: "Fiyatlar", href: "/finans/fiyatlar", icon: Tag, requires: "finance" },
   { group: "Finans", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
   { group: "Yönetim", label: "İşlem geçmişi", href: "/musteriler/gecmis", icon: History, requires: "crm" },
   { group: "Yönetim", label: "Bildirimler", href: "/bildirimler", icon: Bell, requires: "notifications" },

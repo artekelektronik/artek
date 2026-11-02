@@ -5,7 +5,7 @@ Artek's internal system for stock, custom transformer manufacturing, sales and c
 ## Places and channels
 
 **Lokasyon** (Location):
-A physical place where stock sits. Today: Çekmeköy İmalathane and Karaköy Mağaza.
+A place where stock sits. Today: Çekmeköy İmalathane (usable for production), Karaköy Mağaza (usable for sale) and Yedek (kept back; released by Transfer).
 _Avoid_: Depo, ana depo, mağaza (on its own)
 
 **Raf kodu** (Shelf code):
@@ -53,7 +53,10 @@ _Avoid_: Güvence stoğu, emniyet stoğu
 
 **Stok hareketi** (Stock movement):
 A recorded change in stock with product, quantity, place, user, time and reason. Balances come only from movements.
-_Avoid_: Stok düzeltme (as a way to edit balances directly)
+_Avoid_: Changing a balance without a movement
+
+**Stok düzenleme** (Stock correction):
+An admin setting a wrongly entered balance to the right number at once. It posts a Stok hareketi for the difference, so the change stays on record.
 
 **Transfer**:
 Moving stock between two Lokasyon in two steps, sent and received; while on the way it belongs to neither.
@@ -63,6 +66,15 @@ A physical count of products at a Lokasyon; each counted line is compared with t
 
 **Açılış sayımı** (Opening count):
 The first Sayım that establishes starting balances when the system goes live.
+
+**Stok girişi** (Stock entry):
+The screen where counted stock is typed per product, side by side for every Lokasyon. Until a Lokasyon is open it fills its Açılış sayımı; after that, approved quantities add to the balance. Goods bought from a supplier go through Mal kabul instead.
+
+**Alış fiyatı / Satış fiyatı** (Purchase / sale price):
+The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans paneli sees them.
+
+**Stok değeri** (Stock value):
+Stok times a price, converted to TL at today's TCMB döviz satış rate. It is worked out when shown, never stored. Products with no price are left out and counted.
 
 ## Sales and manufacturing
 

@@ -1,0 +1,72 @@
+import { asc, eq, inArray, isNull } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "../db";
+import { currency, product, productPrice } from "../db/schema";
+import { parseInput, UserError } from "./errors";
+import { requirePermission } from "./guard";
+import { getOverview } from "./overview";
+import { parsePrice, type Price } from "./stock-value";
+
+// Unchecked: for callers that already checked finance.view.
+export async function loadPrices() {
+  const rows = await db.select().from(productPrice);
+  return new Map<string, Price>(rows.map((r) => [r.productId, r]));
+}
+
+// Every active product with its stock and prices, for the Fiyatlar screen.
+export async function listPrices(headers: Headers) {
+  await requirePermission(headers, "finance.view");
+  const [overview, prices] = await Promise.all([getOverview(headers, {}), loadPrices()]);
+  return { rows: overview.rows, prices };
+}
+
+const priceLines = z.array(
+  z.object({
+    productId: z.uuid(),
+    purchasePrice: z.string(),
+    purchaseCurrency: z.enum(currency.enumValues),
+    salePrice: z.string(),
+    saleCurrency: z.enum(currency.enumValues),
+  }),
+);
+
+const same = (a: string | null | undefined, b: string | null) => (a ? Number(a) : null) === (b ? Number(b) : null);
+
+// Saves the lines that changed, so "who changed it" stays true for the rest. Both prices empty removes the row.
+export async function savePrices(headers: Headers, input: z.input<typeof priceLines>) {
+  const actor = await requirePermission(headers, "finance.edit");
+  const lines = parseInput(priceLines, input);
+  const products = await db.select({ id: product.id, code: product.code }).from(product).where(isNull(product.archivedAt)).orderBy(asc(product.code));
+  const codes = new Map(products.map((p) => [p.id, p.code]));
+
+  const parsed = lines.flatMap((line) => {
+    const code = codes.get(line.productId);
+    if (!code) return [];
+    try {
+      return [{ ...line, purchasePrice: parsePrice(line.purchasePrice), salePrice: parsePrice(line.salePrice) }];
+    } catch (error) {
+      throw new UserError(`${code}: ${(error as Error).message}`);
+    }
+  });
+
+  await db.transaction(async (tx) => {
+    const current = await tx.select().from(productPrice).where(inArray(productPrice.productId, parsed.map((p) => p.productId)));
+    const before = new Map(current.map((c) => [c.productId, c]));
+    for (const { productId, ...price } of parsed) {
+      const old = before.get(productId);
+      if (!price.purchasePrice && !price.salePrice) {
+        if (old) await tx.delete(productPrice).where(eq(productPrice.productId, productId));
+        continue;
+      }
+      const unchanged =
+        old &&
+        same(old.purchasePrice, price.purchasePrice) &&
+        same(old.salePrice, price.salePrice) &&
+        old.purchaseCurrency === price.purchaseCurrency &&
+        old.saleCurrency === price.saleCurrency;
+      if (unchanged) continue;
+      const values = { ...price, updatedBy: actor.userId, updatedAt: new Date() };
+      await tx.insert(productPrice).values({ productId, ...values }).onConflictDoUpdate({ target: productPrice.productId, set: values });
+    }
+  });
+}

@@ -152,6 +152,23 @@ export const product = pgTable(
   (t) => [check("product_has_type", sql`${t.isTradeGoods} OR ${t.isMaterial}`)],
 );
 
+export const currency = pgEnum("currency", ["TRY", "USD", "EUR"]);
+
+// Alış and Satış fiyatı per product, for the Finans panel only. Apart from product because every role reads product rows whole.
+export const productPrice = pgTable("product_price", {
+  productId: uuid("product_id")
+    .primaryKey()
+    .references(() => product.id),
+  purchasePrice: numeric("purchase_price", { precision: 14, scale: 4 }),
+  purchaseCurrency: currency("purchase_currency").notNull(),
+  salePrice: numeric("sale_price", { precision: 14, scale: 4 }),
+  saleCurrency: currency("sale_currency").notNull(),
+  updatedBy: text("updated_by")
+    .notNull()
+    .references(() => user.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Raf kodu: where a product sits inside a Lokasyon. Helps finding and counting; stock is never per shelf.
 export const productShelf = pgTable(
   "product_shelf",
@@ -321,6 +338,8 @@ export const stockCount = pgTable(
     kind: countKind("kind").notNull(),
     status: countStatus("status").notNull().default("taslak"),
     category: text("category"), // null: every active product
+    // Stok girişi on an open Lokasyon: counted quantities add to the balance instead of replacing it.
+    addsToStock: boolean("adds_to_stock").notNull().default(false),
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),

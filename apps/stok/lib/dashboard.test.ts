@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
+import { eq } from "drizzle-orm";
 import { lokasyonIdsByName, openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
-import { istanbulDate } from "./time";
 
 describe("dashboard", { skip: skipWithoutDatabase }, () => {
   let db: Awaited<ReturnType<typeof openTestDatabase>>;
@@ -60,12 +60,12 @@ describe("dashboard", { skip: skipWithoutDatabase }, () => {
   test("a user who sees every Lokasyon gets every count and the products below Kritik seviye", async () => {
     const d = await dashboard.getDashboard(muhendis.headers);
 
-    assert.equal(d.productCount, 2, "archived products don't count");
     assert.deepEqual(
-      d.lokasyon.map((l) => [l.name, l.stockedProducts, Boolean(l.openedAt)]),
+      d.lokasyon.map((l) => [l.name, Boolean(l.openedAt)]),
       [
-        ["Çekmeköy İmalathane", 2, true],
-        ["Karaköy Mağaza", 1, true],
+        ["Çekmeköy İmalathane", true],
+        ["Karaköy Mağaza", true],
+        ["Yedek", true],
       ],
     );
     assert.equal(d.transfersOnTheWay, 1);
@@ -74,11 +74,8 @@ describe("dashboard", { skip: skipWithoutDatabase }, () => {
       d.belowMinimum?.map((p) => [p.code, p.total, p.minLevel]),
       [["T-CORE", "140", "200"]],
     );
-    assert.equal(d.daily.length, dashboard.dashboardDays);
-    const today = d.daily.at(-1)!;
-    assert.equal(today.inbound, 3, "three receipts");
-    assert.equal(today.outbound, 1, "the transfer leaving Çekmeköy");
-    assert.equal(d.movementsToday, today.inbound + today.outbound);
+    assert.equal(d.noMinimumCount, 1, "T-CU; archived products don't count");
+    assert.equal(d.movementsToday, 4, "three receipts and the transfer leaving Çekmeköy");
     assert.ok(d.recent.length > 0 && d.recent.length <= 8);
   });
 
@@ -90,14 +87,27 @@ describe("dashboard", { skip: skipWithoutDatabase }, () => {
     assert.equal(d.transfersOnTheWay, 1, "it is on its way to Karaköy");
     assert.equal(d.openCounts, 0, "the open count is at Çekmeköy");
     assert.equal(d.movementsToday, 1, "only the Karaköy receipt");
-    assert.deepEqual(d.daily.at(-1), { day: d.daily.at(-1)!.day, inbound: 1, outbound: 0 });
+    assert.equal(d.noMinimumCount, null);
     assert.ok(d.recent.every((m) => m.lokasyonId === lokasyon["Karaköy Mağaza"]));
   });
 
-  test("days with no movement are zero, and today is the last day", async () => {
-    const d = await dashboard.getDashboard(muhendis.headers);
-    const istanbulToday = istanbulDate(new Date());
-    assert.equal(d.daily.at(-1)!.day, istanbulToday);
-    assert.deepEqual(d.daily.slice(0, -1).map((x) => x.inbound + x.outbound), Array(dashboard.dashboardDays - 1).fill(0));
+  test("the stock summary totals per unit; only a Finans paneli holder gets values", async () => {
+    const stockSummary = await dashboard.getStockSummary(muhendis.headers);
+    assert.equal(stockSummary.finance, false);
+    assert.equal(stockSummary.overall.products, 2);
+    assert.equal(stockSummary.overall.units[0].total, "152", "on-the-way stock counts in the total");
+
+    const owner = await signedInAs(["admin"]);
+    await db.insert(schema.userPanel).values({ userId: owner.user.id, panel: "finans", level: "duzenler" });
+    const { savePrices } = await import("./prices");
+    const [core] = await db.select().from(schema.product).where(eq(schema.product.code, "T-CORE"));
+    await savePrices(owner.headers, [{ productId: core.id, purchasePrice: "2,50", purchaseCurrency: "TRY", salePrice: "4", saleCurrency: "TRY" }]);
+    await assert.rejects(savePrices(muhendis.headers, []), "Finans izni olmadan fiyat kaydedilemez");
+
+    const withValues = await dashboard.getStockSummary(owner.headers);
+    assert.equal(withValues.overall.purchase, 350, "140 × 2,50");
+    assert.equal(withValues.overall.margin, 210);
+    assert.equal(withValues.overall.purchaseCounted, 1, "T-CU has no price");
+    assert.equal((await dashboard.getStockSummary(muhendis.headers)).overall.purchase, 0);
   });
 });

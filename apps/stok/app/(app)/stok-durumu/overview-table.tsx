@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation";
 import { Subscribe, type ReactTable } from "@tanstack/react-table";
 import { Button } from "@artek/ui/components/button";
 import { DataTable } from "@/components/data-table/data-table";
+import { EditStock } from "@/components/edit-stock";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import type { DataTableFeatures } from "@/lib/data-table-features";
-import { displayQuantity } from "@/lib/labels";
+import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
 import type { Overview } from "@/lib/overview";
 import { totalsByUnit } from "@/lib/overview-totals";
 import { unitLabels } from "@/lib/quantity";
@@ -52,13 +53,25 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
     ...overview.lokasyon.map((l) =>
       column.group({
         id: `lokasyon-${l.id}`,
-        header: () => <div className="text-center">{l.name}</div>,
+        header: () => (
+          <div className="py-1 text-right leading-tight whitespace-normal">
+            <div>{l.name}</div>
+            <div className="text-muted-foreground text-xs font-normal">{lokasyonPurpose[l.name]}</div>
+          </div>
+        ),
         columns: column.columns(
           pileFields.map(([field, label]) =>
           column.accessor((r) => Number(r.stock[l.id][field]), {
             id: `${l.id}-${field}`,
             header: ({ column }) => <DataTableColumnHeader column={column} label={label} className="ml-auto" />,
-            cell: ({ row }) => <Quantity value={row.original.stock[l.id][field]} />,
+            cell: ({ row }) => (
+              <div className="flex items-center justify-end gap-1">
+                {field === "physical" && l.canCorrect && (
+                  <EditStock productId={row.original.id} lokasyonId={l.id} label={`${row.original.code} ${l.name}`} current={row.original.stock[l.id].physical} />
+                )}
+                <Quantity value={row.original.stock[l.id][field]} />
+              </div>
+            ),
             meta: { label: `${l.name} · ${label}` },
           }),
           ),
@@ -79,7 +92,9 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
     }),
   ]);
 
-  const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50 });
+  // Lokasyon stay side by side at a glance; the Görünüm menu brings the other piles back.
+  const hidden = overview.lokasyon.flatMap((l) => [`${l.id}-reserved`, `${l.id}-available`]);
+  const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50, hidden });
 
   return (
     <div className="flex flex-col gap-3">
