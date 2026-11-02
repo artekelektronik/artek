@@ -8,9 +8,9 @@ import { formatIstanbulTime, istanbulDate } from "./time";
 export const invoiceReminderTo = "artek@ferritnuve.com";
 export const invoiceReminderDays = 7;
 const dayMs = 86_400_000;
-const appUrl = () => process.env.BETTER_AUTH_URL ?? "https://stok.ferritnuve.com";
+export const appUrl = () => process.env.BETTER_AUTH_URL ?? "https://stok.ferritnuve.com";
 
-async function sentSince(kind: string, since: Date) {
+export async function sentSince(kind: string, since: Date) {
   const [row] = await db
     .select({ id: notification.id })
     .from(notification)

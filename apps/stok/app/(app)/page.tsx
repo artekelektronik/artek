@@ -6,10 +6,11 @@ import { Alert, AlertDescription, AlertTitle } from "@artek/ui/components/alert"
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@artek/ui/components/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { getDashboard, getStockSummary } from "@/lib/dashboard";
-import { financeSummary, tlShort, day } from "@/lib/finance";
+import { financeSummary, tl, tlShort, day } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { unitLabels, type Unit } from "@/lib/quantity";
+import { getWeekStockOuts, perUnitText } from "@/lib/stock-out-report";
 import { addDays, formatIstanbulTime, istanbulDate } from "@/lib/time";
 
 export const metadata = { title: "Ana sayfa | Artek" };
@@ -57,7 +58,12 @@ function Warning({ tone, text, href, action }: { tone: "danger" | "quiet"; text:
 export default async function HomePage() {
   await connection();
   const requestHeaders = await headers();
-  const [actor, d, s] = await Promise.all([loadActor(requestHeaders), getDashboard(requestHeaders), getStockSummary(requestHeaders)]);
+  const [actor, d, s, week] = await Promise.all([
+    loadActor(requestHeaders),
+    getDashboard(requestHeaders),
+    getStockSummary(requestHeaders),
+    getWeekStockOuts(requestHeaders),
+  ]);
   const sales = s.finance ? await financeSummary(requestHeaders, "finance.view") : null;
   const now = new Date();
   const notOpened = d.lokasyon.filter((l) => !l.openedAt);
@@ -223,6 +229,64 @@ export default async function HomePage() {
                 </TableRow>
               </TableFooter>
             </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Bu hafta çıkışlar</CardTitle>
+          <CardDescription>
+            {day(week.from)} pazartesiden beri {week.summary.exits.length} kayıt
+            {week.summary.corrections.length > 0 && ` · düzeltme veya sayımla azalan ${week.summary.corrections.length} kayıt ayrıca`}
+          </CardDescription>
+          <CardAction>
+            <Link href="/stok-cikisi" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
+              Tümü
+            </Link>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {week.summary.byType.map((t) => (
+              <div key={t.type} className="rounded-lg border p-3">
+                <p className="text-muted-foreground text-sm">{movementTypeLabels[t.type]}</p>
+                <p className="font-medium tabular-nums">{perUnitText(t.units)}</p>
+                {week.finance && t.type !== "fire" && (
+                  <p className="text-muted-foreground text-sm tabular-nums">
+                    {t.value === null ? "—" : tl(t.value)}
+                    {t.unpriced > 0 && ` · ${t.unpriced} kayıtta fiyat yok`}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          {week.summary.exits.length === 0 ? (
+            <p className="text-muted-foreground text-sm">Bu hafta stok çıkışı yok.</p>
+          ) : (
+            <ul className="divide-y">
+              {week.summary.exits.slice(0, 6).map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate">
+                      <Link href={`/urunler/${r.productId}`} className="font-mono underline-offset-4 hover:underline">
+                        {r.productCode}
+                      </Link>{" "}
+                      {r.productName}
+                    </span>
+                    <span className="text-muted-foreground text-xs">
+                      {movementTypeLabels[r.type]} · {r.reason} · {r.userName} · {r.lokasyonName} · {formatDateTime(r.createdAt)}
+                    </span>
+                  </div>
+                  <span className="flex shrink-0 flex-col text-right tabular-nums">
+                    <span>
+                      {displayQuantity(r.quantity)} {unitLabels[r.unit]}
+                    </span>
+                    {r.value !== null && <span className="text-muted-foreground text-xs">{tl(r.value)}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
         </CardContent>
       </Card>

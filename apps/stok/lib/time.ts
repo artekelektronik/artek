@@ -36,3 +36,8 @@ export function addWorkingDays(day: string, days: number): string {
   }
   return d;
 }
+
+// The Monday of a YYYY-MM-DD day's week.
+export function weekStart(day: string): string {
+  return addDays(day, -((new Date(`${day}T12:00:00Z`).getUTCDay() + 6) % 7));
+}

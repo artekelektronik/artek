@@ -3,7 +3,7 @@ import { UserError } from "./errors";
 import { Forbidden, NotSignedIn } from "./guard";
 import { sendNotificationsSoon } from "./send-soon";
 
-export type ActionState = { error?: string; saved?: boolean } | undefined;
+export type ActionState = { error?: string; saved?: boolean; message?: string } | undefined;
 
 // Refusals a user can act on become a form message; anything else is a real error.
 export async function runAction(work: () => Promise<unknown>): Promise<{ error?: string; saved?: boolean }> {

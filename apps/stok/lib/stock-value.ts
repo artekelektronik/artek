@@ -20,7 +20,7 @@ export function parsePrice(raw: string): string | null {
 // "12.5000" → "12,5": what the price field shows.
 export const displayPrice = (stored: string | null) => (stored ? stored.replace(/\.?0+$/, "").replace(".", ",") : "");
 
-function inTl(quantity: string, price: string | null | undefined, currency: Currency | undefined, rates: Rates | null) {
+export function inTl(quantity: string, price: string | null | undefined, currency: Currency | undefined, rates: Rates | null) {
   if (!price || !currency) return null;
   const rate = currency === "TRY" ? 1 : rates?.[currency];
   return rate ? Number(quantity) * Number(price) * rate : null;
@@ -55,4 +55,12 @@ export function stockSummary(rows: Row[], lokasyonIds: string[], prices: Map<str
   };
   const names = [...new Set(stocked.map((r) => r.category))].sort((a, b) => a.localeCompare(b, "tr"));
   return { overall: add(stocked), categories: names.map((category) => ({ category, ...add(stocked.filter((r) => r.category === category)) })) };
+}
+
+// What a stock-out is worth: a sale at its sale price, material used in production at its purchase price. Null when the price is missing.
+export function exitValue(type: string, quantity: string, price: Price | undefined, rates: Rates | null) {
+  const amount = quantity.replace("-", "");
+  if (type === "satis_teslimati") return inTl(amount, price?.salePrice, price?.saleCurrency, rates);
+  if (type === "uretim_tuketimi") return inTl(amount, price?.purchasePrice, price?.purchaseCurrency, rates);
+  return null;
 }
