@@ -7,6 +7,7 @@ import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
+import { tl } from "@/lib/finance-calc";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
 import { ReverseButton } from "./reverse-button";
@@ -16,7 +17,16 @@ type Movement = Awaited<ReturnType<typeof listMovements>>[number];
 const column = columnHelperFor<Movement>();
 const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boolean).join(" · ");
 
-export function MovementTable({ movements, canReverse }: { movements: Movement[]; canReverse: boolean }) {
+// `values` (movement id to TL) is passed only to a Finans paneli holder; without it there is no Tutar column.
+export function MovementTable({
+  movements,
+  canReverse,
+  values,
+}: {
+  movements: Movement[];
+  canReverse: boolean;
+  values?: Record<string, number | null>;
+}) {
   const reversed = new Set(movements.map((m) => m.reversesId).filter(Boolean));
 
   const columns = column.columns([
@@ -66,6 +76,19 @@ export function MovementTable({ movements, canReverse }: { movements: Movement[]
       ),
       meta: { label: "Miktar" },
     }),
+    ...(values
+      ? [
+          column.accessor((m) => values[m.id] ?? 0, {
+            id: "tutar",
+            header: ({ column }) => <DataTableColumnHeader column={column} label="Tutar" className="ml-auto" />,
+            cell: ({ row }) => {
+              const value = values[row.original.id];
+              return <div className="text-right tabular-nums">{value === null || value === undefined ? "—" : tl(value)}</div>;
+            },
+            meta: { label: "Tutar" },
+          }),
+        ]
+      : []),
     column.accessor("userName", {
       id: "kullanici",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Kullanıcı" />,
@@ -76,7 +99,7 @@ export function MovementTable({ movements, canReverse }: { movements: Movement[]
       id: "belge",
       size: 280,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Belge / neden" />,
-      cell: ({ cell }) => <div className="max-w-64 truncate">{cell.getValue()}</div>,
+      cell: ({ cell }) => <div className="max-w-64 whitespace-normal">{cell.getValue()}</div>,
       enableSorting: false,
       meta: { label: "Belge / neden" },
     }),
