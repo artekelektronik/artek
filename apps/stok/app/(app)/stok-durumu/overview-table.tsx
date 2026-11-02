@@ -43,6 +43,13 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
         </span>
       ),
       enableHiding: false,
+      meta: { label: "Kod" },
+    }),
+    column.accessor("name", {
+      id: "ad",
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Ürün adı" />,
+      enableHiding: false,
+      meta: { label: "Ürün adı" },
     }),
     column.accessor("category", {
       id: "kategori",

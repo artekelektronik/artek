@@ -50,5 +50,6 @@ export function capabilitiesOf(actor: Actor & { active: boolean }, lokasyon: Lok
     { key: "finans", group: "Satış", label: "Finans paneli", hint: "Satış rakamları ve fatura yükleme", grant: level(a, "finance.edit", "finance.view") },
     { key: "kullanici", group: "Yönetim", label: "Kullanıcılar", hint: "Davet eder, yetki ve panel izni verir", grant: yes(can(a, "users.manage")) },
     { key: "bildirim", group: "Yönetim", label: "Bildirimler", hint: "E-posta alıcılarını ve gönderimleri yönetir", grant: yes(can(a, "notifications.manage")) },
+    { key: "gecmis", group: "Yönetim", label: "İşlem geçmişi", hint: "Kimin neyi ne zaman yaptığını görür, her gün ve hafta raporu alır", grant: yes(can(a, "activity.view")) },
   ];
 }

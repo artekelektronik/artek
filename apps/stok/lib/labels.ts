@@ -83,3 +83,6 @@ export function formatDateTime(date: Date) {
 export function displayQuantity(value: string) {
   return value.replace(".", ",");
 }
+
+export const activityEntityLabels = { urun: "Ürün", fiyat: "Fiyat", stok: "Stok", fatura: "Fatura", musteri: "Müşteri", aday: "Aday", kullanici: "Kullanıcı" } as const;
+export type ActivityEntity = keyof typeof activityEntityLabels;

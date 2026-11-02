@@ -10,12 +10,21 @@ import { EditStock } from "@/components/edit-stock";
 import { FormSelect } from "@/components/form-select";
 import { ProductImage } from "@/components/product-image";
 import { QuickAddProduct } from "@/components/quick-add-product";
+import { SortBar, type SortField } from "@/components/sort-bar";
 import { displayQuantity, lokasyonPurpose } from "@/lib/labels";
 import { addQuantities, unitLabels } from "@/lib/quantity";
+import { sortRows, type Sort } from "@/lib/sorting";
 import type { StockEntrySheet as Sheet } from "@/lib/stock-entry";
 import { saveStockEntryAction } from "./actions";
 
 type Row = Sheet["rows"][number];
+
+const sortFields: SortField[] = [
+  { id: "ad", label: "Ürün adı", kind: "text" },
+  { id: "kod", label: "Kod", kind: "text" },
+  { id: "kategori", label: "Kategori", kind: "text" },
+  { id: "stok", label: "Stok", kind: "number" },
+];
 
 const types = [
   { value: "malzeme", label: "Malzeme" },
@@ -37,14 +46,18 @@ export function StockEntrySheet({
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
   const [onlyFilled, setOnlyFilled] = useState(false);
+  const [sorts, setSorts] = useState<Sort[]>([]);
 
   const search = query.trim().toLocaleLowerCase("tr");
-  const rows = sheet.rows.filter(
+  const filtered = sheet.rows.filter(
     (r) =>
       (!search || `${r.code} ${r.name} ${r.manufacturerCode ?? ""}`.toLocaleLowerCase("tr").includes(search)) &&
       (!type || (type === "malzeme" ? r.isMaterial : r.isTradeGoods)) &&
       (!category || r.category === category) &&
       (!onlyFilled || Object.values(r.cells).some((c) => c.entered !== null || c.current !== "0")),
+  );
+  const rows = sortRows(filtered, sorts, (r, id) =>
+    id === "stok" ? Object.values(r.cells).reduce((sum, c) => sum + Number(c.current), 0) : id === "ad" ? r.name : id === "kod" ? r.code : r.category,
   );
 
   return (
@@ -59,6 +72,7 @@ export function StockEntrySheet({
         </Label>
         <span className="text-muted-foreground text-sm">{rows.length} ürün</span>
       </div>
+      <SortBar fields={sortFields} sorts={sorts} onChange={setSorts} />
 
       {canAddProduct && <QuickAddProduct categories={categories} onAdded={setQuery} />}
 

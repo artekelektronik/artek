@@ -29,6 +29,7 @@ export function NotificationsTable({ notifications }: { notifications: Notificat
     column.accessor("createdAt", {
       id: "olusma",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Oluşma" />,
+      meta: { label: "Oluşma" },
       cell: ({ row }) => <span className="whitespace-nowrap">{formatDateTime(row.original.createdAt)}</span>,
       enableHiding: false,
     }),

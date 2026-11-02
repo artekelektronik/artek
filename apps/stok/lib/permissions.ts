@@ -16,7 +16,8 @@ export type Action =
   | "stock.out" // satış teslimatı, üretim tüketimi, fire
   | "count.perform" // Sayım
   | "count.approve"
-  | "notifications.manage"; // Kritik seviye recipients and the email outbox
+  | "notifications.manage" // Kritik seviye recipients and the email outbox
+  | "activity.view"; // İşlem geçmişi
 
 // The owner's private panels: each needs the admin role and a permission given to that user by name.
 export type PanelAction =
@@ -44,6 +45,7 @@ const rules: Record<Action, Partial<Record<Role, Scope>>> = {
   "count.perform": { admin: "any", muhendis: "any", magaza_sorumlusu: "own", depo_sorumlusu: "own" },
   "count.approve": { admin: "any", muhendis: "any" },
   "notifications.manage": { admin: "any" },
+  "activity.view": { admin: "any" },
 };
 
 const panelRules: Record<PanelAction, { panel: Panel; levels: PanelLevel[] }> = {

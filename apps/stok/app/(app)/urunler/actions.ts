@@ -55,6 +55,7 @@ export async function createProductAction(_previous: ActionState, formData: Form
 export async function updateProductAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => updateProduct(await headers(), id, productFrom(formData)));
   revalidatePath(`/urunler/${id}`);
+  revalidatePath("/finans/fiyatlar");
   return state;
 }
 

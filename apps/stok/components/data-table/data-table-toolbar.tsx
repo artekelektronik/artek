@@ -19,6 +19,7 @@ import { DataTableSliderFilter } from "@/components/data-table/data-table-slider
 import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
+import { SortBar, type SortKind } from "@/components/sort-bar";
 
 interface DataTableToolbarProps<
   TData extends RowData,
@@ -36,6 +37,16 @@ export function DataTableToolbar<TData extends RowData>({
     () => table.getAllColumns().filter((column) => column.getCanFilter()),
     [table],
   );
+
+  // Columns with a label; what kind each is comes from its first value.
+  const sortFields = table
+    .getAllLeafColumns()
+    .filter((column) => column.getCanSort() && column.columnDef.meta?.label)
+    .map((column) => {
+      const value: unknown = table.getCoreRowModel().rows[0]?.getValue(column.id);
+      const kind: SortKind = typeof value === "number" ? "number" : value instanceof Date ? "date" : "text";
+      return { id: column.id, label: column.columnDef.meta!.label!, kind };
+    });
 
   function onReset() {
     table.resetColumnFilters(true);
@@ -72,6 +83,9 @@ export function DataTableToolbar<TData extends RowData>({
               </Button>
             )
           }
+        </Subscribe>
+        <Subscribe source={table.atoms.sorting} selector={(sorting) => sorting}>
+          {(sorting) => <SortBar fields={sortFields} sorts={sorting} onChange={(next) => table.setSorting(next)} />}
         </Subscribe>
       </div>
       <div className="flex items-center gap-2">

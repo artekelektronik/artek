@@ -1,6 +1,7 @@
 import { and, asc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, type Tx } from "../db";
+import { logActivity } from "./activity";
 import { product, productShelf, stockCount, stockCountLine, stockMovement, transfer, transferLine, unit } from "../db/schema";
 import { isUniqueViolation, isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
@@ -65,13 +66,53 @@ async function replaceShelves(tx: Tx, productId: string, shelves: Record<string,
   if (rows.length) await tx.insert(productShelf).values(rows);
 }
 
+const textFields = {
+  code: "Kod",
+  name: "Ad",
+  category: "Kategori",
+  unit: "Birim",
+  productType: "Tip",
+  subCategory: "Alt kategori",
+  manufacturer: "Üretici",
+  manufacturerCode: "Üretici kodu",
+  supplier: "Tedarikçi",
+  supplierCountry: "Tedarikçi ülkesi",
+} as const;
+const flagFields = { isTradeGoods: "Ticari mal", isMaterial: "Malzeme", showOnSite: "Sitede" } as const;
+const longFields = { description: "Açıklama", images: "Görseller", datasheets: "Teknik belgeler" } as const;
+
+type Fields = ReturnType<typeof parse>;
+type Before = Omit<Fields, "shelves" | "images" | "datasheets"> & { images: string[]; datasheets: unknown };
+
+// "Ad: EE 25 → EE 25/13/7; Görseller değişti". Short values with before and after, long ones only that they changed.
+function describeChanges(before: Before, after: Fields, beforeShelves: Record<string, string>) {
+  const shown = (value: string | null | undefined) => value || "—";
+  const changes: string[] = [];
+  for (const [field, label] of Object.entries(textFields) as [keyof typeof textFields, string][]) {
+    if ((before[field] ?? null) !== (after[field] ?? null)) changes.push(`${label}: ${shown(before[field])} → ${shown(after[field])}`);
+  }
+  for (const [field, label] of Object.entries(flagFields) as [keyof typeof flagFields, string][]) {
+    if (before[field] !== after[field]) changes.push(`${label}: ${after[field] ? "Evet" : "Hayır"}`);
+  }
+  if (Number(before.minLevel ?? -1) !== Number(after.minLevel ?? -1)) changes.push(`Kritik seviye: ${before.minLevel ? Number(before.minLevel) : "—"} → ${after.minLevel ? Number(after.minLevel) : "—"}`);
+  for (const [field, label] of Object.entries(longFields) as [keyof typeof longFields, string][]) {
+    if (JSON.stringify(before[field] ?? null) !== JSON.stringify(after[field] ?? null)) changes.push(`${label} değişti`);
+  }
+  const shelves = (all: Record<string, string>) => JSON.stringify(Object.entries(all).filter(([, code]) => code).sort());
+  if (shelves(beforeShelves) !== shelves(after.shelves)) changes.push("Raf kodu değişti");
+  return changes.join("; ");
+}
+
+const productLabel = (p: { code: string; name: string }) => `${p.code} ${p.name}`;
+
 export async function createProduct(headers: Headers, input: ProductInput) {
-  await requirePermission(headers, "products.manage");
+  const actor = await requirePermission(headers, "products.manage");
   const { shelves, ...fields } = parse(input);
   return saveWith(() =>
     db.transaction(async (tx) => {
       const [created] = await tx.insert(product).values(fields).returning();
       await replaceShelves(tx, created.id, shelves);
+      await logActivity(tx, { entity: "urun", entityId: created.id, label: productLabel(created), action: "eklendi", userId: actor.userId });
       return created;
     }),
   );
@@ -88,32 +129,40 @@ export async function quickAddProduct(
 }
 
 export async function updateProduct(headers: Headers, id: string, input: ProductInput) {
-  await requirePermission(headers, "products.manage");
-  const { shelves, ...fields } = parse(input);
+  const actor = await requirePermission(headers, "products.manage");
+  const parsed = parse(input);
+  const { shelves, ...fields } = parsed;
   const before = await db.query.product.findFirst({ where: eq(product.id, id), columns: { images: true } });
   await saveWith(() =>
     db.transaction(async (tx) => {
       // One unit per product, no conversions: once stock has moved, the unit is fixed.
-      const current = await tx.query.product.findFirst({ where: eq(product.id, id), columns: { unit: true } });
+      const current = await tx.query.product.findFirst({ where: eq(product.id, id) });
       if (current && current.unit !== fields.unit) {
         const moved = await tx.query.stockMovement.findFirst({ where: eq(stockMovement.productId, id), columns: { id: true } });
         if (moved) throw new UserError("Hareketi olan ürünün birimi değiştirilemez.");
       }
       await tx.update(product).set({ ...fields, updatedAt: new Date() }).where(eq(product.id, id));
+      const oldShelves = await tx.select().from(productShelf).where(eq(productShelf.productId, id));
       await replaceShelves(tx, id, shelves);
+      if (!current) return;
+      const detail = describeChanges(current, parsed, Object.fromEntries(oldShelves.map((s) => [s.lokasyonId, s.rafKodu])));
+      if (detail) await logActivity(tx, { entity: "urun", entityId: id, label: productLabel(fields), action: "duzenlendi", detail, userId: actor.userId });
     }),
   );
   await deleteUnusedImages((before?.images ?? []).filter((url) => !fields.images.includes(url)));
 }
 
 export async function setShowOnSite(headers: Headers, id: string, showOnSite: boolean) {
-  await requirePermission(headers, "products.manage");
-  await db.update(product).set({ showOnSite, updatedAt: new Date() }).where(eq(product.id, id));
+  const actor = await requirePermission(headers, "products.manage");
+  await db.transaction(async (tx) => {
+    const [row] = await tx.update(product).set({ showOnSite, updatedAt: new Date() }).where(eq(product.id, id)).returning();
+    if (row) await logActivity(tx, { entity: "urun", entityId: id, label: productLabel(row), action: "duzenlendi", detail: `Sitede: ${showOnSite ? "Evet" : "Hayır"}`, userId: actor.userId });
+  });
 }
 
 // Products are never deleted: archiving hides them from everyday lists and keeps their history.
 export async function archiveProduct(headers: Headers, id: string) {
-  await requirePermission(headers, "products.manage");
+  const actor = await requirePermission(headers, "products.manage");
   // Archived products take no new movements, so documents still in progress must finish first.
   const [onTheWay] = await db
     .select({ id: transferLine.transferId })
@@ -129,12 +178,18 @@ export async function archiveProduct(headers: Headers, id: string) {
     .where(and(eq(stockCountLine.productId, id), eq(stockCount.status, "taslak")))
     .limit(1);
   if (inCount) throw new UserError("Bu ürün açık bir sayımda; sayım kapanmadan arşivlenemez.");
-  await db.update(product).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(product.id, id));
+  await db.transaction(async (tx) => {
+    const [row] = await tx.update(product).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(product.id, id)).returning();
+    if (row) await logActivity(tx, { entity: "urun", entityId: id, label: productLabel(row), action: "arsivlendi", userId: actor.userId });
+  });
 }
 
 export async function restoreProduct(headers: Headers, id: string) {
-  await requirePermission(headers, "products.manage");
-  await db.update(product).set({ archivedAt: null, updatedAt: new Date() }).where(eq(product.id, id));
+  const actor = await requirePermission(headers, "products.manage");
+  await db.transaction(async (tx) => {
+    const [row] = await tx.update(product).set({ archivedAt: null, updatedAt: new Date() }).where(eq(product.id, id)).returning();
+    if (row) await logActivity(tx, { entity: "urun", entityId: id, label: productLabel(row), action: "geri_alindi", userId: actor.userId });
+  });
 }
 
 export async function listProducts(headers: Headers, filters: { archived?: boolean }) {

@@ -87,4 +87,83 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
     assert.deepEqual((await listActivity(editor.headers)).map((r) => r.entity).sort(), ["fatura", "musteri"]);
     assert.deepEqual((await listActivity(crmOnly.headers)).map((r) => r.entity), ["musteri"]);
   });
+
+  describe("products, prices and reports", () => {
+    const ferrit = { code: "ART-1", name: "EE 25", category: "Ferrit", isTradeGoods: true, isMaterial: false, unit: "adet" as const, showOnSite: false };
+
+    test("a product edit logs what changed, and a save with no change logs nothing", async () => {
+      const { createProduct, updateProduct, archiveProduct, restoreProduct, setShowOnSite } = await import("./products");
+      const created = await createProduct(editor.headers, ferrit);
+      await updateProduct(editor.headers, created.id, ferrit);
+      await updateProduct(editor.headers, created.id, { ...ferrit, name: "EE 25/13", minLevel: "5", shelves: {} });
+      await setShowOnSite(editor.headers, created.id, true);
+      await archiveProduct(editor.headers, created.id);
+      await restoreProduct(editor.headers, created.id);
+      const rows = (await log()).filter((r) => r.entity === "urun");
+      assert.deepEqual(rows.map((r) => r.action).sort(), ["arsivlendi", "duzenlendi", "duzenlendi", "eklendi", "geri_alindi"]);
+      assert.ok(rows.some((r) => r.detail === "Ad: EE 25 → EE 25/13; Kritik seviye: — → 5"));
+      assert.ok(rows.every((r) => r.userId === editor.user.id));
+    });
+
+    test("a price save logs old and new for the rows that changed, and 100 stays 100", async () => {
+      const { createProduct } = await import("./products");
+      const { savePrices } = await import("./prices");
+      const created = await createProduct(editor.headers, ferrit);
+      const line = { productId: created.id, purchasePrice: "100", purchaseCurrency: "USD" as const, salePrice: "", saleCurrency: "TRY" as const };
+      await savePrices(editor.headers, [line]);
+      await savePrices(editor.headers, [line]);
+      await savePrices(editor.headers, [{ ...line, salePrice: "12,5" }]);
+      const rows = (await log()).filter((r) => r.entity === "fiyat").map((r) => [r.action, r.detail]);
+      assert.deepEqual(rows.sort(), [
+        ["duzenlendi", "Satış: — → 12,5 TL"],
+        ["eklendi", "Alış: — → 100 USD"],
+      ]);
+    });
+
+    test("stock movements and user changes show too, but prices only with the Finans paneli", async () => {
+      const { createProduct } = await import("./products");
+      const { savePrices } = await import("./prices");
+      const { loadActivity, listActivity } = await import("./activity");
+      const created = await createProduct(editor.headers, ferrit);
+      await savePrices(editor.headers, [{ productId: created.id, purchasePrice: "1", purchaseCurrency: "USD", salePrice: "", saleCurrency: "TRY" }]);
+      const plainAdmin = await signedInAs(["admin"]);
+      const seen = (await listActivity(plainAdmin.headers)).map((r) => r.entity);
+      assert.ok(seen.includes("urun"));
+      assert.ok(!seen.includes("fiyat"));
+      assert.ok((await loadActivity({ finance: true, crm: true })).some((r) => r.entity === "fiyat"));
+      const muhendis = await signedInAs(["muhendis"]);
+      await assert.rejects(listActivity(muhendis.headers));
+    });
+
+    test("the morning reports go out once, with prices only to Finans holders, and a quiet day sends nothing", async () => {
+      const { createProduct } = await import("./products");
+      const { savePrices } = await import("./prices");
+      const { queueActivityReports } = await import("./activity-report");
+      const plainAdmin = await signedInAs(["admin"]);
+      const created = await createProduct(editor.headers, ferrit);
+      await savePrices(editor.headers, [{ productId: created.id, purchasePrice: "7", purchaseCurrency: "USD", salePrice: "", saleCurrency: "TRY" }]);
+
+      const reports = async () => (await db.select().from(schema.notification)).filter((n) => n.kind.startsWith("islem_"));
+      const tomorrow = new Date(Date.now() + 86_400_000);
+      const inSevenDays = new Date(Date.now() + 7 * 86_400_000);
+      const monday = [tomorrow, ...Array.from({ length: 6 }, (_, i) => new Date(Date.now() + (i + 2) * 86_400_000))].find((d) => d.getUTCDay() === 1) ?? inSevenDays;
+
+      assert.ok((await queueActivityReports(tomorrow)).includes("islem_gunluk"));
+      const daily = (await reports()).filter((r) => r.kind === "islem_gunluk");
+      assert.ok(daily.some((r) => r.body.includes("Alış: — → 7 USD") && r.recipients.includes(editor.user.email)));
+      assert.ok(daily.every((r) => !(r.body.includes("Alış: — → 7 USD") && r.recipients.includes(plainAdmin.user.email))));
+
+      assert.ok((await queueActivityReports(monday)).includes("islem_haftalik"));
+      const weekly = (await reports()).filter((r) => r.kind === "islem_haftalik");
+      assert.ok(weekly.some((r) => r.body.includes("Fiyat 1") && r.recipients.includes(editor.user.email)));
+      assert.ok(weekly.every((r) => !(r.body.includes("Fiyat 1") && r.recipients.includes(plainAdmin.user.email))));
+
+      const count = (await reports()).length;
+      await queueActivityReports(monday);
+      assert.equal((await reports()).length, count);
+
+      const farAway = new Date(monday.getTime() + 30 * 86_400_000);
+      assert.deepEqual(await queueActivityReports(farAway), []);
+    });
+  });
 });
