@@ -210,6 +210,7 @@ export async function listMovements(headers: Headers, filters: MovementFilters) 
       productId: product.id,
       productCode: product.code,
       productName: product.name,
+      productCategory: product.category,
       lokasyonId: stockMovement.lokasyonId,
       lokasyonName: lokasyon.name,
       userId: stockMovement.userId,

@@ -90,6 +90,9 @@ describe("stock-out report", { skip: skipWithoutDatabase }, () => {
     assert.equal(sale?.reason, "Müşteri teslimatı");
     assert.equal(sale?.userName, karakoyUser.user.name);
     assert.equal(sale?.value, 35);
+    assert.equal(sale?.productCategory, "Ferrit");
+    const [listed] = await ledger.listMovements(owner.headers, { type: "uretim_tuketimi" });
+    assert.equal(listed.productCategory, "Malzeme");
   });
 
   test("without the Finans paneli the exits are visible but carry no amounts", async () => {
@@ -134,6 +137,8 @@ describe("stock-out report", { skip: skipWithoutDatabase }, () => {
     const withAmounts = sent.find((n) => n.recipients.includes(owner.user.email));
     const without = sent.find((n) => n.recipients.includes(plainAdmin.user.email));
     assert.match(withAmounts!.body, /Müşteri teslimatı/);
+    assert.match(withAmounts!.body, /T-CORE EE 25 \(Ferrit\)/);
+    assert.match(withAmounts!.body, /T-CORE EE 25 · Ferrit · 7 adet/);
     assert.match(withAmounts!.body, /35/);
     assert.match(without!.body, /Müşteri teslimatı/);
     assert.doesNotMatch(without!.body, /TL/);
