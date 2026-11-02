@@ -43,6 +43,7 @@ export function capabilitiesOf(actor: Actor & { active: boolean }, lokasyon: Lok
     },
     { key: "sayim", group: "Stok", label: "Sayım", hint: "Sayım yapar", grant: where(a, "count.perform", lokasyon) },
     { key: "sayimOnay", group: "Stok", label: "Sayım onayı", hint: "Sayım farklarını onaylar", grant: where(a, "count.approve", lokasyon) },
+    { key: "stokDuzenle", group: "Stok", label: "Stok düzenleme", hint: "Yanlış girilmiş stok sayısını düzeltir", grant: where(a, "stock.correct", lokasyon) },
     { key: "ters", group: "Stok", label: "Ters kayıt", hint: "Onaylı bir stok hareketini geri alır", grant: where(a, "stock.reverse", lokasyon) },
     { key: "urun", group: "Katalog", label: "Ürünler", hint: "Ürün kartları ve kritik seviye", grant: level(a, "products.manage", "products.view") },
     { key: "musteri", group: "Satış", label: "Müşteri paneli", hint: "Müşteriler, notlar ve takip", grant: level(a, "crm.edit", "crm.view") },

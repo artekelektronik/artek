@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { Badge } from "@artek/ui/components/badge";
 import { NoAccess } from "@/components/no-access";
 import { StockForm } from "@/components/stock-form";
@@ -27,9 +28,12 @@ export default async function StockEntryPage({ searchParams }: { searchParams: P
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Stok girişi</h1>
         <p className="text-muted-foreground max-w-3xl text-sm">
-          Elinizdeki sayımı ürün ürün girin: her ürünün ne kadarı nerede, yan yana yazın. Yazdığınız sayı kendiliğinden kaydedilir,
-          değiştirebilir veya silebilirsiniz. Stok, siz onaylayınca değişir. Onaydan sonra düzeltmek için yine buraya doğru sayıyı yazıp
-          onaylayın; fark hareket olarak kaydedilir. Stok miktarları sitede görünmez.
+          Sayılan stoğu kutuya yazın, üstteki karttan onaylayın: <strong className="text-foreground">mevcut stoğun üstüne eklenir</strong> ve Stok hareketleri&apos;nde
+          görünür. Yanlış sayıyı düzeltmek için <strong className="text-foreground">Düzenle</strong>&apos;ye basın. Satın alınan mallar{" "}
+          <Link href="/mal-kabul" className="text-foreground underline underline-offset-4">
+            Mal kabul
+          </Link>
+          &apos;e yazılır.
         </p>
       </div>
 
@@ -48,7 +52,7 @@ export default async function StockEntryPage({ searchParams }: { searchParams: P
                   submitLabel={`${l.pending} girişi onayla`}
                   savedMessage="Onaylandı, stoka işlendi."
                 >
-                  <p className="text-sm">{l.opened ? "Onaylanınca stok yazdığınız sayıya düzeltilir." : "Onaylanınca açılış stoku olur."}</p>
+                  <p className="text-sm">{l.opened ? "Onaylanınca mevcut stoğun üstüne eklenir." : "Onaylanınca açılış stoku olur."}</p>
                 </StockForm>
               ) : (
                 <p className="text-sm">{l.pending} giriş onay bekliyor.</p>

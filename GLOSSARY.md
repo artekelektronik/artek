@@ -53,7 +53,10 @@ _Avoid_: Güvence stoğu, emniyet stoğu
 
 **Stok hareketi** (Stock movement):
 A recorded change in stock with product, quantity, place, user, time and reason. Balances come only from movements.
-_Avoid_: Stok düzeltme (as a way to edit balances directly)
+_Avoid_: Changing a balance without a movement
+
+**Stok düzenleme** (Stock correction):
+An admin setting a wrongly entered balance to the right number at once. It posts a Stok hareketi for the difference, so the change stays on record.
 
 **Transfer**:
 Moving stock between two Lokasyon in two steps, sent and received; while on the way it belongs to neither.
@@ -65,7 +68,7 @@ A physical count of products at a Lokasyon; each counted line is compared with t
 The first Sayım that establishes starting balances when the system goes live.
 
 **Stok girişi** (Stock entry):
-The screen where one product's quantities are typed side by side for every Lokasyon. It fills each Lokasyon's open Açılış sayımı or, once that is approved, its Sayım.
+The screen where counted stock is typed per product, side by side for every Lokasyon. Until a Lokasyon is open it fills its Açılış sayımı; after that, approved quantities add to the balance. Goods bought from a supplier go through Mal kabul instead.
 
 ## Sales and manufacturing
 

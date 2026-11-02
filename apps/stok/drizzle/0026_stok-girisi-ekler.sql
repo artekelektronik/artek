@@ -1,0 +1,1 @@
+ALTER TABLE "stock_count" ADD COLUMN "adds_to_stock" boolean DEFAULT false NOT NULL;

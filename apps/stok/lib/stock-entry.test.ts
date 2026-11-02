@@ -69,7 +69,7 @@ describe("stok girişi: one sheet across Lokasyon", { skip: skipWithoutDatabase 
     await assert.rejects(entry.approveStockEntries(muhendis.headers, lokasyonId, { idempotencyKey: key() }), /Onaylanacak giriş yok/);
   });
 
-  test("after opening, the same sheet corrects a balance through a Sayım, recording the difference", async () => {
+  test("after opening, what is typed adds to the balance and shows in the movements", async () => {
     const lokasyonId = lokasyon.Yedek;
     await entry.saveStockEntry(muhendis.headers, { productId: core, lokasyonId, counted: "10" });
     await entry.approveStockEntries(muhendis.headers, lokasyonId, { idempotencyKey: key() });
@@ -77,11 +77,11 @@ describe("stok girişi: one sheet across Lokasyon", { skip: skipWithoutDatabase 
     await entry.saveStockEntry(muhendis.headers, { productId: core, lokasyonId, counted: "7" });
     assert.equal((await cell(lokasyonId)).current, "10");
     await entry.approveStockEntries(muhendis.headers, lokasyonId, { idempotencyKey: key() });
-    assert.equal((await cell(lokasyonId)).current, "7");
+    assert.equal((await cell(lokasyonId)).current, "17");
 
     const { listMovements } = await import("./ledger");
     const moves = await listMovements(muhendis.headers, { productId: core });
-    assert.deepEqual(moves.map((m) => m.type).sort(), ["acilis", "sayim_duzeltmesi"]);
+    assert.deepEqual(moves.map((m) => m.reason).sort(), ["Açılış sayımı", "Sayılıp eklendi"]);
   });
 
   test("a product added after entering began can still be entered", async () => {
@@ -102,6 +102,70 @@ describe("stok girişi: one sheet across Lokasyon", { skip: skipWithoutDatabase 
   test("only those who manage products can add one this way", async () => {
     const depo = await signedInAs(["depo_sorumlusu"], [lokasyon["Çekmeköy İmalathane"]]);
     await assert.rejects(products.quickAddProduct(depo.headers, { name: "Vernik", category: "Malzeme", unit: "kg", isMaterial: true, isTradeGoods: false }));
+  });
+
+  test("an admin sets a wrong balance to the right number at once, in either direction, and it stays on record", async () => {
+    const admin = await signedInAs(["admin"]);
+    const lokasyonId = lokasyon["Karaköy Mağaza"];
+    await entry.saveStockEntry(admin.headers, { productId: core, lokasyonId, counted: "50" });
+    await entry.approveStockEntries(admin.headers, lokasyonId, { idempotencyKey: key() });
+
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "5", idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "5");
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "8", idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "8");
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "0", idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "0");
+
+    const { listMovements } = await import("./ledger");
+    const edits = (await listMovements(admin.headers, { productId: core })).filter((m) => m.reason === "Stok düzenleme");
+    assert.equal(edits.length, 3);
+    assert.ok(edits.every((m) => m.userName === admin.user.name));
+  });
+
+  test("the same number changes nothing, and a double submit records once", async () => {
+    const admin = await signedInAs(["admin"]);
+    const lokasyonId = lokasyon["Karaköy Mağaza"];
+    await entry.saveStockEntry(admin.headers, { productId: core, lokasyonId, counted: "50" });
+    await entry.approveStockEntries(admin.headers, lokasyonId, { idempotencyKey: key() });
+    const repeated = key();
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "40", idempotencyKey: repeated });
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "40", idempotencyKey: repeated });
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "40", idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "40");
+    const { listMovements } = await import("./ledger");
+    assert.equal((await listMovements(admin.headers, { productId: core })).filter((m) => m.reason === "Stok düzenleme").length, 1);
+  });
+
+  test("an entry waiting for approval still adds on top of a correction", async () => {
+    const admin = await signedInAs(["admin"]);
+    const lokasyonId = lokasyon["Karaköy Mağaza"];
+    await entry.saveStockEntry(admin.headers, { productId: core, lokasyonId, counted: "50" });
+    await entry.approveStockEntries(admin.headers, lokasyonId, { idempotencyKey: key() });
+    await entry.saveStockEntry(admin.headers, { productId: core, lokasyonId, counted: "45" });
+    await entry.correctStock(admin.headers, { productId: core, lokasyonId, quantity: "30", idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "30");
+    await entry.approveStockEntries(admin.headers, lokasyonId, { idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "75");
+  });
+
+  test("a Sayım opened from the Sayım screen still replaces the balance", async () => {
+    const lokasyonId = lokasyon["Karaköy Mağaza"];
+    await entry.saveStockEntry(muhendis.headers, { productId: core, lokasyonId, counted: "50" });
+    await entry.approveStockEntries(muhendis.headers, lokasyonId, { idempotencyKey: key() });
+    const counts = await import("./counts");
+    const { countId } = await counts.openCount(muhendis.headers, { lokasyonId, kind: "sayim" });
+    await counts.recordCountLines(muhendis.headers, countId, [{ productId: core, counted: "48" }]);
+    await counts.approveCount(muhendis.headers, countId, { idempotencyKey: key() });
+    assert.equal((await cell(lokasyonId)).current, "48");
+  });
+
+  test("only an admin can correct; a mühendis and a sorumlu cannot", async () => {
+    const lokasyonId = lokasyon["Karaköy Mağaza"];
+    const karakoy = await signedInAs(["magaza_sorumlusu"], [lokasyonId]);
+    for (const who of [muhendis, karakoy]) {
+      await assert.rejects(entry.correctStock(who.headers, { productId: core, lokasyonId, quantity: "1", idempotencyKey: key() }));
+    }
   });
 
   test("a Lokasyon sorumlusu sees and enters only their own column, and cannot approve", async () => {

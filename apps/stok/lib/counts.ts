@@ -96,7 +96,8 @@ export async function recordCountLines(headers: Headers, countId: string, entrie
   });
 }
 
-// Posts counted lines once: a Sayım as differences, an Açılış as opening balances (opening the Lokasyon).
+// Posts counted lines once: a Sayım as differences, an Açılış as opening balances (opening the Lokasyon),
+// a Stok girişi as additions to the balance.
 export async function approveCount(headers: Headers, countId: string, { idempotencyKey }: { idempotencyKey: string }) {
   const count = await findCount(countId);
   const actor = await requirePermission(headers, "count.approve", count.lokasyonId);
@@ -120,7 +121,8 @@ export async function approveCount(headers: Headers, countId: string, { idempote
           .where(and(eq(stockCountLine.countId, countId), isNotNull(stockCountLine.counted)));
         const movements: MovementLine[] = [];
         for (const line of lines) {
-          const difference = opening ? formatQuantity(line.counted!) : subtractQuantity(line.counted!, line.balanceAtCount!);
+          const difference =
+            opening || current.addsToStock ? formatQuantity(line.counted!) : subtractQuantity(line.counted!, line.balanceAtCount!);
           if (difference === "0") continue;
           movements.push({
             productId: line.productId,
@@ -128,7 +130,7 @@ export async function approveCount(headers: Headers, countId: string, { idempote
             direction: difference.startsWith("-") ? "out" : "in",
             quantity: difference.replace("-", ""),
             type: opening ? "acilis" : "sayim_duzeltmesi",
-            reason: opening ? "Açılış sayımı" : "Sayım farkı",
+            reason: opening ? "Açılış sayımı" : current.addsToStock ? "Sayılıp eklendi" : "Sayım farkı",
           });
         }
         await tx
@@ -173,6 +175,7 @@ export async function getCount(headers: Headers, countId: string) {
       kind: stockCount.kind,
       status: stockCount.status,
       category: stockCount.category,
+      addsToStock: stockCount.addsToStock,
       createdAt: stockCount.createdAt,
       createdById: stockCount.createdBy,
       createdBy: creator.name,
