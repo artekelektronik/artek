@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowRight, CircleCheck, CircleDashed } from "lucide-rea
 import { Alert, AlertDescription, AlertTitle } from "@artek/ui/components/alert";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@artek/ui/components/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { CategoryBadge, MovementTypeBadge } from "@/components/stock-badges";
 import { getDashboard, getStockSummary } from "@/lib/dashboard";
 import { financeSummary, tl, tlShort, day } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
@@ -268,14 +269,15 @@ export default async function HomePage() {
               {week.summary.exits.slice(0, 6).map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <div className="flex min-w-0 flex-col">
-                    <span className="truncate">
-                      <Link href={`/urunler/${r.productId}`} className="font-mono underline-offset-4 hover:underline">
-                        {r.productCode}
-                      </Link>{" "}
-                      {r.productName}
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <Link href={`/urunler/${r.productId}`} className="truncate font-medium underline-offset-4 hover:underline">
+                        {r.productName}
+                      </Link>
+                      <CategoryBadge category={r.productCategory} />
+                      <MovementTypeBadge type={r.type} />
                     </span>
                     <span className="text-muted-foreground text-xs">
-                      {movementTypeLabels[r.type]} · {r.productCategory} · {r.reason} · {r.userName} · {r.lokasyonName} · {formatDateTime(r.createdAt)}
+                      <span className="font-mono">{r.productCode}</span> · {r.reason} · {r.userName} · {r.lokasyonName} · {formatDateTime(r.createdAt)}
                     </span>
                   </div>
                   <span className="flex shrink-0 flex-col text-right tabular-nums">

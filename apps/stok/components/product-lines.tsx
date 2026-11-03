@@ -6,11 +6,12 @@ import { Input } from "@artek/ui/components/input";
 import { cn } from "@artek/ui/lib/utils";
 import { categoriesOf, searchProducts, type SearchableProduct, type SearchKind } from "@/lib/product-search";
 import { formatQuantity, unitLabels, type Unit } from "@/lib/quantity";
+import { CategoryBadge, CategoryDot } from "./stock-badges";
 
 type PickableProduct = SearchableProduct & { unit: Unit };
 type Available = Record<string, string>;
 
-const label = (product: PickableProduct) => `${product.code} — ${product.name}`;
+const label = (product: PickableProduct) => `${product.name} — ${product.code}`;
 
 const heading = (kind: SearchKind, typed: string) => {
   if (kind === "other-category") return "Bu kategoride yok, diğer kategorilerde bulundu:";
@@ -48,7 +49,7 @@ export function ProductLines({
         <div role="group" aria-label="Kategori" className="flex flex-wrap gap-1 sm:w-40 sm:flex-col sm:flex-nowrap">
           <CategoryButton name="Tümü" count={products.length} active={!category} onClick={() => chooseCategory()} />
           {categories.map((c) => (
-            <CategoryButton key={c.name} name={c.name} count={c.count} active={category === c.name} onClick={() => chooseCategory(c.name)} />
+            <CategoryButton key={c.name} name={c.name} count={c.count} active={category === c.name} colored onClick={() => chooseCategory(c.name)} />
           ))}
         </div>
       )}
@@ -85,7 +86,7 @@ export function ProductLines({
   );
 }
 
-function CategoryButton({ name, count, active, onClick }: { name: string; count: number; active: boolean; onClick: () => void }) {
+function CategoryButton({ name, count, active, colored, onClick }: { name: string; count: number; active: boolean; colored?: boolean; onClick: () => void }) {
   return (
     <Button
       type="button"
@@ -95,7 +96,10 @@ function CategoryButton({ name, count, active, onClick }: { name: string; count:
       className="justify-between gap-2 font-normal"
       onClick={onClick}
     >
-      <span className="truncate">{name}</span>
+      <span className="flex min-w-0 items-center gap-2">
+        {colored && <CategoryDot category={name} />}
+        <span className="truncate">{name}</span>
+      </span>
       <span className="text-muted-foreground text-xs tabular-nums">{count}</span>
     </Button>
   );
@@ -174,7 +178,7 @@ function ProductLine({
           autoComplete="off"
           autoFocus={autoFocus}
           data-unpicked={picked ? undefined : ""}
-          placeholder="Ürün kodu veya adı yazın"
+          placeholder="Ürün adı, kategori veya kod yazın"
           value={picked ? label(picked) : typed}
           onChange={(event) => {
             if (picked) onPick(undefined);
@@ -189,19 +193,25 @@ function ProductLine({
           }}
           onBlur={() => {
             setOpen(false);
-            // A fully typed code counts as chosen, so Tab works as well as Enter.
-            if (!picked && typed.trim() && kind === "exact") {
+            // A fully typed code, or the only result left, counts as chosen, so Tab works as well as Enter.
+            if (!picked && typed.trim() && (kind === "exact" || (kind === "matches" && items.length === 1))) {
               onPick(items[0]);
               setTyped("");
             }
           }}
           onKeyDown={onKeyDown}
         />
-        {picked && available && (
-          <p className={cn("text-xs", hasStock(picked) ? "text-muted-foreground" : "text-destructive")}>
-            {hasStock(picked) ? `Kullanılabilir: ${stockOf(picked)}` : "Bu lokasyonda kullanılabilir stok yok."}
-          </p>
+        {picked && (
+          <div className="flex flex-wrap items-center gap-2">
+            <CategoryBadge category={picked.category} />
+            {available && (
+              <p className={cn("text-xs", hasStock(picked) ? "text-muted-foreground" : "text-destructive")}>
+                {hasStock(picked) ? `Kullanılabilir: ${stockOf(picked)}` : "Bu lokasyonda kullanılabilir stok yok."}
+              </p>
+            )}
+          </div>
         )}
+        {!picked && !open && typed.trim() && <p className="text-destructive text-xs">Ürün seçilmedi. Listeden bir ürün seçin.</p>}
         {showResults && (
           // Keeps focus in the input while a result is clicked.
           <div
@@ -216,12 +226,15 @@ function ProductLine({
                   id={optionId(index)}
                   role="option"
                   aria-selected={index === active}
-                  className={cn("flex cursor-pointer items-baseline gap-2 rounded-sm px-2 py-1.5 text-sm", index === active && "bg-accent text-accent-foreground")}
+                  className={cn("flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm", index === active && "bg-accent text-accent-foreground")}
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => pick(product)}
                 >
-                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{product.code}</span>
-                  <span className="min-w-0 flex-1">{product.name}</span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="font-medium">{product.name}</span>
+                    <span className="text-muted-foreground font-mono text-xs">{product.code}</span>
+                  </span>
+                  <CategoryBadge category={product.category} />
                   {kind === "exact" && index === 0 && <span className="shrink-0 text-xs font-medium">Birebir</span>}
                   {available && (
                     <span className={cn("shrink-0 text-xs tabular-nums", !hasStock(product) && "text-muted-foreground")}>
