@@ -3,17 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@artek/ui/components/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@artek/ui/components/field";
+import { Field, FieldGroup, FieldLabel } from "@artek/ui/components/field";
 import { Input } from "@artek/ui/components/input";
 import { PasswordInput } from "@/components/password-input";
+import { ToastOnMount } from "@/components/toast-on-mount";
 import { authClient } from "@/lib/auth-client";
 
 // shadcn login-03 without social sign-in or sign-up (accounts are invite-only).
 export function LoginForm({ notice }: { notice?: string }) {
   const router = useRouter();
-  const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
 
   // Through /api/auth, so Better Auth rate-limits it.
@@ -26,12 +27,12 @@ export function LoginForm({ notice }: { notice?: string }) {
       password: String(form.get("password")),
     });
     if (error) {
-      setError(error.status === 429 ? "Çok fazla deneme yapıldı; biraz sonra tekrar deneyin." : "E-posta veya şifre hatalı.");
+      toast.error(error.status === 429 ? "Çok fazla deneme yapıldı; biraz sonra tekrar deneyin." : "E-posta veya şifre hatalı.");
       setPending(false);
       return;
     }
+    // "/" has never rendered signed-in in this tab, so one navigation fetches it fresh.
     router.replace("/");
-    router.refresh();
   }
 
   return (
@@ -43,7 +44,7 @@ export function LoginForm({ notice }: { notice?: string }) {
       <CardContent>
         <form onSubmit={onSubmit}>
           <FieldGroup>
-            {notice && <p className="text-center text-sm text-green-700 dark:text-green-400">{notice}</p>}
+            {notice && <ToastOnMount message={notice} />}
             <Field>
               <FieldLabel htmlFor="email">E-posta</FieldLabel>
               <Input id="email" name="email" type="email" autoComplete="email" placeholder="ad@ferritnuve.com" required />
@@ -57,7 +58,6 @@ export function LoginForm({ notice }: { notice?: string }) {
               </div>
               <PasswordInput id="password" name="password" autoComplete="current-password" required />
             </Field>
-            {error && <FieldError role="alert">{error}</FieldError>}
             <Field>
               <Button type="submit" disabled={pending}>
                 {pending ? "Giriş yapılıyor…" : "Giriş yap"}

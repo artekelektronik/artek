@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useOptimistic, useState, useTransition } from "react";
@@ -159,7 +160,7 @@ function NewerInvoice({ s }: { s: SuggestionView }) {
         <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => run("kapat")}>
           Artık gerek yok, kapat
         </Button>
-        {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
+        <FormStatus state={state} />
       </div>
       {s.status === "bekliyor" && (
         <p className="text-muted-foreground text-xs">Güncelleme internete yeniden bakmaz; sabahki bulgularla ve güncel faturalarla yeniden yazar.</p>
@@ -175,7 +176,6 @@ function Steps({ s }: { s: SuggestionView }) {
   const [steps, setOptimistic] = useOptimistic(s.steps, (current, { index, done }: { index: number; done: boolean }) =>
     current.map((step, i) => (i === index ? { ...step, doneAt: done ? new Date().toISOString() : null, doneBy: done ? "…" : null } : step)),
   );
-  const [error, setError] = useState<string>();
   const [, start] = useTransition();
   if (!steps.length) return null;
   const done = steps.filter((x) => x.doneAt).length;
@@ -192,7 +192,8 @@ function Steps({ s }: { s: SuggestionView }) {
               onClick={() =>
                 start(async () => {
                   setOptimistic({ index: i, done: !step.doneAt });
-                  setError((await toggleStepAction(s.id, i, !step.doneAt))?.error);
+                  const error = (await toggleStepAction(s.id, i, !step.doneAt))?.error;
+                  if (error) toast.error(error);
                 })
               }
             >
@@ -216,7 +217,6 @@ function Steps({ s }: { s: SuggestionView }) {
           </li>
         ))}
       </ul>
-      {error && <p className="text-destructive text-xs">{error}</p>}
     </Block>
   );
 }
@@ -571,7 +571,7 @@ export function ApprovalCard({ s, today, reasons }: { s: SuggestionView; today: 
             Hâlâ bekliyor, 3 gün sonra sor
           </Button>
         </form>
-        {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
+        <FormStatus state={state} />
       </div>
       <FormStatus state={waiting} />
       <CloseOptions id={s.id} today={today} reasons={reasons} waitingFor={s.waitingFor} />
@@ -647,7 +647,7 @@ export function ProposalCard({ p }: { p: ProposalView }) {
         <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => start(async () => setState(await rejectProposalAction(p.id)))}>
           Reddet
         </Button>
-        {state?.error && <span className="text-destructive text-xs">{state.error}</span>}
+        <FormStatus state={state} />
       </div>
     </article>
   );
@@ -732,7 +732,7 @@ export function ResultCard({ r }: { r: ResultView }) {
           >
             {r.resultAsks >= maxResultReasks ? "Bilmiyorum, kapat" : "Henüz belli değil, sonra sor"}
           </Button>
-          {later?.error && <span className="text-destructive text-xs">{later.error}</span>}
+          <FormStatus state={later} />
         </div>
         <FormStatus state={state} saved="Kaydedildi." />
       </form>

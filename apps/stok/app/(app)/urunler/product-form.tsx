@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
@@ -14,7 +14,7 @@ import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
 import { FormStatus } from "@/components/form-status";
 
-type Product = {
+export type ProductFormValues = {
   code: string;
   name: string;
   category: string;
@@ -35,7 +35,7 @@ type Product = {
   shelves: Record<string, string>;
 };
 
-const empty: Product = {
+const empty: ProductFormValues = {
   code: "",
   name: "",
   category: "",
@@ -72,20 +72,25 @@ export function ProductForm({
   categories,
   readOnly = false,
   submitLabel,
+  onSaved,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
-  product?: Product;
+  product?: ProductFormValues;
   lokasyon: { id: string; name: string }[];
   categories: string[];
   readOnly?: boolean;
   submitLabel: string;
+  onSaved?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  useEffect(() => {
+    if (state?.saved) onSaved?.();
+  }, [state, onSaved]);
   const [category, setCategory] = useState(product.category);
   const input = "font-normal";
 
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-6">
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
         <Field label="Ürün kodu">
           <Input name="code" defaultValue={product.code} required className={`${input} font-mono`} />
@@ -184,9 +189,12 @@ export function ProductForm({
 
       <FormStatus state={state} saved="Kaydedildi." />
       {!readOnly && (
-        <Button type="submit" disabled={pending} className="self-start">
-          {pending ? "Kaydediliyor…" : submitLabel}
-        </Button>
+        // Stays at the bottom of the sheet while the long form scrolls under it.
+        <div className="bg-background sticky bottom-0 -mx-4 border-t px-4 py-3">
+          <Button type="submit" disabled={pending}>
+            {pending ? "Kaydediliyor…" : submitLabel}
+          </Button>
+        </div>
       )}
     </form>
   );

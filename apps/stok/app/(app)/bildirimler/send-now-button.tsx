@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@artek/ui/components/button";
+import { FormStatus } from "@/components/form-status";
 import { processOutboxAction } from "./actions";
 
 export function SendNowButton() {
@@ -11,12 +12,7 @@ export function SendNowButton() {
       <Button type="submit" variant="outline" size="sm" disabled={pending}>
         {pending ? "Gönderiliyor…" : "Bekleyenleri şimdi gönder"}
       </Button>
-      {state?.error && (
-        <span role="alert" className="text-destructive text-sm">
-          {state.error}
-        </span>
-      )}
-      {state?.saved && <span className="text-muted-foreground text-sm">Denendi; sonuç aşağıda.</span>}
+      <FormStatus state={state} saved="Denendi; sonuç aşağıda." />
     </form>
   );
 }

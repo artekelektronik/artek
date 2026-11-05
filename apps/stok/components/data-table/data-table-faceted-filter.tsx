@@ -10,6 +10,7 @@ import type { DataTableFeatures } from "@/lib/data-table-features";
 import type { FilterOption } from "@/lib/data-table-types";
 
 import { Button } from "@artek/ui/components/button";
+import { filterTriggerClass } from "@/components/data-table/filter-trigger";
 import { useDirection } from "@/components/ui/direction";
 import {
   Faceted,
@@ -99,7 +100,7 @@ function DataTableFacetedFilterContent<TData extends RowData, TValue>({
       multiple={multiple}
     >
       <FacetedTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={filterTriggerClass(hasSelection)}>
           {hasSelection ? (
             <span
               aria-hidden="true"

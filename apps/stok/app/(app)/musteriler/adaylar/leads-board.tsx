@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
@@ -130,7 +131,6 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
   const [events, setEvents] = useState<Awaited<ReturnType<typeof leadEventsAction>> | null>(null);
   const [, startLoading] = useTransition();
   const [state, action, pending] = useActionState(updateLeadAction, undefined);
-  const [linkError, setLinkError] = useState<string>();
   const [linking, startLinking] = useTransition();
 
   useEffect(() => {
@@ -177,14 +177,13 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
                     onClick={() =>
                       startLinking(async () => {
                         const s = await linkLeadAction(r.id, r.candidate!.id);
-                        setLinkError(s?.error);
+                        if (s?.error) toast.error(s.error);
                         if (!s?.error) router.refresh();
                       })
                     }
                   >
                     Evet, bağla
                   </Button>
-                  {linkError && <span className="text-destructive text-xs">{linkError}</span>}
                 </div>
               )}
             </div>
@@ -310,21 +309,16 @@ function ImportArea({ children }: { children: React.ReactNode }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
 
   async function load(file: File) {
     setBusy(true);
-    setMessage(null);
     try {
       const result = await importLeadsAction(JSON.parse(await file.text()));
-      setMessage(
-        result.error
-          ? { text: result.error, error: true }
-          : { text: `${result.added} yeni aday eklendi, ${result.seen} tanesi tekrar görüldü, ${result.customers} tanesi zaten müşterimiz.` },
-      );
+      if (result.error) toast.error(result.error);
+      else toast.success(`${result.added} yeni aday eklendi, ${result.seen} tanesi tekrar görüldü, ${result.customers} tanesi zaten müşterimiz.`);
       router.refresh();
     } catch {
-      setMessage({ text: "Dosya okunamadı; rutinin yazdığı .json dosyasını seçtiğinizden emin olun.", error: true });
+      toast.error("Dosya okunamadı; rutinin yazdığı .json dosyasını seçtiğinizden emin olun.");
     }
     setBusy(false);
   }
@@ -373,7 +367,6 @@ function ImportArea({ children }: { children: React.ReactNode }) {
         {busy ? "Yükleniyor…" : "Adayları yükle"}
       </Button>
       <NewLead />
-      {message && <span className={cn("basis-full text-xs", message.error ? "text-destructive" : "text-muted-foreground")}>{message.text}</span>}
     </div>
     {children}
     {dragging && (
@@ -424,7 +417,6 @@ function Research({ r }: { r: LeadResearch }) {
 function DeepResearchButton({ id, again }: { id: string; again: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [error, setError] = useState<string>();
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button
@@ -435,14 +427,13 @@ function DeepResearchButton({ id, again }: { id: string; again: boolean }) {
         onClick={() =>
           start(async () => {
             const s = await deepResearchAction(id);
-            setError(s?.error);
+            if (s?.error) toast.error(s.error);
             if (!s?.error) router.refresh();
           })
         }
       >
         {pending ? "Taranıyor… (1-2 dakika sürebilir)" : again ? "Tekrar tara" : "Site + haber taraması yap"}
       </Button>
-      {error && <span className="text-destructive text-xs">{error}</span>}
       {!pending && !again && <span className="text-muted-foreground text-xs">Siteye ve son haberlere bakar; sabahki asistanın modeliyle çalışır.</span>}
     </div>
   );
@@ -465,7 +456,7 @@ function LinkAdd() {
       <Button type="submit" size="sm" disabled={pending || !link.trim()}>
         {pending ? "Site okunuyor…" : "Linkle ekle"}
       </Button>
-      {result?.error && <span className="text-destructive text-xs">{result.error}</span>}
+      <FormStatus state={result} />
       {result?.id && (
         <a href={`/musteriler/adaylar?secili=${result.id}`} className="text-xs underline underline-offset-4">
           {result.existed ? "Bu firma zaten Adaylar'da, kartı aç" : "Eklendi, kartı aç"}

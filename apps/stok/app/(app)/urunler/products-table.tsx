@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { Archive, ArchiveRestore, ChevronRight, MoreHorizontal, Pencil } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
@@ -24,6 +25,7 @@ import { ProductImage } from "@/components/product-image";
 import { displayQuantity } from "@/lib/labels";
 import { unitLabels, type Unit } from "@/lib/quantity";
 import { archiveProductAction, restoreProductAction, setShowOnSiteAction } from "./actions";
+import { ProductSheet } from "./product-sheet";
 
 export type ProductStatus = "stokta" | "kritik" | "yok" | "arsiv";
 
@@ -95,7 +97,6 @@ const types = (p: ProductRow) => [p.isTradeGoods && typeLabels.tradeGoods, p.isM
 function ShowOnSiteSwitch({ row, canManage }: { row: ProductRow; canManage: boolean }) {
   const [pending, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(row.showOnSite);
-  const [error, setError] = useState<string>();
   return (
     <div className="flex items-center gap-2">
       <Switch
@@ -104,27 +105,42 @@ function ShowOnSiteSwitch({ row, canManage }: { row: ProductRow; canManage: bool
         aria-label={`${row.name} sitede gösterilsin`}
         onCheckedChange={(next) =>
           startTransition(async () => {
-            setError(undefined);
             setShown(next);
             const state = await setShowOnSiteAction(row.id, next);
-            if (state?.error) setError(state.error);
+            if (state?.error) toast.error(state.error);
           })
         }
       />
-      {error && <span className="text-destructive text-xs">{error}</span>}
     </div>
   );
 }
 
+// Lokasyon and categories for the edit sheet; a context so the memoized rows don't need them as props.
+const SheetOptions = createContext<{ lokasyon: { id: string; name: string }[]; categories: string[] }>({ lokasyon: [], categories: [] });
+
 function RowActions({ row, canManage, archived }: { row: ProductRow; canManage: boolean; archived: boolean }) {
   const [pending, startTransition] = useTransition();
+  const { lokasyon, categories } = useContext(SheetOptions);
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button asChild variant="outline" size="sm">
-        <Link href={`/urunler/${row.id}`}>
-          <Pencil /> {canManage ? "Düzenle" : "Aç"}
-        </Link>
-      </Button>
+      {canManage ? (
+        <ProductSheet
+          mode="edit"
+          id={row.id}
+          name={row.name}
+          lokasyon={lokasyon}
+          categories={categories}
+          trigger={
+            <Button variant="outline" size="sm">
+              <Pencil /> Düzenle
+            </Button>
+          }
+        />
+      ) : (
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/urunler/${row.id}`}>Aç</Link>
+        </Button>
+      )}
       {canManage && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -207,12 +223,14 @@ function ProductDetail({ row }: { row: ProductRow }) {
 export function ProductsTable({
   rows,
   categories,
+  lokasyon,
   canManage,
   comparesMinimum,
   archived,
 }: {
   rows: ProductRow[];
   categories: string[];
+  lokasyon: { id: string; name: string }[];
   canManage: boolean;
   comparesMinimum: boolean;
   archived: boolean;
@@ -356,8 +374,9 @@ export function ProductsTable({
   const { table } = useClientDataTable({ data: shown, columns, hidden: ["kategori", "kod"] });
 
   return (
+    <SheetOptions.Provider value={{ lokasyon, categories }}>
     <ExpandedRows.Provider value={{ open: expanded, toggle }}>
-      <div className="flex flex-col gap-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
         {!archived && (
           <Tabs
             value={tab}
@@ -387,5 +406,6 @@ export function ProductsTable({
         </DataTable>
       </div>
     </ExpandedRows.Provider>
+    </SheetOptions.Provider>
   );
 }

@@ -1,11 +1,14 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { loadActor } from "@/lib/guard";
 import { below } from "@/lib/kritik-seviye";
+import { listLokasyon } from "@/lib/lokasyon";
 import { getOverview } from "@/lib/overview";
 import { can } from "@/lib/permissions";
 import { listCategories, listProducts } from "@/lib/products";
+import { ProductSheet } from "./product-sheet";
 import { ProductsTable, type ProductRow, type ProductStatus } from "./products-table";
 
 export const metadata = { title: "Ürünler | Artek" };
@@ -15,11 +18,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const archived = arsiv === "1";
   const requestHeaders = await headers();
   // All products at once (stock only for active ones); the table filters and pages client-side.
-  const [actor, products, categories, overview] = await Promise.all([
+  const [actor, products, categories, overview, lokasyon] = await Promise.all([
     loadActor(requestHeaders),
     listProducts(requestHeaders, { archived }),
     listCategories(requestHeaders),
     archived ? null : getOverview(requestHeaders, {}),
+    listLokasyon(),
   ]);
   const stockOf = new Map(overview?.rows.map((r) => [r.id, r]));
   const comparesMinimum = overview?.canFilterBelowMinimum ?? false;
@@ -61,7 +65,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold">{archived ? "Arşivdeki ürünler" : "Ürünler"}</h1>
@@ -72,9 +76,16 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             <Link href={archived ? "/urunler" : "/urunler?arsiv=1"}>{archived ? "Aktif ürünler" : "Arşivdekiler"}</Link>
           </Button>
           {can(actor, "products.manage") && (
-            <Button asChild>
-              <Link href="/urunler/yeni">Yeni ürün</Link>
-            </Button>
+            <ProductSheet
+              mode="new"
+              lokasyon={lokasyon}
+              categories={categories}
+              trigger={
+                <Button>
+                  <Plus /> Yeni ürün
+                </Button>
+              }
+            />
           )}
         </div>
       </div>
@@ -82,6 +93,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         key={arsiv ?? "aktif"}
         rows={rows}
         categories={categories}
+        lokasyon={lokasyon}
         canManage={can(actor, "products.manage")}
         comparesMinimum={comparesMinimum}
         archived={archived}

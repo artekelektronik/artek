@@ -22,9 +22,10 @@ import { inTransit } from "@/lib/transfers";
 import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
-import { archiveProductAction, restoreProductAction, updateProductAction } from "../actions";
+import { Pencil } from "lucide-react";
+import { archiveProductAction, restoreProductAction } from "../actions";
 import { ProductImage } from "@/components/product-image";
-import { ProductForm } from "../product-form";
+import { ProductSheet } from "../product-sheet";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -58,6 +59,29 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           <p className="text-muted-foreground text-sm">
             {[product.category, product.manufacturer, product.manufacturerCode].filter(Boolean).join(" · ")}
           </p>
+          <div className="flex flex-wrap gap-2">
+            <ProductSheet
+              mode="edit"
+              id={product.id}
+              name={product.name}
+              product={product}
+              lokasyon={lokasyon}
+              categories={categories}
+              readOnly={!canManage}
+              trigger={
+                <Button variant="outline" size="sm">
+                  <Pencil /> {canManage ? "Ürün bilgilerini düzenle" : "Ürün bilgileri"}
+                </Button>
+              }
+            />
+            {canManage && (
+              <form action={(product.archivedAt ? restoreProductAction : archiveProductAction).bind(null, product.id)}>
+                <Button type="submit" variant="ghost" size="sm">
+                  {product.archivedAt ? "Arşivden çıkar" : "Arşivle"}
+                </Button>
+              </form>
+            )}
+          </div>
           {product.images.length > 1 && (
             <div className="flex flex-wrap gap-2">
               {product.images.slice(1).map((path) => (
@@ -134,23 +158,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <MovementTable movements={movements} canReverse={can(actor, "stock.reverse")} />
       </section>
 
-      <h2 className="text-lg font-semibold">Ürün bilgileri</h2>
-      <ProductForm
-        action={updateProductAction.bind(null, product.id)}
-        product={product}
-        lokasyon={lokasyon}
-        categories={categories}
-        readOnly={!canManage}
-        submitLabel="Kaydet"
-      />
-
-      {canManage && (
-        <form action={(product.archivedAt ? restoreProductAction : archiveProductAction).bind(null, product.id)}>
-          <Button type="submit" variant="outline">
-            {product.archivedAt ? "Arşivden çıkar" : "Arşivle"}
-          </Button>
-        </form>
-      )}
     </div>
   );
 }

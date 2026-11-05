@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
 import { Button } from "@artek/ui/components/button";
@@ -116,7 +117,6 @@ function Links({
     }
     return result;
   }, undefined);
-  const [removeError, setRemoveError] = useState<string>();
   const [, start] = useTransition();
   const needle = q.trim().toLocaleLowerCase("tr");
   const matches = needle.length < 2 ? [] : firms.filter((f) => f.id !== customerId && f.name.toLocaleLowerCase("tr").includes(needle)).slice(0, 6);
@@ -143,7 +143,7 @@ function Links({
                   onClick={() =>
                     start(async () => {
                       const s = await removeLinkAction(l.id);
-                      setRemoveError(s?.error);
+                      if (s?.error) toast.error(s.error);
                       if (!s?.error) onChanged();
                     })
                   }
@@ -155,7 +155,6 @@ function Links({
           ))}
         </ul>
       )}
-      {removeError && <p className="text-destructive text-xs">{removeError}</p>}
       {canEdit &&
         (adding ? (
           <form action={action} className="flex flex-col gap-2 rounded-lg border p-3">

@@ -27,7 +27,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
   const visible = allLokasyon.filter((l) => can(actor, "stock.view", l.id));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok durumu</h1>
       {params.kritik === "yok" && (
         <p className="text-muted-foreground text-sm">Kritik seviyesi girilmemiş ürünler. Seviyeyi ürünün sayfasındaki Ürün bilgileri bölümünden girin.</p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Star, X } from "lucide-react";
@@ -12,12 +13,10 @@ import { productImageUrl } from "@/lib/product-images";
 export function ProductImagesField({ initial, readOnly }: { initial: string[]; readOnly?: boolean }) {
   const [images, setImages] = useState(initial);
   const [uploading, setUploading] = useState(0);
-  const [error, setError] = useState<string>();
   const [dragging, setDragging] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function add(files: FileList | File[]) {
-    setError(undefined);
     const list = [...files].filter((f) => f.type.startsWith("image/"));
     if (!list.length) return;
     setUploading((n) => n + list.length);
@@ -27,7 +26,7 @@ export function ProductImagesField({ initial, readOnly }: { initial: string[]; r
           const blob = await upload(`urunler/${file.name}`, file, { access: "public", handleUploadUrl: "/api/urunler/gorsel" });
           setImages((current) => [...current, blob.url]);
         } catch (e) {
-          setError(`${file.name} yüklenemedi: ${e instanceof Error ? e.message : String(e)}`);
+          toast.error(`${file.name} yüklenemedi: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
           setUploading((n) => n - 1);
         }
@@ -139,11 +138,6 @@ export function ProductImagesField({ initial, readOnly }: { initial: string[]; r
         }}
       />
       <p className="text-muted-foreground text-xs">JPEG, PNG, WebP, AVIF veya GIF; en fazla 5 MB. İlk görsel listede ve sitede gösterilir.</p>
-      {error && (
-        <p role="alert" className="text-destructive text-sm">
-          {error}
-        </p>
-      )}
     </div>
   );
 }

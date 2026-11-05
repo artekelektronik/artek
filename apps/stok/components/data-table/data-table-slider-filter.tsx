@@ -9,6 +9,7 @@ import * as React from "react";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { Button } from "@artek/ui/components/button";
+import { filterTriggerClass } from "@/components/data-table/filter-trigger";
 import { useDirection } from "@/components/ui/direction";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -176,7 +177,7 @@ function DataTableSliderFilterContent<TData extends RowData>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={filterTriggerClass(Boolean(columnFilterValue))}>
           {columnFilterValue ? (
             <span
               aria-hidden="true"

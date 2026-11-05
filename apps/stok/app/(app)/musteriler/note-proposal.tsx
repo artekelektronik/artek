@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { useTransition } from "react";
 import { Button } from "@artek/ui/components/button";
 import { fieldLabels, fieldValue, linkLabels } from "@/lib/customer-fields";
 import { applyNoteProposalAction, customerHistoryAction, rejectNoteProposalAction } from "./actions";
@@ -9,14 +10,13 @@ export type CardNote = Awaited<ReturnType<typeof customerHistoryAction>>["notes"
 
 // What the assistant read in a note; nothing on the card changes until someone presses Uygula.
 export function NoteProposal({ n, canEdit, onDone }: { n: CardNote; canEdit: boolean; onDone: () => void }) {
-  const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
   if (!n.proposal || n.proposalDecidedAt) return null;
   const p = n.proposal;
   const run = (action: (id: string) => Promise<{ error?: string } | undefined>) =>
     start(async () => {
       const state = await action(n.id);
-      if (state?.error) setError(state.error);
+      if (state?.error) toast.error(state.error);
       else onDone();
     });
   return (
@@ -48,7 +48,6 @@ export function NoteProposal({ n, canEdit, onDone }: { n: CardNote; canEdit: boo
           <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => run(rejectNoteProposalAction)}>
             {p.changes.length > 0 || p.relatedFirmId ? "Reddet" : "Tamam"}
           </Button>
-          {error && <span className="text-destructive text-xs">{error}</span>}
         </div>
       )}
     </div>

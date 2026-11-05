@@ -16,7 +16,7 @@ export default async function NotificationsPage() {
   const [roles, notifications] = await Promise.all([getRecipientRoles(requestHeaders), listNotifications(requestHeaders)]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       <h1 className="text-2xl font-semibold">Bildirimler</h1>
 
       <section className="flex flex-col gap-2">
@@ -27,7 +27,7 @@ export default async function NotificationsPage() {
         <RecipientsForm roles={roles} />
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section className="flex min-h-0 flex-1 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold">Gönderilen e-postalar</h2>
           <SendNowButton />

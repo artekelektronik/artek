@@ -25,9 +25,10 @@ export default async function AppLayout({
         user={{ name: actor.name, email: actor.email }}
         allowed={{ notifications: can(actor, "notifications.manage"), users: can(actor, "users.manage"), finance: can(actor, "finance.view"), crm: can(actor, "crm.view"), activity: can(actor, "activity.view") }}
       />
-      <SidebarInset className="min-w-0">
+      {/* The screen never scrolls as a whole: long pages scroll inside the content area, and tables inside their own frame. */}
+      <SidebarInset className="h-svh min-w-0 overflow-hidden print:h-auto print:overflow-visible">
         <AppHeader />
-        <div className="flex-1 p-6">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-6 print:overflow-visible">
           <NuqsAdapter>{children}</NuqsAdapter>
         </div>
       </SidebarInset>

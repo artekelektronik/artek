@@ -35,7 +35,7 @@ export default async function MovementsPage({
   const values = await exitValues(actor, movements);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok hareketleri</h1>
       <form className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
