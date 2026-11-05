@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { archiveInvoice, restoreInvoice } from "@/lib/archive";
+import { invoicesChanged } from "@/lib/finance";
 
 function done(state: ActionState) {
+  if (state?.saved) invoicesChanged();
   revalidatePath("/faturalar");
   revalidatePath("/finans");
   revalidatePath("/musteriler");

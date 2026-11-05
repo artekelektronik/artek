@@ -7,7 +7,7 @@ import { db } from "@/db";
 import { assistantSuggestion, customer, type ChatProposal } from "@/db/schema";
 import { openSuggestion } from "@/lib/assistant";
 import { chatHistory } from "@/lib/chat";
-import { loadSalesSummary, shortName, tlShort } from "@/lib/finance";
+import { loadSalesSummaryCached, shortName, tlShort } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { listLeads } from "@/lib/leads";
 import { can } from "@/lib/permissions";
@@ -40,7 +40,7 @@ export default async function TodayPage() {
       .innerJoin(customer, eq(customer.id, assistantSuggestion.customerId))
       .where(openSuggestion(today))
       .orderBy(asc(assistantSuggestion.forDay)),
-    loadSalesSummary(),
+    loadSalesSummaryCached(),
     listLeads(),
     chatHistory(actor.userId, today),
   ]);
