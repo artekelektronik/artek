@@ -67,8 +67,8 @@ export default async function HomePage() {
     getDashboard(requestHeaders),
     getStockSummary(requestHeaders),
     getWeekStockOuts(requestHeaders),
-    // In parallel with the rest; someone without the Finans paneli gets null.
-    salesForMonths(requestHeaders, [thisMonth, lastMonth]).catch((error) => {
+    // null without finance.view
+    salesForMonths(requestHeaders, thisMonth, lastMonth).catch((error) => {
       if (error instanceof Forbidden) return null;
       throw error;
     }),
@@ -76,7 +76,6 @@ export default async function HomePage() {
   const notOpened = d.lokasyon.filter((l) => !l.openedAt);
   const firstName = actor.name.split(" ")[0];
 
-  const salesIn = (month: string) => sales?.monthly.find((m) => m.month === month)?.sales ?? 0;
 
   const o = s.overall;
   const worst = d.belowMinimum?.[0];
@@ -154,8 +153,8 @@ export default async function HomePage() {
             />
             <StatCard
               label="Bu ay satış"
-              value={tlShort(salesIn(thisMonth))}
-              note={`Geçen ay: ${tlShort(salesIn(lastMonth))}${sales?.asOf ? ` · Son fatura ${day(sales.asOf)}` : ""}`}
+              value={tlShort(sales?.thisMonth ?? 0)}
+              note={`Geçen ay: ${tlShort(sales?.lastMonth ?? 0)}${sales?.asOf ? ` · Son fatura ${day(sales.asOf)}` : ""}`}
               href="/finans"
             />
           </>

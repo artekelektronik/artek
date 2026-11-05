@@ -58,7 +58,7 @@ export function DataTable<TData extends RowData>({
     <div
       data-slot="data-table"
       dir={dir}
-      // Fills whatever height the page gives it; only the rows scroll, so filters and pagination stay in view.
+      // Only the rows scroll; toolbar and pagination stay put.
       className={cn("flex min-h-0 w-full flex-1 flex-col gap-2.5", className)}
       {...props}
     >

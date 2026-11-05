@@ -5,10 +5,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 
 const CloseSheet = createContext<(() => void) | null>(null);
 
-// Closes the sheet a form sits in, if it sits in one (StockForm calls it after a save).
+// null outside a FormSheet.
 export const useCloseSheet = () => useContext(CloseSheet);
 
-// A form opened from a button into a side sheet, so it doesn't push the page content around.
 export function FormSheet({
   trigger,
   title,

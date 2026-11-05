@@ -31,7 +31,7 @@ export function LoginForm({ notice }: { notice?: string }) {
       setPending(false);
       return;
     }
-    // "/" has never rendered signed-in in this tab, so one navigation fetches it fresh.
+    // No refresh needed: "/" isn't cached signed-in yet.
     router.replace("/");
   }
 

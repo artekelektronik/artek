@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
-import { FormStatus } from "@/components/form-status";
 import { useCloseSheet } from "@/components/form-sheet";
+import { toastResult } from "@/components/form-status";
 import type { ActionState } from "@/lib/action-result";
 
 // Fresh idempotency key per entry (a double click records once); keeps input on error, clears on success.
@@ -21,7 +20,6 @@ export function StockForm({
 }) {
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const [entry, setEntry] = useState(0);
-  const [state, setState] = useState<ActionState>();
   const [pending, setPending] = useState(false);
   const closeSheet = useCloseSheet();
 
@@ -32,17 +30,10 @@ export function StockForm({
     setPending(true);
     const result = await action(formData);
     setPending(false);
-    if (result?.saved && closeSheet) {
-      // The sheet unmounts this form, so the toast can't wait for FormStatus.
-      toast.success(result.message ?? savedMessage);
-      closeSheet();
-      return;
-    }
-    setState(result);
-    if (result?.saved) {
-      setEntry(entry + 1);
-      setIdempotencyKey(crypto.randomUUID());
-    }
+    if (!toastResult(result, savedMessage)) return;
+    if (closeSheet) return closeSheet();
+    setEntry(entry + 1);
+    setIdempotencyKey(crypto.randomUUID());
   }
 
   return (
@@ -50,7 +41,6 @@ export function StockForm({
       <div key={entry} className="contents">
         {children}
       </div>
-      <FormStatus state={state} saved={savedMessage} />
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Kaydediliyor…" : submitLabel}
       </Button>

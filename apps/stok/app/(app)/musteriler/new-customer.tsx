@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +17,6 @@ import {
 } from "@artek/ui/components/dialog";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
-import { FormStatus } from "@/components/form-status";
 import { addCustomerAction } from "./actions";
 
 // "Yeni müşteri": a Müşteri needs its VKN so later invoices join it; without one, the firm is saved as an Aday.
@@ -38,16 +37,18 @@ export function NewCustomer() {
 function NewCustomerForm({ onDone }: { onDone: () => void }) {
   const router = useRouter();
   const [taxId, setTaxId] = useState("");
-  const [state, action, pending] = useActionState(addCustomerAction, undefined);
-
-  useEffect(() => {
-    if (!state?.saved || !state.id) return;
-    const href = state.as === "aday" ? `/musteriler/adaylar?secili=${state.id}` : `/musteriler?secili=${state.id}`;
-    toast.success(state.as === "aday" ? "Aday olarak eklendi." : "Müşteri eklendi.", {
-      action: { label: "Kartı aç", onClick: () => router.push(href) },
-    });
-    onDone();
-  }, [state, onDone, router]);
+  const [, action, pending] = useActionState(async (previous: unknown, formData: FormData) => {
+    const result = await addCustomerAction(previous, formData);
+    if (result.error) toast.error(result.error);
+    else if (result.saved && result.id) {
+      const href = result.as === "aday" ? `/musteriler/adaylar?secili=${result.id}` : `/musteriler?secili=${result.id}`;
+      toast.success(result.as === "aday" ? "Aday olarak eklendi." : "Müşteri eklendi.", {
+        action: { label: "Kartı aç", onClick: () => router.push(href) },
+      });
+      onDone();
+    }
+    return result;
+  }, undefined);
 
   const field = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
     <Label className="flex-col items-stretch gap-1 font-normal">
@@ -74,7 +75,6 @@ function NewCustomerForm({ onDone }: { onDone: () => void }) {
         {field("email", "E-posta", { type: "email" })}
         {field("website", "Web sitesi")}
       </div>
-      {!state?.saved && <FormStatus state={state} />}
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="outline">

@@ -34,7 +34,7 @@ export function ReasonForm({ r }: { r?: ReasonView }) {
       <Button type="submit" size="sm" variant={r ? "outline" : "default"} disabled={pending}>
         {r ? "Kaydet" : "Ekle"}
       </Button>
-      <FormStatus state={state} saved={r ? "Kaydedildi." : "Eklendi."} className="w-full" />
+      <FormStatus state={state} saved={r ? "Kaydedildi." : "Eklendi."} />
     </form>
   );
 }

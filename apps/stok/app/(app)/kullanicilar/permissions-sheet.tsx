@@ -141,7 +141,7 @@ export function PermissionsSheet({ user, lokasyon }: { user: Editable; lokasyon:
             <Link href={`/kullanicilar/${user.id}`} className="text-sm underline-offset-4 hover:underline">
               Kişi sayfası: hesap ve geçmiş
             </Link>
-            <FormStatus state={state} saved="Yetkiler kaydedildi." className="w-full" />
+            <FormStatus state={state} saved="Yetkiler kaydedildi." />
           </div>
         </form>
       </SheetContent>

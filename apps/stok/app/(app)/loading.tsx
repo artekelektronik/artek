@@ -1,6 +1,5 @@
 import { Skeleton } from "@artek/ui/components/skeleton";
 
-// Shown the moment a link is clicked, while the next screen loads on the server.
 export default function Loading() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4" aria-busy="true" aria-label="Yükleniyor">

@@ -4,8 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   transpilePackages: ["@artek/ui", "@artek/catalog"],
   experimental: {
-    // Keep a visited screen in the browser for 30 s, so going back to it is instant. Saving anything
-    // (revalidatePath in the actions) drops this cache, so your own changes still show at once.
+    // 30 s client cache; revalidatePath in actions clears it.
     staleTimes: { dynamic: 30 },
   },
   turbopack: {

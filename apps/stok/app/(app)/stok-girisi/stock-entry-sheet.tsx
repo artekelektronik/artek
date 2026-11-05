@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
 import { useRef, useState } from "react";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";

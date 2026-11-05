@@ -1,8 +1,8 @@
 "use client";
 
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -144,7 +144,7 @@ function Links({
                     start(async () => {
                       const s = await removeLinkAction(l.id);
                       if (s?.error) toast.error(s.error);
-                      if (!s?.error) onChanged();
+                      else onChanged();
                     })
                   }
                 >

@@ -115,12 +115,22 @@ function ShowOnSiteSwitch({ row, canManage }: { row: ProductRow; canManage: bool
   );
 }
 
-// Lokasyon and categories for the edit sheet; a context so the memoized rows don't need them as props.
-const SheetOptions = createContext<{ lokasyon: { id: string; name: string }[]; categories: string[] }>({ lokasyon: [], categories: [] });
+type Lokasyon = { id: string; name: string };
 
-function RowActions({ row, canManage, archived }: { row: ProductRow; canManage: boolean; archived: boolean }) {
+function RowActions({
+  row,
+  canManage,
+  archived,
+  lokasyon,
+  categories,
+}: {
+  row: ProductRow;
+  canManage: boolean;
+  archived: boolean;
+  lokasyon: Lokasyon[];
+  categories: string[];
+}) {
   const [pending, startTransition] = useTransition();
-  const { lokasyon, categories } = useContext(SheetOptions);
   return (
     <div className="flex items-center justify-end gap-1">
       {canManage ? (
@@ -230,7 +240,7 @@ export function ProductsTable({
 }: {
   rows: ProductRow[];
   categories: string[];
-  lokasyon: { id: string; name: string }[];
+  lokasyon: Lokasyon[];
   canManage: boolean;
   comparesMinimum: boolean;
   archived: boolean;
@@ -366,7 +376,7 @@ export function ProductsTable({
       id: "islemler",
       size: 150,
       header: () => <span className="sr-only">İşlemler</span>,
-      cell: ({ row }) => <RowActions row={row.original} canManage={canManage} archived={archived} />,
+      cell: ({ row }) => <RowActions row={row.original} canManage={canManage} archived={archived} lokasyon={lokasyon} categories={categories} />,
       enableHiding: false,
     }),
   ]);
@@ -374,7 +384,6 @@ export function ProductsTable({
   const { table } = useClientDataTable({ data: shown, columns, hidden: ["kategori", "kod"] });
 
   return (
-    <SheetOptions.Provider value={{ lokasyon, categories }}>
     <ExpandedRows.Provider value={{ open: expanded, toggle }}>
       <div className="flex min-h-0 flex-1 flex-col gap-3">
         {!archived && (
@@ -406,6 +415,5 @@ export function ProductsTable({
         </DataTable>
       </div>
     </ExpandedRows.Provider>
-    </SheetOptions.Provider>
   );
 }

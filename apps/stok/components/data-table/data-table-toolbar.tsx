@@ -53,7 +53,7 @@ export function DataTableToolbar<TData extends RowData>({
     table.resetJoinOperator(true);
   }
 
-  // Left: what narrows the rows (search, filters). Right: how they're shown (sort, columns, extras).
+  // Left: filters. Right: sort, columns, extras.
   return (
     <div
       data-slot="data-table-toolbar"

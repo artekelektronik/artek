@@ -42,7 +42,7 @@ function productFrom(formData: FormData): ProductInput {
   };
 }
 
-// From the "Yeni ürün" sheet on Ürünler: stays on the list, which shows the new row.
+// Stays on the list (no redirect).
 export async function createProductAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => createProduct(await headers(), productFrom(formData)));
   if (state.error) return state;
@@ -50,7 +50,6 @@ export async function createProductAction(_previous: ActionState, formData: Form
   return { saved: true, message: "Ürün oluşturuldu." };
 }
 
-// The full product (with Raf kodu) for the edit sheet, loaded when it opens.
 export async function getProductForEditAction(id: string) {
   return (await getProduct(await headers(), id)) ?? null;
 }

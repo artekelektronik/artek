@@ -1,7 +1,7 @@
 "use client";
 
-import { toast } from "sonner";
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { fieldLabels, fieldValue, linkLabels } from "@/lib/customer-fields";
 import { applyNoteProposalAction, customerHistoryAction, rejectNoteProposalAction } from "./actions";

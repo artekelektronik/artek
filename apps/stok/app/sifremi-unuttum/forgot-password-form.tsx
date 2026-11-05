@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 
 // Same reply for every email, so the page can't reveal who has an account.
 export function ForgotPasswordForm() {
-  const [state, setState] = useState<"idle" | "pending" | "sent" | "limited">("idle");
+  const [state, setState] = useState<"idle" | "pending" | "sent">("idle");
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,8 +19,9 @@ export function ForgotPasswordForm() {
       email: String(new FormData(event.currentTarget).get("email")),
       redirectTo: "/sifre-belirle",
     });
-    if (error?.status === 429) toast.error("Çok fazla deneme yapıldı; biraz sonra tekrar deneyin.");
-    setState(error?.status === 429 ? "limited" : "sent");
+    if (error?.status !== 429) return setState("sent");
+    toast.error("Çok fazla deneme yapıldı; biraz sonra tekrar deneyin.");
+    setState("idle");
   }
 
   if (state === "sent") {

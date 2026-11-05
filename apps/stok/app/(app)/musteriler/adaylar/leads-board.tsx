@@ -1,10 +1,10 @@
 "use client";
 
-import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Plus, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { Button } from "@artek/ui/components/button";
@@ -178,7 +178,7 @@ function LeadPanel({ r, canEdit }: { r: LeadRow; canEdit: boolean }) {
                       startLinking(async () => {
                         const s = await linkLeadAction(r.id, r.candidate!.id);
                         if (s?.error) toast.error(s.error);
-                        if (!s?.error) router.refresh();
+                        else router.refresh();
                       })
                     }
                   >
@@ -428,7 +428,7 @@ function DeepResearchButton({ id, again }: { id: string; again: boolean }) {
           start(async () => {
             const s = await deepResearchAction(id);
             if (s?.error) toast.error(s.error);
-            if (!s?.error) router.refresh();
+            else router.refresh();
           })
         }
       >

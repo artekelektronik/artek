@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
@@ -12,7 +12,8 @@ import { ProductImagesField } from "@/components/product-images-field";
 import type { ActionState } from "@/lib/action-result";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
-import { FormStatus } from "@/components/form-status";
+import { useCloseSheet } from "@/components/form-sheet";
+import { toastResult } from "@/components/form-status";
 
 export type ProductFormValues = {
   code: string;
@@ -72,7 +73,6 @@ export function ProductForm({
   categories,
   readOnly = false,
   submitLabel,
-  onSaved,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   product?: ProductFormValues;
@@ -80,12 +80,13 @@ export function ProductForm({
   categories: string[];
   readOnly?: boolean;
   submitLabel: string;
-  onSaved?: () => void;
 }) {
-  const [state, formAction, pending] = useActionState(action, undefined);
-  useEffect(() => {
-    if (state?.saved) onSaved?.();
-  }, [state, onSaved]);
+  const closeSheet = useCloseSheet();
+  const [, formAction, pending] = useActionState(async (previous: ActionState, formData: FormData) => {
+    const result = await action(previous, formData);
+    if (toastResult(result, "Kaydedildi.")) closeSheet?.();
+    return result;
+  }, undefined);
   const [category, setCategory] = useState(product.category);
   const input = "font-normal";
 
@@ -187,9 +188,7 @@ export function ProductForm({
         ))}
       </fieldset>
 
-      <FormStatus state={state} saved="Kaydedildi." />
       {!readOnly && (
-        // Stays at the bottom of the sheet while the long form scrolls under it.
         <div className="bg-background sticky bottom-0 -mx-4 border-t px-4 py-3">
           <Button type="submit" disabled={pending}>
             {pending ? "Kaydediliyor…" : submitLabel}
