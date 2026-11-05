@@ -11,7 +11,7 @@ import { can } from "./permissions";
 import { loadPrices } from "./prices";
 import { formatQuantity } from "./quantity";
 import { stockSummary, type Price } from "./stock-value";
-import { istanbulDate, istanbulTimeOn } from "./time";
+import { addDays, istanbulDate, istanbulTimeOn } from "./time";
 
 export async function getDashboard(headers: Headers, now = new Date()) {
   // Every role; what it counts depends on Lokasyon visibility.
@@ -26,8 +26,10 @@ export async function getDashboard(headers: Headers, now = new Date()) {
   const atALokasyon = and(isNotNull(stockMovement.lokasyonId), within(stockMovement.lokasyonId));
 
   const today = istanbulTimeOn(istanbulDate(now));
+  const sixMonthsAgo = istanbulTimeOn(`${addDays(`${istanbulDate(now).slice(0, 7)}-01`, -150).slice(0, 7)}-01`);
+  const month = sql<string>`to_char(${stockMovement.createdAt} at time zone 'Europe/Istanbul', 'YYYY-MM')`;
 
-  const [places, [onTheWay], [openCounts], [movedToday], below, [noMinimum], recent] = await Promise.all([
+  const [places, [onTheWay], [openCounts], [movedToday], below, [noMinimum], recent, monthly] = await Promise.all([
     db.select().from(lokasyon).where(within(lokasyon.id)).orderBy(asc(lokasyon.name)),
     db
       .select({ n: count() })
@@ -48,7 +50,14 @@ export async function getDashboard(headers: Headers, now = new Date()) {
           .orderBy(asc(product.code))
       : Promise.resolve(null),
     seesAll ? db.select({ n: count() }).from(product).where(and(isNull(product.archivedAt), isNull(product.minLevel))) : [null],
-    listMovements(headers, { limit: 8 }),
+    listMovements(headers, { limit: 6 }),
+    // Records in and out per month; adet and kg can't be added, so this counts movements.
+    db
+      .select({ month, in: sql<number>`count(*) filter (where ${stockMovement.quantity} > 0)::int`, out: sql<number>`count(*) filter (where ${stockMovement.quantity} < 0)::int` })
+      .from(stockMovement)
+      .where(and(gte(stockMovement.createdAt, sixMonthsAgo), atALokasyon))
+      .groupBy(month)
+      .orderBy(month),
   ]);
 
   return {
@@ -63,6 +72,7 @@ export async function getDashboard(headers: Headers, now = new Date()) {
         .sort((a, b) => Number(a.total) / Number(a.minLevel) - Number(b.total) / Number(b.minLevel)) ?? null,
     noMinimumCount: noMinimum?.n ?? null,
     recent,
+    monthly,
   };
 }
 
