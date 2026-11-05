@@ -1,3 +1,4 @@
+import { and, isNull, ne, sql } from "drizzle-orm";
 import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
 import { missingNumbers, summarize } from "./finance-calc";
@@ -9,6 +10,25 @@ export * from "./finance-calc";
 export async function financeSummary(headers: Headers, action: "finance.view" | "crm.view") {
   await requirePermission(headers, action);
   return loadSalesSummary();
+}
+
+// The home page's "Bu ay satış" card: two months' totals and the last invoice date, summed in the database
+// instead of loading every invoice, line and customer like financeSummary does.
+export async function salesForMonths(headers: Headers, months: string[]) {
+  await requirePermission(headers, "finance.view");
+  const ym = sql<string>`left(${invoice.issuedOn}::text, 7)`;
+  const [rows, [last]] = await Promise.all([
+    db
+      .select({ month: ym, sales: sql<string>`sum(${invoice.netAmount})` })
+      .from(invoice)
+      .where(and(isNull(invoice.archivedAt), ne(invoice.type, "IADE"), sql`${ym} in ${months}`))
+      .groupBy(ym),
+    db
+      .select({ asOf: sql<string | null>`max(${invoice.issuedOn})::text` })
+      .from(invoice)
+      .where(and(isNull(invoice.archivedAt), ne(invoice.type, "IADE"))),
+  ]);
+  return { monthly: rows.map((r) => ({ month: r.month, sales: Number(r.sales) })), asOf: last?.asOf ?? "" };
 }
 
 // Unchecked: for callers that already checked access, and for the morning assistant run by the cron.

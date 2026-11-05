@@ -7,8 +7,8 @@ import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader,
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { CategoryBadge, MovementTypeBadge } from "@/components/stock-badges";
 import { getDashboard, getStockSummary } from "@/lib/dashboard";
-import { financeSummary, tl, tlShort, day } from "@/lib/finance";
-import { loadActor } from "@/lib/guard";
+import { salesForMonths, tl, tlShort, day } from "@/lib/finance";
+import { Forbidden, loadActor } from "@/lib/guard";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { unitLabels, type Unit } from "@/lib/quantity";
 import { getWeekStockOuts, perUnitText } from "@/lib/stock-out-report";
@@ -59,19 +59,23 @@ function Warning({ tone, text, href, action }: { tone: "danger" | "quiet"; text:
 export default async function HomePage() {
   await connection();
   const requestHeaders = await headers();
-  const [actor, d, s, week] = await Promise.all([
+  const now = new Date();
+  const thisMonth = istanbulDate(now).slice(0, 7);
+  const lastMonth = addDays(`${thisMonth}-01`, -1).slice(0, 7);
+  const [actor, d, s, week, sales] = await Promise.all([
     loadActor(requestHeaders),
     getDashboard(requestHeaders),
     getStockSummary(requestHeaders),
     getWeekStockOuts(requestHeaders),
+    // In parallel with the rest; someone without the Finans paneli gets null.
+    salesForMonths(requestHeaders, [thisMonth, lastMonth]).catch((error) => {
+      if (error instanceof Forbidden) return null;
+      throw error;
+    }),
   ]);
-  const sales = s.finance ? await financeSummary(requestHeaders, "finance.view") : null;
-  const now = new Date();
   const notOpened = d.lokasyon.filter((l) => !l.openedAt);
   const firstName = actor.name.split(" ")[0];
 
-  const thisMonth = istanbulDate(now).slice(0, 7);
-  const lastMonth = addDays(`${thisMonth}-01`, -1).slice(0, 7);
   const salesIn = (month: string) => sales?.monthly.find((m) => m.month === month)?.sales ?? 0;
 
   const o = s.overall;
