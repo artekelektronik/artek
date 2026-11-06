@@ -20,7 +20,7 @@ export default async function PricesPage() {
   const { rows, prices, lokasyon } = await listPrices(requestHeaders);
 
   return (
-    <PanelShell title="Fiyatlar" lede="Birim fiyatları buraya girin, ana sayfadaki stok değeri bunlardan hesaplanır. Dolar ve euro, günün TCMB kuruyla TL'ye çevrilir. Yalnızca Finans paneli izni olanlar görür.">
+    <PanelShell title="Fiyatlar" lede="Alış ve satış birim fiyatlarını girin (para birimi hazır USD seçili) ve Kaydet'e basın; ana sayfadaki stok değeri bunlardan, günün TCMB kuruyla hesaplanır. Yalnızca Finans paneli izni olanlar görür.">
       <PricesForm
         readOnly={!can(actor, "finance.edit")}
         canEditProducts={can(actor, "products.manage")}
@@ -48,7 +48,7 @@ export default async function PricesPage() {
             purchasePrice: displayPrice(price?.purchasePrice ?? null),
             purchaseCurrency: price?.purchaseCurrency ?? "USD",
             salePrice: displayPrice(price?.salePrice ?? null),
-            saleCurrency: price?.saleCurrency ?? "TRY",
+            saleCurrency: price?.saleCurrency ?? "USD",
           };
         })}
       />
