@@ -23,7 +23,7 @@ export function FormSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-2xl">
+      <SheetContent className="w-full overflow-y-auto sm:w-1/2 sm:max-w-none">
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
           {description && <SheetDescription>{description}</SheetDescription>}
