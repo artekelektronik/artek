@@ -7,8 +7,11 @@ import { chartColors, HBars, Insight, PanelCard, PanelShell, panelLede, panelWar
 import { financeSummary, loyalty, monthLabel, pct, recency, shortName, tl, tlShort } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { listExpenses } from "@/lib/expenses";
 import { grossProfit } from "@/lib/gross-profit";
+import { monthlyNet } from "@/lib/gross-profit-calc";
 import { GrossProfitSection } from "./gross-profit-section";
+import { NetSection } from "./net-section";
 import { SalesChart } from "./sales-chart";
 
 export const metadata = { title: "Finansal özet | Artek" };
@@ -19,11 +22,14 @@ export default async function FinancePage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const crm = can(actor, "crm.view");
-  const [s, gp] = await Promise.all([financeSummary(requestHeaders, "finance.view"), grossProfit(requestHeaders)]);
+  const [s, gp, spent] = await Promise.all([financeSummary(requestHeaders, "finance.view"), grossProfit(requestHeaders), listExpenses(requestHeaders)]);
+
+  const net = monthlyNet(gp.months, spent);
 
   if (s.invoiceCount === 0) {
     return (
-      <PanelShell title="Finansal özet" lede="Henüz satış faturası yok.">
+      <PanelShell title="Finansal özet" lede="Henüz onaylı satış faturası yok.">
+        <NetSection data={net} />
         <p className="text-muted-foreground">
           <Link href="/faturalar" className="text-foreground underline underline-offset-4">
             Faturaları yükleyin
@@ -99,6 +105,7 @@ export default async function FinancePage() {
         </p>
       </PanelCard>
 
+      <NetSection data={net} />
       <GrossProfitSection data={gp} />
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">

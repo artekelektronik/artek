@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { before, beforeEach, describe, test } from "node:test";
-import { monthlyGrossProfit, type SoldLine } from "./gross-profit-calc";
+import { monthlyGrossProfit, monthlyNet, type MonthProfit, type SoldLine } from "./gross-profit-calc";
 import { importAndConfirm, openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
 
 const line = (over: Partial<SoldLine>): SoldLine => ({
@@ -104,5 +104,42 @@ QNB FİNANSBANK`,
     assert.deepEqual(result.months.map((m) => [m.month, m.sales, m.uncostedSales]), [["2026-10", 1000, 1000]], "a line with no Ürün has no cost");
     const crmOnly = await signedInAs(["admin"]);
     await assert.rejects(grossProfit(crmOnly.headers), Forbidden);
+  });
+});
+
+describe("monthly Net", () => {
+  const month = (over: Partial<MonthProfit>): MonthProfit => ({ month: "2026-10", sales: 10000, costedSales: 10000, cost: 6000, gross: 4000, uncostedSales: 0, uncostedLines: 0, ...over });
+  const spent = (spentOn: string, category: string, netAmount: string) => ({ spentOn, category, netAmount });
+
+  test("Net is Brüt kâr minus the month's Giderler, broken down by category", () => {
+    const { months } = monthlyNet([month({})], [spent("2026-10-01", "Kira", "1500"), spent("2026-10-05", "Maaş", "2000"), spent("2026-10-20", "Kira", "500")]);
+    assert.deepEqual(months[0], {
+      ...month({}),
+      expenses: 4000,
+      byCategory: { Kira: 2000, Maaş: 2000 },
+      net: 0,
+      incomplete: false,
+    });
+  });
+
+  test("a month with only expenses still appears, and months are in order", () => {
+    const { months } = monthlyNet([month({ month: "2026-10" })], [spent("2026-09-01", "Kira", "1000")]);
+    assert.deepEqual(
+      months.map((m) => [m.month, m.sales, m.expenses, m.net]),
+      [
+        ["2026-09", 0, 1000, -1000],
+        ["2026-10", 10000, 0, 4000],
+      ],
+    );
+  });
+
+  test("a month with sales of unknown cost is flagged as incomplete", () => {
+    const { months } = monthlyNet([month({ uncostedSales: 300, uncostedLines: 1 })], []);
+    assert.equal(months[0].incomplete, true);
+  });
+
+  test("a year sums its months", () => {
+    const { years } = monthlyNet([month({}), month({ month: "2026-11", gross: 1000, sales: 2000, costedSales: 2000, cost: 1000 })], [spent("2026-11-01", "Kira", "1500")]);
+    assert.deepEqual(years, [{ year: "2026", sales: 12000, costedSales: 12000, gross: 5000, uncostedSales: 0, expenses: 1500, net: 3500, byCategory: { Kira: 1500 } }]);
   });
 });
