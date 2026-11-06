@@ -109,6 +109,16 @@ export async function fillRecurringExpenses(today: string) {
   }
 }
 
+// Each running repeat's next entry, soonest first.
+export async function upcomingExpenses(headers: Headers) {
+  await requirePermission(headers, "finance.view");
+  const running = await db.select().from(expenseRecurrence);
+  return running
+    .map((r) => ({ id: r.id, category: r.category, description: r.description, netAmount: r.netAmount, dueOn: dayIn(addMonths(r.filledThrough, 1), Number(r.startsOn.slice(8))), endsOn: r.endsOn }))
+    .filter((r) => !r.endsOn || r.dueOn <= r.endsOn)
+    .sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+}
+
 // From `endsOn` on no new entry is made; entries already made stay.
 export async function stopRecurrence(headers: Headers, id: string, endsOn: string) {
   const actor = await requirePermission(headers, "finance.edit");

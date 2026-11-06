@@ -81,7 +81,6 @@ describe("priorities", () => {
     assert.equal(s.total, 200);
     assert.equal(s.customers[0].orderDays, 1);
     assert.equal(s.repeatCount, 0);
-    assert.deepEqual(s.monthly.map((m) => m.month), ["2025-01", "2025-02"]);
   });
 });
 
@@ -119,6 +118,14 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
   });
   after(async () => {
     await resetTestDatabase();
+  });
+
+  test("the latest invoices come newest first, drafts too, as many as asked", async () => {
+    await confirmed(admin.headers, 1, { date: "01-04-2025" });
+    await upload(admin.headers, 2, { date: "09-04-2025" });
+    await confirmed(admin.headers, 3, { date: "05-04-2025" });
+    const recent = await invoices.recentInvoices(admin.headers, 2);
+    assert.deepEqual(recent.map((r) => [r.issuedOn, r.status]), [["2025-04-09", "taslak"], ["2025-04-05", "onaylandi"]]);
   });
 
   test("the same invoice uploaded twice is added once", async () => {

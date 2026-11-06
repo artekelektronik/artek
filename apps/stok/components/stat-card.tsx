@@ -2,13 +2,12 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@artek/ui/lib/utils";
 
-// The dashboard's number tile: label, big figure, note, and an icon; a link when `href` is given.
-export function StatCard({ label, value, note, href, icon: Icon, tone }: { label: string; value: string; note: string; href?: string; icon: LucideIcon; tone?: "good" | "bad" }) {
+export function StatCard({ label, value, note, href, icon: Icon }: { label: string; value: string; note: string; href?: string; icon: LucideIcon }) {
   const body = (
     <>
       <div className="flex min-w-0 flex-1 flex-col gap-1 p-4">
         <span className="text-muted-foreground text-sm">{label}</span>
-        <span className={cn("truncate text-3xl font-semibold tracking-tight tabular-nums", tone === "good" && "text-emerald-600 dark:text-emerald-400", tone === "bad" && "text-destructive")}>
+        <span className="truncate text-3xl font-semibold tracking-tight tabular-nums">
           {value}
         </span>
         <span className="text-muted-foreground truncate text-xs">{note}</span>

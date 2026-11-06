@@ -1,18 +1,22 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@artek/ui/components/tabs";
 import { NoAccess } from "@/components/no-access";
-import { chartColors, HBars, Insight, PanelCard, PanelShell, panelLede, panelWarning, StatTile } from "@/components/panel";
-import { financeSummary, loyalty, monthLabel, pct, recency, shortName, tl, tlShort } from "@/lib/finance";
-import { loadActor } from "@/lib/guard";
-import { can } from "@/lib/permissions";
-import { listExpenses } from "@/lib/expenses";
+import { PanelShell, panelLede, panelWarning } from "@/components/panel";
+import { fillRecurringExpenses, listExpenses, upcomingExpenses } from "@/lib/expenses";
+import { financeSummary } from "@/lib/finance";
 import { grossProfit } from "@/lib/gross-profit";
-import { monthlyNet } from "@/lib/gross-profit-calc";
-import { GrossProfitSection } from "./gross-profit-section";
-import { NetSection } from "./net-section";
-import { SalesChart } from "./sales-chart";
+import { emptyMonth, monthlyNet } from "@/lib/gross-profit-calc";
+import { loadActor } from "@/lib/guard";
+import { recentInvoices } from "@/lib/invoices";
+import { can } from "@/lib/permissions";
+import { addMonths, istanbulDate } from "@/lib/time";
+import { CustomersTab } from "./customers-tab";
+import { MonthResults } from "./month-results";
+import { MonthlyTable, UncostedLines } from "./monthly-table";
+import { ExpensesOverview, SalesOverview } from "./overview";
+import { RecentInvoicesCard, UpcomingCard, YearCard } from "./side-cards";
 
 export const metadata = { title: "Finansal özet | Artek" };
 
@@ -22,152 +26,70 @@ export default async function FinancePage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const crm = can(actor, "crm.view");
-  const [s, gp, spent] = await Promise.all([financeSummary(requestHeaders, "finance.view"), grossProfit(requestHeaders), listExpenses(requestHeaders)]);
+  const today = istanbulDate(new Date());
+  await fillRecurringExpenses(today);
+  const [s, gp, spent, upcoming, recent] = await Promise.all([
+    financeSummary(requestHeaders, "finance.view"),
+    grossProfit(requestHeaders),
+    listExpenses(requestHeaders),
+    upcomingExpenses(requestHeaders),
+    recentInvoices(requestHeaders, 5),
+  ]);
 
-  const net = monthlyNet(gp.months, spent);
+  const { months, years } = monthlyNet(gp.months, spent);
+  const thisMonth = today.slice(0, 7);
+  const year = today.slice(0, 4);
+  const at = (ym: string) => months.find((m) => m.month === ym) ?? emptyMonth(ym);
+  const current = at(thisMonth);
+  const previous = at(addMonths(thisMonth, -1));
+  const yearTotals = years.find((y) => y.year === year) ?? { year, sales: 0, costedSales: 0, gross: 0, uncostedSales: 0, expenses: 0, net: 0, byCategory: {} };
+  const hasSales = s.invoiceCount > 0;
 
-  if (s.invoiceCount === 0) {
-    return (
-      <PanelShell title="Finansal özet" lede="Henüz onaylı satış faturası yok.">
-        <NetSection data={net} />
-        <p className="text-muted-foreground">
-          <Link href="/faturalar" className="text-foreground underline underline-offset-4">
-            Faturaları yükleyin
-          </Link>
-          ; bu sayfa onlardan hesaplanır.
-        </p>
-      </PanelShell>
-    );
-  }
-
-  // A gap of several invoices makes the months it spans look smaller than they were.
-  const bigGaps = s.gaps.filter((g) => g.to - g.from + 1 >= 5);
-  const incomplete = (ym: string) => bigGaps.some((g) => g.after.slice(0, 7) <= ym && ym <= g.before.slice(0, 7));
-  const best = [...s.monthly].sort((a, b) => b.sales - a.sales);
-  const names = new Map(s.customerRows.map((c) => [c.id, c.name]));
-  const segments = (["Sadık", "Tekrar eden", "Tek sefer"] as const).map((k) => {
-    const g = s.customers.filter((c) => loyalty(c.orderDays) === k);
-    const n = (r: string) => g.filter((c) => recency(c.idle) === r).length;
-    return { k, aktif: n("Aktif"), soguyor: n("Soğuyor"), yok: n("Uzun süredir yok"), total: g.length, sales: g.reduce((t, c) => t + c.sales, 0) };
-  });
-  const istanbul = s.cities.find((c) => c.city === "İSTANBUL")?.count ?? 0;
-  const topCities = s.cities.slice(0, 7);
-  const otherCities = s.cities.slice(7).reduce((n, c) => n + c.count, 0);
-  const hot = (k: string, n: number) => (k !== "Tek sefer" && n ? "text-destructive font-semibold" : "");
+  const overview = (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <SalesOverview months={months} current={current} previous={previous} />
+        <ExpensesOverview current={current} previous={previous} />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <MonthResults months={months} year={year} />
+        <UpcomingCard items={upcoming} canEdit={can(actor, "finance.edit")} />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {hasSales ? (
+          <RecentInvoicesCard rows={recent} />
+        ) : (
+          <p className="text-muted-foreground lg:col-span-2">
+            Henüz onaylı satış faturası yok.{" "}
+            <Link href="/faturalar" className="text-foreground underline underline-offset-4">
+              Faturaları yükleyin
+            </Link>
+            ; satış ve brüt kâr onlardan hesaplanır.
+          </p>
+        )}
+        <YearCard totals={yearTotals} />
+      </div>
+      {months.length > 0 && <MonthlyTable months={months} years={years} />}
+      <UncostedLines lines={gp.uncosted} />
+    </div>
+  );
 
   return (
-    <PanelShell title="Finansal özet" lede={panelLede(s)} warning={panelWarning(s.gaps)}>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 2xl:grid-cols-6">
-        <StatTile large label="Toplam satış (KDV hariç)" value={tl(s.total)} note={`${monthLabel(s.firstOn.slice(0, 7))} – ${monthLabel(s.asOf.slice(0, 7))}`} />
-        <StatTile label="Satış faturası" value={s.invoiceCount.toLocaleString("tr-TR")} note="Tekrarlar ve iadeler çıkarıldı" />
-        <StatTile label="Müşteri" value={s.customerCount.toLocaleString("tr-TR")} note="Farklı firma ve şahıs" />
-        <StatTile label="Birden fazla kez alan" value={s.repeatCount.toLocaleString("tr-TR")} note="En az iki farklı günde sipariş" />
-        <StatTile label="Ortalama fatura" value={tl(s.total / s.invoiceCount)} note="KDV hariç" />
-      </div>
-
-      <PanelCard title="Bu veriler ne söylüyor">
-        <ul className="flex flex-col gap-3">
-          <Insight color={chartColors[0]} todo="Büyük müşterilerle düzenli görüş; biri giderse ciro hızla düşer." href={crm ? "/musteriler" : undefined} action="Müşterilere git">
-            Ciro birkaç müşteride toplanıyor: ilk 5 müşteri cironun <b>{pct(s.insights.top5)}</b>’ini, ilk 20 müşteri <b>{pct(s.insights.top20)}</b>’ini
-            getiriyor. En büyük müşteri tek başına <b>{pct(s.insights.top1)}</b>.
-          </Insight>
-          <Insight color={chartColors[1]} todo="Her ilk siparişten 4–6 hafta sonra kısa bir takip araması yap.">
-            Müşterilerin <b>{pct(s.insights.oneOff)}</b>’i bir kez alıp tekrar gelmedi. Buna karşılık iki ve daha fazla kez alanlar cironun büyük kısmını
-            getiriyor.
-          </Insight>
-          <Insight color={chartColors[2]} todo="Önce bunları ara." href={crm ? "/musteriler" : undefined} action="Geri kazan listesi">
-            <b>{s.insights.lapsedCount}</b> müşteri eskiden birden fazla kez alıyordu ama 3 aydır sipariş vermiyor. Dönem içinde toplam{" "}
-            <b>{tl(s.insights.lapsedSales)}</b> almışlardı.
-          </Insight>
-          <Insight color={chartColors[3]} todo="Nüve alan müşterilere hazır sarılı trafo ve bobin teklif et; en kolay ek satış bu.">
-            Özel trafo cironun <b>{pct(s.insights.trafoShare)}</b>’ini getiriyor ama yalnızca <b>{s.insights.trafoCustomers}</b> müşteri alıyor. Nüveyi{" "}
-            <b>{s.insights.coreCustomers}</b> müşteri alıyor; bunların sadece <b>{pct(s.insights.coreAlsoTrafo)}</b>’i trafo da alıyor.
-          </Insight>
-          <Insight color={chartColors[4]} todo="İstanbul’daki “Geri kazan” müşterilerini ziyaret listesine koy." href={crm ? "/musteriler" : undefined} action="Müşterilere git">
-            Müşterilerin <b>{pct(s.customerCount ? istanbul / s.customerCount : 0)}</b>’i İstanbul’da. Kocaeli, Ankara ve İzmir sonra geliyor.
-          </Insight>
-        </ul>
-      </PanelCard>
-
-      <PanelCard title="Aylık satış" note="KDV hariç, fatura tarihine göre. Gri çubuklar eksik faturası olan aylar.">
-        <SalesChart
-          data={s.monthly.map((m) => ({
-            month: m.month,
-            sales: m.sales,
-            invoices: m.invoices,
-            customers: m.customers,
-            newCustomers: m.newCustomers,
-            incomplete: incomplete(m.month),
-          }))}
-        />
-        <p className="text-muted-foreground text-xs">
-          En güçlü aylar: {best.slice(0, 3).map((m) => monthLabel(m.month)).join(", ")}.
-        </p>
-      </PanelCard>
-
-      <NetSection data={net} />
-      <GrossProfitSection data={gp} />
-
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-        <PanelCard title="En çok alan 10 müşteri" note="Dönem toplamı, KDV hariç.">
-          <HBars
-            rows={s.customers.slice(0, 10).map((c, i) => ({
-              key: c.customerId,
-              label: shortName(names.get(c.customerId) ?? ""),
-              value: c.sales,
-              display: tlShort(c.sales),
-              color: i === 0 ? chartColors[0] : undefined,
-              href: crm ? `/musteriler?secili=${c.customerId}` : undefined,
-            }))}
-          />
-        </PanelCard>
-
-        <PanelCard
-          title="Müşteriler ne kadar sık geliyor"
-          note="Müşteri sayısı. Aktif: son alım 3 aya kadar. Soğuyor: 3–6 ay. Uzun süredir yok: 6 aydan fazla."
-        >
-          <Table className="text-xs">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sipariş sıklığı</TableHead>
-                <TableHead className="text-right">Aktif</TableHead>
-                <TableHead className="text-right">Soğuyor</TableHead>
-                <TableHead className="text-right">Uzun süredir yok</TableHead>
-                <TableHead className="text-right">Toplam</TableHead>
-                <TableHead className="text-right">Satış</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {segments.map((g) => (
-                <TableRow key={g.k}>
-                  <TableCell>{g.k}</TableCell>
-                  <TableCell className="text-right tabular-nums">{g.aktif}</TableCell>
-                  <TableCell className={`text-right tabular-nums ${hot(g.k, g.soguyor)}`}>{g.soguyor}</TableCell>
-                  <TableCell className={`text-right tabular-nums ${hot(g.k, g.yok)}`}>{g.yok}</TableCell>
-                  <TableCell className="text-right tabular-nums">{g.total}</TableCell>
-                  <TableCell className="text-right tabular-nums">{tlShort(g.sales)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <p className="text-muted-foreground text-xs">
-            Sadık: 4 ve üzeri sipariş günü. Tekrar eden: 2–3. Kırmızı hücreler, eskiden düzenli alıp kaybolmaya başlayan müşteriler.
-          </p>
-        </PanelCard>
-
-        <PanelCard title="Ürün grubuna göre satış" note="Fatura kalemlerinden, KDV hariç.">
-          <HBars rows={s.groups.map((g, i) => ({ key: g.group, label: g.group, value: g.sales, display: tlShort(g.sales), color: chartColors[i] }))} />
-        </PanelCard>
-
-        <PanelCard title="Müşteriler nerede" note="Faturadaki adrese göre müşteri sayısı.">
-          <HBars
-            rows={[
-              ...topCities.map((c, i) => ({ key: c.city, label: c.city, value: c.count, display: `${c.count} müşteri`, color: i === 0 ? chartColors[0] : undefined })),
-              ...(otherCities ? [{ key: "diger", label: "Diğer", value: otherCities, display: `${otherCities} müşteri` }] : []),
-            ]}
-          />
-        </PanelCard>
-      </div>
+    <PanelShell title="Finansal özet" lede={hasSales ? panelLede(s) : undefined} warning={hasSales ? panelWarning(s.gaps) : undefined}>
+      {hasSales ? (
+        <Tabs defaultValue="ozet" className="gap-4">
+          <TabsList>
+            <TabsTrigger value="ozet">Özet</TabsTrigger>
+            <TabsTrigger value="musteriler">Müşteriler</TabsTrigger>
+          </TabsList>
+          <TabsContent value="ozet">{overview}</TabsContent>
+          <TabsContent value="musteriler">
+            <CustomersTab s={s} crm={crm} />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        overview
+      )}
     </PanelShell>
   );
 }

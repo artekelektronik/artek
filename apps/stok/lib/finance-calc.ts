@@ -126,25 +126,6 @@ export function summarize(invoices: InvoiceRow[], lines: LineRow[], customers: {
     .map((c, i) => ({ ...c, rank: i + 1, idle: daysBetween(c.lastOn, asOf), ...priorityOf(c, i + 1, asOf) }));
   const byCustomer = new Map(ranked.map((c) => [c.customerId, c]));
 
-  const months = new Map<string, { sales: number; invoices: number; customers: Set<string> }>();
-  for (const i of invoices) {
-    const ym = i.issuedOn.slice(0, 7);
-    const m = months.get(ym) ?? { sales: 0, invoices: 0, customers: new Set() };
-    m.sales += i.netAmount;
-    m.invoices += 1;
-    m.customers.add(i.customerId);
-    months.set(ym, m);
-  }
-  const monthly = [...months.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([ym, m]) => ({
-      month: ym,
-      sales: m.sales,
-      invoices: m.invoices,
-      customers: m.customers.size,
-      newCustomers: ranked.filter((c) => c.firstOn.slice(0, 7) === ym).length,
-    }));
-
   const groupMap = new Map<string, { sales: number; invoices: Set<string>; customers: Set<string> }>();
   const productMap = new Map<string, { group: string; sales: number; quantity: number; invoices: Set<string>; customers: Set<string> }>();
   for (const l of salesLines) {
@@ -188,7 +169,6 @@ export function summarize(invoices: InvoiceRow[], lines: LineRow[], customers: {
     repeatShare: total ? repeat.reduce((s, c) => s + c.sales, 0) / total : 0,
     customers: ranked,
     byCustomer,
-    monthly,
     groups,
     products,
     cities: [...cities.entries()].sort((a, b) => b[1] - a[1]).map(([city, count]) => ({ city, count })),

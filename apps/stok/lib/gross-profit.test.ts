@@ -27,7 +27,7 @@ const rates = () => ({ USD: 30, EUR: 33 });
 describe("monthly Brüt kâr", () => {
   test("a stocked line costs quantity × Alış fiyatı", () => {
     const [m] = monthlyGrossProfit([line({})], prices, rates).months;
-    assert.deepEqual(m, { month: "2026-10", sales: 1000, costedSales: 1000, cost: 400, gross: 600, uncostedSales: 0, uncostedLines: 0 });
+    assert.deepEqual(m, { month: "2026-10", sales: 1000, costedSales: 1000, cost: 400, gross: 600, uncostedSales: 0 });
   });
 
   test("a foreign-currency price is converted at the invoice date's rate", () => {
@@ -52,7 +52,7 @@ describe("monthly Brüt kâr", () => {
       prices,
       rates,
     );
-    assert.deepEqual(months[0], { month: "2026-10", sales: 1400, costedSales: 1000, cost: 400, gross: 600, uncostedSales: 400, uncostedLines: 2 });
+    assert.deepEqual(months[0], { month: "2026-10", sales: 1400, costedSales: 1000, cost: 400, gross: 600, uncostedSales: 400 });
     assert.deepEqual(
       uncosted.map((u) => [u.number, u.reason]),
       [
@@ -108,7 +108,7 @@ QNB FİNANSBANK`,
 });
 
 describe("monthly Net", () => {
-  const month = (over: Partial<MonthProfit>): MonthProfit => ({ month: "2026-10", sales: 10000, costedSales: 10000, cost: 6000, gross: 4000, uncostedSales: 0, uncostedLines: 0, ...over });
+  const month = (over: Partial<MonthProfit>): MonthProfit => ({ month: "2026-10", sales: 10000, costedSales: 10000, cost: 6000, gross: 4000, uncostedSales: 0, ...over });
   const spent = (spentOn: string, category: string, netAmount: string) => ({ spentOn, category, netAmount });
 
   test("Net is Brüt kâr minus the month's Giderler, broken down by category", () => {
@@ -134,7 +134,7 @@ describe("monthly Net", () => {
   });
 
   test("a month with sales of unknown cost is flagged as incomplete", () => {
-    const { months } = monthlyNet([month({ uncostedSales: 300, uncostedLines: 1 })], []);
+    const { months } = monthlyNet([month({ uncostedSales: 300 })], []);
     assert.equal(months[0].incomplete, true);
   });
 
