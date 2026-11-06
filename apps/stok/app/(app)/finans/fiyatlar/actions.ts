@@ -15,7 +15,9 @@ export async function savePricesAction(_previous: ActionState, formData: FormDat
       productId,
       purchasePrice: text(formData, `alis:${productId}`),
       purchaseCurrency: text(formData, `alisPara:${productId}`) as "TRY" | "USD" | "EUR",
+      salePriceA: text(formData, `satisA:${productId}`),
       salePrice: text(formData, `satis:${productId}`),
+      salePriceC: text(formData, `satisC:${productId}`),
       saleCurrency: text(formData, `satisPara:${productId}`) as "TRY" | "USD" | "EUR",
     };
   });

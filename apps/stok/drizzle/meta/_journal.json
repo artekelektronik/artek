@@ -239,6 +239,13 @@
       "when": 1793988524254,
       "tag": "0033_kur-gecmisi",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793992477271,
+      "tag": "0034_fiyat-abc",
+      "breakpoints": true
     }
   ]
 }

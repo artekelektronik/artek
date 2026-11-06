@@ -11,7 +11,7 @@ import { parsePrice, type Price } from "./stock-value";
 // Unchecked: for callers that already checked finance.view.
 export async function loadPrices() {
   const rows = await db.select().from(productPrice);
-  return new Map<string, Price>(rows.map((r) => [r.productId, r]));
+  return new Map(rows.map((r) => [r.productId, r]));
 }
 
 // Every active product with its stock and prices, for the Fiyatlar screen.
@@ -26,25 +26,31 @@ const priceLines = z.array(
     productId: z.uuid(),
     purchasePrice: z.string(),
     purchaseCurrency: z.enum(currency.enumValues),
+    salePriceA: z.string().default(""),
     salePrice: z.string(),
+    salePriceC: z.string().default(""),
     saleCurrency: z.enum(currency.enumValues),
   }),
 );
 
 const money = (price: string | null | undefined, currency: string) => (price ? `${String(Number(price)).replace(".", ",")} ${currency === "TRY" ? "TL" : currency}` : "—");
 
-// "Alış: — → 12,5 USD; Satış: 30 TL → 35 TL", naming only the side that changed.
-function priceChanges(old: Price | undefined, next: { purchasePrice: string | null; purchaseCurrency: string; salePrice: string | null; saleCurrency: string }) {
+type Prices = Price & { salePriceA: string | null; salePriceC: string | null };
+
+// "Alış: — → 12,5 USD; Satış B: 30 TL → 35 TL", naming only the sides that changed.
+function priceChanges(old: Prices | undefined, next: Prices) {
   const sides = [
     ["Alış", money(old?.purchasePrice, old?.purchaseCurrency ?? ""), money(next.purchasePrice, next.purchaseCurrency)],
-    ["Satış", money(old?.salePrice, old?.saleCurrency ?? ""), money(next.salePrice, next.saleCurrency)],
+    ["Satış A", money(old?.salePriceA, old?.saleCurrency ?? ""), money(next.salePriceA, next.saleCurrency)],
+    ["Satış B", money(old?.salePrice, old?.saleCurrency ?? ""), money(next.salePrice, next.saleCurrency)],
+    ["Satış C", money(old?.salePriceC, old?.saleCurrency ?? ""), money(next.salePriceC, next.saleCurrency)],
   ];
   return sides.filter(([, before, after]) => before !== after).map(([side, before, after]) => `${side}: ${before} → ${after}`).join("; ");
 }
 
 const same = (a: string | null | undefined, b: string | null) => (a ? Number(a) : null) === (b ? Number(b) : null);
 
-// Saves the lines that changed, so "who changed it" stays true for the rest. Both prices empty removes the row.
+// Saves the lines that changed, so "who changed it" stays true for the rest. Every price empty removes the row.
 export async function savePrices(headers: Headers, input: z.input<typeof priceLines>) {
   const actor = await requirePermission(headers, "finance.edit");
   const lines = parseInput(priceLines, input);
@@ -55,7 +61,15 @@ export async function savePrices(headers: Headers, input: z.input<typeof priceLi
     const found = known.get(line.productId);
     if (!found) return [];
     try {
-      return [{ ...line, purchasePrice: parsePrice(line.purchasePrice), salePrice: parsePrice(line.salePrice) }];
+      return [
+        {
+          ...line,
+          purchasePrice: parsePrice(line.purchasePrice),
+          salePriceA: parsePrice(line.salePriceA),
+          salePrice: parsePrice(line.salePrice),
+          salePriceC: parsePrice(line.salePriceC),
+        },
+      ];
     } catch (error) {
       throw new UserError(`${found.code}: ${(error as Error).message}`);
     }
@@ -69,7 +83,7 @@ export async function savePrices(headers: Headers, input: z.input<typeof priceLi
       const { code, name } = known.get(productId)!;
       const log = (detail: string) =>
         detail ? logActivity(tx, { entity: "fiyat", entityId: productId, label: `${code} ${name}`, action: old ? "duzenlendi" : "eklendi", detail, userId: actor.userId }) : undefined;
-      if (!price.purchasePrice && !price.salePrice) {
+      if (!price.purchasePrice && !price.salePriceA && !price.salePrice && !price.salePriceC) {
         if (old) {
           await tx.delete(productPrice).where(eq(productPrice.productId, productId));
           await log(priceChanges(old, price));
@@ -79,7 +93,9 @@ export async function savePrices(headers: Headers, input: z.input<typeof priceLi
       const unchanged =
         old &&
         same(old.purchasePrice, price.purchasePrice) &&
+        same(old.salePriceA, price.salePriceA) &&
         same(old.salePrice, price.salePrice) &&
+        same(old.salePriceC, price.salePriceC) &&
         old.purchaseCurrency === price.purchaseCurrency &&
         old.saleCurrency === price.saleCurrency;
       if (unchanged) continue;

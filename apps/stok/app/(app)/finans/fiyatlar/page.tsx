@@ -20,7 +20,7 @@ export default async function PricesPage() {
   const { rows, prices, lokasyon } = await listPrices(requestHeaders);
 
   return (
-    <PanelShell title="Fiyatlar" lede="Alış ve satış birim fiyatlarını girin (para birimi hazır USD seçili) ve Kaydet'e basın; ana sayfadaki stok değeri bunlardan, günün TCMB kuruyla hesaplanır. Yalnızca Finans paneli izni olanlar görür.">
+    <PanelShell title="Fiyatlar" lede="Alış fiyatını ve üç müşteri sınıfı için satış fiyatını girip Kaydet'e basın. Para birimi hazır USD seçili gelir. Ana sayfadaki stok değeri alış ve B fiyatından, günün TCMB kuruyla hesaplanır. Yalnızca Finans paneli izni olanlar görür.">
       <PricesForm
         readOnly={!can(actor, "finance.edit")}
         canEditProducts={can(actor, "products.manage")}
@@ -44,10 +44,12 @@ export default async function PricesPage() {
             physical: Object.fromEntries(lokasyon.map((l) => [l.id, r.stock[l.id].physical])),
             where: places.join(" · ") || "—",
             hasPurchase: Boolean(price?.purchasePrice),
-            hasSale: Boolean(price?.salePrice),
+            hasSale: Boolean(price?.salePriceA && price.salePrice && price.salePriceC),
             purchasePrice: displayPrice(price?.purchasePrice ?? null),
             purchaseCurrency: price?.purchaseCurrency ?? "USD",
+            salePriceA: displayPrice(price?.salePriceA ?? null),
             salePrice: displayPrice(price?.salePrice ?? null),
+            salePriceC: displayPrice(price?.salePriceC ?? null),
             saleCurrency: price?.saleCurrency ?? "USD",
           };
         })}
