@@ -67,6 +67,6 @@ export async function importAndConfirm(headers: Headers, input: { fileName: stri
   const [row] = await db.select({ status: invoice.status }).from(invoice).where(eq(invoice.id, result.id));
   if (row.status === "onaylandi") return result;
   const lines = await db.select({ seq: invoiceLine.seq }).from(invoiceLine).where(eq(invoiceLine.invoiceId, result.id));
-  await confirmInvoice(headers, { id: result.id, customerId: "yeni", lokasyonId: null, lines: lines.map((l) => ({ seq: l.seq, productId: null, quantity: null })) });
+  await confirmInvoice(headers, { id: result.id, customerId: "yeni", lokasyonId: null, lines: lines.map((l) => ({ seq: l.seq, productId: null, stockQuantity: null })) });
   return result;
 }

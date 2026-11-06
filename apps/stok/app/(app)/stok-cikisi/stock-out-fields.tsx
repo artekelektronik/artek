@@ -25,7 +25,7 @@ export function StockOutFields({
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Label className="flex-col items-stretch gap-1">
           Çıkış türü
           <FormSelect name="type" options={types} className="w-full" />
@@ -34,15 +34,15 @@ export function StockOutFields({
           Lokasyon
           <FormSelect name="lokasyonId" options={lokasyon} onValueChange={setLokasyonId} className="w-full" />
         </Label>
+        <Label className="flex-col items-stretch gap-1">
+          Referans (isteğe bağlı)
+          <Input name="reference" className="font-normal" placeholder="Fatura, iş veya müşteri no" />
+        </Label>
       </div>
       <ProductLines products={products} available={availableByLokasyon[lokasyonId] ?? {}} />
       <Label className="flex-col items-stretch gap-1">
         Neden
-        <Textarea name="reason" required rows={3} className="font-normal" placeholder="Örn. müşteri teslimatı, kırık parça" />
-      </Label>
-      <Label className="flex-col items-stretch gap-1 sm:max-w-sm">
-        Referans (isteğe bağlı)
-        <Input name="reference" className="font-normal" placeholder="Fatura, iş veya müşteri no" />
+        <Textarea name="reason" required rows={2} className="font-normal" placeholder="Örn. müşteri teslimatı, kırık parça" />
       </Label>
     </>
   );

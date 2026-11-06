@@ -35,6 +35,9 @@ _Avoid_: Hammadde stoğu as a separate pile
 **Özel trafo** (Custom transformer):
 A transformer Artek manufactures to a specific customer's request.
 
+**Reçete** (Bill of materials):
+The Malzeme one unit of an Ürün is built from. It is saved from the last confirmed Fatura that built the Ürün, and pre-fills the next one.
+
 **Seri numarası** (Serial number):
 The identity of one manufactured transformer unit; every unit gets its own, even within a batch. Ticari mal never has one.
 
@@ -92,7 +95,7 @@ _Avoid_: İş, proje, PRJ
 ## Invoices and customers
 
 **Fatura** (Sales invoice):
-A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An upload is a taslak until a person confirms its Müşteri and Ürün lines; only a confirmed Fatura counts in Finans and takes its lines from Stok. An İade fatura puts its lines back into Stok and is not counted as a sale.
+A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An upload is a taslak until a person confirms its Müşteri and Ürün lines; only a confirmed Fatura counts in Finans and takes its lines from Stok. A line of an Özel trafo takes its Malzeme out as üretim tüketimi instead. An İade fatura puts its lines back into Stok and is not counted as a sale. A Fatura can be typed by hand before its PDF exists; it can be confirmed only once the PDF with the same number is uploaded.
 _Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
 
 **Müşteri** (Customer):

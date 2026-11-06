@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@artek/ui/components/button";
-import { useCloseSheet } from "@/components/form-sheet";
+import { SheetActions, useCloseSheet } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
 import type { ActionState } from "@/lib/action-result";
 
@@ -36,14 +36,26 @@ export function StockForm({
     setIdempotencyKey(crypto.randomUUID());
   }
 
+  const submit = (
+    <Button type="submit" disabled={pending}>
+      {pending ? "Kaydediliyor…" : submitLabel}
+    </Button>
+  );
   return (
-    <form onSubmit={onSubmit} className="flex max-w-3xl flex-col gap-4">
+    <form onSubmit={onSubmit} className={closeSheet ? "flex min-h-full flex-col gap-5" : "flex max-w-3xl flex-col gap-4"}>
       <div key={entry} className="contents">
         {children}
       </div>
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Kaydediliyor…" : submitLabel}
-      </Button>
+      {closeSheet ? (
+        <SheetActions>
+          <Button type="button" variant="outline" onClick={closeSheet}>
+            Vazgeç
+          </Button>
+          {submit}
+        </SheetActions>
+      ) : (
+        <div>{submit}</div>
+      )}
     </form>
   );
 }

@@ -5,26 +5,28 @@ import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
 import { day } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
-import { invoiceList, invoiceReview } from "@/lib/invoices";
+import { invoiceList, invoiceReview, manualInvoiceOptions } from "@/lib/invoices";
 import { can } from "@/lib/permissions";
 import { formatIstanbulTime } from "@/lib/time";
 import { InvoiceSheet } from "./invoice-sheet";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
+import { ManualInvoiceButton, ManualInvoiceSheet } from "./manual-invoice-sheet";
 
 export const metadata = { title: "Faturalar | Artek" };
 
-export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ fatura?: string }> }) {
+export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ fatura?: string; elle?: string }> }) {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canUpload = can(actor, "finance.edit");
   const canSeeCustomers = can(actor, "crm.view");
-  const { fatura } = await searchParams;
-  const [{ rows, lastUpload, gaps }, review] = await Promise.all([
+  const { fatura, elle } = await searchParams;
+  const [{ rows, lastUpload, gaps }, review, manualOptions] = await Promise.all([
     invoiceList(requestHeaders),
     fatura ? invoiceReview(requestHeaders, fatura) : null,
+    elle === "true" && canUpload ? manualInvoiceOptions(requestHeaders) : null,
   ]);
   const waiting = rows.filter((r) => r.status === "taslak" && !r.archivedAt).length;
 
@@ -50,7 +52,14 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
           )}
         </>
       }
-      actions={canUpload && <InvoiceUpload />}
+      actions={
+        canUpload && (
+          <>
+            <ManualInvoiceButton />
+            <InvoiceUpload />
+          </>
+        )
+      }
     >
       <PanelCard title="Faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz.">
         <InvoiceTable
@@ -60,6 +69,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         />
       </PanelCard>
 
+      <ManualInvoiceSheet options={manualOptions} />
       <InvoiceSheet
         review={review}
         canEdit={canUpload}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { unzipSync } from "fflate";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -29,12 +29,42 @@ async function pdfsFrom(files: File[]) {
   return out;
 }
 
-// One invoice opens in the review sheet; a batch ends with a summary toast.
+// Button or drop anywhere on the page; one invoice opens in the review sheet, a batch ends with a toast.
 export function InvoiceUpload() {
   const router = useRouter();
   const [, setFatura] = useFatura();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const onDrop = useEffectEvent((files: File[]) => {
+    if (progress === null) upload(files);
+  });
+
+  useEffect(() => {
+    const hasFiles = (e: DragEvent) => e.dataTransfer?.types.includes("Files");
+    const over = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      setDragging(true);
+    };
+    const leave = (e: DragEvent) => {
+      if (!e.relatedTarget) setDragging(false);
+    };
+    const drop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      setDragging(false);
+      onDrop([...e.dataTransfer!.files]);
+    };
+    window.addEventListener("dragover", over);
+    window.addEventListener("dragleave", leave);
+    window.addEventListener("drop", drop);
+    return () => {
+      window.removeEventListener("dragover", over);
+      window.removeEventListener("dragleave", leave);
+      window.removeEventListener("drop", drop);
+    };
+  }, []);
 
   async function upload(files: File[]) {
     const pdfs = await pdfsFrom(files);
@@ -60,16 +90,23 @@ export function InvoiceUpload() {
 
     const problems = rows.filter((r) => r.status === "okunamadi" || r.status === "hata");
     for (const p of problems) toast.error(`${p.file} okunamadı`, { description: "reason" in p ? p.reason : undefined });
-    const [only] = rows;
-    if (rows.length === 1 && "id" in only) {
-      setFatura(only.id);
+    // A repeat is refused, unless it brought the PDF an older upload was missing.
+    const repeats = rows.flatMap((r) => (r.status === "tekrar" && !r.pdfAdded ? [r] : []));
+    if (repeats.length === 1) {
+      const [r] = repeats;
+      toast.error(`${r.number} zaten yüklü`, { description: `${r.file} daha önce yüklendi; tekrar eklenmedi.`, action: { label: "Aç", onClick: () => setFatura(r.id) } });
+    } else if (repeats.length > 1) {
+      toast.error(`${repeats.length} fatura zaten yüklüydü; tekrar eklenmedi.`, { description: repeats.map((r) => r.number).join(", ") });
+    }
+    const added = rows.flatMap((r) => (r.status === "eklendi" ? [r] : []));
+    const pdfAdded = rows.filter((r) => r.status === "tekrar" && r.pdfAdded).length;
+    if (rows.length === 1 && added.length === 1) {
+      setFatura(added[0].id);
       return;
     }
-    const added = rows.filter((r) => r.status === "eklendi").length;
-    const repeats = rows.filter((r) => r.status === "tekrar").length;
-    if (added || repeats) {
-      toast.success(`${added} fatura eklendi${repeats ? `, ${repeats} zaten vardı` : ""}.`, {
-        description: added ? "Listede “Onay bekliyor” olarak duruyorlar; her birini açıp onaylayın." : undefined,
+    if (added.length || pdfAdded) {
+      toast.success([added.length && `${added.length} fatura eklendi`, pdfAdded && `${pdfAdded} faturanın PDF’i eklendi`].filter(Boolean).join(", ") + ".", {
+        description: added.length ? "Listede “Onay bekliyor” olarak duruyorlar; her birini açıp onaylayın." : undefined,
       });
     }
     router.refresh();
@@ -90,6 +127,11 @@ export function InvoiceUpload() {
           if (files.length) upload(files);
         }}
       />
+      {dragging && (
+        <div className="bg-background/80 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+          <p className="border-primary rounded-xl border-2 border-dashed px-10 py-8 text-lg font-medium">Faturaları bırakın · PDF veya zip, birden çok olabilir</p>
+        </div>
+      )}
       <Button type="button" disabled={progress !== null} onClick={() => input.current?.click()}>
         <Upload />
         {progress ? `Yükleniyor ${progress.done}/${progress.total}…` : "Fatura yükle"}

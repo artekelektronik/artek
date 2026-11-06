@@ -235,7 +235,17 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
   describe("review and confirmation", () => {
     let lokasyon: Awaited<ReturnType<typeof lokasyonIdsByName>>;
     let core: string;
-    const lines = (productId: string | null, quantity: string | null = null) => [{ seq: 1, productId, quantity }];
+    const lines = (productId: string | null, stockQuantity: string | null = null) => [{ seq: 1, productId, stockQuantity }];
+    const manualSample = {
+      number: "X",
+      issuedOn: "2025-04-07",
+      type: "SATIS" as const,
+      scenario: "TEMELFATURA" as const,
+      kdvRate: 20,
+      customerId: null,
+      buyer: { name: "BAŞKA FİRMA", taxId: "5555555555" },
+      lines: [{ description: "KARGO", quantity: "1", unit: "Adet", unitPrice: "50", productId: null }],
+    };
     const stockOf = async (productId: string) =>
       (await db.select().from(schema.stock)).find((s) => s.productId === productId && s.lokasyonId === lokasyon["Karaköy Mağaza"])?.physical;
 
@@ -375,7 +385,9 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       assert.ok("id" in r);
       assert.equal(await invoices.invoicePdf(admin.headers, r.id), null);
       const again = await invoices.importInvoiceText(admin.headers, { ...file(1), bytes: new Uint8Array([1, 2]) });
-      assert.equal(again.status, "tekrar");
+      assert.deepEqual("id" in again && [again.status, again.pdfAdded], ["tekrar", true]);
+      const thirdTime = await invoices.importInvoiceText(admin.headers, { ...file(1), bytes: new Uint8Array([1, 2]) });
+      assert.deepEqual("id" in thirdTime && [thirdTime.status, thirdTime.pdfAdded], ["tekrar", false], "a plain repeat adds nothing");
       assert.deepEqual([...(await invoices.invoicePdf(admin.headers, r.id))!.bytes], [1, 2]);
     });
 
@@ -389,6 +401,103 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
         invoices.confirmInvoice(viewer.headers, { id: r.id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "1") }),
         Forbidden,
       );
+    });
+
+    test("deleting a draft removes it with its lines and PDF; deleting a confirmed one puts its stock back", async () => {
+      const draft = await invoices.importInvoiceText(admin.headers, { ...file(1), bytes: new Uint8Array([1]) });
+      const done = await upload(admin.headers, 2);
+      assert.ok("id" in draft && "id" in done);
+      await invoices.confirmInvoice(admin.headers, { id: done.id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });
+      assert.equal(await stockOf(core), "15.000");
+
+      await invoices.deleteInvoice(admin.headers, draft.id);
+      await invoices.deleteInvoice(admin.headers, done.id);
+      assert.equal((await db.select().from(schema.invoice)).length, 0);
+      assert.equal((await db.select().from(schema.invoiceLine)).length, 0);
+      assert.equal((await db.select().from(schema.invoiceFile)).length, 0);
+      assert.equal(await stockOf(core), "25.000");
+      const logged = await db.select().from(schema.activityLog).where(eq(schema.activityLog.action, "silindi"));
+      assert.equal(logged.length, 2);
+    });
+
+    test("a line built from materials takes them as üretim tüketimi and saves the product's reçete for next time", async () => {
+      const [trafo, wire, bobbin] = await db
+        .insert(schema.product)
+        .values([
+          { code: "T-TRAFO", name: "Bakır sargılı trafo", category: "Özel trafo", isTradeGoods: true, isMaterial: false, unit: "adet", showOnSite: false },
+          { code: "T-TEL", name: "Bakır tel", category: "Malzeme", isTradeGoods: false, isMaterial: true, unit: "kg", showOnSite: false },
+          { code: "T-KARKAS", name: "Karkas", category: "Malzeme", isTradeGoods: false, isMaterial: true, unit: "adet", showOnSite: false },
+        ])
+        .returning();
+      const { recordReceipt } = await import("./receipts");
+      const atelier = lokasyon["Çekmeköy İmalathane"];
+      await recordReceipt(admin.headers, {
+        supplier: "Test",
+        reference: "T-2",
+        lokasyonId: atelier,
+        lines: [
+          { productId: wire.id, quantity: "100" },
+          { productId: bobbin.id, quantity: "100" },
+        ],
+        idempotencyKey: crypto.randomUUID(),
+      });
+      const r = await upload(admin.headers, 1);
+      assert.ok("id" in r);
+      await invoices.confirmInvoice(admin.headers, {
+        id: r.id,
+        customerId: "yeni",
+        lokasyonId: null,
+        materialsLokasyonId: atelier,
+        lines: [{ seq: 1, productId: trafo.id, stockQuantity: null, components: [{ productId: wire.id, quantity: "2,5" }, { productId: bobbin.id, quantity: "10" }] }],
+      });
+      const moves = await db.select().from(schema.stockMovement).where(eq(schema.stockMovement.type, "uretim_tuketimi"));
+      assert.deepEqual(moves.map((m) => [m.productId, m.lokasyonId, m.quantity]).sort(), [[wire.id, atelier, "-2.500"], [bobbin.id, atelier, "-10.000"]].sort());
+      const recipe = await db.select().from(schema.productComponent);
+      assert.deepEqual(recipe.map((c) => [c.componentId, c.quantity]).sort(), [[wire.id, "0.250"], [bobbin.id, "1.000"]].sort(), "per unit of a 10-adet line");
+
+      const next = await upload(admin.headers, 2);
+      assert.ok("id" in next);
+      const review = await invoices.invoiceReview(admin.headers, next.id);
+      assert.equal(review?.lines[0].productId, trafo.id, "learned from the first confirmation");
+      assert.equal(review?.recipes[trafo.id].length, 2);
+    });
+
+    test("an edited quantity or price recomputes the line and the invoice totals", async () => {
+      const { loadSalesSummary } = await import("./finance");
+      const r = await upload(admin.headers, 1);
+      assert.ok("id" in r);
+      await invoices.confirmInvoice(admin.headers, { id: r.id, customerId: "yeni", lokasyonId: null, lines: [{ seq: 1, productId: null, stockQuantity: null, quantity: "5", unitPrice: "90,5" }] });
+      const [line] = await db.select().from(schema.invoiceLine);
+      assert.deepEqual([line.quantity, line.unitPrice, line.amount], ["5.000", "90.5000", "452.50"]);
+      const [inv] = await db.select().from(schema.invoice);
+      assert.deepEqual([inv.netAmount, inv.totalAmount], ["452.50", "452.50"]);
+      assert.equal((await loadSalesSummary()).total, 452.5);
+    });
+
+    test("a manual invoice waits for its PDF; uploading the PDF with its number joins it and keeps the picked products", async () => {
+      const id = await invoices.createManualInvoice(admin.headers, {
+        number: "AAA2025000000007",
+        issuedOn: "2025-04-07",
+        type: "SATIS",
+        scenario: "TEMELFATURA",
+        kdvRate: 20,
+        customerId: null,
+        buyer: { name: "ÖRNEK ELEKTRONİK LİMİTED ŞİRKETİ", taxId: "1234567890" },
+        lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, stockQuantity: "10" }],
+      });
+      const [manual] = await db.select().from(schema.invoice);
+      assert.deepEqual([manual.ettn, manual.netAmount, manual.totalAmount], [null, "1000.00", "1200.00"]);
+      await assert.rejects(invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: null, lines: lines(core) }), /PDF/);
+      await assert.rejects(invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000007" }), /zaten var/);
+
+      const r = await invoices.importInvoiceText(admin.headers, { ...file(7), bytes: new Uint8Array([9]) });
+      assert.deepEqual("id" in r && [r.status, r.id], ["eklendi", id]);
+      const [joined] = await db.select().from(schema.invoice);
+      assert.deepEqual([joined.ettn, joined.fileName], [ettn(7), "fatura-7.pdf"]);
+      const review = await invoices.invoiceReview(admin.headers, id);
+      assert.deepEqual([review?.lines[0].productId, review?.lines[0].stockQuantity], [core, "10.000"], "the stock choice made by hand is kept");
+      await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });
+      assert.equal(await stockOf(core), "15.000");
     });
   });
 });
@@ -406,10 +515,15 @@ describe("invoice matching", () => {
   });
 
   const products = prepareProducts([
-    { id: "ee25", name: "EE 25 Ferrit Nüve", manufacturerCode: "EE25" },
-    { id: "ee30", name: "EE 30 Ferrit Nüve", manufacturerCode: "EE30" },
-    { id: "rod", name: "ROD 5 x 20", manufacturerCode: null },
+    { id: "ee25", code: "ART-0001", name: "EE 25 Ferrit Nüve", manufacturerCode: "EE25" },
+    { id: "ee30", code: "ART-0002", name: "EE 30 Ferrit Nüve", manufacturerCode: "EE30" },
+    { id: "rod", code: "ART-9.8FT", name: "ROD 5 x 20", manufacturerCode: null },
   ]);
+  test("our ART code written on the line wins over everything else", () => {
+    assert.equal(matchProduct("BAKIR SARGILI BOBİN(ART- 9.8FT)", products, new Map([["BAKIR SARGILI BOBİN(ART-9.8FT)", "ee25"]])).productId, "rod");
+    assert.equal(matchProduct("FERRİTNUVE(EE25) ART-0002", products, new Map()).productId, "ee30");
+    assert.equal(matchProduct("FERRİTNUVE(ART-000)", products, new Map()).productId, null, "a partial code is no match");
+  });
   test("a product is picked from a manufacturer code, a covering name or an earlier confirmation", () => {
     assert.equal(matchProduct("FERRİTNUVE(EE25)", products, new Map()).productId, "ee25");
     assert.equal(matchProduct("ROD 5X20 FERRİT", products, new Map()).productId, "rod");

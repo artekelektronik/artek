@@ -571,7 +571,7 @@ export const invoice = pgTable(
   "invoice",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    ettn: uuid("ettn").notNull().unique(),
+    ettn: uuid("ettn").unique(), // null: typed by hand, waiting for its PDF (joined by number when it arrives)
     number: text("number").notNull(), // e-Fatura and e-Arşiv number in separate series
     issuedOn: date("issued_on", { mode: "string" }).notNull(),
     scenario: text("scenario").notNull(), // TEMELFATURA (e-Fatura) or EARSIVFATURA (e-Arşiv)
@@ -582,15 +582,16 @@ export const invoice = pgTable(
     customerId: uuid("customer_id").references(() => customer.id),
     netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
     totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
-    fileName: text("file_name").notNull(),
-    fileSha256: text("file_sha256").notNull(),
+    fileName: text("file_name"),
+    fileSha256: text("file_sha256"),
     // The PDF's text, so a better parser can re-read it; the PDF itself is in invoice_file.
-    rawText: text("raw_text").notNull(),
+    rawText: text("raw_text"),
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => user.id),
     lokasyonId: uuid("lokasyon_id").references(() => lokasyon.id), // where its stock left from (or came back to)
-    stockDocumentId: uuid("stock_document_id").references(() => stockDocument.id), // null: no line was from stock
+    materialsLokasyonId: uuid("materials_lokasyon_id").references(() => lokasyon.id), // where Özel trafo materials were used from
+    stockDocumentId: uuid("stock_document_id").references(() => stockDocument.id), // null: no line moved stock
     confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
     confirmedBy: text("confirmed_by").references(() => user.id),
     archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
@@ -632,8 +633,25 @@ export const invoiceLine = pgTable(
     // Set on confirm: null product = not in the catalogue, null stockQuantity = not taken from stock.
     productId: uuid("product_id").references(() => product.id),
     stockQuantity: numeric("stock_quantity", { precision: 14, scale: 3 }),
+    components: jsonb("components").$type<LineComponent[]>(), // set on confirm for a line built from materials
   },
   (t) => [primaryKey({ columns: [t.invoiceId, t.seq] })],
+);
+export type LineComponent = { productId: string; quantity: string };
+
+// Reçete: what one unit of a built-to-order product uses; saved each time an invoice for it is confirmed.
+export const productComponent = pgTable(
+  "product_component",
+  {
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => product.id),
+    componentId: uuid("component_id")
+      .notNull()
+      .references(() => product.id),
+    quantity: numeric("quantity", { precision: 14, scale: 3 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.productId, t.componentId] })],
 );
 
 // The morning assistant's suggestions: call this customer and ask this, or send this email. Nothing goes out
@@ -768,7 +786,7 @@ export const leadEvent = pgTable(
 // One append-only log of what happened to Faturalar, Müşteriler, Adaylar, Ürünler and Fiyatlar, for the İşlem geçmişi page. Field-level
 // changes of a Müşteri stay in customer_change; a row here only summarises them.
 export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat"]);
-export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu", "onaylandi"]);
+export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu", "onaylandi", "silindi"]);
 
 export const activityLog = pgTable(
   "activity_log",

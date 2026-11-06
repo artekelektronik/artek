@@ -258,22 +258,23 @@ export async function reverseMovement(
   if (await db.query.stockMovement.findFirst({ where: eq(stockMovement.reversesId, movementId) })) {
     throw new UserError("Bu hareketin zaten ters kaydı var.");
   }
-  const quantity = formatQuantity(original.quantity);
-
   return postDocument(
     { kind: "ters_kayit", lokasyonId: original.lokasyonId, reason: reason.trim(), userId: actor.userId, idempotencyKey },
-    [
-      {
-        productId: original.productId,
-        lokasyonId: original.lokasyonId,
-        direction: quantity.startsWith("-") ? "in" : "out",
-        quantity: quantity.replace("-", ""),
-        type: original.type,
-        reason: reason.trim(),
-        reversesId: original.id,
-      },
-    ],
+    [reversalLine(original, reason.trim())],
   );
+}
+
+export function reversalLine(original: typeof stockMovement.$inferSelect, reason: string): MovementLine {
+  const quantity = formatQuantity(original.quantity);
+  return {
+    productId: original.productId,
+    lokasyonId: original.lokasyonId,
+    direction: quantity.startsWith("-") ? "in" : "out",
+    quantity: quantity.replace("-", ""),
+    type: original.type,
+    reason,
+    reversesId: original.id,
+  };
 }
 
 // Every stored balance compared with the sum of its movements. Empty means the ledger is consistent.

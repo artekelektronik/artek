@@ -1,5 +1,9 @@
 import { headers } from "next/headers";
+import { Plus } from "lucide-react";
+import { Button } from "@artek/ui/components/button";
+import { FormSheet } from "@/components/form-sheet";
 import { NoAccess } from "@/components/no-access";
+import { PanelCard, PanelShell } from "@/components/panel";
 import { MovementTable } from "@/components/movement-table";
 import { StockForm } from "@/components/stock-form";
 import { loadActor } from "@/lib/guard";
@@ -26,21 +30,33 @@ export default async function StockOutPage() {
   const [available, values] = await Promise.all([availableByLokasyon(lokasyon.map((l) => l.id)), exitValues(actor, recent)]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Stok çıkışı</h1>
-      <p className="text-muted-foreground max-w-3xl text-sm">
-        Satış teslimatı, üretim tüketimi ve fire burada elle kaydedilir. Kullanılabilir stoktan fazlası çıkarılamaz.
-      </p>
-      <StockForm action={recordStockOutAction} submitLabel="Çıkışı kaydet" savedMessage="Stok çıkışı kaydedildi.">
-        <StockOutFields
-          types={stockOutTypes.map((type) => ({ value: type, label: movementTypeLabels[type] }))}
-          lokasyon={lokasyon.map((l) => ({ value: l.id, label: l.name }))}
-          products={products}
-          availableByLokasyon={available}
-        />
-      </StockForm>
-      <h2 className="mt-4 text-lg font-semibold">Son çıkışlar</h2>
-      <MovementTable movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
-    </div>
+    <PanelShell
+      title="Stok çıkışı"
+      lede="Satış teslimatı, üretim tüketimi ve fire burada elle kaydedilir. Kullanılabilir stoktan fazlası çıkarılamaz."
+      actions={
+        <FormSheet
+          title="Stok çıkışı"
+          description="Kullanılabilir stoktan fazlası çıkarılamaz."
+          trigger={
+            <Button>
+              <Plus /> Stok çıkışı
+            </Button>
+          }
+        >
+          <StockForm action={recordStockOutAction} submitLabel="Çıkışı kaydet" savedMessage="Stok çıkışı kaydedildi.">
+            <StockOutFields
+              types={stockOutTypes.map((type) => ({ value: type, label: movementTypeLabels[type] }))}
+              lokasyon={lokasyon.map((l) => ({ value: l.id, label: l.name }))}
+              products={products}
+              availableByLokasyon={available}
+            />
+          </StockForm>
+        </FormSheet>
+      }
+    >
+      <PanelCard title="Son çıkışlar">
+        <MovementTable movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
+      </PanelCard>
+    </PanelShell>
   );
 }

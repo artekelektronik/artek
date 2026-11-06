@@ -8,7 +8,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return new Response(new Uint8Array(file.bytes), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+        "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(file.fileName ?? "fatura.pdf")}`,
         "Cache-Control": "private, max-age=3600",
         "X-Content-Type-Options": "nosniff",
       },

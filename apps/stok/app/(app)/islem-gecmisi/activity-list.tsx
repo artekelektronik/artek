@@ -16,6 +16,7 @@ const actionTones: Record<ActivityRow["action"], string> = {
   geri_alindi: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200",
   musteri_oldu: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200",
   onaylandi: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200",
+  silindi: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
   hareket: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
   kullanici: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
 };
