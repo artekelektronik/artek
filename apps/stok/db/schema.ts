@@ -785,7 +785,7 @@ export const leadEvent = pgTable(
 
 // One append-only log of what happened to Faturalar, Müşteriler, Adaylar, Ürünler and Fiyatlar, for the İşlem geçmişi page. Field-level
 // changes of a Müşteri stay in customer_change; a row here only summarises them.
-export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat"]);
+export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat", "gider"]);
 export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu", "onaylandi", "silindi"]);
 
 export const activityLog = pgTable(
@@ -835,3 +835,34 @@ export const chatMessage = pgTable(
   },
   (t) => [index("chat_message_user_day_idx").on(t.userId, t.day)],
 );
+
+// Gider: an expense Artek pays (kira, maaş, a supplier's invoice …), for the Finans paneli only. Not a Fatura, which is a sale.
+export const expense = pgTable(
+  "expense",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    spentOn: date("spent_on", { mode: "string" }).notNull(),
+    category: text("category").notNull(),
+    description: text("description").notNull().default(""),
+    party: text("party"), // who was paid
+    netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
+    kdvRate: numeric("kdv_rate", { precision: 5, scale: 2 }).notNull(), // as typed, so a re-save keeps the same KDV dahil
+    totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(), // KDV dahil
+    fileName: text("file_name"), // the attached receipt, if any
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("expense_spent_idx").on(t.spentOn)],
+);
+
+// The receipt photo or PDF, apart from expense so lists never load it.
+export const expenseFile = pgTable("expense_file", {
+  expenseId: uuid("expense_id")
+    .primaryKey()
+    .references(() => expense.id, { onDelete: "cascade" }),
+  contentType: text("content_type").notNull(),
+  bytes: bytea("bytes").notNull(),
+});

@@ -1,13 +1,14 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
-import { AlertTriangle, ArrowLeftRight, ChartColumn, Download, MapPin, Package, Plus, TriangleAlert, Wallet, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowLeftRight, ChartColumn, Download, MapPin, Package, Plus, TriangleAlert, Wallet } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@artek/ui/components/alert";
 import { Avatar, AvatarFallback } from "@artek/ui/components/avatar";
 import { Button } from "@artek/ui/components/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@artek/ui/components/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { ProductImage } from "@/components/product-image";
+import { StatCard } from "@/components/stat-card";
 import { CategoryBadge, MovementTypeBadge } from "@/components/stock-badges";
 import { getDashboard, getStockSummary } from "@/lib/dashboard";
 import { salesForMonths, tl, tlShort, day } from "@/lib/finance";
@@ -30,23 +31,6 @@ function perUnit(lines: { unit: Unit; value: string }[]) {
 
 // A category with no price at all shows no value, not "0 TL".
 const value = (amount: number, counted: number) => (counted ? tlShort(amount) : "—");
-
-function StatCard({ label, value: shown, note, href, icon: Icon }: { label: string; value: string; note: string; href: string; icon: LucideIcon }) {
-  return (
-    <Link href={href} className="bg-card hover:bg-muted/40 flex overflow-hidden rounded-xl border transition-colors">
-      <div className="flex min-w-0 flex-1 flex-col gap-1 p-4">
-        <span className="text-muted-foreground text-sm">{label}</span>
-        <span className="truncate text-3xl font-semibold tracking-tight tabular-nums">{shown}</span>
-        <span className="text-muted-foreground truncate text-xs">{note}</span>
-      </div>
-      <div className="flex items-center border-l px-4">
-        <span className="bg-background flex size-12 items-center justify-center rounded-lg border shadow-xs">
-          <Icon className="size-5" />
-        </span>
-      </div>
-    </Link>
-  );
-}
 
 const initials = (name: string) =>
   name
