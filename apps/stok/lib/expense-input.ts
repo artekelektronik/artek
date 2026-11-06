@@ -19,4 +19,6 @@ export const expenseInput = z.object({
     .refine((v) => v.split(".")[0].length <= 12, { error: "Tutar çok büyük." }),
   kdvRate: decimal("KDV oranı sayı olmalı.").refine((v) => Number(v) <= 100, { error: "KDV oranı 0–100 arası olmalı." }),
 });
+export const withKdv = (net: number, rate: number) => net * (1 + rate / 100);
+
 export type ExpenseInput = z.input<typeof expenseInput>;

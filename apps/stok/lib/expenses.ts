@@ -3,13 +3,12 @@ import { db } from "../db";
 import { expense, expenseFile as receipt } from "../db/schema";
 import { logActivity } from "./activity";
 import { isUuid, parseInput, UserError } from "./errors";
-import { expenseInput, type ExpenseInput } from "./expense-input";
+import { expenseInput, withKdv, type ExpenseInput } from "./expense-input";
 import { money, tl } from "./finance-calc";
 import { requirePermission } from "./guard";
 
 export const startingCategories = ["Kira", "Maaş", "SGK", "Vergi", "Elektrik / su / doğalgaz", "Kargo", "Banka masrafı", "Muhasebe", "Tedarikçi faturası", "Diğer"];
 
-export type { ExpenseInput };
 
 function expenseValues(input: ExpenseInput) {
   const data = parseInput(expenseInput, input);
@@ -21,14 +20,18 @@ function expenseValues(input: ExpenseInput) {
     party: data.party || null,
     netAmount: money(net),
     kdvRate: data.kdvRate,
-    totalAmount: money(net * (1 + Number(data.kdvRate) / 100)),
+    totalAmount: money(withKdv(net, Number(data.kdvRate))),
   };
 }
 const activityLabel = (e: { category: string; netAmount: string }) => `${e.category} · ${tl(Number(e.netAmount))}`;
 
 export async function listExpenses(headers: Headers) {
   await requirePermission(headers, "finance.view");
-  return db.select().from(expense).orderBy(desc(expense.spentOn), desc(expense.createdAt));
+  const { id, spentOn, category, description, party, netAmount, kdvRate, totalAmount, fileName } = expense;
+  return db
+    .select({ id, spentOn, category, description, party, netAmount, kdvRate, totalAmount, fileName })
+    .from(expense)
+    .orderBy(desc(expense.spentOn), desc(expense.createdAt));
 }
 
 export async function createExpense(headers: Headers, input: ExpenseInput) {

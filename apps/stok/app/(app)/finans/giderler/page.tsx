@@ -8,7 +8,7 @@ import { listExpenses, startingCategories } from "@/lib/expenses";
 import { monthLabel, tl, tlShort } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
-import { istanbulDate } from "@/lib/time";
+import { addMonths, istanbulDate } from "@/lib/time";
 import { ExpenseSheet } from "./expense-sheet";
 import { AddExpenseButton, ExpenseTable } from "./expense-table";
 
@@ -20,24 +20,14 @@ export default async function ExpensesPage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canEdit = can(actor, "finance.edit");
-  const rows = (await listExpenses(requestHeaders)).map(({ id, spentOn, category, description, party, netAmount, kdvRate, totalAmount, fileName }) => ({
-    id,
-    spentOn,
-    category,
-    description,
-    party,
-    netAmount,
-    kdvRate,
-    totalAmount,
-    fileName,
-  }));
+  const rows = await listExpenses(requestHeaders);
 
   const today = istanbulDate(new Date());
   const month = today.slice(0, 7);
-  const [y, m] = month.split("-").map(Number);
-  const lastMonth = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
+  const y = today.slice(0, 4);
+  const lastMonth = addMonths(month, -1);
   const sum = (prefix: string) => rows.filter((r) => r.spentOn.startsWith(prefix)).reduce((s, r) => s + Number(r.netAmount), 0);
-  const thisYear = rows.filter((r) => r.spentOn.startsWith(String(y)));
+  const thisYear = rows.filter((r) => r.spentOn.startsWith(y));
   const byCategory = Object.entries(Object.groupBy(thisYear, (r) => r.category))
     .map(([category, list]) => ({ category, total: list!.reduce((s, r) => s + Number(r.netAmount), 0) }))
     .sort((a, b) => b.total - a.total);
@@ -52,7 +42,7 @@ export default async function ExpensesPage() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Bu ay" value={tl(sum(month))} note={monthLabel(month)} icon={CalendarDays} />
         <StatCard label="Geçen ay" value={tl(sum(lastMonth))} note={monthLabel(lastMonth)} icon={CalendarClock} />
-        <StatCard label={`${y} toplamı`} value={tl(sum(String(y)))} note={`${thisYear.length.toLocaleString("tr-TR")} gider`} icon={CalendarRange} />
+        <StatCard label={`${y} toplamı`} value={tl(sum(y))} note={`${thisYear.length.toLocaleString("tr-TR")} gider`} icon={CalendarRange} />
         <StatCard
           label="En büyük kalem"
           value={byCategory[0] ? tlShort(byCategory[0].total) : "—"}

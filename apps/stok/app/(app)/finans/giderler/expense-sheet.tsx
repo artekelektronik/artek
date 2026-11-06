@@ -1,26 +1,26 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
 import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
 import { Textarea } from "@artek/ui/components/textarea";
 import { Combobox } from "@/components/combobox";
 import { FormSheet, SheetActions } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
-import { decimalValue } from "@/lib/decimal";
-import { expenseInput } from "@/lib/expense-input";
+import { decimalValue, displayDecimal } from "@/lib/decimal";
+import { expenseInput, withKdv } from "@/lib/expense-input";
 import { tl } from "@/lib/finance-calc";
 import { saveExpenseAction } from "./actions";
 import { receiptUrl, useOpenExpense, type ExpenseRow } from "./expense-table";
 
 type FormValues = z.input<typeof expenseInput>;
-const shown = (stored: string) => stored.replace(/\.?0+$/, "").replace(".", ","); // "20.00" → "20", "12.50" → "12,5"
 
 export function ExpenseSheet({ rows, categories, canEdit, today }: { rows: ExpenseRow[]; categories: string[]; canEdit: boolean; today: string }) {
   const [opened, setOpened] = useOpenExpense();
@@ -43,14 +43,14 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
       category: expense?.category ?? "",
       party: expense?.party ?? "",
       description: expense?.description ?? "",
-      netAmount: expense ? shown(expense.netAmount) : "",
-      kdvRate: expense ? shown(expense.kdvRate) : "20",
+      netAmount: expense ? displayDecimal(expense.netAmount) : "",
+      kdvRate: expense ? displayDecimal(expense.kdvRate) : "20",
     },
     disabled: !canEdit,
   });
   const [net, rate] = useWatch({ control: form.control, name: ["netAmount", "kdvRate"] });
-  const total = decimalValue(net ?? "") * (1 + decimalValue(rate ?? "") / 100) || 0;
-  const categoryOptions = useMemo(() => categories.map((c) => ({ value: c, label: c })), [categories]);
+  const total = withKdv(decimalValue(net ?? ""), decimalValue(rate ?? "")) || 0;
+  const categoryOptions = categories.map((c) => ({ value: c, label: c }));
 
   async function onSubmit(values: z.output<typeof expenseInput>) {
     const result = await saveExpenseAction(expense?.id ?? null, values);
@@ -118,18 +118,18 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
             </FormItem>
           )}
         />
-        <FormItem>
-          <FormLabel>Fiş (isteğe bağlı)</FormLabel>
-          <Input type="file" accept="application/pdf,image/*" disabled={!canEdit} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          <FormDescription>
+        <div className="grid gap-2">
+          <Label htmlFor="gider-fis">Fiş (isteğe bağlı)</Label>
+          <Input id="gider-fis" type="file" accept="application/pdf,image/*" disabled={!canEdit} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <p className="text-muted-foreground text-sm">
             PDF ya da fotoğraf, en çok 4 MB.{" "}
             {expense?.fileName && (
               <a href={receiptUrl(expense.id)} target="_blank" rel="noreferrer" className="underline underline-offset-4">
                 Kayıtlı fiş: {expense.fileName}
               </a>
             )}
-          </FormDescription>
-        </FormItem>
+          </p>
+        </div>
         {canEdit && (
           <SheetActions>
             <Button type="button" variant="outline" onClick={onDone}>

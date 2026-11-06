@@ -173,9 +173,7 @@ function RowActions({ row, canEdit, onOpen }: { row: ExpenseRow; canEdit: boolea
           if (ok) router.refresh();
           return ok;
         }}
-      >
-        {null}
-      </FormDialog>
+      />
     </>
   );
 }

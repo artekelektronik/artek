@@ -5,4 +5,7 @@ export function normalizeDecimal(raw: string): string | null {
   return /^\d+(\.\d+)?$/.test(text) ? text : null;
 }
 
+// The other way: "12.5000" → "12,5", what a field shows.
+export const displayDecimal = (stored: string) => stored.replace(/\.?0+$/, "").replace(".", ",");
+
 export const decimalValue = (raw: string) => Number(normalizeDecimal(raw) ?? Number.NaN);

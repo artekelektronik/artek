@@ -1,6 +1,6 @@
 // Pure calculations for Stok değeri; no database, so tests can import it directly.
 import type { currency } from "../db/schema";
-import { normalizeDecimal } from "./decimal";
+import { displayDecimal, normalizeDecimal } from "./decimal";
 import type { Rates } from "./exchange-rates";
 import { totalsByUnit } from "./overview-totals";
 import type { Unit } from "./quantity";
@@ -17,8 +17,7 @@ export function parsePrice(raw: string): string | null {
   return text;
 }
 
-// "12.5000" → "12,5": what the price field shows.
-export const displayPrice = (stored: string | null) => (stored ? stored.replace(/\.?0+$/, "").replace(".", ",") : "");
+export const displayPrice = (stored: string | null) => (stored ? displayDecimal(stored) : "");
 
 export function inTl(quantity: string, price: string | null | undefined, currency: Currency | undefined, rates: Rates | null) {
   if (!price || !currency) return null;
