@@ -24,20 +24,9 @@ const heading = (kind: SearchKind, typed: string) => {
 
 const allCategories = "__tumu";
 
-// `available` (product id → quantity) shows what can be taken, for screens that take stock out of one Lokasyon.
-// `actions` sit next to the category filter (e.g. adding a product that isn't listed).
-export function ProductLines({
-  products,
-  available,
-  initialRows = 1,
-  actions,
-}: {
-  products: PickableProduct[];
-  available?: Available;
-  initialRows?: number;
-  actions?: React.ReactNode;
-}) {
-  const [rows, setRows] = useState(() => Array.from({ length: initialRows }, () => crypto.randomUUID()));
+// `available` (product id → quantity) shows what one Lokasyon can give; `actions` sit next to the category filter.
+export function ProductLines({ products, available, actions }: { products: PickableProduct[]; available?: Available; actions?: React.ReactNode }) {
+  const [rows, setRows] = useState(() => [crypto.randomUUID()]);
   const [added, setAdded] = useState<string>();
   const [picked, setPicked] = useState<Record<string, PickableProduct | undefined>>({});
   const [category, setCategory] = useState<string>();
@@ -64,7 +53,7 @@ export function ProductLines({
               <SelectContent align="end">
                 <CategoryOption value={allCategories} name="Tüm kategoriler" count={products.length} />
                 {categories.map((c) => (
-                  <CategoryOption key={c.name} value={c.name} name={c.name} count={c.count} colored />
+                  <CategoryOption key={c.name} value={c.name} name={c.name} count={c.count} />
                 ))}
               </SelectContent>
             </Select>
@@ -104,10 +93,10 @@ export function ProductLines({
   );
 }
 
-function CategoryOption({ value, name, count, colored }: { value: string; name: string; count: number; colored?: boolean }) {
+function CategoryOption({ value, name, count }: { value: string; name: string; count: number }) {
   return (
     <SelectItem value={value}>
-      {colored && <CategoryDot category={name} />}
+      {value !== allCategories && <CategoryDot category={name} />}
       <span className="flex-1 truncate">{name}</span>
       <span className="text-muted-foreground text-xs tabular-nums">{count}</span>
     </SelectItem>

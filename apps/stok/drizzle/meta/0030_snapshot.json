@@ -1,5 +1,5 @@
 {
-  "id": "ba0dc277-672e-49c0-b405-8f051eea32d0",
+  "id": "336a0389-171b-4f83-989c-be20eeb2faaa",
   "prevId": "90a336f5-f2a3-4d66-9567-170a5f91acd6",
   "version": "7",
   "dialect": "postgresql",
@@ -1341,7 +1341,7 @@
           "name": "ettn",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "number": {
           "name": "number",
@@ -1375,13 +1375,6 @@
           "notNull": true,
           "default": "'taslak'"
         },
-        "manual": {
-          "name": "manual",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "buyer": {
           "name": "buyer",
           "type": "jsonb",
@@ -1410,19 +1403,19 @@
           "name": "file_name",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "file_sha256": {
           "name": "file_sha256",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "raw_text": {
           "name": "raw_text",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "uploaded_by": {
           "name": "uploaded_by",

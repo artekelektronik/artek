@@ -571,22 +571,21 @@ export const invoice = pgTable(
   "invoice",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    ettn: uuid("ettn").notNull().unique(),
+    ettn: uuid("ettn").unique(), // null: typed by hand, waiting for its PDF (joined by number when it arrives)
     number: text("number").notNull(), // e-Fatura and e-Arşiv number in separate series
     issuedOn: date("issued_on", { mode: "string" }).notNull(),
     scenario: text("scenario").notNull(), // TEMELFATURA (e-Fatura) or EARSIVFATURA (e-Arşiv)
     type: text("type").notNull(), // SATIS, IADE, ISTISNA …; IADE is left out of sales
     status: invoiceStatus("status").notNull().default("taslak"),
-    manual: boolean("manual").notNull().default(false), // typed by hand; confirmable once its PDF (same number) is uploaded
     buyer: jsonb("buyer").$type<InvoiceBuyer>().notNull(), // as printed on the invoice
     // Set on upload when the buyer's VKN is already a Müşteri; otherwise chosen when confirming.
     customerId: uuid("customer_id").references(() => customer.id),
     netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
     totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
-    fileName: text("file_name").notNull(),
-    fileSha256: text("file_sha256").notNull(),
+    fileName: text("file_name"),
+    fileSha256: text("file_sha256"),
     // The PDF's text, so a better parser can re-read it; the PDF itself is in invoice_file.
-    rawText: text("raw_text").notNull(),
+    rawText: text("raw_text"),
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => user.id),

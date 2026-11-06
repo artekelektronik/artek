@@ -483,17 +483,17 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
         kdvRate: 20,
         customerId: null,
         buyer: { name: "ÖRNEK ELEKTRONİK LİMİTED ŞİRKETİ", taxId: "1234567890" },
-        lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, fromStock: true }],
+        lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, stockQuantity: "10" }],
       });
       const [manual] = await db.select().from(schema.invoice);
-      assert.deepEqual([manual.manual, manual.netAmount, manual.totalAmount], [true, "1000.00", "1200.00"]);
+      assert.deepEqual([manual.ettn, manual.netAmount, manual.totalAmount], [null, "1000.00", "1200.00"]);
       await assert.rejects(invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: null, lines: lines(core) }), /PDF/);
       await assert.rejects(invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000007" }), /zaten var/);
 
       const r = await invoices.importInvoiceText(admin.headers, { ...file(7), bytes: new Uint8Array([9]) });
       assert.deepEqual("id" in r && [r.status, r.id], ["eklendi", id]);
       const [joined] = await db.select().from(schema.invoice);
-      assert.deepEqual([joined.manual, joined.ettn, joined.fileName], [false, ettn(7), "fatura-7.pdf"]);
+      assert.deepEqual([joined.ettn, joined.fileName], [ettn(7), "fatura-7.pdf"]);
       const review = await invoices.invoiceReview(admin.headers, id);
       assert.deepEqual([review?.lines[0].productId, review?.lines[0].stockQuantity], [core, "10.000"], "the stock choice made by hand is kept");
       await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });

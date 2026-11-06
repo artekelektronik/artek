@@ -29,7 +29,7 @@ async function pdfsFrom(files: File[]) {
   return out;
 }
 
-// One invoice opens in the review sheet; a batch ends with a summary toast. Files can also be dropped anywhere on the page.
+// Button or drop anywhere on the page; one invoice opens in the review sheet, a batch ends with a toast.
 export function InvoiceUpload() {
   const router = useRouter();
   const [, setFatura] = useFatura();

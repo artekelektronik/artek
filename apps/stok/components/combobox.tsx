@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@artek/ui/components/po
 import { cn } from "@artek/ui/lib/utils";
 import { compact } from "@/lib/product-search";
 
-type Option = { value: string; label: string; keywords?: string };
+type Option = { value: string; label: string; keywords?: string[] };
 
 // Every typed word must appear in the label or keywords, ignoring case and punctuation ("art222" finds "ART-222").
 const contains = (value: string, search: string, keywords?: string[]) => {
@@ -65,7 +65,7 @@ export function Combobox({
             {!canAdd && <CommandEmpty>Sonuç yok.</CommandEmpty>}
             <CommandGroup>
               {options.map((o) => (
-                <CommandItem key={o.value} value={o.label} keywords={o.keywords ? [o.keywords] : undefined} onSelect={() => pick(o.value)}>
+                <CommandItem key={o.value} value={o.label} keywords={o.keywords} onSelect={() => pick(o.value)}>
                   <Check className={cn(o.value === value ? "opacity-100" : "opacity-0")} />
                   {o.label}
                 </CommandItem>

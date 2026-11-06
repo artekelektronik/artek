@@ -28,7 +28,7 @@ export default async function ReceiptPage() {
     lokasyonFor(actor, "stock.receive"),
     activeProducts(),
     canAddProduct ? listCategories(requestHeaders) : [],
-    listMovements(requestHeaders, { type: "mal_kabul" }),
+    listMovements(requestHeaders, { type: "mal_kabul", limit: 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
 

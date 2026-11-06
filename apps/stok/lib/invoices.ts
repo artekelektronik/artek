@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, type Tx } from "../db";
@@ -10,12 +10,11 @@ import { recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { matchCustomer, matchProduct, newCustomer, prepareProducts } from "./invoice-match";
-import { postDocumentIn } from "./ledger";
-import { formatQuantity } from "./quantity";
+import { postDocumentIn, reversalLine } from "./ledger";
 import { can } from "./permissions";
 import { formatIstanbulTime, istanbulDate } from "./time";
 import { linkLeadsByTaxId } from "./leads";
-import { missingNumbers } from "./finance-calc";
+import { missingNumbers, money } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
 export type ImportResult =
@@ -23,6 +22,7 @@ export type ImportResult =
   | { status: "okunamadi"; reason: string };
 
 const hasFile = sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`;
+const isManual = sql<boolean>`${invoice.ettn} is null`; // typed by hand, its PDF not uploaded yet
 
 export async function pdfText(bytes: Uint8Array) {
   // pdf.js may take over the buffer it is given; the original bytes are still needed afterwards.
@@ -88,17 +88,17 @@ export async function importInvoiceText(
           )
         : null;
 
-    // A manual draft with this number takes the PDF's data and keeps the products picked for its lines.
+    // A manual draft with this number takes the PDF's data and keeps the choices made for its lines.
     const [manual] = await tx
       .select({ id: invoice.id, customerId: invoice.customerId })
       .from(invoice)
-      .where(and(eq(invoice.manual, true), eq(invoice.number, parsed.number), eq(invoice.status, "taslak")));
+      .where(and(isNull(invoice.ettn), eq(invoice.number, parsed.number), eq(invoice.status, "taslak")));
     if (manual) {
       const lines = await tx
         .select({ seq: invoiceLine.seq, productId: invoiceLine.productId, stockQuantity: invoiceLine.stockQuantity, components: invoiceLine.components })
         .from(invoiceLine)
         .where(eq(invoiceLine.invoiceId, manual.id));
-      await tx.update(invoice).set({ ...fields, manual: false, customerId: known?.id ?? manual.customerId }).where(eq(invoice.id, manual.id));
+      await tx.update(invoice).set({ ...fields, customerId: known?.id ?? manual.customerId }).where(eq(invoice.id, manual.id));
       await tx.delete(invoiceLine).where(eq(invoiceLine.invoiceId, manual.id));
       await insertLines(manual.id, new Map(lines.map(({ seq, ...picked }) => [seq, picked])));
       await keepFile(manual.id);
@@ -148,7 +148,7 @@ export async function invoiceList(headers: Headers) {
       issuedOn: invoice.issuedOn,
       netAmount: invoice.netAmount,
       status: invoice.status,
-      manual: invoice.manual,
+      manual: isManual,
       customerId: invoice.customerId,
       // A draft whose VKN is not a Müşteri yet shows the buyer as printed.
       customer: sql<string>`coalesce(${customer.name}, ${invoice.buyer}->>'name')`,
@@ -198,7 +198,7 @@ export async function invoiceReview(headers: Headers, id: string) {
       scenario: invoice.scenario,
       type: invoice.type,
       status: invoice.status,
-      manual: invoice.manual,
+      manual: isManual,
       buyer: invoice.buyer,
       customerId: invoice.customerId,
       netAmount: invoice.netAmount,
@@ -278,6 +278,8 @@ const amountText = z
   .transform((v) => v.replace(",", "."))
   .refine((v) => /^\d+(\.\d+)?$/.test(v) && Number(v) > 0, { error: "Miktar ve fiyat sıfırdan büyük olmalı." });
 
+const componentsInput = z.array(z.object({ productId: z.uuid(), quantity: amountText })).default([]);
+
 // A line with stockQuantity moves its product; with components it is built from them (üretim tüketimi); else it only links.
 const confirmInput = z.object({
   id: z.uuid(),
@@ -291,13 +293,11 @@ const confirmInput = z.object({
       quantity: amountText.optional(), // edited on the sheet; omitted keeps the printed line
       unitPrice: amountText.optional(),
       stockQuantity: amountText.nullable(),
-      components: z.array(z.object({ productId: z.uuid(), quantity: amountText })).default([]),
+      components: componentsInput,
     }),
   ),
 });
 export type ConfirmInvoiceInput = z.input<typeof confirmInput>;
-
-const money = (n: number) => (Math.round(n * 100) / 100).toFixed(2);
 
 export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInput) {
   const data = parseInput(confirmInput, input);
@@ -308,7 +308,7 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
   return db.transaction(async (tx) => {
     const [inv] = await tx.select().from(invoice).where(eq(invoice.id, data.id)).for("update");
     if (!inv) throw new UserError("Fatura bulunamadı.");
-    if (inv.manual) throw new UserError("Elle girilen fatura, PDF'i yüklenmeden onaylanamaz.");
+    if (!inv.ettn) throw new UserError("Elle girilen fatura, PDF'i yüklenmeden onaylanamaz.");
     if (inv.archivedAt) throw new UserError("Arşivdeki fatura onaylanamaz; önce geri alın.");
     if (inv.status === "onaylandi") throw new UserError("Bu fatura zaten onaylandı.");
     const isReturn = inv.type === "IADE";
@@ -349,41 +349,38 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
     }
 
     // An edited quantity or price recomputes the line; the KDV-included total keeps its ratio to the net.
-    let net = 0;
-    let anyEdited = false;
-    for (const l of data.lines) {
+    const lines = data.lines.map((l) => {
       const was = stored.get(l.seq)!;
       const quantity = l.quantity ?? was.quantity;
       const unitPrice = l.unitPrice ?? was.unitPrice;
       const edited = Number(quantity) !== Number(was.quantity) || Number(unitPrice) !== Number(was.unitPrice);
-      const amount = edited ? money(Number(quantity) * Number(unitPrice)) : was.amount;
-      anyEdited ||= edited;
-      net += Number(amount);
+      return { ...l, quantity, unitPrice, edited, amount: edited ? money(Number(quantity) * Number(unitPrice)) : was.amount };
+    });
+    for (const l of lines) {
       await tx
         .update(invoiceLine)
         .set({
-          quantity,
-          unitPrice,
-          amount,
+          quantity: l.quantity,
+          unitPrice: l.unitPrice,
+          amount: l.amount,
           productId: l.productId,
           stockQuantity: l.productId ? l.stockQuantity : null,
           components: l.components.length ? l.components : null,
         })
         .where(and(eq(invoiceLine.invoiceId, inv.id), eq(invoiceLine.seq, l.seq)));
     }
-    const oldNet = Number(inv.netAmount);
 
     // Each built product remembers its materials per unit for the next invoice.
-    for (const l of built.filter((l) => l.productId)) {
-      await tx.delete(productComponent).where(eq(productComponent.productId, l.productId!));
+    const recipes = lines.filter((l) => l.productId && l.components.length);
+    if (recipes.length) {
+      await tx.delete(productComponent).where(inArray(productComponent.productId, recipes.map((l) => l.productId!)));
       await tx.insert(productComponent).values(
-        l.components.map((m) => ({
-          productId: l.productId!,
-          componentId: m.productId,
-          quantity: (Number(m.quantity) / Number(l.quantity ?? stored.get(l.seq)!.quantity)).toFixed(3),
-        })),
+        recipes.flatMap((l) =>
+          l.components.map((m) => ({ productId: l.productId!, componentId: m.productId, quantity: (Number(m.quantity) / Number(l.quantity)).toFixed(3) })),
+        ),
       );
     }
+    const net = lines.reduce((sum, l) => sum + Number(l.amount), 0);
 
     await tx
       .update(invoice)
@@ -395,7 +392,10 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
         stockDocumentId,
         confirmedAt: new Date(),
         confirmedBy: actor.userId,
-        ...(anyEdited && { netAmount: money(net), totalAmount: money(oldNet ? (Number(inv.totalAmount) * net) / oldNet : net) }),
+        ...(lines.some((l) => l.edited) && {
+          netAmount: money(net),
+          totalAmount: money(Number(inv.netAmount) ? (Number(inv.totalAmount) * net) / Number(inv.netAmount) : net),
+        }),
       })
       .where(eq(invoice.id, inv.id));
     const moved = [fromStock.length && `${fromStock.length} satır stok${isReturn ? "a geri girdi" : "tan düştü"}`, built.length && `${built.length} satır malzemeden üretildi`];
@@ -421,19 +421,18 @@ export async function deleteInvoice(headers: Headers, id: string) {
     const reason = `Fatura ${inv.number} silindi`;
     if (inv.stockDocumentId) {
       const moves = await tx.select().from(stockMovement).where(eq(stockMovement.documentId, inv.stockDocumentId));
-      await postDocumentIn(
-        tx,
-        { kind: "ters_kayit", lokasyonId: inv.lokasyonId ?? inv.materialsLokasyonId, reference: inv.number, reason, userId: actor.userId, idempotencyKey: `fatura-sil:${id}` },
-        moves.map((m) => ({
-          productId: m.productId,
-          lokasyonId: m.lokasyonId,
-          direction: m.quantity.startsWith("-") ? ("in" as const) : ("out" as const),
-          quantity: formatQuantity(m.quantity).replace("-", ""),
-          type: m.type,
-          reason,
-          reversesId: m.id,
-        })),
-      );
+      // Movements someone already reversed by hand stay as they are.
+      const reversed = moves.length
+        ? new Set((await tx.select({ id: stockMovement.reversesId }).from(stockMovement).where(inArray(stockMovement.reversesId, moves.map((m) => m.id)))).map((r) => r.id))
+        : new Set();
+      const open = moves.filter((m) => !reversed.has(m.id));
+      if (open.length) {
+        await postDocumentIn(
+          tx,
+          { kind: "ters_kayit", lokasyonId: inv.lokasyonId ?? inv.materialsLokasyonId, reference: inv.number, reason, userId: actor.userId, idempotencyKey: `fatura-sil:${id}` },
+          open.map((m) => reversalLine(m, reason)),
+        );
+      }
     }
     await tx.delete(invoiceLine).where(eq(invoiceLine.invoiceId, id));
     await tx.delete(invoiceFile).where(eq(invoiceFile.invoiceId, id));
@@ -465,15 +464,14 @@ const manualInput = z.object({
         unit: z.string().trim().min(1),
         unitPrice: amountText,
         productId: z.uuid().nullable(),
-        fromStock: z.boolean().default(false),
-        components: z.array(z.object({ productId: z.uuid(), quantity: amountText })).default([]),
+        stockQuantity: amountText.nullable().default(null),
+        components: componentsInput,
       }),
     )
     .min(1, { error: "En az bir satır girin." }),
 });
 export type ManualInvoiceInput = z.input<typeof manualInput>;
 
-// A draft typed by hand; it can be confirmed once the PDF with the same number is uploaded.
 export async function createManualInvoice(headers: Headers, input: ManualInvoiceInput) {
   const actor = await requirePermission(headers, "finance.edit");
   const data = parseInput(manualInput, input);
@@ -495,19 +493,14 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
     const [added] = await tx
       .insert(invoice)
       .values({
-        ettn: crypto.randomUUID(), // replaced by the real one when the PDF arrives
         number: data.number,
         issuedOn: data.issuedOn,
         scenario: data.scenario,
         type: data.type,
-        manual: true,
         buyer,
         customerId: data.customerId,
         netAmount: money(net),
         totalAmount: money(net * (1 + data.kdvRate / 100)),
-        fileName: "",
-        fileSha256: "",
-        rawText: "",
         uploadedBy: actor.userId,
       })
       .returning({ id: invoice.id });
@@ -522,9 +515,8 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
         unit: l.unit,
         unitPrice: l.unitPrice,
         amount: amounts[i],
-        // The choices made here are a draft until the PDF arrives and the invoice is confirmed.
         productId: l.productId,
-        stockQuantity: l.productId && l.fromStock ? l.quantity : null,
+        stockQuantity: l.productId ? l.stockQuantity : null,
         components: l.productId && l.components.length ? l.components : null,
       })),
     );

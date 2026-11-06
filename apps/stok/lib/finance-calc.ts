@@ -239,3 +239,6 @@ export type CustomerStatus = keyof typeof customerStatusLabels;
 
 export const followUpChannelLabels = { telefon: "Telefon", eposta: "E-posta" } as const;
 export type FollowUpChannel = keyof typeof followUpChannelLabels;
+
+// Rounded to kuruş, as numeric(14,2) stores it.
+export const money = (n: number) => (Math.round(n * 100) / 100).toFixed(2);

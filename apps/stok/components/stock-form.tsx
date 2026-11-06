@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@artek/ui/components/button";
-import { useCloseSheet } from "@/components/form-sheet";
+import { SheetActions, useCloseSheet } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
 import type { ActionState } from "@/lib/action-result";
 
@@ -47,13 +47,12 @@ export function StockForm({
         {children}
       </div>
       {closeSheet ? (
-        // In a sheet the buttons stay in view at the bottom.
-        <div className="bg-background sticky bottom-0 -mx-4 -mb-4 mt-auto flex justify-end gap-2 border-t px-4 py-3">
+        <SheetActions>
           <Button type="button" variant="outline" onClick={closeSheet}>
             Vazgeç
           </Button>
           {submit}
-        </div>
+        </SheetActions>
       ) : (
         <div>{submit}</div>
       )}

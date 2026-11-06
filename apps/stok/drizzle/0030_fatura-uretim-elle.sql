@@ -6,7 +6,10 @@ CREATE TABLE "product_component" (
 	CONSTRAINT "product_component_product_id_component_id_pk" PRIMARY KEY("product_id","component_id")
 );
 --> statement-breakpoint
-ALTER TABLE "invoice" ADD COLUMN "manual" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "invoice" ALTER COLUMN "ettn" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "invoice" ALTER COLUMN "file_name" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "invoice" ALTER COLUMN "file_sha256" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "invoice" ALTER COLUMN "raw_text" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "invoice" ADD COLUMN "materials_lokasyon_id" uuid;--> statement-breakpoint
 ALTER TABLE "invoice_line" ADD COLUMN "components" jsonb;--> statement-breakpoint
 ALTER TABLE "product_component" ADD CONSTRAINT "product_component_product_id_product_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."product"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

@@ -26,13 +26,9 @@ import { confirmInvoiceAction } from "./actions";
 import { DeleteInvoiceDialog } from "./invoice-delete";
 import { InvoiceStatusBadge } from "./invoice-status";
 import { pdfUrl } from "./invoice-table";
-import { Materials } from "./materials";
-import { decimal, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber } from "./options";
+import { Materials, ModeField } from "./line-fields";
+import { amount, componentsSchema, decimal, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber, type Mode } from "./options";
 import { useFatura } from "./use-fatura";
-
-// stok: the Ürün leaves stock; uretim: it is built and its materials leave stock; yok: stock is untouched.
-type Mode = "stok" | "uretim" | "yok";
-const positive = (v: string) => toNumber(v) > 0;
 
 const formSchema = z
   .object({
@@ -43,19 +39,14 @@ const formSchema = z
       z
         .object({
           productId: z.string().min(1, { error: "Ürünü seçin ya da “Katalogda yok” deyin." }),
-          mode: z.enum(["stok", "uretim", "yok"]),
-          quantity: z.string().refine(positive, { error: "Miktar?" }),
-          unitPrice: z.string().refine(positive, { error: "Fiyat?" }),
+          mode: modeSchema,
+          quantity: amount("Miktar?"),
+          unitPrice: amount("Fiyat?"),
           stockQuantity: z.string(),
-          components: z.array(
-            z.object({
-              productId: z.string().min(1, { error: "Malzemeyi seçin." }),
-              quantity: z.string().refine(positive, { error: "Miktar?" }),
-            }),
-          ),
+          components: componentsSchema,
         })
-        .refine((l) => l.mode !== "stok" || positive(l.stockQuantity), { path: ["stockQuantity"], error: "Miktarı girin." })
-        .refine((l) => l.mode !== "uretim" || l.components.length > 0, { path: ["components"], error: "En az bir malzeme ekleyin." }),
+        .refine((l) => l.mode !== "stok" || toNumber(l.stockQuantity) > 0, { path: ["stockQuantity"], error: "Miktarı girin." })
+        .refine(...needsMaterials),
     ),
   })
   .refine((v) => v.lokasyonId || !v.lines.some((l) => l.mode === "stok"), { path: ["lokasyonId"], error: "Lokasyonu seçin." })
@@ -70,10 +61,17 @@ const soldBeforeOpening = (review: InvoiceReview, lokasyonId: string) => {
 const lokasyonLike = (review: InvoiceReview, pattern: RegExp) => (review.lokasyon.find((l) => pattern.test(l.name)) ?? review.lokasyon[0])?.id ?? "";
 const recipeFor = (review: InvoiceReview, productId: string, quantity: string) => scaledRecipe(review.recipes[productId], quantity);
 
+// A stocked line sold before the Lokasyon's Açılış sayımı starts as untouched.
 function defaultMode(review: InvoiceReview, line: InvoiceReview["lines"][number], productId: string, lokasyonId: string): Mode {
-  if (!productId || productId === notInCatalogue) return "yok";
-  if (!review.isReturn && (review.recipes[productId] || line.builtToOrder)) return "uretim";
-  return soldBeforeOpening(review, lokasyonId) ? "yok" : "stok";
+  const mode = modeFor(productId, { recipes: review.recipes, builtToOrder: line.builtToOrder, isReturn: review.isReturn });
+  return mode === "stok" && soldBeforeOpening(review, lokasyonId) ? "yok" : mode;
+}
+
+// What was chosen before (on confirm, or on a manual draft) wins over the defaults.
+function savedMode(line: InvoiceReview["lines"][number], confirmed: boolean): Mode | null {
+  if (line.components) return "uretim";
+  if (line.stockQuantity) return "stok";
+  return confirmed ? "yok" : null;
 }
 
 export function InvoiceSheet({ review, canEdit }: { review: InvoiceReview | null; canEdit: boolean }) {
@@ -102,10 +100,9 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
       materialsLokasyonId: review.materialsLokasyonId ?? lokasyonLike(review, /imalat/i),
       lines: review.lines.map((l) => {
         const productId = l.productId ?? (confirmed ? notInCatalogue : "");
-        const mode: Mode = l.components ? "uretim" : l.stockQuantity ? "stok" : confirmed ? "yok" : defaultMode(review, l, productId, lokasyonId);
         return {
           productId,
-          mode,
+          mode: savedMode(l, confirmed) ?? defaultMode(review, l, productId, lokasyonId),
           quantity: decimal(l.quantity),
           unitPrice: decimal(l.unitPrice),
           stockQuantity: decimal(l.stockQuantity ?? l.quantity),
@@ -137,6 +134,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
     if (toastResult(result, `Fatura ${review.number} onaylandı.`)) onDone();
   }
 
+  const productOptions = useMemo(() => review.products.map(productOption), [review.products]);
   const customerOptions = [
     ...(review.customerMatch.customerId ? [] : [{ value: newCustomer, label: `Yeni müşteri ekle: ${review.buyer.name} · ${review.buyer.taxId}` }]),
     ...suggestedFirst(review.customers, review.customerMatch.suggestions, (c) => ({ value: c.id, label: `${c.name} · ${c.taxId}` })),
@@ -244,7 +242,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
                 </div>
                 {review.lines.length === 0 && <p className="text-muted-foreground text-sm">Faturada okunabilen satır yok.</p>}
                 {review.lines.map((line, i) => (
-                  <LineFields key={line.seq} index={i} review={review} />
+                  <LineFields key={line.seq} index={i} review={review} productOptions={productOptions} />
                 ))}
               </section>
             </TabsContent>
@@ -300,9 +298,9 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
 }
 
 function NetTotal() {
-  const lines = useWatch<FormValues, "lines">({ name: "lines" });
-  const net = lines.reduce((s, l) => s + toNumber(l.quantity) * toNumber(l.unitPrice), 0);
-  return <p className="text-muted-foreground text-xs tabular-nums">KDV hariç {tl(Number.isFinite(net) ? net : 0)}</p>;
+  const { control } = useFormContext<FormValues>();
+  const lines = useWatch({ control, name: "lines" });
+  return <p className="text-muted-foreground text-xs tabular-nums">KDV hariç {tl(lineNet(lines))}</p>;
 }
 
 function LokasyonFields({ review }: { review: InvoiceReview }) {
@@ -341,11 +339,11 @@ function LokasyonFields({ review }: { review: InvoiceReview }) {
       {select(
         "lokasyonId",
         review.isReturn ? "Ürünlerin geri gireceği Lokasyon" : "Ürünlerin çıktığı Lokasyon",
-        chosen && soldBeforeOpening(review, chosen.id) && (
+        chosen?.openedOn && review.issuedOn < chosen.openedOn && (
           <Alert className="mt-1">
             <TriangleAlert />
             <AlertDescription>
-              Bu fatura {chosen.name} açılış sayımından ({day(chosen.openedOn!)}) önce kesilmiş; o satış sayımda zaten düşülmüş olabilir.
+              Bu fatura {chosen.name} açılış sayımından ({day(chosen.openedOn)}) önce kesilmiş; o satış sayımda zaten düşülmüş olabilir.
             </AlertDescription>
           </Alert>
         ),
@@ -355,7 +353,7 @@ function LokasyonFields({ review }: { review: InvoiceReview }) {
   );
 }
 
-function LineFields({ index, review }: { index: number; review: InvoiceReview }) {
+function LineFields({ index, review, productOptions }: { index: number; review: InvoiceReview; productOptions: ReturnType<typeof productOption>[] }) {
   const line = review.lines[index];
   const { control, setValue, getValues } = useFormContext<FormValues>();
   const [productId, mode, quantity, unitPrice, lokasyonId] = useWatch({
@@ -367,12 +365,7 @@ function LineFields({ index, review }: { index: number; review: InvoiceReview })
     () => [{ value: notInCatalogue, label: "Katalogda yok (stoğa dokunma)" }, ...suggestedFirst(review.products, line.suggestions, productOption)],
     [line.suggestions, review.products],
   );
-  const modes: { value: Mode; label: string }[] = [
-    { value: "stok", label: review.isReturn ? "Stoğa geri al" : "Stoktan düş" },
-    ...(review.isReturn ? [] : [{ value: "uretim" as const, label: "Malzemeden üret" }]),
-    { value: "yok", label: "Stoğa dokunma" },
-  ];
-  const amount = toNumber(quantity) * toNumber(unitPrice);
+  const lineAmount = lineNet([{ quantity, unitPrice }]);
 
   function pickProduct(value: string) {
     setValue(`lines.${index}.productId`, value, { shouldValidate: true });
@@ -392,7 +385,7 @@ function LineFields({ index, review }: { index: number; review: InvoiceReview })
           <span className="text-muted-foreground pt-2">{line.unit} ×</span>
           <AmountField name={`lines.${index}.unitPrice`} label="Birim fiyat" />
           <span className="text-muted-foreground pt-2">
-            TL = <span className="text-foreground">{tl(Number.isFinite(amount) ? amount : 0)}</span>
+            TL = <span className="text-foreground">{tl(lineAmount)}</span>
           </span>
         </div>
       </div>
@@ -412,29 +405,7 @@ function LineFields({ index, review }: { index: number; review: InvoiceReview })
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name={`lines.${index}.mode`}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="sr-only">Stok</FormLabel>
-              <Select value={field.value} onValueChange={field.onChange} disabled={field.disabled || !productId || productId === notInCatalogue}>
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {modes.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormItem>
-          )}
-        />
+        <ModeField index={index} isReturn={review.isReturn} disabled={!productId || productId === notInCatalogue} />
         {mode === "stok" && (
           <FormField
             control={control}
@@ -454,7 +425,7 @@ function LineFields({ index, review }: { index: number; review: InvoiceReview })
           />
         )}
       </div>
-      {mode === "uretim" && <Materials index={index} products={review.products} />}
+      {mode === "uretim" && <Materials index={index} options={productOptions} />}
     </div>
   );
 }
