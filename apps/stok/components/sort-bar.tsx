@@ -24,7 +24,7 @@ export function SortBar({ fields, sorts, onChange }: { fields: SortField[]; sort
         if (!field) return null;
         const text = directions[field.kind][sort.desc ? "desc" : "asc"];
         return (
-          <span key={sort.id} className="bg-secondary inline-flex h-8 items-center rounded-md text-xs">
+          <span key={sort.id} className="bg-secondary inline-flex h-9 items-center rounded-md text-xs">
             <button
               type="button"
               className="flex h-full items-center gap-1.5 rounded-l-md pr-1 pl-2.5 hover:underline"
@@ -44,11 +44,11 @@ export function SortBar({ fields, sorts, onChange }: { fields: SortField[]; sort
       {unused.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline" size="sm">
+            <Button type="button" variant="outline">
               {sorts.length ? <Plus /> : <ArrowUpDown />} {sorts.length ? "Sıralama ekle" : "Sırala"}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
+          <DropdownMenuContent align="end">
             {unused.map((f) => (
               <DropdownMenuItem key={f.id} onSelect={() => onChange([...sorts, { id: f.id, desc: f.kind !== "text" }])}>
                 {f.label}

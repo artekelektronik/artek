@@ -21,7 +21,7 @@ export function RecipientsForm({ roles }: { roles: Role[] }) {
       <Button type="submit" variant="outline" size="sm" disabled={pending}>
         Kaydet
       </Button>
-      <FormStatus state={state} saved="Alıcılar kaydedildi." className="w-full" />
+      <FormStatus state={state} saved="Alıcılar kaydedildi." />
     </form>
   );
 }

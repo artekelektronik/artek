@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Check } from "lucide-react";
+import { toast } from "sonner";
 import { Checkbox } from "@artek/ui/components/checkbox";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -133,6 +134,7 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
     if (result?.error) {
       setStatus("idle");
       setError(result.error);
+      toast.error(`${row.code} ${lokasyon.name}: ${result.error}`);
       return;
     }
     lastSaved.current = value.trim();
@@ -163,7 +165,6 @@ function EntryCell({ row, lokasyon }: { row: Row; lokasyon: Sheet["lokasyon"][nu
         {status === "saved" && <Check className="text-muted-foreground size-4" aria-label="Kaydedildi" />}
         {status === "saving" && <span className="text-muted-foreground text-xs">…</span>}
       </div>
-      {error && <p className="text-destructive max-w-40 text-xs">{error}</p>}
       {(current !== "0" || lokasyon.canCorrect) && (
         <div className="flex items-center gap-2 text-xs">
           <span className="text-muted-foreground">Stokta: {displayQuantity(current)}</span>

@@ -53,11 +53,12 @@ export function DataTableToolbar<TData extends RowData>({
     table.resetJoinOperator(true);
   }
 
+  // Left: filters. Right: sort, columns, extras.
   return (
     <div
       data-slot="data-table-toolbar"
       className={cn(
-        "flex w-full items-start justify-between gap-2 p-1",
+        "flex w-full shrink-0 flex-wrap items-center justify-between gap-2",
         className,
       )}
       {...props}
@@ -74,7 +75,7 @@ export function DataTableToolbar<TData extends RowData>({
             isFiltered && (
               <Button
                 aria-label="Filtreleri sıfırla"
-                variant="outline"
+                variant="ghost"
                 onClick={onReset}
               >
                 <X
@@ -84,11 +85,11 @@ export function DataTableToolbar<TData extends RowData>({
             )
           }
         </Subscribe>
+      </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Subscribe source={table.atoms.sorting} selector={(sorting) => sorting}>
           {(sorting) => <SortBar fields={sortFields} sorts={sorting} onChange={(next) => table.setSorting(next)} />}
         </Subscribe>
-      </div>
-      <div className="flex items-center gap-2">
         {children}
         <DataTableViewOptions table={table} align="end" />
       </div>

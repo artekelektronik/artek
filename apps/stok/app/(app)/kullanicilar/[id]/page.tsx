@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import Link from "next/link";
+import { ToastOnMount } from "@/components/toast-on-mount";
 import { notFound } from "next/navigation";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { CapabilitySummary, GrantLegend } from "@/components/capabilities-view";
@@ -77,7 +78,7 @@ export default async function UserPage({
           <UserStatus active={target.active} invited={target.invited} />
         </div>
         <p className="text-muted-foreground">{target.email}</p>
-        {davet && <p className="text-sm text-green-700 dark:text-green-400">Davet e-postası gönderildi.</p>}
+        {davet && <ToastOnMount message="Davet e-postası gönderildi." />}
       </div>
 
       <section className="flex flex-col gap-3">

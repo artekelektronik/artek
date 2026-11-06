@@ -211,6 +211,7 @@ export async function listMovements(headers: Headers, filters: MovementFilters) 
       productCode: product.code,
       productName: product.name,
       productCategory: product.category,
+      productImage: sql<string | null>`${product.images}[1]`,
       lokasyonId: stockMovement.lokasyonId,
       lokasyonName: lokasyon.name,
       userId: stockMovement.userId,

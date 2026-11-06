@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
@@ -116,7 +117,6 @@ function Links({
     }
     return result;
   }, undefined);
-  const [removeError, setRemoveError] = useState<string>();
   const [, start] = useTransition();
   const needle = q.trim().toLocaleLowerCase("tr");
   const matches = needle.length < 2 ? [] : firms.filter((f) => f.id !== customerId && f.name.toLocaleLowerCase("tr").includes(needle)).slice(0, 6);
@@ -143,8 +143,8 @@ function Links({
                   onClick={() =>
                     start(async () => {
                       const s = await removeLinkAction(l.id);
-                      setRemoveError(s?.error);
-                      if (!s?.error) onChanged();
+                      if (s?.error) toast.error(s.error);
+                      else onChanged();
                     })
                   }
                 >
@@ -155,7 +155,6 @@ function Links({
           ))}
         </ul>
       )}
-      {removeError && <p className="text-destructive text-xs">{removeError}</p>}
       {canEdit &&
         (adding ? (
           <form action={action} className="flex flex-col gap-2 rounded-lg border p-3">

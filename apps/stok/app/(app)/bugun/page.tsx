@@ -40,7 +40,7 @@ export default async function TodayPage() {
       .innerJoin(customer, eq(customer.id, assistantSuggestion.customerId))
       .where(openSuggestion(today))
       .orderBy(asc(assistantSuggestion.forDay)),
-    loadSalesSummary(),
+    loadSalesSummary({ cached: true }),
     listLeads(),
     chatHistory(actor.userId, today),
   ]);

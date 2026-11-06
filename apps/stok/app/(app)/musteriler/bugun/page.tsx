@@ -58,7 +58,7 @@ export default async function TodayPage() {
   // Waiting ones whose day to ask hasn't come yet: they don't block anything, but can be opened and changed any time.
   const isWaiting = (s: { status: string; askAgainOn: string | null }) => s.status === "onay_bekliyor" && (s.askAgainOn ?? "") > today;
   const shownRows = rows.filter((r) => isOpen(r.s) || isWaiting(r.s));
-  const [summary, newer] = shownRows.length ? await Promise.all([loadSalesSummary(), newerInvoices(shownRows.map((r) => r.s))]) : [null, new Map()];
+  const [summary, newer] = shownRows.length ? await Promise.all([loadSalesSummary({ cached: true }), newerInvoices(shownRows.map((r) => r.s))]) : [null, new Map()];
   const shown: SuggestionView[] = shownRows.map(({ s, c }) => {
     const r = summary?.byCustomer.get(c.id);
     return {

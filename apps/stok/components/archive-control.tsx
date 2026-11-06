@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { Archive, ArchiveRestore } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
+import { FormDialog } from "@/components/form-dialog";
 
 type Result = { error?: string } | undefined;
 
-// "Arşivle" asks for a short reason in place; "Geri al" restores. Both refresh the page when they're done.
 export function ArchiveControl({
   archived,
   onArchive,
@@ -21,58 +23,43 @@ export function ArchiveControl({
   compact?: boolean;
 }) {
   const router = useRouter();
-  const [asking, setAsking] = useState(false);
-  const [reason, setReason] = useState("");
-  const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
-  const run = (action: () => Promise<Result>) =>
-    start(async () => {
-      const result = await action();
-      setError(result?.error);
-      if (!result?.error) {
-        setAsking(false);
-        setReason("");
-        router.refresh();
-      }
-    });
+  const done = (result: Result, message: string) => {
+    if (result?.error) {
+      toast.error(result.error);
+      return false;
+    }
+    toast.success(message);
+    router.refresh();
+    return true;
+  };
 
   if (archived)
     return (
-      <span className="inline-flex items-center gap-2">
-        <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => run(onRestore)}>
-          <ArchiveRestore /> Geri al
-        </Button>
-        {error && <span className="text-destructive text-xs">{error}</span>}
-      </span>
-    );
-  if (!asking)
-    return (
-      <Button type="button" size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setAsking(true)}>
-        <Archive /> {compact ? "" : "Arşivle"}
-        {compact && <span className="sr-only">Arşivle</span>}
+      <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => start(async () => void done(await onRestore(), "Arşivden çıkarıldı."))}>
+        <ArchiveRestore /> Geri al
       </Button>
     );
   return (
-    <span className="inline-flex flex-wrap items-center gap-2">
-      <Input
-        autoFocus
-        value={reason}
-        onChange={(e) => setReason(e.target.value)}
-        placeholder="Neden? (ör. yanlış yüklendi)"
-        aria-label="Arşivleme sebebi"
-        className="h-8 w-56"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") run(() => onArchive(reason));
-          if (e.key === "Escape") setAsking(false);
-        }}
-      />
-      <Button type="button" size="sm" variant="destructive" disabled={pending} onClick={() => run(() => onArchive(reason))}>
-        Arşivle
-      </Button>
-      <Button type="button" size="sm" variant="ghost" onClick={() => setAsking(false)}>
-        Vazgeç
-      </Button>
-      {error && <span className="text-destructive text-xs">{error}</span>}
-    </span>
+    <FormDialog
+      className="sm:max-w-md"
+      title="Arşivle"
+      description="Arşivdekiler listeden kalkar; istediğinizde geri alabilirsiniz."
+      submitLabel="Arşivle"
+      pendingLabel="Arşivleniyor…"
+      destructive
+      trigger={
+        <Button type="button" size="sm" variant="ghost" className="text-muted-foreground">
+          <Archive /> {compact ? "" : "Arşivle"}
+          {compact && <span className="sr-only">Arşivle</span>}
+        </Button>
+      }
+      onSubmit={async (formData) => done(await onArchive(String(formData.get("reason") ?? "")), "Arşivlendi.")}
+    >
+      <Label className="flex-col items-stretch gap-1">
+        Sebep
+        <Input name="reason" autoFocus placeholder="ör. yanlış yüklendi" className="font-normal" />
+      </Label>
+    </FormDialog>
   );
 }

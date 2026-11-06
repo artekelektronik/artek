@@ -1,5 +1,8 @@
 {
   "buildCommand": "[ \"$VERCEL_ENV\" != production ] || pnpm db:migrate && pnpm build",
+  "regions": [
+    "fra1"
+  ],
   "crons": [
     {
       "path": "/api/cron/asistan",

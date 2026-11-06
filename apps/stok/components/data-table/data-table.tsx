@@ -58,11 +58,12 @@ export function DataTable<TData extends RowData>({
     <div
       data-slot="data-table"
       dir={dir}
-      className={cn("flex w-full flex-col gap-2.5 overflow-auto", className)}
+      // Only the rows scroll; toolbar and pagination stay put.
+      className={cn("flex min-h-0 w-full flex-1 flex-col gap-2.5", className)}
       {...props}
     >
       {children}
-      <div className="isolate overflow-hidden rounded-md border">
+      <div className="isolate flex min-h-48 flex-1 flex-col overflow-hidden rounded-md border *:data-[slot=table-container]:flex-1 *:data-[slot=table-container]:overflow-auto">
         <DataTableLayout
           table={table}
           aria-label={ariaLabel}
@@ -72,7 +73,7 @@ export function DataTable<TData extends RowData>({
           <DataTableBody table={table} renderRowDetail={renderRowDetail} />
         </DataTableLayout>
       </div>
-      <div className="flex flex-col gap-2.5">
+      <div className="flex shrink-0 flex-col gap-2.5">
         <DataTablePagination table={table} />
         {actionBar ? (
           <DataTableActionBar table={table} actionBar={actionBar} />
@@ -133,7 +134,7 @@ function DataTableHeader<TData extends RowData>({
       })}
     >
       {() => (
-        <TableHeader>
+        <TableHeader className="bg-background sticky top-0 z-20 shadow-[inset_0_-1px_0_var(--border)]">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="group/row">
               {headerGroup.headers.map((header) => (

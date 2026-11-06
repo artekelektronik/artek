@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { Button } from "@artek/ui/components/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@artek/ui/components/field";
+import { Field, FieldGroup, FieldLabel } from "@artek/ui/components/field";
+import { FormStatus } from "@/components/form-status";
 import { PasswordInput } from "@/components/password-input";
 import type { ActionState } from "@/lib/action-result";
 
@@ -19,7 +20,7 @@ export function SetPasswordForm({ action }: { action: (state: ActionState, formD
           <FieldLabel htmlFor="confirm">Yeni şifre (tekrar)</FieldLabel>
           <PasswordInput id="confirm" name="confirm" autoComplete="new-password" minLength={8} required />
         </Field>
-        {state?.error && <FieldError role="alert">{state.error}</FieldError>}
+        <FormStatus state={state} />
         <Field>
           <Button type="submit" disabled={pending}>
             {pending ? "Kaydediliyor…" : "Şifremi kaydet"}

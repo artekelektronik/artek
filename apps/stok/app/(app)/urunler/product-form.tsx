@@ -12,9 +12,10 @@ import { ProductImagesField } from "@/components/product-images-field";
 import type { ActionState } from "@/lib/action-result";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity, unitLabels } from "@/lib/quantity";
-import { FormStatus } from "@/components/form-status";
+import { useCloseSheet } from "@/components/form-sheet";
+import { toastResult } from "@/components/form-status";
 
-type Product = {
+export type ProductFormValues = {
   code: string;
   name: string;
   category: string;
@@ -35,7 +36,7 @@ type Product = {
   shelves: Record<string, string>;
 };
 
-const empty: Product = {
+const empty: ProductFormValues = {
   code: "",
   name: "",
   category: "",
@@ -74,18 +75,23 @@ export function ProductForm({
   submitLabel,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
-  product?: Product;
+  product?: ProductFormValues;
   lokasyon: { id: string; name: string }[];
   categories: string[];
   readOnly?: boolean;
   submitLabel: string;
 }) {
-  const [state, formAction, pending] = useActionState(action, undefined);
+  const closeSheet = useCloseSheet();
+  const [, formAction, pending] = useActionState(async (previous: ActionState, formData: FormData) => {
+    const result = await action(previous, formData);
+    if (toastResult(result, "Kaydedildi.")) closeSheet?.();
+    return result;
+  }, undefined);
   const [category, setCategory] = useState(product.category);
   const input = "font-normal";
 
   return (
-    <form action={formAction} className="flex max-w-3xl flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-6">
       <fieldset disabled={readOnly} className="grid gap-4 sm:grid-cols-2">
         <Field label="Ürün kodu">
           <Input name="code" defaultValue={product.code} required className={`${input} font-mono`} />
@@ -182,11 +188,12 @@ export function ProductForm({
         ))}
       </fieldset>
 
-      <FormStatus state={state} saved="Kaydedildi." />
       {!readOnly && (
-        <Button type="submit" disabled={pending} className="self-start">
-          {pending ? "Kaydediliyor…" : submitLabel}
-        </Button>
+        <div className="bg-background sticky bottom-0 -mx-4 border-t px-4 py-3">
+          <Button type="submit" disabled={pending}>
+            {pending ? "Kaydediliyor…" : submitLabel}
+          </Button>
+        </div>
       )}
     </form>
   );

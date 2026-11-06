@@ -18,7 +18,7 @@ export default async function CountsPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       <h1 className="text-2xl font-semibold">Sayım</h1>
       <p className="text-muted-foreground max-w-3xl text-sm">
         Sayım sırasında satış ve transfer durmaz. Her satır sayıldığı andaki stokla karşılaştırılır; fark, onaylandığında bir kez

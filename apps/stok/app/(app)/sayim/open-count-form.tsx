@@ -34,7 +34,7 @@ export function OpenCountForm({
       <Button type="submit" disabled={pending}>
         {kind === "acilis" ? "Açılış sayımını başlat" : "Sayım başlat"}
       </Button>
-      <FormStatus state={state} className="w-full" />
+      <FormStatus state={state} />
     </form>
   );
 }

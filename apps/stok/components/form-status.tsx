@@ -1,15 +1,27 @@
-import { cn } from "@artek/ui/lib/utils";
+"use client";
+
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 import type { ActionState } from "@/lib/action-result";
 
-// A form's error, or its saved message once it succeeds.
-export function FormStatus({ state, saved, className }: { state: ActionState; saved?: string; className?: string }) {
+// Toasts an action's error or saved message; true when it saved.
+export function toastResult(state: ActionState, saved?: string) {
   if (state?.error) {
-    return (
-      <p role="alert" className={cn("text-destructive text-sm", className)}>
-        {state.error}
-      </p>
-    );
+    toast.error(state.error);
+    return false;
   }
   const message = state?.message ?? saved;
-  return state?.saved && message ? <p className={cn("text-sm whitespace-pre-line text-green-700 dark:text-green-400", className)}>{message}</p> : null;
+  if (state?.saved && message) toast.success(message, { classNames: { title: "whitespace-pre-line" } });
+  return Boolean(state?.saved);
+}
+
+// For useActionState forms that stay mounted: toasts each new state once.
+export function FormStatus({ state, saved }: { state: ActionState; saved?: string }) {
+  const shown = useRef<ActionState>(undefined);
+  useEffect(() => {
+    if (!state || shown.current === state) return;
+    shown.current = state;
+    toastResult(state, saved);
+  }, [state, saved]);
+  return null;
 }

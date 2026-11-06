@@ -104,7 +104,7 @@ export function OverviewTable({ overview, categories }: { overview: Overview; ca
   const { table } = useClientDataTable({ data: overview.rows, columns, pageSize: 50, hidden });
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       <DataTable table={table} aria-label="Stok durumu">
         <DataTableToolbar table={table}>
           <CsvLink table={table} />

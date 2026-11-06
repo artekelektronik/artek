@@ -2,10 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { runAction, type ActionState } from "@/lib/action-result";
 import { text } from "@/lib/form-data";
-import { archiveProduct, createProduct, quickAddProduct, restoreProduct, setShowOnSite, updateProduct, type ProductInput } from "@/lib/products";
+import { archiveProduct, createProduct, getProduct, quickAddProduct, restoreProduct, setShowOnSite, updateProduct, type ProductInput } from "@/lib/products";
 
 function lines(value: FormDataEntryValue | null) {
   return String(value ?? "")
@@ -43,18 +42,22 @@ function productFrom(formData: FormData): ProductInput {
   };
 }
 
+// Stays on the list (no redirect).
 export async function createProductAction(_previous: ActionState, formData: FormData): Promise<ActionState> {
-  let id = "";
-  const state = await runAction(async () => {
-    id = (await createProduct(await headers(), productFrom(formData))).id;
-  });
+  const state = await runAction(async () => createProduct(await headers(), productFrom(formData)));
   if (state.error) return state;
-  redirect(`/urunler/${id}`);
+  revalidatePath("/urunler");
+  return { saved: true, message: "Ürün oluşturuldu." };
+}
+
+export async function getProductForEditAction(id: string) {
+  return (await getProduct(await headers(), id)) ?? null;
 }
 
 export async function updateProductAction(id: string, _previous: ActionState, formData: FormData): Promise<ActionState> {
   const state = await runAction(async () => updateProduct(await headers(), id, productFrom(formData)));
   revalidatePath(`/urunler/${id}`);
+  revalidatePath("/urunler");
   revalidatePath("/finans/fiyatlar");
   return state;
 }

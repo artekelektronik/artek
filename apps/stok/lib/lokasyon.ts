@@ -1,7 +1,7 @@
 import { asc } from "drizzle-orm";
+import { cache } from "react";
 import { db } from "../db";
 import { lokasyon } from "../db/schema";
 
-export function listLokasyon() {
-  return db.select().from(lokasyon).orderBy(asc(lokasyon.name));
-}
+// Once per request: several loaders on one page ask for it.
+export const listLokasyon = cache(async () => db.select().from(lokasyon).orderBy(asc(lokasyon.name)));

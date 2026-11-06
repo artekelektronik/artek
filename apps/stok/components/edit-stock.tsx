@@ -3,63 +3,43 @@
 import { useState } from "react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
+import { Label } from "@artek/ui/components/label";
 import { correctStockAction } from "@/app/(app)/stok-girisi/actions";
+import { FormDialog } from "@/components/form-dialog";
+import { toastResult } from "@/components/form-status";
 import { displayQuantity } from "@/lib/labels";
 
 export function EditStock({ productId, lokasyonId, label, current }: { productId: string; lokasyonId: string; label: string; current: string }) {
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string>();
-  const [pending, setPending] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
-
-  if (!open) {
-    return (
-      <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs" aria-label={`${label} stoğunu düzenle`} onClick={() => setOpen(true)}>
-        Düzenle
-      </Button>
-    );
-  }
-
   return (
-    <form
-      className="flex flex-col items-end gap-1"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setPending(true);
-        const result = await correctStockAction({
-          productId,
-          lokasyonId,
-          quantity: String(new FormData(event.currentTarget).get("quantity")),
-          idempotencyKey,
-        });
-        setPending(false);
-        if (result?.error) {
-          setError(result.error);
-          return;
-        }
+    <FormDialog
+      className="sm:max-w-sm"
+      title="Stoğu düzelt"
+      description={`${label} · şu an ${displayQuantity(current)}. Doğru miktarı yazın; fark bir düzeltme hareketi olarak kaydedilir.`}
+      submitLabel="Kaydet"
+      trigger={
+        <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs" aria-label={`${label} stoğunu düzenle`}>
+          Düzenle
+        </Button>
+      }
+      onSubmit={async (formData) => {
+        const result = await correctStockAction({ productId, lokasyonId, quantity: String(formData.get("quantity")), idempotencyKey });
+        if (!toastResult(result, `${label} stoğu düzeltildi.`)) return false;
         setIdempotencyKey(crypto.randomUUID());
-        setError(undefined);
-        setOpen(false);
+        return true;
       }}
     >
-      <div className="flex items-center gap-1">
+      <Label className="flex-col items-stretch gap-1">
+        Doğru stok
         <Input
           name="quantity"
           defaultValue={displayQuantity(current)}
           inputMode="decimal"
           autoFocus
           onFocus={(e) => e.target.select()}
-          aria-label={`${label} doğru stok`}
-          className="h-8 w-20"
+          className="font-normal tabular-nums"
         />
-        <Button type="submit" size="sm" disabled={pending}>
-          Kaydet
-        </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
-          Vazgeç
-        </Button>
-      </div>
-      {error && <p className="text-destructive max-w-48 text-xs">{error}</p>}
-    </form>
+      </Label>
+    </FormDialog>
   );
 }

@@ -11,6 +11,7 @@ import type { DataTableFeatures } from "@/lib/data-table-features";
 
 import { formatDate } from "@/lib/data-table-format";
 import { Button } from "@artek/ui/components/button";
+import { filterTriggerClass } from "@/components/data-table/filter-trigger";
 import { Calendar } from "@artek/ui/components/calendar";
 import { useDirection } from "@/components/ui/direction";
 import {
@@ -202,7 +203,7 @@ function DataTableDateFilterContent<TData extends RowData>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className={filterTriggerClass(Boolean(hasValue))}>
           {hasValue ? (
             <span
               aria-hidden="true"

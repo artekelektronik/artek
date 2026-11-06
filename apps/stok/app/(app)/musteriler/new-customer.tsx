@@ -1,37 +1,72 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@artek/ui/components/dialog";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
-import { FormStatus } from "@/components/form-status";
 import { addCustomerAction } from "./actions";
 
 // "Yeni müşteri": a Müşteri needs its VKN so later invoices join it; without one, the firm is saved as an Aday.
 export function NewCustomer() {
   const [open, setOpen] = useState(false);
-  const [taxId, setTaxId] = useState("");
-  const [state, action, pending] = useActionState(addCustomerAction, undefined);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button type="button" size="sm">
+          <Plus /> Yeni müşteri
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-xl">{open && <NewCustomerForm onDone={() => setOpen(false)} />}</DialogContent>
+    </Dialog>
+  );
+}
 
-  if (!open)
-    return (
-      <Button type="button" size="sm" onClick={() => setOpen(true)}>
-        <Plus /> Yeni müşteri
-      </Button>
-    );
+function NewCustomerForm({ onDone }: { onDone: () => void }) {
+  const router = useRouter();
+  const [taxId, setTaxId] = useState("");
+  const [, action, pending] = useActionState(async (previous: unknown, formData: FormData) => {
+    const result = await addCustomerAction(previous, formData);
+    if (result.error) toast.error(result.error);
+    else if (result.saved && result.id) {
+      const href = result.as === "aday" ? `/musteriler/adaylar?secili=${result.id}` : `/musteriler?secili=${result.id}`;
+      toast.success(result.as === "aday" ? "Aday olarak eklendi." : "Müşteri eklendi.", {
+        action: { label: "Kartı aç", onClick: () => router.push(href) },
+      });
+      onDone();
+    }
+    return result;
+  }, undefined);
+
   const field = (name: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-    <Label className="flex-col items-stretch gap-1 text-xs font-normal">
+    <Label className="flex-col items-stretch gap-1 font-normal">
       {label}
       <Input name={name} {...props} />
     </Label>
   );
-  const done = state?.saved && state.id;
   return (
-    <form action={action} className="bg-card flex w-full flex-col gap-3 rounded-xl border p-4">
+    <form action={action} className="flex flex-col gap-4">
+      <DialogHeader>
+        <DialogTitle>Yeni müşteri</DialogTitle>
+        <DialogDescription>
+          Vergi numarası, faturaları gelince müşteriyle eşleşmesi için gerekli. Bilmiyorsan firmayı aday olarak kaydet; ilk faturası gelince bağlanır.
+        </DialogDescription>
+      </DialogHeader>
       <div className="grid gap-3 sm:grid-cols-2">
-        {field("name", "Firma unvanı", { required: true, placeholder: "Ör. ÖRNEK ELEKTRONİK LTD. ŞTİ." })}
-        <Label className="flex-col items-stretch gap-1 text-xs font-normal">
+        {field("name", "Firma unvanı", { required: true, autoFocus: true, placeholder: "Ör. ÖRNEK ELEKTRONİK LTD. ŞTİ." })}
+        <Label className="flex-col items-stretch gap-1 font-normal">
           Vergi numarası (VKN / TCKN)
           <Input name="taxId" inputMode="numeric" value={taxId} onChange={(e) => setTaxId(e.target.value.replace(/\D/g, ""))} placeholder="10 ya da 11 hane" />
         </Label>
@@ -40,10 +75,12 @@ export function NewCustomer() {
         {field("email", "E-posta", { type: "email" })}
         {field("website", "Web sitesi")}
       </div>
-      <p className="text-muted-foreground text-xs">
-        Vergi numarası, faturaları gelince müşteriyle eşleşmesi için gerekli. Bilmiyorsan firmayı aday olarak kaydet; ilk faturası gelince bağlanır.
-      </p>
-      <div className="flex flex-wrap items-center gap-2">
+      <DialogFooter>
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Vazgeç
+          </Button>
+        </DialogClose>
         {taxId ? (
           <Button type="submit" name="as" value="musteri" disabled={pending}>
             Müşteri olarak kaydet
@@ -53,20 +90,7 @@ export function NewCustomer() {
             VKN yok, aday olarak kaydet
           </Button>
         )}
-        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-          Kapat
-        </Button>
-        {done ? (
-          <a
-            href={state.as === "aday" ? `/musteriler/adaylar?secili=${state.id}` : `/musteriler?secili=${state.id}`}
-            className="text-sm underline underline-offset-4"
-          >
-            Eklendi, kartı aç
-          </a>
-        ) : (
-          <FormStatus state={state} />
-        )}
-      </div>
+      </DialogFooter>
     </form>
   );
 }
