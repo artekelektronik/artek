@@ -25,6 +25,7 @@ const href = (r: ActivityRow) => {
   if (r.entity === "musteri") return `/musteriler?secili=${r.entityId}`;
   if (r.entity === "aday") return `/musteriler/adaylar?secili=${r.entityId}`;
   if (r.entity === "fatura") return "/faturalar";
+  if (r.entity === "gider") return "/finans/giderler";
   if (r.entity === "kullanici") return `/kullanicilar/${r.entityId}`;
   return `/urunler/${r.entityId}`;
 };

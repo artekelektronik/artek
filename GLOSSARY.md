@@ -98,6 +98,10 @@ _Avoid_: İş, proje, PRJ
 A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An upload is a taslak until a person confirms its Müşteri and Ürün lines; only a confirmed Fatura counts in Finans and takes its lines from Stok. A line of an Özel trafo takes its Malzeme out as üretim tüketimi instead. An İade fatura puts its lines back into Stok and is not counted as a sale. A Fatura can be typed by hand before its PDF exists; it can be confirmed only once the PDF with the same number is uploaded.
 _Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
 
+**Gider** (Expense):
+Money Artek pays out: kira, maaş, SGK, vergi, a supplier's invoice and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. Only the Finans paneli sees Giderler.
+_Avoid_: Masraf (for the same thing), Fatura (a Fatura is a sale)
+
 **Müşteri** (Customer):
 A buyer on Artek's sales invoices, identified by the VKN (company) or TCKN (şahıs firması) printed on them.
 _Avoid_: Cari (accounting term), firma (when it's a customer specifically)
