@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
-import { createExpense, deleteExpense, updateExpense } from "@/lib/expenses";
+import { createExpense, deleteExpense, stopRecurrence, updateExpense } from "@/lib/expenses";
 import type { ExpenseInput } from "@/lib/expense-input";
 
 function done<T extends ActionState>(state: T) {
@@ -23,4 +23,8 @@ export async function saveExpenseAction(id: string | null, input: ExpenseInput):
 
 export async function deleteExpenseAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => deleteExpense(await headers(), id)));
+}
+
+export async function stopRecurrenceAction(id: string, endsOn: string): Promise<ActionState> {
+  return done(await runAction(async () => stopRecurrence(await headers(), id, endsOn)));
 }

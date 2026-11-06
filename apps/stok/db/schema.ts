@@ -836,6 +836,24 @@ export const chatMessage = pgTable(
   (t) => [index("chat_message_user_day_idx").on(t.userId, t.day)],
 );
 
+// A Gider that repeats every month (kira, maaş …) on its start date's day, or the month's last; filled up to today.
+export const expenseRecurrence = pgTable("expense_recurrence", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  category: text("category").notNull(),
+  description: text("description").notNull().default(""),
+  party: text("party"),
+  netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(),
+  kdvRate: numeric("kdv_rate", { precision: 5, scale: 2 }).notNull(),
+  totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
+  startsOn: date("starts_on", { mode: "string" }).notNull(),
+  endsOn: date("ends_on", { mode: "string" }), // the last day an entry may fall on
+  filledThrough: text("filled_through").notNull(), // YYYY-MM of the last month made, so a deleted month isn't made again
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Gider: an expense Artek pays (kira, maaş, a supplier's invoice …), for the Finans paneli only. Not a Fatura, which is a sale.
 export const expense = pgTable(
   "expense",
@@ -849,6 +867,7 @@ export const expense = pgTable(
     kdvRate: numeric("kdv_rate", { precision: 5, scale: 2 }).notNull(), // as typed, so a re-save keeps the same KDV dahil
     totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(), // KDV dahil
     fileName: text("file_name"), // the attached receipt, if any
+    recurrenceId: uuid("recurrence_id").references(() => expenseRecurrence.id), // made by a monthly repeat
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),

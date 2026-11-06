@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Subscribe, type ReactTable } from "@tanstack/react-table";
 import { parseAsString, useQueryState } from "nuqs";
-import { MoreHorizontal, Paperclip, Pencil, Plus, Trash2 } from "lucide-react";
+import { MoreHorizontal, Paperclip, Pencil, Plus, Repeat, Trash2 } from "lucide-react";
+import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@artek/ui/components/dropdown-menu";
 import { DataTable } from "@/components/data-table/data-table";
@@ -27,6 +28,8 @@ export type ExpenseRow = {
   kdvRate: string;
   totalAmount: string;
   fileName: string | null;
+  recurrenceId: string | null;
+  repeatEndsOn: string | null;
 };
 
 const column = columnHelperFor<ExpenseRow>();
@@ -69,7 +72,14 @@ export function ExpenseTable({ rows, canEdit }: { rows: ExpenseRow[]; canEdit: b
       header: ({ column }) => <DataTableColumnHeader column={column} label="Açıklama" />,
       cell: ({ row }) => (
         <span className="flex min-w-0 flex-col">
-          <span className="truncate">{row.original.description || "—"}</span>
+          <span className="flex items-center gap-2 truncate">
+            {row.original.description || "—"}
+            {row.original.recurrenceId && (
+              <Badge variant="outline" className="gap-1">
+                <Repeat className="size-3" /> {row.original.repeatEndsOn ? `Her ay, son ${day(row.original.repeatEndsOn)}` : "Her ay"}
+              </Badge>
+            )}
+          </span>
           {row.original.party && <span className="text-muted-foreground truncate text-xs">{row.original.party}</span>}
         </span>
       ),
