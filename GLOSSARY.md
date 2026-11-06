@@ -92,7 +92,7 @@ _Avoid_: İş, proje, PRJ
 ## Invoices and customers
 
 **Fatura** (Sales invoice):
-A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An İade fatura is stored but not counted as a sale.
+A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An upload is a taslak until a person confirms its Müşteri and Ürün lines; only a confirmed Fatura counts in Finans and takes its lines from Stok. An İade fatura puts its lines back into Stok and is not counted as a sale.
 _Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
 
 **Müşteri** (Customer):

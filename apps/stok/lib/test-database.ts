@@ -55,3 +55,18 @@ export async function signIn(email: string, password = "a-long-password") {
   const { headers } = await auth.api.signInEmail({ body: { email, password }, returnHeaders: true });
   return new Headers({ cookie: headers.getSetCookie().map((c) => c.split(";")[0]).join("; ") });
 }
+
+// Upload and confirm with the buyer as Müşteri and no line from stock.
+export async function importAndConfirm(headers: Headers, input: { fileName: string; sha256: string; text: string }) {
+  const { db } = await import("../db");
+  const { invoice, invoiceLine } = await import("../db/schema");
+  const { eq } = await import("drizzle-orm");
+  const { confirmInvoice, importInvoiceText } = await import("./invoices");
+  const result = await importInvoiceText(headers, input);
+  if (result.status === "okunamadi") return result;
+  const [row] = await db.select({ status: invoice.status }).from(invoice).where(eq(invoice.id, result.id));
+  if (row.status === "onaylandi") return result;
+  const lines = await db.select({ seq: invoiceLine.seq }).from(invoiceLine).where(eq(invoiceLine.invoiceId, result.id));
+  await confirmInvoice(headers, { id: result.id, customerId: "yeni", lokasyonId: null, lines: lines.map((l) => ({ seq: l.seq, productId: null, quantity: null })) });
+  return result;
+}

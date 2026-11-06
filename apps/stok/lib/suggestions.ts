@@ -7,7 +7,7 @@ import { factsFor, redraftFor } from "./assistant";
 import { readCardNote } from "./crm";
 import { askAgainDays, otherReasonId } from "./close-reasons";
 import { resendSender, type EmailSender } from "./email";
-import { loadSalesSummary } from "./finance";
+import { countedInvoice, loadSalesSummary } from "./finance";
 import { parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
 import { applyEffect, interpretNote } from "./reasons";
@@ -293,7 +293,7 @@ export async function resultsDue(today: string) {
       const [after] = await db
         .select({ number: invoice.number, issuedOn: invoice.issuedOn })
         .from(invoice)
-        .where(and(eq(invoice.customerId, s.customerId), gt(invoice.issuedOn, s.doneOn!), ne(invoice.type, "IADE"), isNull(invoice.archivedAt)))
+        .where(and(eq(invoice.customerId, s.customerId), gt(invoice.issuedOn, s.doneOn!), ne(invoice.type, "IADE"), countedInvoice))
         .orderBy(asc(invoice.issuedOn))
         .limit(1);
       return { ...s, customer: c, invoiceAfter: after ?? null };
@@ -345,7 +345,7 @@ export async function newerInvoices(suggestions: { id: string; customerId: strin
     const [latest] = await db
       .select({ number: invoice.number, issuedOn: invoice.issuedOn })
       .from(invoice)
-      .where(and(eq(invoice.customerId, s.customerId), gt(invoice.uploadedAt, s.refreshedAt ?? s.createdAt), ne(invoice.type, "IADE"), isNull(invoice.archivedAt)))
+      .where(and(eq(invoice.customerId, s.customerId), gt(invoice.uploadedAt, s.refreshedAt ?? s.createdAt), ne(invoice.type, "IADE"), countedInvoice))
       .orderBy(desc(invoice.issuedOn))
       .limit(1);
     if (latest) found.set(s.id, latest);

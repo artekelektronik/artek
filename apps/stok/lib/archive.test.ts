@@ -25,8 +25,8 @@ describe("Arşiv", { skip: skipWithoutDatabase }, () => {
   let schema: typeof import("../db/schema");
   let editor: Awaited<ReturnType<typeof signedInAs>>;
   const upload = async (n: number, taxId: string, name: string, date?: string) => {
-    const { importInvoiceText } = await import("./invoices");
-    return importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, taxId, name, date) });
+    const { importAndConfirm } = await import("./test-database");
+    return importAndConfirm(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, taxId, name, date) });
   };
   const invoiceNo = async (n: number) =>
     (await db.select().from(schema.invoice).where(eq(schema.invoice.number, `AAA2025${String(n).padStart(9, "0")}`)))[0];

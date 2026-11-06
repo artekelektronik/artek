@@ -59,8 +59,8 @@ describe("Adaylar", { skip: skipWithoutDatabase }, () => {
       { userId: editor.user.id, panel: "musteri", level: "duzenler" },
       { userId: editor.user.id, panel: "finans", level: "duzenler" },
     ]);
-    const { importInvoiceText } = await import("./invoices");
-    await importInvoiceText(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "MEVCUT MÜŞTERİ LİMİTED ŞİRKETİ") });
+    const { importAndConfirm } = await import("./test-database");
+    await importAndConfirm(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "MEVCUT MÜŞTERİ LİMİTED ŞİRKETİ") });
   });
 
   test("a report adds new Adaylar, marks repeats as seen, and skips firms that are already Müşteriler", async () => {
@@ -111,10 +111,10 @@ describe("Adaylar", { skip: skipWithoutDatabase }, () => {
 
   test("the first invoice with an Aday's VKN links it; a name match waits for a person", async () => {
     const { importLeads, linkLeadToCustomer } = await import("./leads");
-    const { importInvoiceText } = await import("./invoices");
+    const { importAndConfirm } = await import("./test-database");
     await importLeads(report("Radar", [{ firma: "VKN Bilinen Firma", vkn: "2222222222" }, { firma: "Adı Benzer Firma" }]), { userId: null });
-    await importInvoiceText(editor.headers, { fileName: "2.pdf", sha256: "s2", text: invoiceText(2, "2222222222", "VKN BİLİNEN FİRMA A.Ş") });
-    await importInvoiceText(editor.headers, { fileName: "3.pdf", sha256: "s3", text: invoiceText(3, "3333333333", "ADI BENZER FİRMA LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "2.pdf", sha256: "s2", text: invoiceText(2, "2222222222", "VKN BİLİNEN FİRMA A.Ş") });
+    await importAndConfirm(editor.headers, { fileName: "3.pdf", sha256: "s3", text: invoiceText(3, "3333333333", "ADI BENZER FİRMA LTD ŞTİ") });
 
     const all = await leads();
     const known = all.find((l) => l.name === "VKN Bilinen Firma")!;

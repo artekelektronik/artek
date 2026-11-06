@@ -1,29 +1,40 @@
 import { createHash } from "node:crypto";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
-import { db } from "../db";
-import { customer, invoice, invoiceLine } from "../db/schema";
+import { db, type Tx } from "../db";
+import { customer, invoice, invoiceFile, invoiceLine, lokasyon, product, user } from "../db/schema";
 import { logActivity } from "./activity";
 import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
+import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { matchCustomer, matchProduct, newCustomer, prepareProducts } from "./invoice-match";
+import { postDocumentIn } from "./ledger";
+import { can } from "./permissions";
+import { formatIstanbulTime, istanbulDate } from "./time";
 import { linkLeadsByTaxId } from "./leads";
 import { missingNumbers } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
 export type ImportResult =
-  | { status: "eklendi"; number: string; customer: string; issuedOn: string }
-  | { status: "tekrar"; number: string; customer: string; issuedOn: string }
+  | { status: "eklendi" | "tekrar"; id: string; number: string; customer: string; issuedOn: string }
   | { status: "okunamadi"; reason: string };
 
+const hasFile = sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`;
+
 export async function pdfText(bytes: Uint8Array) {
-  const pdf = await getDocumentProxy(bytes);
+  // pdf.js may take over the buffer it is given; the original bytes are still needed afterwards.
+  const pdf = await getDocumentProxy(bytes.slice());
   const { text } = await extractText(pdf, { mergePages: true });
   return text;
 }
 
-// One PDF in: a new invoice, a repeat of one already here (same ETTN), or a reason it could not be read.
-export async function importInvoiceText(headers: Headers, input: { fileName: string; text: string; sha256: string }): Promise<ImportResult> {
+// A new draft, a repeat (same ETTN) or a reason it can't be read; the Müşteri is set only if the VKN is known.
+export async function importInvoiceText(
+  headers: Headers,
+  input: { fileName: string; text: string; sha256: string; bytes?: Uint8Array },
+): Promise<ImportResult> {
   const actor = await requirePermission(headers, "finance.edit");
   let parsed;
   try {
@@ -35,27 +46,7 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
   const { buyer } = parsed;
 
   return db.transaction(async (tx) => {
-    const [before] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId));
-    // The newest invoice's name and address win, so a renamed company shows its current name; the old one goes
-    // into the change history.
-    const [c] = await tx
-      .insert(customer)
-      .values({ taxId: buyer.taxId, taxIdType: buyer.taxIdType, name: buyer.name, city: buyer.city, district: buyer.district, email: buyer.email })
-      .onConflictDoUpdate({
-        target: customer.taxId,
-        set: {
-          name: sql`case when excluded.name <> '' then excluded.name else ${customer.name} end`,
-          city: sql`case when excluded.city <> '' then excluded.city else ${customer.city} end`,
-          district: sql`case when excluded.district <> '' then excluded.district else ${customer.district} end`,
-          email: sql`coalesce(${customer.email}, excluded.email)`,
-        },
-        setWhere: sql`${customer.id} not in (select customer_id from invoice where issued_on > ${parsed.issuedOn})`,
-      })
-      .returning({ id: customer.id, name: customer.name });
-    const customerRow = c ?? (await tx.select({ id: customer.id, name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId)))[0];
-    if (before) await recordChanges(tx, customerRow.id, { name: before.name }, { name: customerRow.name }, { source: "fatura" });
-    else await linkLeadsByTaxId(tx, buyer.taxId, customerRow);
-
+    const [known] = await tx.select({ id: customer.id }).from(customer).where(eq(customer.taxId, buyer.taxId));
     const [added] = await tx
       .insert(invoice)
       .values({
@@ -64,7 +55,8 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
         issuedOn: parsed.issuedOn,
         scenario: parsed.scenario,
         type: parsed.type,
-        customerId: customerRow.id,
+        buyer,
+        customerId: known?.id ?? null,
         netAmount: parsed.netAmount.toFixed(2),
         totalAmount: parsed.totalAmount.toFixed(2),
         fileName: input.fileName,
@@ -74,22 +66,26 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
       })
       .onConflictDoNothing({ target: invoice.ettn })
       .returning({ id: invoice.id });
-    const summary = { number: parsed.number, customer: customerRow.name, issuedOn: parsed.issuedOn };
-    // An invoice for an archived Müşteri brings the Müşteri back.
-    await restoreCustomerIn(tx, customerRow.id, { userId: null, why: `Yeni fatura geldi: ${parsed.number}` });
+    const summary = { number: parsed.number, customer: buyer.name, issuedOn: parsed.issuedOn };
+    const keepFile = (invoiceId: string) =>
+      input.bytes ? tx.insert(invoiceFile).values({ invoiceId, bytes: Buffer.from(input.bytes) }).onConflictDoNothing() : null;
     if (!added) {
-      // The same invoice uploaded again: if it was archived, it comes back.
+      // A repeat attaches a missing PDF and brings an archived invoice back.
       const [existing] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.ettn, parsed.ettn));
+      await keepFile(existing.id);
       const restored = await restoreInvoiceIn(tx, existing.id, { userId: actor.userId, why: "Aynı fatura tekrar yüklendi" });
-      return { status: restored ? ("eklendi" as const) : ("tekrar" as const), ...summary };
+      return { status: restored ? ("eklendi" as const) : ("tekrar" as const), id: existing.id, ...summary };
     }
+    await keepFile(added.id);
 
-    await logActivity(tx, [
-      { entity: "fatura", entityId: added.id, label: `${parsed.number} · ${customerRow.name}`, action: "eklendi", detail: input.fileName, userId: actor.userId },
-      ...(before
-        ? []
-        : [{ entity: "musteri" as const, entityId: customerRow.id, label: customerRow.name, action: "eklendi" as const, detail: "İlk faturasıyla", userId: actor.userId }]),
-    ]);
+    await logActivity(tx, {
+      entity: "fatura",
+      entityId: added.id,
+      label: `${parsed.number} · ${buyer.name}`,
+      action: "eklendi",
+      detail: input.fileName,
+      userId: actor.userId,
+    });
 
     if (parsed.lines.length) {
       await tx.insert(invoiceLine).values(
@@ -106,7 +102,7 @@ export async function importInvoiceText(headers: Headers, input: { fileName: str
         })),
       );
     }
-    return { status: "eklendi" as const, ...summary };
+    return { status: "eklendi" as const, id: added.id, ...summary };
   });
 }
 
@@ -119,7 +115,7 @@ export async function importInvoicePdf(headers: Headers, input: { fileName: stri
   } catch {
     return { status: "okunamadi", reason: "Dosya PDF olarak açılamadı." } satisfies ImportResult;
   }
-  return importInvoiceText(headers, { fileName: input.fileName, text, sha256 });
+  return importInvoiceText(headers, { fileName: input.fileName, text, sha256, bytes: input.bytes });
 }
 
 export async function invoiceList(headers: Headers) {
@@ -132,15 +128,240 @@ export async function invoiceList(headers: Headers) {
       type: invoice.type,
       issuedOn: invoice.issuedOn,
       netAmount: invoice.netAmount,
+      status: invoice.status,
       customerId: invoice.customerId,
-      customer: customer.name,
+      // A draft whose VKN is not a Müşteri yet shows the buyer as printed.
+      customer: sql<string>`coalesce(${customer.name}, ${invoice.buyer}->>'name')`,
       uploadedAt: invoice.uploadedAt,
       archivedAt: invoice.archivedAt,
       archiveReason: invoice.archiveReason,
+      hasFile,
     })
     .from(invoice)
-    .innerJoin(customer, eq(customer.id, invoice.customerId))
+    .leftJoin(customer, eq(customer.id, invoice.customerId))
     .orderBy(desc(invoice.issuedOn), desc(invoice.number));
   const lastUpload = rows.reduce<Date | null>((m, r) => (!m || r.uploadedAt > m ? r.uploadedAt : m), null);
   return { rows, lastUpload, gaps: missingNumbers(rows) };
+}
+
+// The review sheet's data: the invoice, its suggested matches and the choices.
+export async function invoiceReview(headers: Headers, id: string) {
+  const actor = await requirePermission(headers, "finance.view");
+  if (!isUuid(id)) return null;
+  const [row] = await db
+    .select({
+      id: invoice.id,
+      ettn: invoice.ettn,
+      number: invoice.number,
+      issuedOn: invoice.issuedOn,
+      scenario: invoice.scenario,
+      type: invoice.type,
+      status: invoice.status,
+      buyer: invoice.buyer,
+      customerId: invoice.customerId,
+      netAmount: invoice.netAmount,
+      totalAmount: invoice.totalAmount,
+      fileName: invoice.fileName,
+      lokasyonId: invoice.lokasyonId,
+      stockDocumentId: invoice.stockDocumentId,
+      confirmedAt: invoice.confirmedAt,
+      confirmedBy: user.name,
+      archivedAt: invoice.archivedAt,
+      hasFile,
+    })
+    .from(invoice)
+    .leftJoin(user, eq(user.id, invoice.confirmedBy))
+    .where(eq(invoice.id, id));
+  if (!row) return null;
+  const confirmed = row.status === "onaylandi";
+
+  const [lines, customers, products, places, learnedRows] = await Promise.all([
+    db.select().from(invoiceLine).where(eq(invoiceLine.invoiceId, id)).orderBy(asc(invoiceLine.seq)),
+    db.select({ id: customer.id, name: customer.name, taxId: customer.taxId }).from(customer).orderBy(asc(customer.name)),
+    db
+      .select({ id: product.id, code: product.code, name: product.name, manufacturerCode: product.manufacturerCode, unit: product.unit })
+      .from(product)
+      .where(isNull(product.archivedAt))
+      .orderBy(asc(product.name)),
+    db.select({ id: lokasyon.id, name: lokasyon.name, openedAt: lokasyon.openedAt }).from(lokasyon).orderBy(asc(lokasyon.name)),
+    // Earlier confirmed lines with this invoice's line names; the latest wins.
+    confirmed
+      ? []
+      : db
+          .select({ productName: invoiceLine.productName, productId: invoiceLine.productId })
+          .from(invoiceLine)
+          .innerJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
+          .where(
+            and(
+              eq(invoice.status, "onaylandi"),
+              isNotNull(invoiceLine.productId),
+              sql`${invoiceLine.productName} in (select product_name from invoice_line where invoice_id = ${id})`,
+            ),
+          )
+          .orderBy(asc(invoice.confirmedAt)),
+  ]);
+  const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
+  const prepared = prepareProducts(products);
+  const isReturn = row.type === "IADE";
+  const stockAction = isReturn ? "stock.receive" : "stock.out";
+
+  return {
+    ...row,
+    confirmedAtText: row.confirmedAt ? formatIstanbulTime(row.confirmedAt) : null,
+    isReturn,
+    customerMatch: row.customerId ? { customerId: row.customerId, suggestions: [] } : matchCustomer(row.buyer, customers),
+    customers,
+    products,
+    // Only opened Lokasyon where this user may move stock.
+    lokasyon: places
+      .filter((l) => l.id === row.lokasyonId || (l.openedAt && can(actor, stockAction, l.id)))
+      .map((l) => ({ id: l.id, name: l.name, openedOn: l.openedAt ? istanbulDate(l.openedAt) : null })),
+    lines: lines.map((l) => ({
+      seq: l.seq,
+      description: l.description,
+      quantity: l.quantity,
+      unit: l.unit,
+      unitPrice: l.unitPrice,
+      amount: l.amount,
+      stockQuantity: l.stockQuantity,
+      ...(confirmed ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, prepared, learned)),
+    })),
+  };
+}
+
+export type InvoiceReview = NonNullable<Awaited<ReturnType<typeof invoiceReview>>>;
+
+// A line with a product and quantity moves stock; a product alone only links it; no product: not in the catalogue.
+const confirmInput = z.object({
+  id: z.uuid(),
+  customerId: z.union([z.uuid(), z.literal(newCustomer)], { error: "Müşteri seçin." }),
+  lokasyonId: z.uuid().nullable(),
+  lines: z.array(
+    z.object({
+      seq: z.number().int(),
+      productId: z.uuid().nullable(),
+      quantity: z
+        .string()
+        .trim()
+        .transform((v) => v.replace(",", "."))
+        .nullable(),
+    }),
+  ),
+});
+export type ConfirmInvoiceInput = z.input<typeof confirmInput>;
+
+export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInput) {
+  const data = parseInput(confirmInput, input);
+  const actor = await requirePermission(headers, "finance.edit");
+  const stockQuantity = (l: (typeof data.lines)[number]) => (l.productId && l.quantity ? l.quantity : null);
+  const fromStock = data.lines.filter(stockQuantity);
+
+  return db.transaction(async (tx) => {
+    const [inv] = await tx.select().from(invoice).where(eq(invoice.id, data.id)).for("update");
+    if (!inv) throw new UserError("Fatura bulunamadı.");
+    const isReturn = inv.type === "IADE";
+    if (fromStock.length) {
+      if (!data.lokasyonId) throw new UserError(isReturn ? "İade gelen ürünler için Lokasyon seçin." : "Stoktan düşülecek satır var; Lokasyon seçin.");
+      await requirePermission(headers, isReturn ? "stock.receive" : "stock.out", data.lokasyonId);
+    }
+    if (inv.archivedAt) throw new UserError("Arşivdeki fatura onaylanamaz; önce geri alın.");
+    if (inv.status === "onaylandi") throw new UserError("Bu fatura zaten onaylandı.");
+    const seqs = (await tx.select({ seq: invoiceLine.seq }).from(invoiceLine).where(eq(invoiceLine.invoiceId, inv.id))).map((l) => l.seq);
+    const chosen = new Map(data.lines.map((l) => [l.seq, l]));
+    if (chosen.size !== seqs.length || seqs.some((seq) => !chosen.has(seq))) throw new UserError("Faturanın her satırı için seçim yapın.");
+
+    const c = await customerFor(tx, inv, data.customerId, actor.userId);
+    let stockDocumentId: string | null = null;
+    if (fromStock.length) {
+      const reason = `${isReturn ? "İade faturası" : "Fatura"} ${inv.number} · ${c.name}`;
+      const posted = await postDocumentIn(
+        tx,
+        { kind: "fatura", lokasyonId: data.lokasyonId, reference: inv.number, reason, userId: actor.userId, idempotencyKey: `fatura:${inv.id}` },
+        fromStock.map((l) => ({
+          productId: l.productId!,
+          lokasyonId: data.lokasyonId,
+          direction: isReturn ? ("in" as const) : ("out" as const),
+          quantity: l.quantity!,
+          type: isReturn ? ("satis_iadesi" as const) : ("satis_teslimati" as const),
+          reason,
+        })),
+      );
+      stockDocumentId = posted.documentId;
+    }
+    for (const l of data.lines) {
+      await tx
+        .update(invoiceLine)
+        .set({ productId: l.productId, stockQuantity: stockQuantity(l) })
+        .where(and(eq(invoiceLine.invoiceId, inv.id), eq(invoiceLine.seq, l.seq)));
+    }
+    await tx
+      .update(invoice)
+      .set({
+        status: "onaylandi",
+        customerId: c.id,
+        lokasyonId: fromStock.length ? data.lokasyonId : null,
+        stockDocumentId,
+        confirmedAt: new Date(),
+        confirmedBy: actor.userId,
+      })
+      .where(eq(invoice.id, inv.id));
+    await logActivity(tx, {
+      entity: "fatura",
+      entityId: inv.id,
+      label: `${inv.number} · ${c.name}`,
+      action: "onaylandi",
+      detail: fromStock.length ? `${fromStock.length} satır stok${isReturn ? "a geri girdi" : "tan düştü"}` : "Stok değişmedi",
+      userId: actor.userId,
+    });
+    return { stockDocumentId };
+  });
+}
+
+// Another firm is just linked; its own VKN or "yeni" upserts the buyer, the newest confirmed invoice's name winning.
+async function customerFor(tx: Tx, inv: typeof invoice.$inferSelect, choice: string, userId: string) {
+  const { buyer } = inv;
+  if (choice !== newCustomer) {
+    const [picked] = await tx.select({ id: customer.id, name: customer.name, taxId: customer.taxId }).from(customer).where(eq(customer.id, choice));
+    if (!picked) throw new UserError("Müşteri bulunamadı.");
+    if (picked.taxId !== buyer.taxId) {
+      await restoreCustomerIn(tx, picked.id, { userId: null, why: `Yeni fatura geldi: ${inv.number}` });
+      return picked;
+    }
+  }
+  const [before] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId));
+  const [c] = await tx
+    .insert(customer)
+    .values({ taxId: buyer.taxId, taxIdType: buyer.taxIdType, name: buyer.name, city: buyer.city, district: buyer.district, email: buyer.email })
+    .onConflictDoUpdate({
+      target: customer.taxId,
+      set: {
+        name: sql`case when excluded.name <> '' then excluded.name else ${customer.name} end`,
+        city: sql`case when excluded.city <> '' then excluded.city else ${customer.city} end`,
+        district: sql`case when excluded.district <> '' then excluded.district else ${customer.district} end`,
+        email: sql`coalesce(${customer.email}, excluded.email)`,
+      },
+      setWhere: sql`${customer.id} not in (select customer_id from invoice where status = 'onaylandi' and issued_on > ${inv.issuedOn})`,
+    })
+    .returning({ id: customer.id, name: customer.name });
+  const customerRow = c ?? (await tx.select({ id: customer.id, name: customer.name }).from(customer).where(eq(customer.taxId, buyer.taxId)))[0];
+  if (before) {
+    await recordChanges(tx, customerRow.id, { name: before.name }, { name: customerRow.name }, { source: "fatura" });
+  } else {
+    await linkLeadsByTaxId(tx, buyer.taxId, customerRow);
+    await logActivity(tx, { entity: "musteri", entityId: customerRow.id, label: customerRow.name, action: "eklendi", detail: "İlk faturasıyla", userId });
+  }
+  await restoreCustomerIn(tx, customerRow.id, { userId: null, why: `Yeni fatura geldi: ${inv.number}` });
+  return customerRow;
+}
+
+// Null for invoices uploaded before PDFs were kept.
+export async function invoicePdf(headers: Headers, id: string) {
+  await requirePermission(headers, "finance.view");
+  if (!isUuid(id)) return null;
+  const [row] = await db
+    .select({ bytes: invoiceFile.bytes, fileName: invoice.fileName })
+    .from(invoiceFile)
+    .innerJoin(invoice, eq(invoice.id, invoiceFile.invoiceId))
+    .where(eq(invoiceFile.invoiceId, id));
+  return row ?? null;
 }

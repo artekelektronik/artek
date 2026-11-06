@@ -4,24 +4,29 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
 import { day } from "@/lib/finance";
-import { invoiceReminderDays, invoiceReminderTo } from "@/lib/finance-reminders";
 import { loadActor } from "@/lib/guard";
-import { invoiceList } from "@/lib/invoices";
+import { invoiceList, invoiceReview } from "@/lib/invoices";
 import { can } from "@/lib/permissions";
-import { formatIstanbulTime, istanbulDate } from "@/lib/time";
+import { formatIstanbulTime } from "@/lib/time";
+import { InvoiceSheet } from "./invoice-sheet";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
 
 export const metadata = { title: "Faturalar | Artek" };
 
-export default async function InvoicesPage() {
+export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ fatura?: string }> }) {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canUpload = can(actor, "finance.edit");
   const canSeeCustomers = can(actor, "crm.view");
-  const { rows, lastUpload, gaps } = await invoiceList(requestHeaders);
+  const { fatura } = await searchParams;
+  const [{ rows, lastUpload, gaps }, review] = await Promise.all([
+    invoiceList(requestHeaders),
+    fatura ? invoiceReview(requestHeaders, fatura) : null,
+  ]);
+  const waiting = rows.filter((r) => r.status === "taslak" && !r.archivedAt).length;
 
   return (
     <PanelShell
@@ -36,22 +41,29 @@ export default async function InvoicesPage() {
       }
       lede={
         <>
-          QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.filter((r) => !r.archivedAt).length.toLocaleString("tr-TR")}</b> fatura
-          {lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}. {invoiceReminderDays} gün yeni fatura yüklenmezse {invoiceReminderTo}{" "}
-          adresine hatırlatma gider.
+          QNB Dijital Köprü’den indirilen satış faturaları{lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}.
+          {waiting > 0 && (
+            <>
+              {" "}
+              <b>{waiting.toLocaleString("tr-TR")}</b> fatura onay bekliyor; onaylanınca stoktan düşer ve Finans’a eklenir.
+            </>
+          )}
         </>
       }
+      actions={canUpload && <InvoiceUpload />}
     >
-      {canUpload && <InvoiceUpload />}
-
-      <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
+      <PanelCard title="Faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz.">
         <InvoiceTable
           rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
-          today={istanbulDate(new Date())}
           linkCustomers={canSeeCustomers}
           canEdit={canUpload}
         />
       </PanelCard>
+
+      <InvoiceSheet
+        review={review}
+        canEdit={canUpload}
+      />
 
       {gaps.length > 0 && (
         <PanelCard

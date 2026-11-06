@@ -33,8 +33,8 @@ describe("change history and smart card notes", { skip: skipWithoutDatabase }, (
   const theCustomer = async () => (await db.select().from(schema.customer))[0];
   const history = async () => db.select().from(schema.customerChange);
   const upload = async (n: number, name: string, date: string, taxId?: string) => {
-    const { importInvoiceText } = await import("./invoices");
-    await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, name, date, taxId) });
+    const { importAndConfirm } = await import("./test-database");
+    await importAndConfirm(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, name, date, taxId) });
   };
   const byName = async (prefix: string) => (await db.select().from(schema.customer)).find((c) => c.name.startsWith(prefix))!;
 

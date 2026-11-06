@@ -69,7 +69,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
     await resetTestDatabase();
     editor = await adminWith("duzenler");
     await db.insert(schema.userPanel).values({ userId: editor.user.id, panel: "finans", level: "duzenler" });
-    const { importInvoiceText } = await import("./invoices");
+    const { importAndConfirm } = await import("./test-database");
     // A: a regular who stopped (two orders, long ago). B: a one-off. C: scheduled for today by email.
     const rows: [number, string, string, string][] = [
       [1, "1111111111", "AAA ELEKTRONİK LİMİTED ŞİRKETİ", "02-01-2025"],
@@ -78,7 +78,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
       [4, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", "30-05-2025"],
     ];
     for (const [n, tax, name, date] of rows) {
-      await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, tax, name, date) });
+      await importAndConfirm(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, tax, name, date) });
     }
     await db.update(schema.customer).set({ phone: "0212 000 00 00", email: "info@ornek.example" });
     await db
@@ -222,10 +222,10 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
       for (const s of await db.select().from(schema.assistantSuggestion)) {
         await closeUndone(editor.headers, { id: s.id, reason: "ulasilamadi" });
       }
-      const { importInvoiceText } = await import("./invoices");
+      const { importAndConfirm } = await import("./test-database");
       const before = await prepareDay(at(day0), fakeClient()); // nothing open, but nobody new to pick yet
       assert.equal(before.open, 0);
-      await importInvoiceText(editor.headers, { fileName: "5.pdf", sha256: "s5", text: invoiceText(5, "4444444444", "DDD MAKİNA A.Ş", "05-01-2025") });
+      await importAndConfirm(editor.headers, { fileName: "5.pdf", sha256: "s5", text: invoiceText(5, "4444444444", "DDD MAKİNA A.Ş", "05-01-2025") });
       await db.update(schema.customer).set({ email: "d@ornek.example" }).where(eq(schema.customer.taxId, "4444444444"));
       const again = await prepareDay(at(day0), fakeClient());
       assert.equal(again.prepared, 1);
@@ -368,9 +368,9 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
 
     describe("steps and newer invoices", () => {
       const uploadFor = async (n: number, day: string) => {
-        const { importInvoiceText } = await import("./invoices");
+        const { importAndConfirm } = await import("./test-database");
         const [y, m, d] = day.split("-");
-        await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
+        await importAndConfirm(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
       };
 
       test("a ticked step keeps who and when; unticking clears it", async () => {
@@ -469,11 +469,11 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
 
       test("an invoice after the contact is pointed out", async () => {
         const { resultsDue } = await import("./suggestions");
-        const { importInvoiceText } = await import("./invoices");
+        const { importAndConfirm } = await import("./test-database");
         const { addWorkingDays } = await import("./time");
         const { mail } = await doneBoth();
         const [y, m, d] = addDays(day0, 1).split("-");
-        await importInvoiceText(editor.headers, { fileName: "9.pdf", sha256: "s9", text: invoiceText(9, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
+        await importAndConfirm(editor.headers, { fileName: "9.pdf", sha256: "s9", text: invoiceText(9, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
         const due = await resultsDue(addWorkingDays(day0, 3));
         assert.equal(due.find((r) => r.id === mail.id)?.invoiceAfter?.issuedOn, addDays(day0, 1));
         assert.equal(due.find((r) => r.customer.name.startsWith("AAA"))?.invoiceAfter, null);

@@ -20,10 +20,11 @@ export async function archiveInvoice(headers: Headers, input: z.input<typeof arc
       .update(invoice)
       .set({ archivedAt: new Date(), archivedBy: actor.userId, archiveReason: data.reason })
       .where(and(eq(invoice.id, data.id), isNull(invoice.archivedAt)))
-      .returning({ number: invoice.number, customerId: invoice.customerId });
+      .returning({ number: invoice.number, buyer: invoice.buyer, stockDocumentId: invoice.stockDocumentId });
     if (!row) throw new UserError("Fatura bulunamadı ya da zaten arşivde.");
-    const [c] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.id, row.customerId));
-    await logActivity(tx, { entity: "fatura", entityId: data.id, label: `${row.number} · ${c.name}`, action: "arsivlendi", detail: data.reason, userId: actor.userId });
+    // Archiving would leave its stock movements behind; they are undone in Hareketler first.
+    if (row.stockDocumentId) throw new UserError("Stoktan düşülmüş onaylı fatura arşivlenemez.");
+    await logActivity(tx, { entity: "fatura", entityId: data.id, label: `${row.number} · ${row.buyer.name}`, action: "arsivlendi", detail: data.reason, userId: actor.userId });
   });
 }
 
@@ -41,10 +42,9 @@ export async function restoreInvoiceIn(tx: Tx, id: string, by: { userId: string 
     .update(invoice)
     .set({ archivedAt: null, archivedBy: null, archiveReason: null })
     .where(and(eq(invoice.id, id), isNotNull(invoice.archivedAt)))
-    .returning({ number: invoice.number, customerId: invoice.customerId });
+    .returning({ number: invoice.number, buyer: invoice.buyer });
   if (!row) return false;
-  const [c] = await tx.select({ name: customer.name }).from(customer).where(eq(customer.id, row.customerId));
-  await logActivity(tx, { entity: "fatura", entityId: id, label: `${row.number} · ${c.name}`, action: "geri_alindi", detail: by.why, userId: by.userId });
+  await logActivity(tx, { entity: "fatura", entityId: id, label: `${row.number} · ${row.buyer.name}`, action: "geri_alindi", detail: by.why, userId: by.userId });
   return true;
 }
 

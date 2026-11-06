@@ -13,6 +13,7 @@ export const movementTypeLabels: Record<MovementType, string> = {
   uretim_tuketimi: "Üretim tüketimi",
   fire: "Fire",
   sayim_duzeltmesi: "Sayım düzeltmesi",
+  satis_iadesi: "Satış iadesi",
 };
 
 export const roleLabels: Record<Role, string> = {
@@ -57,6 +58,11 @@ export const countStatusLabels: Record<(typeof countStatus.enumValues)[number], 
   onaylandi: "Onaylandı",
   iptal: "İptal",
 };
+
+export const invoiceStatusLabels = { taslak: "Onay bekliyor", onaylandi: "Onaylandı" } as const;
+export const invoiceKinds = ["e-Fatura", "e-Arşiv", "İade"] as const;
+export const invoiceKind = (i: { type: string; scenario: string }) =>
+  i.type === "IADE" ? "İade" : i.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura";
 
 export const transferStatusLabels: Record<(typeof transferStatus.enumValues)[number], string> = {
   yolda: "Yolda",

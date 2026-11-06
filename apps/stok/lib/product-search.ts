@@ -15,7 +15,7 @@ const similarLimit = 8;
 const folded: Record<string, string> = { ı: "i", ş: "s", ç: "c", ğ: "g", ü: "u", ö: "o" };
 
 // "EE 110 / 56" and "ee110/56" are the same to someone typing; so are "Çekirdek" and "cekirdek".
-function compact(text: string) {
+export function compact(text: string) {
   return text
     .normalize("NFKC")
     .replace(/İ/g, "i")

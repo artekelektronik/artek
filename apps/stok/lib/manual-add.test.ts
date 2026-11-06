@@ -41,7 +41,7 @@ describe("Adding by hand", { skip: skipWithoutDatabase }, () => {
   test("a Müşteri needs a valid, new VKN; its invoices join it later and an Aday with that VKN is linked", async () => {
     const { addCustomer } = await import("./crm");
     const { importLeads } = await import("./leads");
-    const { importInvoiceText } = await import("./invoices");
+    const { importAndConfirm } = await import("./test-database");
     await importLeads({ rapor: "Radar", adaylar: [{ firma: "Bambaşka Ad", vkn: "1111111111" }] }, { userId: null });
 
     await assert.rejects(addCustomer(editor.headers, { ...base, name: "AAA ELEKTRONİK", taxId: "123" }), /10, TCKN 11/);
@@ -51,7 +51,7 @@ describe("Adding by hand", { skip: skipWithoutDatabase }, () => {
     const [l] = await db.select().from(schema.lead);
     assert.deepEqual([l.customerId, l.status], [id, "musteri_oldu"]);
 
-    await importInvoiceText(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
     const customers = await db.select().from(schema.customer);
     assert.equal(customers.length, 1);
     const [inv] = await db.select().from(schema.invoice);
@@ -61,8 +61,8 @@ describe("Adding by hand", { skip: skipWithoutDatabase }, () => {
 
   test("an Aday added by hand is refused when it is already a Müşteri or an Aday", async () => {
     const { addLead } = await import("./leads");
-    const { importInvoiceText } = await import("./invoices");
-    await importInvoiceText(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    const { importAndConfirm } = await import("./test-database");
+    await importAndConfirm(editor.headers, { fileName: "1.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
 
     await assert.rejects(addLead(editor.headers, { name: "Aaa Elektronik Ltd." }), /zaten müşterimiz: AAA ELEKTRONİK LTD ŞTİ/);
     const id = await addLead(editor.headers, { name: "Yeni Güç Sistemleri", website: "yeniguc.example", why: "Fabrika açtı.", email: "info@yeniguc.example" });

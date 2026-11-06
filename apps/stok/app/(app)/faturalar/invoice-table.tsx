@@ -1,18 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { Subscribe, type ReactTable } from "@tanstack/react-table";
+import { Archive, ArchiveRestore, FileText, MoreHorizontal, PanelRightOpen } from "lucide-react";
+import { Button } from "@artek/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@artek/ui/components/dropdown-menu";
 import { Input } from "@artek/ui/components/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
-import { cn } from "@artek/ui/lib/utils";
-import { DatePicker } from "@/components/date-picker";
-import { ArchiveControl } from "@/components/archive-control";
-import { FormSelect } from "@/components/form-select";
-import { SortBar, type SortField } from "@/components/sort-bar";
+import { Label } from "@artek/ui/components/label";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
+import { FormDialog } from "@/components/form-dialog";
+import { toastResult } from "@/components/form-status";
+import type { DataTableFeatures } from "@/lib/data-table-features";
 import { day, tl } from "@/lib/finance-calc";
-import { sortRows, type Sort } from "@/lib/sorting";
+import { invoiceKind, invoiceKinds, invoiceStatusLabels } from "@/lib/labels";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
-import { filterInvoices, invoiceDatePresets, invoiceRange, invoiceTotals, type InvoiceDatePreset, type InvoiceFilter } from "@/lib/list-filters";
+import { InvoiceStatusBadge } from "./invoice-status";
+import { useFatura } from "./use-fatura";
 
 export type InvoiceRow = {
   id: string;
@@ -21,153 +35,210 @@ export type InvoiceRow = {
   type: string;
   issuedOn: string;
   netAmount: string;
-  customerId: string;
+  status: "taslak" | "onaylandi";
+  customerId: string | null;
   customer: string;
+  hasFile: boolean;
   archivedAt: string | null;
   archiveReason: string | null;
 };
 
-type SortKey = "issuedOn" | "number" | "customer" | "netAmount";
-const sortFields: SortField[] = [
-  { id: "issuedOn", label: "Tarih", kind: "date" },
-  { id: "number", label: "Fatura no", kind: "text" },
-  { id: "customer", label: "Müşteri", kind: "text" },
-  { id: "netAmount", label: "Tutar", kind: "number" },
-];
-const typeOptions = [
-  { value: "tumu", label: "Satış ve iade" },
-  { value: "satis", label: "Sadece satış" },
-  { value: "iade", label: "Sadece iade" },
-];
+const column = columnHelperFor<InvoiceRow>();
+export const pdfUrl = (id: string) => `/api/faturalar/${id}/pdf`;
 
-export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { rows: InvoiceRow[]; today: string; linkCustomers: boolean; canEdit: boolean }) {
+export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: InvoiceRow[]; linkCustomers: boolean; canEdit: boolean }) {
   const [showArchived, setShowArchived] = useState(false);
   const archivedCount = all.filter((r) => r.archivedAt).length;
   const rows = useMemo(() => all.filter((r) => Boolean(r.archivedAt) === showArchived), [all, showArchived]);
-  const [preset, setPreset] = useState<InvoiceDatePreset>("tumu");
-  const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
-  const [q, setQ] = useState("");
-  const [type, setType] = useState<InvoiceFilter["type"]>("tumu");
-  const [sorts, setSorts] = useState<Sort[]>([{ id: "issuedOn", desc: true }]);
+  const [, setFatura] = useFatura();
+  // Plain links still work in a new tab; a normal click opens the sheet over the current filters.
+  const open = (id: string) => (event: React.MouseEvent) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    setFatura(id);
+  };
 
-  const visible = useMemo(() => {
-    const shown = filterInvoices(rows, { range: invoiceRange(preset, today, custom), q, type });
-    return sortRows(shown, [...sorts, { id: "issuedOn", desc: true }], (r, id) => (id === "netAmount" ? Number(r.netAmount) : r[id as SortKey]));
-  }, [rows, preset, custom, q, type, sorts, today]);
-  const totals = invoiceTotals(visible);
-  const filtered = preset !== "tumu" || q || type !== "tumu";
+  const columns = column.columns([
+    searchColumn<InvoiceRow>((r) => `${r.number} ${r.customer}`, "Fatura no veya müşteri ara"),
+    column.accessor((r) => new Date(`${r.issuedOn}T00:00:00`), {
+      id: "tarih",
+      size: 110,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Tarih" />,
+      cell: ({ row }) => <span className="tabular-nums">{day(row.original.issuedOn)}</span>,
+      enableColumnFilter: true,
+      meta: { label: "Tarih", variant: "dateRange" },
+    }),
+    column.accessor("number", {
+      id: "no",
+      size: 230,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Fatura no" />,
+      cell: ({ row }) => (
+        <span className="flex items-center gap-2 whitespace-nowrap">
+          <Link
+            href={`/faturalar?fatura=${row.original.id}`}
+            onClick={open(row.original.id)}
+            className="font-medium tabular-nums underline decoration-muted-foreground/40 underline-offset-4 hover:decoration-foreground"
+          >
+            {row.original.number}
+          </Link>
+          {row.original.hasFile && (
+            <a href={pdfUrl(row.original.id)} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground" title="Orijinal PDF">
+              <FileText className="size-4" />
+              <span className="sr-only">Orijinal PDF</span>
+            </a>
+          )}
+        </span>
+      ),
+      meta: { label: "Fatura no" },
+      enableHiding: false,
+    }),
+    column.accessor("customer", {
+      id: "musteri",
+      size: 320,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Müşteri" />,
+      cell: ({ row }) =>
+        linkCustomers && row.original.customerId ? (
+          <Link href={`/musteriler?secili=${row.original.customerId}`} className="block max-w-80 truncate underline-offset-4 hover:underline">
+            {row.original.customer}
+          </Link>
+        ) : (
+          <span className="block max-w-80 truncate">{row.original.customer}</span>
+        ),
+      meta: { label: "Müşteri" },
+    }),
+    column.accessor(invoiceKind, {
+      id: "tur",
+      size: 100,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Tür" />,
+      enableColumnFilter: true,
+      meta: { label: "Tür", variant: "multiSelect", options: invoiceKinds.map(option) },
+    }),
+    column.accessor((r) => invoiceStatusLabels[r.status], {
+      id: "durum",
+      size: 130,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Durum" />,
+      cell: ({ row }) => <InvoiceStatusBadge status={row.original.status} />,
+      enableColumnFilter: true,
+      meta: { label: "Durum", variant: "multiSelect", options: Object.values(invoiceStatusLabels).map(option) },
+    }),
+    column.accessor((r) => Number(r.netAmount), {
+      id: "tutar",
+      size: 120,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="Tutar" className="justify-end" />,
+      cell: ({ row }) => <span className="block text-right tabular-nums">{tl(Number(row.original.netAmount))}</span>,
+      meta: { label: "Tutar" },
+    }),
+    column.display({
+      id: "islemler",
+      size: 48,
+      cell: ({ row }) => <RowActions row={row.original} canEdit={canEdit} onOpen={open(row.original.id)} />,
+      enableHiding: false,
+      enableSorting: false,
+    }),
+  ]);
 
-  const header = (key: SortKey, label: string, numeric = false) => (
-    <TableHead aria-sort={sorts[0]?.id === key ? (sorts[0].desc ? "descending" : "ascending") : undefined} className={cn(numeric && "text-right")}>
-      <button
-        type="button"
-        className="hover:text-foreground"
-        onClick={() => setSorts((s) => [{ id: key, desc: s[0]?.id === key ? !s[0].desc : key === "issuedOn" || key === "netAmount" }])}
-      >
-        {label}
-        {sorts[0]?.id === key && (sorts[0].desc ? " ↓" : " ↑")}
-      </button>
-    </TableHead>
-  );
+  const { table } = useClientDataTable({ data: rows, columns, sorting: [{ id: "tarih", desc: true }] });
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          type="search"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Müşteri veya fatura no ara"
-          aria-label="Fatura ara"
-          className="max-w-xs flex-1"
-        />
-        <FormSelect
-          name="tarih"
-          options={Object.entries(invoiceDatePresets).map(([value, label]) => ({ value, label }))}
-          defaultValue={preset}
-          onValueChange={(v) => setPreset(v as InvoiceDatePreset)}
-          aria-label="Tarih"
-          className="w-44"
-        />
-        {preset === "ozel" && (
-          <span className="flex flex-wrap items-center gap-1 text-sm">
-            <DatePicker id="fatura-baslangic" name="from" onChange={(from) => setCustom((c) => ({ ...c, from: from || undefined }))} />
-            <span className="text-muted-foreground">–</span>
-            <DatePicker id="fatura-bitis" name="to" onChange={(to) => setCustom((c) => ({ ...c, to: to || undefined }))} />
-          </span>
-        )}
-        <FormSelect
-          name="tur"
-          options={typeOptions}
-          defaultValue={type}
-          onValueChange={(v) => setType(v as InvoiceFilter["type"])}
-          aria-label="Tür"
-          className="w-40"
-        />
+    <DataTable table={table} aria-label="Faturalar">
+      <DataTableToolbar table={table}>
         {(archivedCount > 0 || showArchived) && (
-          <button type="button" className="text-muted-foreground text-xs underline-offset-4 hover:underline" onClick={() => setShowArchived((v) => !v)}>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setShowArchived((v) => !v)}>
             {showArchived ? "Faturalara dön" : `Arşivdekiler (${archivedCount})`}
-          </button>
+          </Button>
         )}
-      </div>
-      <SortBar fields={sortFields} sorts={sorts} onChange={setSorts} />
-      <p className="text-muted-foreground text-xs tabular-nums">
-        <b className="text-foreground font-medium">{visible.length.toLocaleString("tr-TR")}</b> fatura · satış <b className="text-foreground font-medium">{tl(totals.sales)}</b>
-        {totals.returns > 0 && <> · iade {tl(totals.returns)}</>}
-        {filtered && " (seçilenler)"}
-      </p>
-
-      <div className="max-h-[36rem] overflow-auto">
-        {visible.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
-            {showArchived ? "Arşivde fatura yok." : all.length === 0 ? "Henüz fatura yok. Yukarıdan ilk faturaları yükleyin." : "Bu seçime uyan fatura yok."}
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {header("issuedOn", "Tarih")}
-                {header("number", "Fatura no")}
-                {header("customer", "Müşteri")}
-                <TableHead>Tür</TableHead>
-                {header("netAmount", "Tutar", true)}
-                {canEdit && <TableHead className="w-0" />}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visible.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="tabular-nums">{day(r.issuedOn)}</TableCell>
-                  <TableCell className="tabular-nums">{r.number}</TableCell>
-                  <TableCell className="max-w-80 truncate">
-                    {linkCustomers ? (
-                      <Link href={`/musteriler?secili=${r.customerId}`} className="underline-offset-4 hover:underline">
-                        {r.customer}
-                      </Link>
-                    ) : (
-                      r.customer
-                    )}
-                  </TableCell>
-                  <TableCell>{r.type === "IADE" ? "İade" : r.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura"}</TableCell>
-                  <TableCell className="text-right tabular-nums">{tl(Number(r.netAmount))}</TableCell>
-                  {canEdit && (
-                    <TableCell className="text-right whitespace-nowrap">
-                      {r.archiveReason && <span className="text-muted-foreground mr-2 text-xs">{r.archiveReason}</span>}
-                      <ArchiveControl
-                        compact
-                        archived={Boolean(r.archivedAt)}
-                        onArchive={(reason) => archiveInvoiceAction(r.id, reason)}
-                        onRestore={() => restoreInvoiceAction(r.id)}
-                      />
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
-    </div>
+      </DataTableToolbar>
+      <Totals table={table} />
+    </DataTable>
   );
 }
 
+// Over the filtered rows; only confirmed invoices are sales.
+function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, unknown> }) {
+  return (
+    <Subscribe source={table.atoms.columnFilters} selector={(filters) => filters}>
+      {() => {
+        const shown = table.getFilteredRowModel().rows.map((r) => r.original);
+        const confirmed = shown.filter((r) => r.status === "onaylandi");
+        const sum = (rows: InvoiceRow[]) => rows.reduce((s, r) => s + Number(r.netAmount), 0);
+        const sales = sum(confirmed.filter((r) => r.type !== "IADE"));
+        const returns = sum(confirmed.filter((r) => r.type === "IADE"));
+        const waiting = shown.length - confirmed.length;
+        return (
+          <p className="text-muted-foreground text-xs tabular-nums">
+            <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> fatura · satış{" "}
+            <b className="text-foreground font-medium">{tl(sales)}</b>
+            {returns > 0 && <> · iade {tl(returns)}</>}
+            {waiting > 0 && <> · {waiting.toLocaleString("tr-TR")} onay bekliyor</>}
+          </p>
+        );
+      }}
+    </Subscribe>
+  );
+}
+
+function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolean; onOpen: (event: React.MouseEvent) => void }) {
+  const router = useRouter();
+  const [archiving, setArchiving] = useState(false);
+  const [pending, start] = useTransition();
+  const done = (result: Awaited<ReturnType<typeof restoreInvoiceAction>>, message: string) => {
+    const saved = toastResult(result, message);
+    if (saved) router.refresh();
+    return saved;
+  };
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="size-8" aria-label={`${row.number} için işlemler`} disabled={pending}>
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem asChild>
+            <Link href={`/faturalar?fatura=${row.id}`} onClick={onOpen}>
+              <PanelRightOpen /> {row.status === "taslak" && canEdit ? "İncele ve onayla" : "Faturayı aç"}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild disabled={!row.hasFile}>
+            <a href={pdfUrl(row.id)} target="_blank" rel="noreferrer">
+              <FileText /> {row.hasFile ? "Orijinal PDF" : "PDF saklanmamış"}
+            </a>
+          </DropdownMenuItem>
+          {canEdit && (
+            <>
+              <DropdownMenuSeparator />
+              {row.archivedAt ? (
+                <DropdownMenuItem onSelect={() => start(async () => void done(await restoreInvoiceAction(row.id), "Arşivden çıkarıldı."))}>
+                  <ArchiveRestore /> Arşivden çıkar
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem variant="destructive" onSelect={() => setArchiving(true)}>
+                  <Archive /> Arşivle…
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <FormDialog
+        open={archiving}
+        onOpenChange={setArchiving}
+        className="sm:max-w-md"
+        title={`${row.number} arşivlensin mi?`}
+        description="Arşivdeki fatura listeden ve toplamlardan çıkar; geri alınabilir. Stoktan düşülmüş onaylı fatura arşivlenemez."
+        submitLabel="Arşivle"
+        pendingLabel="Arşivleniyor…"
+        destructive
+        onSubmit={async (formData) => done(await archiveInvoiceAction(row.id, String(formData.get("reason") ?? "")), "Arşivlendi.")}
+      >
+        <Label className="flex-col items-stretch gap-1">
+          Sebep
+          <Input name="reason" autoFocus placeholder="ör. iptal edildi, yanlış yüklendi" className="font-normal" />
+        </Label>
+      </FormDialog>
+    </>
+  );
+}
