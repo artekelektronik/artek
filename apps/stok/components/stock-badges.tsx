@@ -35,6 +35,7 @@ const typeTones: Record<MovementType, string> = {
   uretim_tuketimi: tones.violet.badge,
   fire: tones.rose.badge,
   sayim_duzeltmesi: tones.amber.badge,
+  satis_iadesi: tones.green.badge,
 };
 
 const pill = "inline-block rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap";

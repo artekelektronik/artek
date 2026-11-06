@@ -13,6 +13,7 @@ export const movementTypeLabels: Record<MovementType, string> = {
   uretim_tuketimi: "Üretim tüketimi",
   fire: "Fire",
   sayim_duzeltmesi: "Sayım düzeltmesi",
+  satis_iadesi: "Satış iadesi",
 };
 
 export const roleLabels: Record<Role, string> = {

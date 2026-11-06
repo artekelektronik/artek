@@ -38,6 +38,7 @@ const actionLabels: Record<(typeof activityLog.$inferSelect)["action"], string> 
   arsivlendi: "Arşivlendi",
   geri_alindi: "Geri alındı",
   musteri_oldu: "Müşteri oldu",
+  onaylandi: "Onaylandı",
 };
 const userActions: Record<string, string> = {
   "user.invite": "Davet edildi",

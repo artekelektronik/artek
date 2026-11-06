@@ -204,6 +204,13 @@
       "when": 1793633586920,
       "tag": "0028_islem-gecmisi-urun-fiyat",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793973640019,
+      "tag": "0029_fatura-onay",
+      "breakpoints": true
     }
   ]
 }

@@ -35,28 +35,35 @@ export async function postDocument(
   document: NewDocument,
   lines: MovementLine[] | ((tx: Tx, documentId: string) => Promise<MovementLine[]>),
 ) {
-  return db.transaction(async (tx) => {
-    const [created] = await tx
-      .insert(stockDocument)
-      .values(document)
-      .onConflictDoNothing({ target: stockDocument.idempotencyKey })
-      .returning({ id: stockDocument.id });
-    if (!created) {
-      const existing = await tx.query.stockDocument.findFirst({
-        where: eq(stockDocument.idempotencyKey, document.idempotencyKey),
-      });
-      return { documentId: existing!.id, created: false };
-    }
+  return db.transaction((tx) => postDocumentIn(tx, document, lines));
+}
 
-    const resolved = typeof lines === "function" ? await lines(tx, created.id) : lines;
-    // A fixed order means two documents touching the same balances can't deadlock.
-    const ordered = [...resolved].sort((a, b) =>
-      `${a.productId}${a.lokasyonId}`.localeCompare(`${b.productId}${b.lokasyonId}`),
-    );
-    for (const line of ordered) await applyLine(tx, created.id, document.userId, line);
-    await queueMinimumLevelWarnings(tx, created.id);
-    return { documentId: created.id, created: true };
-  });
+// The same inside a caller's transaction, for a document that is one step of a larger change (a confirmed Fatura).
+export async function postDocumentIn(
+  tx: Tx,
+  document: NewDocument,
+  lines: MovementLine[] | ((tx: Tx, documentId: string) => Promise<MovementLine[]>),
+) {
+  const [created] = await tx
+    .insert(stockDocument)
+    .values(document)
+    .onConflictDoNothing({ target: stockDocument.idempotencyKey })
+    .returning({ id: stockDocument.id });
+  if (!created) {
+    const existing = await tx.query.stockDocument.findFirst({
+      where: eq(stockDocument.idempotencyKey, document.idempotencyKey),
+    });
+    return { documentId: existing!.id, created: false };
+  }
+
+  const resolved = typeof lines === "function" ? await lines(tx, created.id) : lines;
+  // A fixed order means two documents touching the same balances can't deadlock.
+  const ordered = [...resolved].sort((a, b) =>
+    `${a.productId}${a.lokasyonId}`.localeCompare(`${b.productId}${b.lokasyonId}`),
+  );
+  for (const line of ordered) await applyLine(tx, created.id, document.userId, line);
+  await queueMinimumLevelWarnings(tx, created.id);
+  return { documentId: created.id, created: true };
 }
 
 async function applyLine(tx: Tx, documentId: string, userId: string, line: MovementLine) {

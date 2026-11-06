@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { unzipSync } from "fflate";
@@ -43,6 +44,7 @@ export function InvoiceUpload() {
     setRows([]);
     const pdfs = await pdfsFrom(files);
     setTotal(pdfs.length);
+    const done: Row[] = [];
     for (const pdf of pdfs) {
       const body = new FormData();
       body.set("file", pdf);
@@ -54,10 +56,14 @@ export function InvoiceUpload() {
       } catch {
         row = { file: pdf.name, status: "hata", reason: "Bağlantı koptu; bu dosyayı tekrar yükleyin." };
       }
+      done.push(row);
       setRows((r) => [...r, row]);
     }
     setBusy(false);
-    router.refresh();
+    // Nothing is confirmed on upload: a single invoice opens straight in the review sheet.
+    const [only] = done;
+    if (done.length === 1 && "id" in only) router.push(`/faturalar?fatura=${only.id}`, { scroll: false });
+    else router.refresh();
   }
 
   const count = (s: Row["status"]) => rows.filter((r) => r.status === s).length;
@@ -80,7 +86,8 @@ export function InvoiceUpload() {
       >
         <FileUp className="text-muted-foreground size-5" />
         <p className="text-muted-foreground flex-1 text-sm">
-          Fatura PDF’lerini veya zip dosyasını buraya bırakın. Aynı fatura iki kez yüklenirse ikincisi eklenmez.
+          Fatura PDF’lerini veya zip dosyasını buraya bırakın. Yüklenen fatura onaylanana kadar bekler: müşteriyi ve ürünleri
+          kontrol edip onaylayınca stoktan düşer ve Finans’a eklenir. Aynı fatura iki kez yüklenirse ikincisi eklenmez.
         </p>
         <input
           ref={input}
@@ -108,6 +115,21 @@ export function InvoiceUpload() {
             {count("okunamadi") + count("hata")} sorunlu
             {!busy && " · Bitti"}
           </p>
+          {!busy && rows.length > 1 && rows.some((r) => "id" in r) && (
+            <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+              {rows.flatMap((r) =>
+                "id" in r
+                  ? [
+                      <li key={r.id}>
+                        <Link href={`/faturalar?fatura=${r.id}`} scroll={false} className="underline-offset-4 hover:underline">
+                          {r.number} incele
+                        </Link>
+                      </li>,
+                    ]
+                  : [],
+              )}
+            </ul>
+          )}
           {problems.length > 0 && (
             <ul className="text-destructive text-sm">
               {problems.map((r) => (

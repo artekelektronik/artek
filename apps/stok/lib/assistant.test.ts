@@ -69,7 +69,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
     await resetTestDatabase();
     editor = await adminWith("duzenler");
     await db.insert(schema.userPanel).values({ userId: editor.user.id, panel: "finans", level: "duzenler" });
-    const { importInvoiceText } = await import("./invoices");
+    const { importAndConfirm: importInvoiceText } = await import("./test-database");
     // A: a regular who stopped (two orders, long ago). B: a one-off. C: scheduled for today by email.
     const rows: [number, string, string, string][] = [
       [1, "1111111111", "AAA ELEKTRONİK LİMİTED ŞİRKETİ", "02-01-2025"],
@@ -222,7 +222,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
       for (const s of await db.select().from(schema.assistantSuggestion)) {
         await closeUndone(editor.headers, { id: s.id, reason: "ulasilamadi" });
       }
-      const { importInvoiceText } = await import("./invoices");
+      const { importAndConfirm: importInvoiceText } = await import("./test-database");
       const before = await prepareDay(at(day0), fakeClient()); // nothing open, but nobody new to pick yet
       assert.equal(before.open, 0);
       await importInvoiceText(editor.headers, { fileName: "5.pdf", sha256: "s5", text: invoiceText(5, "4444444444", "DDD MAKİNA A.Ş", "05-01-2025") });
@@ -368,7 +368,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
 
     describe("steps and newer invoices", () => {
       const uploadFor = async (n: number, day: string) => {
-        const { importInvoiceText } = await import("./invoices");
+        const { importAndConfirm: importInvoiceText } = await import("./test-database");
         const [y, m, d] = day.split("-");
         await importInvoiceText(editor.headers, { fileName: `${n}.pdf`, sha256: `s${n}`, text: invoiceText(n, "3333333333", "CCC TRAFO LİMİTED ŞİRKETİ", `${d}-${m}-${y}`) });
       };
@@ -469,7 +469,7 @@ describe("morning assistant", { skip: skipWithoutDatabase }, () => {
 
       test("an invoice after the contact is pointed out", async () => {
         const { resultsDue } = await import("./suggestions");
-        const { importInvoiceText } = await import("./invoices");
+        const { importAndConfirm: importInvoiceText } = await import("./test-database");
         const { addWorkingDays } = await import("./time");
         const { mail } = await doneBoth();
         const [y, m, d] = addDays(day0, 1).split("-");

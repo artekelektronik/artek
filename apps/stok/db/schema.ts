@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   check,
+  customType,
   date,
   index,
   uniqueIndex,
@@ -196,6 +197,7 @@ export const documentKind = pgEnum("document_kind", [
   "sayim",
   "acilis",
   "ters_kayit",
+  "fatura", // a confirmed sales invoice: satış teslimatı, or stock back in for an İade
 ]);
 
 export const movementType = pgEnum("movement_type", [
@@ -208,6 +210,7 @@ export const movementType = pgEnum("movement_type", [
   "uretim_tuketimi",
   "fire",
   "sayim_duzeltmesi",
+  "satis_iadesi",
 ]);
 
 // One user action that produced movements: a mal kabul, a stock-out, a transfer step, an approved count.
@@ -560,6 +563,11 @@ export const customerChange = pgTable(
 );
 
 // The ETTN is unique per invoice in GİB, so uploading the same invoice twice adds nothing.
+// An upload is a draft (taslak): it counts nowhere until a person checks the Müşteri and the products and confirms it.
+// Confirming links the Müşteri, takes the lines from stock (or puts an İade back) and adds it to the Finans totals.
+export const invoiceStatus = pgEnum("invoice_status", ["taslak", "onaylandi"]);
+export type InvoiceBuyer = { name: string; taxId: string; taxIdType: "VKN" | "TCKN"; city: string; district: string; email: string | null };
+
 export const invoice = pgTable(
   "invoice",
   {
@@ -569,25 +577,44 @@ export const invoice = pgTable(
     issuedOn: date("issued_on", { mode: "string" }).notNull(),
     scenario: text("scenario").notNull(), // TEMELFATURA (e-Fatura) or EARSIVFATURA (e-Arşiv)
     type: text("type").notNull(), // SATIS, IADE, ISTISNA …; IADE is left out of sales
-    customerId: uuid("customer_id")
-      .notNull()
-      .references(() => customer.id),
+    status: invoiceStatus("status").notNull().default("taslak"),
+    buyer: jsonb("buyer").$type<InvoiceBuyer>().notNull(), // as printed on the invoice
+    // Set on upload when the buyer's VKN is already a Müşteri; otherwise chosen when confirming.
+    customerId: uuid("customer_id").references(() => customer.id),
     netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
     totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(),
     fileName: text("file_name").notNull(),
     fileSha256: text("file_sha256").notNull(),
-    // The PDF's text, so a better parser can re-read it; the PDF itself is not kept.
+    // The PDF's text, so a better parser can re-read it; the PDF itself is in invoice_file.
     rawText: text("raw_text").notNull(),
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => user.id),
+    lokasyonId: uuid("lokasyon_id").references(() => lokasyon.id), // where its stock left from (or came back to)
+    stockDocumentId: uuid("stock_document_id").references(() => stockDocument.id), // null: no line was from stock
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    confirmedBy: text("confirmed_by").references(() => user.id),
     archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
     archivedBy: text("archived_by").references(() => user.id),
     archiveReason: text("archive_reason"),
     uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("invoice_issued_idx").on(t.issuedOn), index("invoice_customer_idx").on(t.customerId)],
+  (t) => [
+    index("invoice_issued_idx").on(t.issuedOn),
+    index("invoice_customer_idx").on(t.customerId),
+    check("invoice_confirmed_has_customer", sql`${t.status} = 'taslak' OR ${t.customerId} IS NOT NULL`),
+  ],
 );
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+// The original PDF as uploaded. Apart from invoice so lists never load it. Invoices uploaded before it was kept have none.
+export const invoiceFile = pgTable("invoice_file", {
+  invoiceId: uuid("invoice_id")
+    .primaryKey()
+    .references(() => invoice.id),
+  bytes: bytea("bytes").notNull(),
+});
 
 export const invoiceLine = pgTable(
   "invoice_line",
@@ -603,6 +630,10 @@ export const invoiceLine = pgTable(
     unit: text("unit").notNull(),
     unitPrice: numeric("unit_price", { precision: 14, scale: 4 }).notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+    // Set when confirming: the Ürün this line is (null: not in the catalogue) and how much left stock for it
+    // in the Ürün's unit (null: not taken from stock).
+    productId: uuid("product_id").references(() => product.id),
+    stockQuantity: numeric("stock_quantity", { precision: 14, scale: 3 }),
   },
   (t) => [primaryKey({ columns: [t.invoiceId, t.seq] })],
 );
@@ -739,7 +770,7 @@ export const leadEvent = pgTable(
 // One append-only log of what happened to Faturalar, Müşteriler, Adaylar, Ürünler and Fiyatlar, for the İşlem geçmişi page. Field-level
 // changes of a Müşteri stay in customer_change; a row here only summarises them.
 export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat"]);
-export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu"]);
+export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu", "onaylandi"]);
 
 export const activityLog = pgTable(
   "activity_log",

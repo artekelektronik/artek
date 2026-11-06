@@ -1,4 +1,4 @@
-import { and, isNull, ne, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
@@ -21,7 +21,7 @@ export async function salesForMonths(headers: Headers, thisMonth: string, lastMo
   const [row] = await db
     .select({ thisMonth: monthSales(thisMonth), lastMonth: monthSales(lastMonth), asOf: sql<string | null>`max(${invoice.issuedOn})::text` })
     .from(invoice)
-    .where(and(isNull(invoice.archivedAt), ne(invoice.type, "IADE")));
+    .where(and(eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt), ne(invoice.type, "IADE")));
   return { thisMonth: Number(row.thisMonth), lastMonth: Number(row.lastMonth), asOf: row.asOf ?? "" };
 }
 
@@ -36,6 +36,7 @@ async function loadInvoiceRows() {
         number: invoice.number,
         scenario: invoice.scenario,
         type: invoice.type,
+        status: invoice.status,
         archivedAt: invoice.archivedAt,
       })
       .from(invoice),
@@ -56,7 +57,7 @@ const invoicesTag = "invoices";
 // 1h is a fallback for edits made outside the app; Vercel skips entries over 2 MB (~0.4 MB now).
 const cachedInvoiceRows = unstable_cache(loadInvoiceRows, ["sales-invoice-rows"], { tags: [invoicesTag], revalidate: 3600 });
 
-// Call after anything that adds, archives or restores an invoice.
+// Call after anything that adds, confirms, archives or restores an invoice.
 export function invoicesChanged() {
   revalidateTag(invoicesTag, { expire: 0 });
 }
@@ -64,8 +65,8 @@ export function invoicesChanged() {
 // Unchecked: for callers that already checked access. Customers are never cached; they change all day.
 export async function loadSalesSummary({ cached = false } = {}) {
   const [[invoices, lines], customers] = await Promise.all([cached ? cachedInvoiceRows() : loadInvoiceRows(), db.select().from(customer)]);
-  // Archived invoices leave every total but still count as issued, so they don't show up as missing numbers.
-  const live = invoices.filter((i) => !i.archivedAt);
+  // Drafts and archived invoices leave every total but still count as issued, so they don't show up as missing numbers.
+  const live = invoices.flatMap((i) => (i.status === "onaylandi" && !i.archivedAt && i.customerId ? [{ ...i, customerId: i.customerId }] : []));
   const liveIds = new Set(live.map((i) => i.id));
   const summary = summarize(
     live.filter((i) => i.type !== "IADE").map((i) => ({ ...i, netAmount: Number(i.netAmount) })),

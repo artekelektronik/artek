@@ -68,7 +68,7 @@ export async function customerHistory(headers: Headers, id: string) {
     db
       .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
       .from(invoice)
-      .where(and(eq(invoice.customerId, id), isNull(invoice.archivedAt)))
+      .where(and(eq(invoice.customerId, id), eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt)))
       .orderBy(desc(invoice.issuedOn)),
     db
       .select({

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Badge } from "@artek/ui/components/badge";
 import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { cn } from "@artek/ui/lib/utils";
@@ -21,7 +22,8 @@ export type InvoiceRow = {
   type: string;
   issuedOn: string;
   netAmount: string;
-  customerId: string;
+  status: "taslak" | "onaylandi";
+  customerId: string | null; // null: a draft whose buyer is not a Müşteri yet
   customer: string;
   archivedAt: string | null;
   archiveReason: string | null;
@@ -39,11 +41,20 @@ const typeOptions = [
   { value: "satis", label: "Sadece satış" },
   { value: "iade", label: "Sadece iade" },
 ];
+const statusOptions = [
+  { value: "tumu", label: "Onaylı ve bekleyen" },
+  { value: "taslak", label: "Onay bekliyor" },
+  { value: "onaylandi", label: "Onaylı" },
+];
 
 export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { rows: InvoiceRow[]; today: string; linkCustomers: boolean; canEdit: boolean }) {
   const [showArchived, setShowArchived] = useState(false);
   const archivedCount = all.filter((r) => r.archivedAt).length;
-  const rows = useMemo(() => all.filter((r) => Boolean(r.archivedAt) === showArchived), [all, showArchived]);
+  const [status, setStatus] = useState<"tumu" | InvoiceRow["status"]>("tumu");
+  const rows = useMemo(
+    () => all.filter((r) => Boolean(r.archivedAt) === showArchived && (status === "tumu" || r.status === status)),
+    [all, showArchived, status],
+  );
   const [preset, setPreset] = useState<InvoiceDatePreset>("tumu");
   const [custom, setCustom] = useState<{ from?: string; to?: string }>({});
   const [q, setQ] = useState("");
@@ -54,8 +65,10 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
     const shown = filterInvoices(rows, { range: invoiceRange(preset, today, custom), q, type });
     return sortRows(shown, [...sorts, { id: "issuedOn", desc: true }], (r, id) => (id === "netAmount" ? Number(r.netAmount) : r[id as SortKey]));
   }, [rows, preset, custom, q, type, sorts, today]);
-  const totals = invoiceTotals(visible);
-  const filtered = preset !== "tumu" || q || type !== "tumu";
+  // Only confirmed invoices are sales; drafts are counted apart.
+  const totals = invoiceTotals(visible.filter((r) => r.status === "onaylandi"));
+  const waiting = visible.filter((r) => r.status === "taslak").length;
+  const filtered = preset !== "tumu" || q || type !== "tumu" || status !== "tumu";
 
   const header = (key: SortKey, label: string, numeric = false) => (
     <TableHead aria-sort={sorts[0]?.id === key ? (sorts[0].desc ? "descending" : "ascending") : undefined} className={cn(numeric && "text-right")}>
@@ -104,6 +117,14 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
           aria-label="Tür"
           className="w-40"
         />
+        <FormSelect
+          name="durum"
+          options={statusOptions}
+          defaultValue={status}
+          onValueChange={(v) => setStatus(v as typeof status)}
+          aria-label="Durum"
+          className="w-44"
+        />
         {(archivedCount > 0 || showArchived) && (
           <button type="button" className="text-muted-foreground text-xs underline-offset-4 hover:underline" onClick={() => setShowArchived((v) => !v)}>
             {showArchived ? "Faturalara dön" : `Arşivdekiler (${archivedCount})`}
@@ -114,6 +135,7 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
       <p className="text-muted-foreground text-xs tabular-nums">
         <b className="text-foreground font-medium">{visible.length.toLocaleString("tr-TR")}</b> fatura · satış <b className="text-foreground font-medium">{tl(totals.sales)}</b>
         {totals.returns > 0 && <> · iade {tl(totals.returns)}</>}
+        {waiting > 0 && <> · {waiting.toLocaleString("tr-TR")} onay bekliyor</>}
         {filtered && " (seçilenler)"}
       </p>
 
@@ -138,9 +160,18 @@ export function InvoiceTable({ rows: all, today, linkCustomers, canEdit }: { row
               {visible.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="tabular-nums">{day(r.issuedOn)}</TableCell>
-                  <TableCell className="tabular-nums">{r.number}</TableCell>
+                  <TableCell className="tabular-nums">
+                    <Link href={`/faturalar?fatura=${r.id}`} scroll={false} className="font-medium underline-offset-4 hover:underline">
+                      {r.number}
+                    </Link>
+                    {r.status === "taslak" && (
+                      <Badge variant="outline" className="ml-2 border-amber-300 text-amber-800 dark:text-amber-200">
+                        Onay bekliyor
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell className="max-w-80 truncate">
-                    {linkCustomers ? (
+                    {linkCustomers && r.customerId ? (
                       <Link href={`/musteriler?secili=${r.customerId}`} className="underline-offset-4 hover:underline">
                         {r.customer}
                       </Link>

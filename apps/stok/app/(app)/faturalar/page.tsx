@@ -6,22 +6,28 @@ import { PanelCard, PanelShell } from "@/components/panel";
 import { day } from "@/lib/finance";
 import { invoiceReminderDays, invoiceReminderTo } from "@/lib/finance-reminders";
 import { loadActor } from "@/lib/guard";
-import { invoiceList } from "@/lib/invoices";
+import { invoiceList, invoiceReview } from "@/lib/invoices";
 import { can } from "@/lib/permissions";
 import { formatIstanbulTime, istanbulDate } from "@/lib/time";
+import { InvoiceSheet } from "./invoice-sheet";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
 
 export const metadata = { title: "Faturalar | Artek" };
 
-export default async function InvoicesPage() {
+export default async function InvoicesPage({ searchParams }: { searchParams: Promise<{ fatura?: string }> }) {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canUpload = can(actor, "finance.edit");
   const canSeeCustomers = can(actor, "crm.view");
-  const { rows, lastUpload, gaps } = await invoiceList(requestHeaders);
+  const { fatura } = await searchParams;
+  const [{ rows, lastUpload, gaps }, review] = await Promise.all([
+    invoiceList(requestHeaders),
+    fatura ? invoiceReview(requestHeaders, fatura) : null,
+  ]);
+  const waiting = rows.filter((r) => r.status === "taslak" && !r.archivedAt).length;
 
   return (
     <PanelShell
@@ -37,8 +43,13 @@ export default async function InvoicesPage() {
       lede={
         <>
           QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.filter((r) => !r.archivedAt).length.toLocaleString("tr-TR")}</b> fatura
-          {lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}. {invoiceReminderDays} gün yeni fatura yüklenmezse {invoiceReminderTo}{" "}
-          adresine hatırlatma gider.
+          {lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}.{" "}
+          {waiting > 0 && (
+            <>
+              <b>{waiting.toLocaleString("tr-TR")}</b> fatura onay bekliyor; onaylanana kadar Finans’a sayılmaz ve stoğa dokunmaz.{" "}
+            </>
+          )} {invoiceReminderDays} gün yeni fatura yüklenmezse {invoiceReminderTo}{" "}
+          adresine hatırlatma gider. Fatura numarasına tıklayınca fatura ve orijinal PDF’i açılır.
         </>
       }
     >
@@ -52,6 +63,11 @@ export default async function InvoicesPage() {
           canEdit={canUpload}
         />
       </PanelCard>
+
+      <InvoiceSheet
+        review={review && { ...review, confirmedAtText: review.confirmedAt ? formatIstanbulTime(review.confirmedAt) : null }}
+        canEdit={canUpload}
+      />
 
       {gaps.length > 0 && (
         <PanelCard
