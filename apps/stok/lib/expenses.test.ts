@@ -135,6 +135,14 @@ describe("Giderler", { skip: skipWithoutDatabase }, () => {
       assert.deepEqual(await dates(), ["2026-08-31", "2026-09-30", "2026-10-31"]);
     });
 
+    test("upcoming payments are each running repeat's next day, soonest first; an ended one has none", async () => {
+      await expenses.createExpense(editor.headers, salary, "2026-11-06");
+      await expenses.createExpense(editor.headers, { ...salary, spentOn: "2026-10-10", category: "Kira", netAmount: "20000" }, "2026-11-06");
+      await expenses.createExpense(editor.headers, { ...salary, spentOn: "2026-09-02", category: "SGK", repeatUntil: "2026-11-01" }, "2026-11-06");
+      const due = await expenses.upcomingExpenses(editor.headers);
+      assert.deepEqual(due.map((d) => [d.dueOn, d.category, d.netAmount]), [["2026-11-10", "Kira", "20000.00"], ["2026-11-30", "Maaş", "85000.00"]]);
+    });
+
     test("a repeat can be ended on a later day, not before it began", async () => {
       const { id } = await expenses.createExpense(editor.headers, salary, "2026-11-06");
       const [row] = (await expenses.listExpenses(editor.headers)).filter((e) => e.id === id);

@@ -164,6 +164,26 @@ export async function invoiceList(headers: Headers) {
   return { rows, lastUpload, gaps: missingNumbers(rows) };
 }
 
+// The newest invoices for the Finans özet, drafts included so they get confirmed.
+export async function recentInvoices(headers: Headers, limit: number) {
+  await requirePermission(headers, "finance.view");
+  return db
+    .select({
+      id: invoice.id,
+      number: invoice.number,
+      type: invoice.type,
+      issuedOn: invoice.issuedOn,
+      netAmount: invoice.netAmount,
+      status: invoice.status,
+      customer: sql<string>`coalesce(${customer.name}, ${invoice.buyer}->>'name')`,
+    })
+    .from(invoice)
+    .leftJoin(customer, eq(customer.id, invoice.customerId))
+    .where(isNull(invoice.archivedAt))
+    .orderBy(desc(invoice.issuedOn), desc(invoice.number))
+    .limit(limit);
+}
+
 // What the invoice forms pick from; recipes are each Ürün's reçete (what one unit uses).
 async function pickerOptions() {
   const [customers, products, recipeRows] = await Promise.all([

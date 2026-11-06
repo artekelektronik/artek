@@ -17,7 +17,7 @@ export type SoldLine = {
 export type PurchasePrice = { price: string; currency: Currency };
 type Rates = { USD: number; EUR: number };
 
-export type MonthProfit = { month: string; sales: number; costedSales: number; cost: number; gross: number; uncostedSales: number; uncostedLines: number };
+export type MonthProfit = { month: string; sales: number; costedSales: number; cost: number; gross: number; uncostedSales: number };
 export type Uncosted = { invoiceId: string; number: string; issuedOn: string; description: string; amount: number; reason: "Katalogda yok" | "Alış fiyatı yok" | "Kur yok" };
 
 // What `quantity` of a product cost in TL on `date`, or why it can't be said.
@@ -34,7 +34,7 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
   const uncosted: Uncosted[] = [];
   for (const l of lines) {
     const month = l.issuedOn.slice(0, 7);
-    const m = byMonth.get(month) ?? { month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, uncostedLines: 0 };
+    const m = byMonth.get(month) ?? { month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0 };
     byMonth.set(month, m);
     const sign = l.isReturn ? -1 : 1;
     const amount = sign * Number(l.amount);
@@ -48,7 +48,6 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
     const missing = parts.find((p) => typeof p === "string");
     if (missing) {
       m.uncostedSales += amount;
-      m.uncostedLines += 1;
       uncosted.push({ invoiceId: l.invoiceId, number: l.number, issuedOn: l.issuedOn, description: l.description, amount, reason: missing });
       continue;
     }
@@ -62,7 +61,7 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
 export type MonthNet = MonthProfit & { expenses: number; byCategory: Record<string, number>; net: number; incomplete: boolean };
 type Spent = { spentOn: string; category: string; netAmount: string };
 
-export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, uncostedLines: 0, expenses: 0, byCategory: {}, net: 0, incomplete: false });
+export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, expenses: 0, byCategory: {}, net: 0, incomplete: false });
 
 // Satış → Brüt kâr → Giderler → Net per month and year, KDV hariç. A month with sales of unknown cost is incomplete.
 export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
@@ -85,3 +84,4 @@ export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
   });
   return { months, years };
 }
+export type YearNet = ReturnType<typeof monthlyNet>["years"][number];
