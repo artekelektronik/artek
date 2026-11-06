@@ -385,7 +385,9 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       assert.ok("id" in r);
       assert.equal(await invoices.invoicePdf(admin.headers, r.id), null);
       const again = await invoices.importInvoiceText(admin.headers, { ...file(1), bytes: new Uint8Array([1, 2]) });
-      assert.equal(again.status, "tekrar");
+      assert.deepEqual("id" in again && [again.status, again.pdfAdded], ["tekrar", true]);
+      const thirdTime = await invoices.importInvoiceText(admin.headers, { ...file(1), bytes: new Uint8Array([1, 2]) });
+      assert.deepEqual("id" in thirdTime && [thirdTime.status, thirdTime.pdfAdded], ["tekrar", false], "a plain repeat adds nothing");
       assert.deepEqual([...(await invoices.invoicePdf(admin.headers, r.id))!.bytes], [1, 2]);
     });
 
@@ -481,7 +483,7 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
         kdvRate: 20,
         customerId: null,
         buyer: { name: "ÖRNEK ELEKTRONİK LİMİTED ŞİRKETİ", taxId: "1234567890" },
-        lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core }],
+        lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, fromStock: true }],
       });
       const [manual] = await db.select().from(schema.invoice);
       assert.deepEqual([manual.manual, manual.netAmount, manual.totalAmount], [true, "1000.00", "1200.00"]);
@@ -493,7 +495,7 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       const [joined] = await db.select().from(schema.invoice);
       assert.deepEqual([joined.manual, joined.ettn, joined.fileName], [false, ettn(7), "fatura-7.pdf"]);
       const review = await invoices.invoiceReview(admin.headers, id);
-      assert.equal(review?.lines[0].productId, core);
+      assert.deepEqual([review?.lines[0].productId, review?.lines[0].stockQuantity], [core, "10.000"], "the stock choice made by hand is kept");
       await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });
       assert.equal(await stockOf(core), "15.000");
     });

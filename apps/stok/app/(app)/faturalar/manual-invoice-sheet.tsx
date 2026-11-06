@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useForm, useFormContext, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { Plus, X } from "lucide-react";
@@ -15,8 +15,10 @@ import { toastResult } from "@/components/form-status";
 import { tl } from "@/lib/finance-calc";
 import { newCustomer } from "@/lib/invoice-match";
 import type { manualInvoiceOptions } from "@/lib/invoices";
+import { unitLabels } from "@/lib/quantity";
 import { createManualInvoiceAction } from "./actions";
-import { notInCatalogue, productOption, toNumber } from "./options";
+import { Materials } from "./materials";
+import { notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
 import { useFatura, useManualInvoice } from "./use-fatura";
 
 type Options = Awaited<ReturnType<typeof manualInvoiceOptions>>;
@@ -34,13 +36,17 @@ const formSchema = z
     buyerTaxId: z.string().trim(),
     lines: z
       .array(
-        z.object({
-          description: z.string().trim().min(1, { error: "Açıklama yazın." }),
-          quantity: z.string().refine(positive, { error: "Miktar?" }),
-          unit: z.string().trim().min(1, { error: "Birim?" }),
-          unitPrice: z.string().refine(positive, { error: "Fiyat?" }),
-          productId: z.string(),
-        }),
+        z
+          .object({
+            description: z.string().trim().min(1, { error: "Açıklama yazın." }),
+            quantity: z.string().refine(positive, { error: "Miktar?" }),
+            unit: z.string().trim().min(1, { error: "Birim?" }),
+            unitPrice: z.string().refine(positive, { error: "Fiyat?" }),
+            productId: z.string(),
+            mode: z.enum(["stok", "uretim", "yok"]),
+            components: z.array(z.object({ productId: z.string().min(1, { error: "Malzemeyi seçin." }), quantity: z.string().refine(positive, { error: "Miktar?" }) })),
+          })
+          .refine((l) => l.mode !== "uretim" || l.components.length > 0, { path: ["components"], error: "En az bir malzeme ekleyin." }),
       )
       .min(1, { error: "En az bir satır girin." }),
   })
@@ -48,7 +54,8 @@ const formSchema = z
   .refine((v) => v.customerId !== newCustomer || /^\d{10,11}$/.test(v.buyerTaxId), { path: ["buyerTaxId"], error: "10 haneli VKN ya da 11 haneli TCKN." });
 type FormValues = z.infer<typeof formSchema>;
 
-const emptyLine = { description: "", quantity: "1", unit: "Adet", unitPrice: "", productId: notInCatalogue };
+// The product is optional: a line can be a stocked Ürün, an Özel trafo built from materials, or free text.
+const emptyLine = { description: "", quantity: "1", unit: "Adet", unitPrice: "", productId: notInCatalogue, mode: "yok" as const, components: [] };
 
 // An invoice typed by hand before its PDF exists; it waits as a draft until the PDF with the same number is uploaded.
 export function ManualInvoiceSheet({ options }: { options: Options | null }) {
@@ -90,7 +97,6 @@ function ManualInvoiceForm({ options }: { options: Options }) {
     () => [{ value: newCustomer, label: "Yeni müşteri…" }, ...options.customers.map((c) => ({ value: c.id, label: `${c.name} · ${c.taxId}` }))],
     [options.customers],
   );
-  const productOptions = useMemo(() => [{ value: notInCatalogue, label: "Katalogda yok" }, ...options.products.map(productOption)], [options.products]);
 
   async function onSubmit(v: FormValues) {
     const result = await createManualInvoiceAction({
@@ -101,7 +107,12 @@ function ManualInvoiceForm({ options }: { options: Options }) {
       kdvRate: toNumber(v.kdvRate),
       customerId: v.customerId === newCustomer ? null : v.customerId,
       buyer: { name: v.buyerName, taxId: v.buyerTaxId },
-      lines: v.lines.map((l) => ({ ...l, productId: l.productId === notInCatalogue ? null : l.productId })),
+      lines: v.lines.map(({ mode, components, ...l }) => ({
+        ...l,
+        productId: l.productId === notInCatalogue ? null : l.productId,
+        fromStock: mode === "stok",
+        components: mode === "uretim" ? components : [],
+      })),
     });
     if (toastResult(result, `${v.number} elle eklendi; PDF’i bekliyor.`) && result.id) {
       await setManual(null);
@@ -196,53 +207,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
               </p>
             </div>
             {fields.map((f, i) => (
-              <div key={f.id} className="flex flex-col gap-2 rounded-lg border p-3">
-                <div className="grid grid-cols-[1fr_auto] items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`lines.${i}.description`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} placeholder="Açıklama, ör. FERRİT NÜVE(ART-0092)" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="button" variant="ghost" size="icon" aria-label="Satırı sil" disabled={fields.length === 1} onClick={() => remove(i)}>
-                    <X />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-[6rem_6rem_7rem_1fr] items-start gap-2">
-                  {(["quantity", "unit", "unitPrice"] as const).map((key) => (
-                    <FormField
-                      key={key}
-                      control={form.control}
-                      name={`lines.${i}.${key}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} placeholder={{ quantity: "Miktar", unit: "Birim", unitPrice: "Birim fiyat" }[key]} className="tabular-nums" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                  <FormField
-                    control={form.control}
-                    name={`lines.${i}.productId`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Combobox options={productOptions} value={field.value} onChange={field.onChange} placeholder="Ürün ara" className="w-full" />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+              <ManualLine key={f.id} index={i} options={options} onRemove={fields.length > 1 ? () => remove(i) : undefined} />
             ))}
             <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => append(emptyLine)}>
               <Plus /> Satır ekle
@@ -265,5 +230,95 @@ export function ManualInvoiceButton() {
     <Button type="button" variant="outline" onClick={() => setManual(true)}>
       <Plus /> Elle fatura
     </Button>
+  );
+}
+
+function ManualLine({ index, options, onRemove }: { index: number; options: Options; onRemove?: () => void }) {
+  const { control, setValue, getValues } = useFormContext<FormValues>();
+  const [mode, productId, type] = useWatch({ control, name: [`lines.${index}.mode`, `lines.${index}.productId`, "type"] });
+  const productOptions = useMemo(() => [{ value: notInCatalogue, label: "Katalogda yok (serbest satır)" }, ...options.products.map(productOption)], [options.products]);
+  const isProduct = Boolean(productId) && productId !== notInCatalogue;
+
+  // Picking an Ürün fills the description and unit, and starts it as stocked, or built from its reçete.
+  function pickProduct(value: string) {
+    setValue(`lines.${index}.productId`, value);
+    const p = options.products.find((x) => x.id === value);
+    if (!p) return setValue(`lines.${index}.mode`, "yok");
+    if (!getValues(`lines.${index}.description`)) setValue(`lines.${index}.description`, `${p.name} (${p.code})`, { shouldValidate: true });
+    setValue(`lines.${index}.unit`, unitLabels[p.unit]);
+    const built = type !== "IADE" && (options.recipes[p.id] || p.category === "Özel trafo");
+    setValue(`lines.${index}.mode`, built ? "uretim" : "stok");
+    setValue(`lines.${index}.components`, built ? scaledRecipe(options.recipes[p.id], getValues(`lines.${index}.quantity`)) : []);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border p-3">
+      <div className="grid grid-cols-[1fr_11rem_auto] items-start gap-2">
+        <FormField
+          control={control}
+          name={`lines.${index}.productId`}
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Combobox options={productOptions} value={field.value} onChange={pickProduct} placeholder="Ürün ara (isteğe bağlı)" className="w-full" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name={`lines.${index}.mode`}
+          render={({ field }) => (
+            <FormItem>
+              <Select value={field.value} onValueChange={field.onChange} disabled={!isProduct}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="stok">{type === "IADE" ? "Stoğa geri al" : "Stoktan düş"}</SelectItem>
+                  {type !== "IADE" && <SelectItem value="uretim">Malzemeden üret</SelectItem>}
+                  <SelectItem value="yok">Stoğa dokunma</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
+        <Button type="button" variant="ghost" size="icon" aria-label="Satırı sil" disabled={!onRemove} onClick={onRemove}>
+          <X />
+        </Button>
+      </div>
+      <FormField
+        control={control}
+        name={`lines.${index}.description`}
+        render={({ field }) => (
+          <FormItem>
+            <FormControl>
+              <Input {...field} placeholder="Açıklama, ör. FERRİT NÜVE (ART-0092)" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <div className="grid grid-cols-3 items-start gap-2 sm:w-96">
+        {(["quantity", "unit", "unitPrice"] as const).map((key) => (
+          <FormField
+            key={key}
+            control={control}
+            name={`lines.${index}.${key}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input {...field} placeholder={{ quantity: "Miktar", unit: "Birim", unitPrice: "Birim fiyat" }[key]} className="tabular-nums" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
+      </div>
+      {mode === "uretim" && <Materials index={index} products={options.products} />}
+    </div>
   );
 }

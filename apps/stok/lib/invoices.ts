@@ -3,7 +3,7 @@ import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, type Tx } from "../db";
-import { customer, invoice, invoiceFile, invoiceLine, lokasyon, product, productComponent, stockMovement, user, type InvoiceBuyer } from "../db/schema";
+import { customer, invoice, invoiceFile, invoiceLine, lokasyon, product, productComponent, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
 import { logActivity } from "./activity";
 import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
@@ -19,7 +19,7 @@ import { missingNumbers } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
 export type ImportResult =
-  | { status: "eklendi" | "tekrar"; id: string; number: string; customer: string; issuedOn: string }
+  | { status: "eklendi" | "tekrar"; id: string; number: string; customer: string; issuedOn: string; pdfAdded?: boolean }
   | { status: "okunamadi"; reason: string };
 
 const hasFile = sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`;
@@ -63,9 +63,14 @@ export async function importInvoiceText(
       uploadedBy: actor.userId,
     };
     const summary = { number: parsed.number, customer: buyer.name, issuedOn: parsed.issuedOn };
-    const keepFile = (invoiceId: string) =>
-      input.bytes ? tx.insert(invoiceFile).values({ invoiceId, bytes: Buffer.from(input.bytes) }).onConflictDoNothing() : null;
-    const insertLines = (invoiceId: string, picked = new Map<number, string | null>()) =>
+    // True when the PDF was stored now (an invoice uploaded before PDFs were kept gets it on a repeat).
+    const keepFile = async (invoiceId: string) =>
+      Boolean(
+        input.bytes &&
+          (await tx.insert(invoiceFile).values({ invoiceId, bytes: Buffer.from(input.bytes) }).onConflictDoNothing().returning({ id: invoiceFile.invoiceId })).length,
+      );
+    type Picked = Pick<typeof invoiceLine.$inferSelect, "productId" | "stockQuantity" | "components">;
+    const insertLines = (invoiceId: string, picked = new Map<number, Picked>()) =>
       parsed.lines.length
         ? tx.insert(invoiceLine).values(
             parsed.lines.map((line, i) => ({
@@ -78,7 +83,7 @@ export async function importInvoiceText(
               unit: line.unit,
               unitPrice: String(line.unitPrice),
               amount: line.amount.toFixed(2),
-              productId: picked.get(i + 1) ?? null,
+              ...picked.get(i + 1),
             })),
           )
         : null;
@@ -89,10 +94,13 @@ export async function importInvoiceText(
       .from(invoice)
       .where(and(eq(invoice.manual, true), eq(invoice.number, parsed.number), eq(invoice.status, "taslak")));
     if (manual) {
-      const lines = await tx.select({ seq: invoiceLine.seq, productId: invoiceLine.productId }).from(invoiceLine).where(eq(invoiceLine.invoiceId, manual.id));
+      const lines = await tx
+        .select({ seq: invoiceLine.seq, productId: invoiceLine.productId, stockQuantity: invoiceLine.stockQuantity, components: invoiceLine.components })
+        .from(invoiceLine)
+        .where(eq(invoiceLine.invoiceId, manual.id));
       await tx.update(invoice).set({ ...fields, manual: false, customerId: known?.id ?? manual.customerId }).where(eq(invoice.id, manual.id));
       await tx.delete(invoiceLine).where(eq(invoiceLine.invoiceId, manual.id));
-      await insertLines(manual.id, new Map(lines.map((l) => [l.seq, l.productId])));
+      await insertLines(manual.id, new Map(lines.map(({ seq, ...picked }) => [seq, picked])));
       await keepFile(manual.id);
       await logActivity(tx, { entity: "fatura", entityId: manual.id, label: `${parsed.number} · ${buyer.name}`, action: "duzenlendi", detail: `PDF eklendi: ${input.fileName}`, userId: actor.userId });
       return { status: "eklendi" as const, id: manual.id, ...summary };
@@ -106,9 +114,9 @@ export async function importInvoiceText(
     if (!added) {
       // A repeat attaches a missing PDF and brings an archived invoice back.
       const [existing] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.ettn, parsed.ettn));
-      await keepFile(existing.id);
+      const pdfAdded = await keepFile(existing.id);
       const restored = await restoreInvoiceIn(tx, existing.id, { userId: actor.userId, why: "Aynı fatura tekrar yüklendi" });
-      return { status: restored ? ("eklendi" as const) : ("tekrar" as const), id: existing.id, ...summary };
+      return { status: restored ? ("eklendi" as const) : ("tekrar" as const), id: existing.id, ...summary, pdfAdded };
     }
     await keepFile(added.id);
     await logActivity(tx, { entity: "fatura", entityId: added.id, label: `${parsed.number} · ${buyer.name}`, action: "eklendi", detail: input.fileName, userId: actor.userId });
@@ -156,21 +164,25 @@ export async function invoiceList(headers: Headers) {
   return { rows, lastUpload, gaps: missingNumbers(rows) };
 }
 
-// What the invoice forms pick from.
-const pickerOptions = () =>
-  Promise.all([
+// What the invoice forms pick from; recipes are each Ürün's reçete (what one unit uses).
+async function pickerOptions() {
+  const [customers, products, recipeRows] = await Promise.all([
     db.select({ id: customer.id, name: customer.name, taxId: customer.taxId }).from(customer).orderBy(asc(customer.name)),
     db
       .select({ id: product.id, code: product.code, name: product.name, category: product.category, manufacturerCode: product.manufacturerCode, unit: product.unit })
       .from(product)
       .where(isNull(product.archivedAt))
       .orderBy(asc(product.name)),
+    db.select().from(productComponent),
   ]);
+  const recipes: Record<string, LineComponent[]> = {};
+  for (const r of recipeRows) (recipes[r.productId] ??= []).push({ productId: r.componentId, quantity: r.quantity });
+  return { customers, products, recipes };
+}
 
 export async function manualInvoiceOptions(headers: Headers) {
   await requirePermission(headers, "finance.edit");
-  const [customers, products] = await pickerOptions();
-  return { customers, products };
+  return pickerOptions();
 }
 
 // The review sheet's data: the invoice, its suggested matches and the choices.
@@ -206,7 +218,7 @@ export async function invoiceReview(headers: Headers, id: string) {
   if (!row) return null;
   const confirmed = row.status === "onaylandi";
 
-  const [lines, [customers, products], places, learnedRows, recipeRows] = await Promise.all([
+  const [lines, { customers, products, recipes }, places, learnedRows] = await Promise.all([
     db.select().from(invoiceLine).where(eq(invoiceLine.invoiceId, id)).orderBy(asc(invoiceLine.seq)),
     pickerOptions(),
     db.select({ id: lokasyon.id, name: lokasyon.name, openedAt: lokasyon.openedAt }).from(lokasyon).orderBy(asc(lokasyon.name)),
@@ -225,10 +237,8 @@ export async function invoiceReview(headers: Headers, id: string) {
             ),
           )
           .orderBy(asc(invoice.confirmedAt)),
-    confirmed ? [] : db.select().from(productComponent),
   ]);
   const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
-  const recipes = Object.groupBy(recipeRows, (r) => r.productId);
   const prepared = prepareProducts(products);
   const isReturn = row.type === "IADE";
   const stockAction = isReturn ? "stock.receive" : "stock.out";
@@ -256,8 +266,7 @@ export async function invoiceReview(headers: Headers, id: string) {
       components: l.components,
       ...(confirmed || l.productId ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, prepared, learned)),
     })),
-    // Reçete per Ürün: what one unit uses.
-    recipes: Object.fromEntries(Object.entries(recipes).map(([id, rows]) => [id, rows!.map((r) => ({ productId: r.componentId, quantity: r.quantity }))])),
+    recipes,
   };
 }
 
@@ -449,7 +458,17 @@ const manualInput = z.object({
   customerId: z.uuid().nullable(),
   buyer: z.object({ name: z.string().trim(), taxId: z.string().trim() }),
   lines: z
-    .array(z.object({ description: z.string().trim().min(1, { error: "Açıklama yazın." }), quantity: amountText, unit: z.string().trim().min(1), unitPrice: amountText, productId: z.uuid().nullable() }))
+    .array(
+      z.object({
+        description: z.string().trim().min(1, { error: "Açıklama yazın." }),
+        quantity: amountText,
+        unit: z.string().trim().min(1),
+        unitPrice: amountText,
+        productId: z.uuid().nullable(),
+        fromStock: z.boolean().default(false),
+        components: z.array(z.object({ productId: z.uuid(), quantity: amountText })).default([]),
+      }),
+    )
     .min(1, { error: "En az bir satır girin." }),
 });
 export type ManualInvoiceInput = z.input<typeof manualInput>;
@@ -503,7 +522,10 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
         unit: l.unit,
         unitPrice: l.unitPrice,
         amount: amounts[i],
+        // The choices made here are a draft until the PDF arrives and the invoice is confirmed.
         productId: l.productId,
+        stockQuantity: l.productId && l.fromStock ? l.quantity : null,
+        components: l.productId && l.components.length ? l.components : null,
       })),
     );
     await logActivity(tx, { entity: "fatura", entityId: added.id, label: `${data.number} · ${buyer.name}`, action: "eklendi", detail: "Elle girildi", userId: actor.userId });

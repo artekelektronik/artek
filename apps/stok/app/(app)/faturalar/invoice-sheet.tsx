@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useFieldArray, useForm, useFormContext, useWatch } from "react-hook-form";
+import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
-import { CheckCircle2, FileText, Plus, TriangleAlert, X } from "lucide-react";
+import { CheckCircle2, FileText, TriangleAlert } from "lucide-react";
 import { Alert, AlertDescription } from "@artek/ui/components/alert";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
@@ -26,7 +26,8 @@ import { confirmInvoiceAction } from "./actions";
 import { DeleteInvoiceDialog } from "./invoice-delete";
 import { InvoiceStatusBadge } from "./invoice-status";
 import { pdfUrl } from "./invoice-table";
-import { decimal, notInCatalogue, productOption, suggestedFirst, toNumber } from "./options";
+import { Materials } from "./materials";
+import { decimal, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber } from "./options";
 import { useFatura } from "./use-fatura";
 
 // stok: the Ürün leaves stock; uretim: it is built and its materials leave stock; yok: stock is untouched.
@@ -67,9 +68,7 @@ const soldBeforeOpening = (review: InvoiceReview, lokasyonId: string) => {
   return Boolean(openedOn && review.issuedOn < openedOn);
 };
 const lokasyonLike = (review: InvoiceReview, pattern: RegExp) => (review.lokasyon.find((l) => pattern.test(l.name)) ?? review.lokasyon[0])?.id ?? "";
-// The recipe scaled to the line's quantity.
-const recipeFor = (review: InvoiceReview, productId: string, quantity: string) =>
-  (review.recipes[productId] ?? []).map((c) => ({ productId: c.productId, quantity: decimal(String(Number(c.quantity) * toNumber(quantity))) }));
+const recipeFor = (review: InvoiceReview, productId: string, quantity: string) => scaledRecipe(review.recipes[productId], quantity);
 
 function defaultMode(review: InvoiceReview, line: InvoiceReview["lines"][number], productId: string, lokasyonId: string): Mode {
   if (!productId || productId === notInCatalogue) return "yok";
@@ -103,7 +102,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
       materialsLokasyonId: review.materialsLokasyonId ?? lokasyonLike(review, /imalat/i),
       lines: review.lines.map((l) => {
         const productId = l.productId ?? (confirmed ? notInCatalogue : "");
-        const mode: Mode = confirmed ? (l.components ? "uretim" : l.stockQuantity ? "stok" : "yok") : defaultMode(review, l, productId, lokasyonId);
+        const mode: Mode = l.components ? "uretim" : l.stockQuantity ? "stok" : confirmed ? "yok" : defaultMode(review, l, productId, lokasyonId);
         return {
           productId,
           mode,
@@ -455,7 +454,7 @@ function LineFields({ index, review }: { index: number; review: InvoiceReview })
           />
         )}
       </div>
-      {mode === "uretim" && <Materials index={index} review={review} />}
+      {mode === "uretim" && <Materials index={index} products={review.products} />}
     </div>
   );
 }
@@ -476,57 +475,5 @@ function AmountField({ name, label }: { name: `lines.${number}.quantity` | `line
         </FormItem>
       )}
     />
-  );
-}
-
-// The materials an Özel trafo line was built from; saved as the product's reçete on confirm.
-function Materials({ index, review }: { index: number; review: InvoiceReview }) {
-  const { control, formState } = useFormContext<FormValues>();
-  const { fields, append, remove } = useFieldArray({ control, name: `lines.${index}.components` });
-  const options = useMemo(() => review.products.map(productOption), [review.products]);
-  const disabled = formState.disabled;
-  return (
-    <div className="bg-muted/40 flex flex-col gap-2 rounded-md p-3">
-      <p className="text-muted-foreground text-xs">Malzemeler (üretim tüketimi olarak düşer; onaylayınca bu ürünün reçetesi olarak saklanır)</p>
-      {fields.map((f, j) => (
-        <div key={f.id} className="grid grid-cols-[1fr_7rem_auto] items-start gap-2">
-          <FormField
-            control={control}
-            name={`lines.${index}.components.${j}.productId`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Combobox options={options} value={field.value} onChange={field.onChange} disabled={field.disabled} placeholder="Malzeme ara" className="w-full" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name={`lines.${index}.components.${j}.quantity`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input {...field} inputMode="decimal" placeholder="Miktar" className="tabular-nums" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {!disabled && (
-            <Button type="button" variant="ghost" size="icon" aria-label="Malzemeyi çıkar" onClick={() => remove(j)}>
-              <X />
-            </Button>
-          )}
-        </div>
-      ))}
-      <FormField control={control} name={`lines.${index}.components`} render={() => <FormMessage />} />
-      {!disabled && (
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => append({ productId: "", quantity: "" })}>
-          <Plus /> Malzeme ekle
-        </Button>
-      )}
-    </div>
   );
 }

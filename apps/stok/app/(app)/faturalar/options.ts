@@ -17,3 +17,7 @@ export const suggestedFirst = <T extends { id: string }, O>(items: T[], suggesti
   const suggested = new Set(suggestions);
   return [...items.filter((i) => suggested.has(i.id)), ...items.filter((i) => !suggested.has(i.id))].map(toOption);
 };
+
+// A reçete (per unit) scaled to a line's quantity.
+export const scaledRecipe = (recipe: { productId: string; quantity: string }[] | undefined, quantity: string) =>
+  (recipe ?? []).map((c) => ({ productId: c.productId, quantity: decimal(String(Number(c.quantity) * toNumber(quantity))) }));

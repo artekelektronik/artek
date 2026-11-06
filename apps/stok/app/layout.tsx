@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster position="bottom-right" richColors closeButton />
         </ThemeProvider>
       </body>
     </html>

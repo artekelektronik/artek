@@ -90,16 +90,23 @@ export function InvoiceUpload() {
 
     const problems = rows.filter((r) => r.status === "okunamadi" || r.status === "hata");
     for (const p of problems) toast.error(`${p.file} okunamadı`, { description: "reason" in p ? p.reason : undefined });
-    const [only] = rows;
-    if (rows.length === 1 && "id" in only) {
-      setFatura(only.id);
+    // A repeat is refused, unless it brought the PDF an older upload was missing.
+    const repeats = rows.flatMap((r) => (r.status === "tekrar" && !r.pdfAdded ? [r] : []));
+    if (repeats.length === 1) {
+      const [r] = repeats;
+      toast.error(`${r.number} zaten yüklü`, { description: `${r.file} daha önce yüklendi; tekrar eklenmedi.`, action: { label: "Aç", onClick: () => setFatura(r.id) } });
+    } else if (repeats.length > 1) {
+      toast.error(`${repeats.length} fatura zaten yüklüydü; tekrar eklenmedi.`, { description: repeats.map((r) => r.number).join(", ") });
+    }
+    const added = rows.flatMap((r) => (r.status === "eklendi" ? [r] : []));
+    const pdfAdded = rows.filter((r) => r.status === "tekrar" && r.pdfAdded).length;
+    if (rows.length === 1 && added.length === 1) {
+      setFatura(added[0].id);
       return;
     }
-    const added = rows.filter((r) => r.status === "eklendi").length;
-    const repeats = rows.filter((r) => r.status === "tekrar").length;
-    if (added || repeats) {
-      toast.success(`${added} fatura eklendi${repeats ? `, ${repeats} zaten vardı` : ""}.`, {
-        description: added ? "Listede “Onay bekliyor” olarak duruyorlar; her birini açıp onaylayın." : undefined,
+    if (added.length || pdfAdded) {
+      toast.success([added.length && `${added.length} fatura eklendi`, pdfAdded && `${pdfAdded} faturanın PDF’i eklendi`].filter(Boolean).join(", ") + ".", {
+        description: added.length ? "Listede “Onay bekliyor” olarak duruyorlar; her birini açıp onaylayın." : undefined,
       });
     }
     router.refresh();
