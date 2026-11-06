@@ -58,3 +58,30 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
   const months = [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month)).map((m) => ({ ...m, gross: m.costedSales - m.cost }));
   return { months, uncosted };
 }
+
+export type MonthNet = MonthProfit & { expenses: number; byCategory: Record<string, number>; net: number; incomplete: boolean };
+type Spent = { spentOn: string; category: string; netAmount: string };
+
+export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, uncostedLines: 0, expenses: 0, byCategory: {}, net: 0, incomplete: false });
+
+// Satış → Brüt kâr → Giderler → Net per month and year, KDV hariç. A month with sales of unknown cost is incomplete.
+export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
+  const byMonth = new Map<string, MonthNet>(profits.map((p) => [p.month, { ...emptyMonth(p.month), ...p }]));
+  for (const e of expenses) {
+    const month = e.spentOn.slice(0, 7);
+    const m = byMonth.get(month) ?? emptyMonth(month);
+    byMonth.set(month, m);
+    m.expenses += Number(e.netAmount);
+    m.byCategory[e.category] = (m.byCategory[e.category] ?? 0) + Number(e.netAmount);
+  }
+  const months = [...byMonth.values()]
+    .sort((a, b) => a.month.localeCompare(b.month))
+    .map((m) => ({ ...m, net: m.gross - m.expenses, incomplete: m.uncostedSales !== 0 }));
+  const years = Object.entries(Object.groupBy(months, (m) => m.month.slice(0, 4))).map(([year, list]) => {
+    const sum = (key: "sales" | "costedSales" | "gross" | "uncostedSales" | "expenses" | "net") => list!.reduce((s, m) => s + m[key], 0);
+    const byCategory: Record<string, number> = {};
+    for (const m of list!) for (const [c, v] of Object.entries(m.byCategory)) byCategory[c] = (byCategory[c] ?? 0) + v;
+    return { year, sales: sum("sales"), costedSales: sum("costedSales"), gross: sum("gross"), uncostedSales: sum("uncostedSales"), expenses: sum("expenses"), net: sum("net"), byCategory };
+  });
+  return { months, years };
+}
