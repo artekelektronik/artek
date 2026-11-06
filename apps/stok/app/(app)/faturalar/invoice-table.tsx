@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Subscribe, type ReactTable } from "@tanstack/react-table";
-import { Archive, ArchiveRestore, FileText, MoreHorizontal, PanelRightOpen } from "lucide-react";
+import { Archive, ArchiveRestore, FileText, MoreHorizontal, PanelRightOpen, Trash2 } from "lucide-react";
+import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ import type { DataTableFeatures } from "@/lib/data-table-features";
 import { day, tl } from "@/lib/finance-calc";
 import { invoiceKind, invoiceKinds, invoiceStatusLabels } from "@/lib/labels";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
+import { DeleteInvoiceDialog } from "./invoice-delete";
 import { InvoiceStatusBadge } from "./invoice-status";
 import { useFatura } from "./use-fatura";
 
@@ -36,6 +38,7 @@ export type InvoiceRow = {
   issuedOn: string;
   netAmount: string;
   status: "taslak" | "onaylandi";
+  manual: boolean;
   customerId: string | null;
   customer: string;
   hasFile: boolean;
@@ -81,6 +84,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
           >
             {row.original.number}
           </Link>
+          {row.original.manual && <Badge variant="outline">Elle</Badge>}
           {row.original.hasFile && (
             <a href={pdfUrl(row.original.id)} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground" title="Orijinal PDF">
               <FileText className="size-4" />
@@ -180,6 +184,7 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, un
 function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolean; onOpen: (event: React.MouseEvent) => void }) {
   const router = useRouter();
   const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [pending, start] = useTransition();
   const done = (result: Awaited<ReturnType<typeof restoreInvoiceAction>>, message: string) => {
     const saved = toastResult(result, message);
@@ -214,10 +219,13 @@ function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolea
                   <ArchiveRestore /> Arşivden çıkar
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem variant="destructive" onSelect={() => setArchiving(true)}>
+                <DropdownMenuItem onSelect={() => setArchiving(true)}>
                   <Archive /> Arşivle…
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(true)}>
+                <Trash2 /> Sil…
+              </DropdownMenuItem>
             </>
           )}
         </DropdownMenuContent>
@@ -239,6 +247,7 @@ function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolea
           <Input name="reason" autoFocus placeholder="ör. iptal edildi, yanlış yüklendi" className="font-normal" />
         </Label>
       </FormDialog>
+      <DeleteInvoiceDialog invoice={row} open={deleting} onOpenChange={setDeleting} onDeleted={() => router.refresh()} />
     </>
   );
 }

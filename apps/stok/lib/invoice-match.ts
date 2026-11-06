@@ -8,7 +8,7 @@ export const newCustomer = "yeni"; // confirm with the buyer as printed as a new
 const suggestionCount = 5;
 
 type CustomerOption = { id: string; name: string; taxId: string };
-type ProductOption = { id: string; name: string; manufacturerCode: string | null };
+type ProductOption = { id: string; code: string; name: string; manufacturerCode: string | null };
 
 // The Müşteri with the buyer's VKN / TCKN, else firms whose names share words with it, best first.
 export function matchCustomer(buyer: InvoiceBuyer, customers: CustomerOption[]) {
@@ -38,14 +38,20 @@ const tokens = (text: string) =>
 // Trusted only if it can't be a plain number or size ("100", "6MM").
 const distinctive = (code: string) => code.length >= 4 && /\p{L}/u.test(code) && /\p{N}/u.test(code);
 
-export type PreparedProduct = { id: string; words: string[]; code: string };
+export type PreparedProduct = { id: string; own: string; words: string[]; code: string };
 
 // Done once per invoice, not per line.
 export const prepareProducts = (products: ProductOption[]): PreparedProduct[] =>
-  products.map((p) => ({ id: p.id, words: tokens(p.name), code: compact(p.manufacturerCode ?? "") }));
+  products.map((p) => ({ id: p.id, own: compact(p.code), words: tokens(p.name), code: compact(p.manufacturerCode ?? "") }));
 
-// Picks only when sure (an earlier confirmation, a manufacturer code in the line, or a uniquely covering name); always ranks the closest.
+// Our own codes written on the line, e.g. "BOBİN(ART- 9.8FT)" → "art98ft".
+const artCodes = (description: string) => [...description.matchAll(/(?<!\p{L})ART[\s-]*([\p{L}\p{N}][\p{L}\p{N}.\/-]*)/giu)].map((m) => compact(`ART${m[1]}`));
+
+// Picks only when sure (our ART code on the line, an earlier confirmation, a manufacturer code, or a uniquely covering name); always ranks the closest.
 export function matchProduct(description: string, products: PreparedProduct[], learned: Map<string, string>) {
+  const written = artCodes(description);
+  const byCode = products.find((p) => written.includes(p.own));
+  if (byCode) return { productId: byCode.id, suggestions: [byCode.id] };
   const lineWords = new Set(tokens(description));
   const text = compact(description);
   const scored = products

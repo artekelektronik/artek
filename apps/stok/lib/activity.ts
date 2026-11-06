@@ -39,6 +39,7 @@ const actionLabels: Record<(typeof activityLog.$inferSelect)["action"], string> 
   geri_alindi: "Geri alındı",
   musteri_oldu: "Müşteri oldu",
   onaylandi: "Onaylandı",
+  silindi: "Silindi",
 };
 const userActions: Record<string, string> = {
   "user.invite": "Davet edildi",
@@ -99,7 +100,7 @@ export async function loadActivity(access: ActivityAccess, range: { from?: Date;
       detail: log.detail,
       who: author ?? (log.via === "rutin" ? "Rutin" : log.via === "fatura" ? "Fatura" : "Sistem"),
       at: log.createdAt,
-      notable: log.action === "arsivlendi" || log.action === "geri_alindi",
+      notable: log.action === "arsivlendi" || log.action === "geri_alindi" || log.action === "silindi",
     })),
     ...movements.map(({ m, code, name, place, who, reference, supplier }): ActivityEntry => {
       const quantity = Number(m.quantity);

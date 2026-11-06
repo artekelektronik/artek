@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { unzipSync } from "fflate";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -29,12 +29,42 @@ async function pdfsFrom(files: File[]) {
   return out;
 }
 
-// One invoice opens in the review sheet; a batch ends with a summary toast.
+// One invoice opens in the review sheet; a batch ends with a summary toast. Files can also be dropped anywhere on the page.
 export function InvoiceUpload() {
   const router = useRouter();
   const [, setFatura] = useFatura();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const onDrop = useEffectEvent((files: File[]) => {
+    if (progress === null) upload(files);
+  });
+
+  useEffect(() => {
+    const hasFiles = (e: DragEvent) => e.dataTransfer?.types.includes("Files");
+    const over = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      setDragging(true);
+    };
+    const leave = (e: DragEvent) => {
+      if (!e.relatedTarget) setDragging(false);
+    };
+    const drop = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      setDragging(false);
+      onDrop([...e.dataTransfer!.files]);
+    };
+    window.addEventListener("dragover", over);
+    window.addEventListener("dragleave", leave);
+    window.addEventListener("drop", drop);
+    return () => {
+      window.removeEventListener("dragover", over);
+      window.removeEventListener("dragleave", leave);
+      window.removeEventListener("drop", drop);
+    };
+  }, []);
 
   async function upload(files: File[]) {
     const pdfs = await pdfsFrom(files);
@@ -90,6 +120,11 @@ export function InvoiceUpload() {
           if (files.length) upload(files);
         }}
       />
+      {dragging && (
+        <div className="bg-background/80 pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-sm">
+          <p className="border-primary rounded-xl border-2 border-dashed px-10 py-8 text-lg font-medium">Faturaları bırakın · PDF veya zip, birden çok olabilir</p>
+        </div>
+      )}
       <Button type="button" disabled={progress !== null} onClick={() => input.current?.click()}>
         <Upload />
         {progress ? `Yükleniyor ${progress.done}/${progress.total}…` : "Fatura yükle"}
