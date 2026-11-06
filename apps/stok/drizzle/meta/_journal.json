@@ -232,6 +232,13 @@
       "when": 1793988387752,
       "tag": "0032_gider-tekrar",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793988524254,
+      "tag": "0033_kur-gecmisi",
+      "breakpoints": true
     }
   ]
 }

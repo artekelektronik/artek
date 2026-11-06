@@ -7,6 +7,8 @@ import { chartColors, HBars, Insight, PanelCard, PanelShell, panelLede, panelWar
 import { financeSummary, loyalty, monthLabel, pct, recency, shortName, tl, tlShort } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
+import { grossProfit } from "@/lib/gross-profit";
+import { GrossProfitSection } from "./gross-profit-section";
 import { SalesChart } from "./sales-chart";
 
 export const metadata = { title: "Finansal özet | Artek" };
@@ -17,7 +19,7 @@ export default async function FinancePage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const crm = can(actor, "crm.view");
-  const s = await financeSummary(requestHeaders, "finance.view");
+  const [s, gp] = await Promise.all([financeSummary(requestHeaders, "finance.view"), grossProfit(requestHeaders)]);
 
   if (s.invoiceCount === 0) {
     return (
@@ -96,6 +98,8 @@ export default async function FinancePage() {
           En güçlü aylar: {best.slice(0, 3).map((m) => monthLabel(m.month)).join(", ")}.
         </p>
       </PanelCard>
+
+      <GrossProfitSection data={gp} />
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <PanelCard title="En çok alan 10 müşteri" note="Dönem toplamı, KDV hariç.">

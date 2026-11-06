@@ -3,13 +3,16 @@
 const tlFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
 const oneDecimal = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
 export const tl = (v: number) => `${tlFormat.format(v)} TL`;
-// "7,3 milyon TL", "843 bin TL": the compact "Mn"/"B" reads as billion to many.
-export const tlShort = (v: number) =>
-  Math.abs(v) >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon TL` : Math.abs(v) >= 1e3 ? `${tlFormat.format(v / 1e3)} bin TL` : `${tlFormat.format(v)} TL`;
+// "7,3 milyon", "843 bin": the compact "Mn"/"B" reads as billion to many. Chart axes use it bare.
+export const amountShort = (v: number) =>
+  Math.abs(v) >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon` : Math.abs(v) >= 1e3 ? `${tlFormat.format(v / 1e3)} bin` : tlFormat.format(v);
+export const tlShort = (v: number) => `${amountShort(v)} TL`;
 export const pct = (v: number) => `%${tlFormat.format(v * 100)}`;
+export const share = (part: number, whole: number) => (whole ? pct(part / whole) : "—");
 export const day = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 export const monthLabel = (ym: string) => `${monthNames[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;
+export const shortMonthLabel = (ym: string) => `${monthNames[Number(ym.slice(5, 7)) - 1].slice(0, 3)} ${ym.slice(2, 4)}`; // "Eki 26", for chart axes
 
 export const priorities = [
   { no: 1, label: "Geri kazan", hint: "Eskiden düzenliydi, 3 aydır yok" },
