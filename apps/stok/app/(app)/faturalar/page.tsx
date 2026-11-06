@@ -61,7 +61,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       </PanelCard>
 
       <InvoiceSheet
-        review={review && { ...review, confirmedAtText: review.confirmedAt ? formatIstanbulTime(review.confirmedAt) : null }}
+        review={review}
         canEdit={canUpload}
       />
 

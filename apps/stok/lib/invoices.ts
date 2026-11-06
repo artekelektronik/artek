@@ -9,18 +9,19 @@ import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
-import { matchCustomer, matchProduct } from "./invoice-match";
+import { matchCustomer, matchProduct, newCustomer, prepareProducts } from "./invoice-match";
 import { postDocumentIn } from "./ledger";
 import { can } from "./permissions";
-import { istanbulDate } from "./time";
+import { formatIstanbulTime, istanbulDate } from "./time";
 import { linkLeadsByTaxId } from "./leads";
 import { missingNumbers } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
 export type ImportResult =
-  | { status: "eklendi"; id: string; number: string; customer: string; issuedOn: string }
-  | { status: "tekrar"; id: string; number: string; customer: string; issuedOn: string }
+  | { status: "eklendi" | "tekrar"; id: string; number: string; customer: string; issuedOn: string }
   | { status: "okunamadi"; reason: string };
+
+const hasFile = sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`;
 
 export async function pdfText(bytes: Uint8Array) {
   // pdf.js may take over the buffer it is given; the original bytes are still needed afterwards.
@@ -29,8 +30,7 @@ export async function pdfText(bytes: Uint8Array) {
   return text;
 }
 
-// One PDF in: a new draft (taslak) invoice, a repeat of one already here (same ETTN), or a reason it could not be
-// read. A draft counts nowhere until it is confirmed; its Müşteri is set now only if the VKN is already one.
+// A new draft, a repeat (same ETTN) or a reason it can't be read; the Müşteri is set only if the VKN is known.
 export async function importInvoiceText(
   headers: Headers,
   input: { fileName: string; text: string; sha256: string; bytes?: Uint8Array },
@@ -70,7 +70,7 @@ export async function importInvoiceText(
     const keepFile = (invoiceId: string) =>
       input.bytes ? tx.insert(invoiceFile).values({ invoiceId, bytes: Buffer.from(input.bytes) }).onConflictDoNothing() : null;
     if (!added) {
-      // The same invoice uploaded again: an older upload gets its PDF now, and if it was archived, it comes back.
+      // A repeat attaches a missing PDF and brings an archived invoice back.
       const [existing] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.ettn, parsed.ettn));
       await keepFile(existing.id);
       const restored = await restoreInvoiceIn(tx, existing.id, { userId: actor.userId, why: "Aynı fatura tekrar yüklendi" });
@@ -135,7 +135,7 @@ export async function invoiceList(headers: Headers) {
       uploadedAt: invoice.uploadedAt,
       archivedAt: invoice.archivedAt,
       archiveReason: invoice.archiveReason,
-      hasFile: sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`,
+      hasFile,
     })
     .from(invoice)
     .leftJoin(customer, eq(customer.id, invoice.customerId))
@@ -144,7 +144,7 @@ export async function invoiceList(headers: Headers) {
   return { rows, lastUpload, gaps: missingNumbers(rows) };
 }
 
-// Everything the review sheet shows for one invoice: what it says, what it was matched to, and the choices.
+// The review sheet's data: the invoice, its suggested matches and the choices.
 export async function invoiceReview(headers: Headers, id: string) {
   const actor = await requirePermission(headers, "finance.view");
   if (!isUuid(id)) return null;
@@ -167,12 +167,13 @@ export async function invoiceReview(headers: Headers, id: string) {
       confirmedAt: invoice.confirmedAt,
       confirmedBy: user.name,
       archivedAt: invoice.archivedAt,
-      hasFile: sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`,
+      hasFile,
     })
     .from(invoice)
     .leftJoin(user, eq(user.id, invoice.confirmedBy))
     .where(eq(invoice.id, id));
   if (!row) return null;
+  const confirmed = row.status === "onaylandi";
 
   const [lines, customers, products, places, learnedRows] = await Promise.all([
     db.select().from(invoiceLine).where(eq(invoiceLine.invoiceId, id)).orderBy(asc(invoiceLine.seq)),
@@ -183,26 +184,35 @@ export async function invoiceReview(headers: Headers, id: string) {
       .where(isNull(product.archivedAt))
       .orderBy(asc(product.name)),
     db.select({ id: lokasyon.id, name: lokasyon.name, openedAt: lokasyon.openedAt }).from(lokasyon).orderBy(asc(lokasyon.name)),
-    // What earlier confirmed lines of the same name were; the latest wins.
-    db
-      .select({ productName: invoiceLine.productName, productId: invoiceLine.productId })
-      .from(invoiceLine)
-      .innerJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
-      .where(and(eq(invoice.status, "onaylandi"), isNotNull(invoiceLine.productId)))
-      .orderBy(asc(invoice.confirmedAt)),
+    // Earlier confirmed lines with this invoice's line names; the latest wins.
+    confirmed
+      ? []
+      : db
+          .select({ productName: invoiceLine.productName, productId: invoiceLine.productId })
+          .from(invoiceLine)
+          .innerJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
+          .where(
+            and(
+              eq(invoice.status, "onaylandi"),
+              isNotNull(invoiceLine.productId),
+              sql`${invoiceLine.productName} in (select product_name from invoice_line where invoice_id = ${id})`,
+            ),
+          )
+          .orderBy(asc(invoice.confirmedAt)),
   ]);
   const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
-  const confirmed = row.status === "onaylandi";
+  const prepared = prepareProducts(products);
   const isReturn = row.type === "IADE";
   const stockAction = isReturn ? "stock.receive" : "stock.out";
 
   return {
     ...row,
+    confirmedAtText: row.confirmedAt ? formatIstanbulTime(row.confirmedAt) : null,
     isReturn,
     customerMatch: row.customerId ? { customerId: row.customerId, suggestions: [] } : matchCustomer(row.buyer, customers),
     customers,
     products,
-    // Stock can only leave (or come back to) a Lokasyon this user may do that in and whose Açılış sayımı is done.
+    // Only opened Lokasyon where this user may move stock.
     lokasyon: places
       .filter((l) => l.id === row.lokasyonId || (l.openedAt && can(actor, stockAction, l.id)))
       .map((l) => ({ id: l.id, name: l.name, openedOn: l.openedAt ? istanbulDate(l.openedAt) : null })),
@@ -214,18 +224,17 @@ export async function invoiceReview(headers: Headers, id: string) {
       unitPrice: l.unitPrice,
       amount: l.amount,
       stockQuantity: l.stockQuantity,
-      ...(confirmed ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, products, learned)),
+      ...(confirmed ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, prepared, learned)),
     })),
   };
 }
 
 export type InvoiceReview = NonNullable<Awaited<ReturnType<typeof invoiceReview>>>;
 
-// "yeni": the buyer as printed becomes a new Müşteri. A line with a product and a quantity is taken from stock
-// (put back, for an İade); a line with a product and no quantity is only linked; no product: not in the catalogue.
+// A line with a product and quantity moves stock; a product alone only links it; no product: not in the catalogue.
 const confirmInput = z.object({
   id: z.uuid(),
-  customerId: z.union([z.uuid(), z.literal("yeni")], { error: "Müşteri seçin." }),
+  customerId: z.union([z.uuid(), z.literal(newCustomer)], { error: "Müşteri seçin." }),
   lokasyonId: z.uuid().nullable(),
   lines: z.array(
     z.object({
@@ -244,17 +253,17 @@ export type ConfirmInvoiceInput = z.input<typeof confirmInput>;
 export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInput) {
   const data = parseInput(confirmInput, input);
   const actor = await requirePermission(headers, "finance.edit");
-  const [found] = await db.select({ type: invoice.type }).from(invoice).where(eq(invoice.id, data.id));
-  if (!found) throw new UserError("Fatura bulunamadı.");
-  const isReturn = found.type === "IADE";
-  const fromStock = data.lines.filter((l) => l.productId && l.quantity);
-  if (fromStock.length) {
-    if (!data.lokasyonId) throw new UserError(isReturn ? "İade gelen ürünler için Lokasyon seçin." : "Stoktan düşülecek satır var; Lokasyon seçin.");
-    await requirePermission(headers, isReturn ? "stock.receive" : "stock.out", data.lokasyonId);
-  }
+  const stockQuantity = (l: (typeof data.lines)[number]) => (l.productId && l.quantity ? l.quantity : null);
+  const fromStock = data.lines.filter(stockQuantity);
 
   return db.transaction(async (tx) => {
     const [inv] = await tx.select().from(invoice).where(eq(invoice.id, data.id)).for("update");
+    if (!inv) throw new UserError("Fatura bulunamadı.");
+    const isReturn = inv.type === "IADE";
+    if (fromStock.length) {
+      if (!data.lokasyonId) throw new UserError(isReturn ? "İade gelen ürünler için Lokasyon seçin." : "Stoktan düşülecek satır var; Lokasyon seçin.");
+      await requirePermission(headers, isReturn ? "stock.receive" : "stock.out", data.lokasyonId);
+    }
     if (inv.archivedAt) throw new UserError("Arşivdeki fatura onaylanamaz; önce geri alın.");
     if (inv.status === "onaylandi") throw new UserError("Bu fatura zaten onaylandı.");
     const seqs = (await tx.select({ seq: invoiceLine.seq }).from(invoiceLine).where(eq(invoiceLine.invoiceId, inv.id))).map((l) => l.seq);
@@ -282,7 +291,7 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
     for (const l of data.lines) {
       await tx
         .update(invoiceLine)
-        .set({ productId: l.productId, stockQuantity: l.productId && l.quantity ? l.quantity : null })
+        .set({ productId: l.productId, stockQuantity: stockQuantity(l) })
         .where(and(eq(invoiceLine.invoiceId, inv.id), eq(invoiceLine.seq, l.seq)));
     }
     await tx
@@ -308,11 +317,10 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
   });
 }
 
-// The Müşteri a confirmed invoice belongs to. Picking the Müşteri with the invoice's own VKN, or "yeni", brings the
-// invoice's name and address in as before: the newest confirmed invoice's wins, and the old name goes into the history.
+// Another firm is just linked; its own VKN or "yeni" upserts the buyer, the newest confirmed invoice's name winning.
 async function customerFor(tx: Tx, inv: typeof invoice.$inferSelect, choice: string, userId: string) {
   const { buyer } = inv;
-  if (choice !== "yeni") {
+  if (choice !== newCustomer) {
     const [picked] = await tx.select({ id: customer.id, name: customer.name, taxId: customer.taxId }).from(customer).where(eq(customer.id, choice));
     if (!picked) throw new UserError("Müşteri bulunamadı.");
     if (picked.taxId !== buyer.taxId) {
@@ -342,12 +350,11 @@ async function customerFor(tx: Tx, inv: typeof invoice.$inferSelect, choice: str
     await linkLeadsByTaxId(tx, buyer.taxId, customerRow);
     await logActivity(tx, { entity: "musteri", entityId: customerRow.id, label: customerRow.name, action: "eklendi", detail: "İlk faturasıyla", userId });
   }
-  // An invoice for an archived Müşteri brings the Müşteri back.
   await restoreCustomerIn(tx, customerRow.id, { userId: null, why: `Yeni fatura geldi: ${inv.number}` });
   return customerRow;
 }
 
-// The original PDF of an invoice, for the Finans paneli; null for invoices uploaded before originals were kept.
+// Null for invoices uploaded before PDFs were kept.
 export async function invoicePdf(headers: Headers, id: string) {
   await requirePermission(headers, "finance.view");
   if (!isUuid(id)) return null;

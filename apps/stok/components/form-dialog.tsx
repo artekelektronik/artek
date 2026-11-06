@@ -13,9 +13,11 @@ import {
   DialogTrigger,
 } from "@artek/ui/components/dialog";
 
-// onSubmit returns true to close; fields remount (and reset) each time it opens.
+// onSubmit returns true to close; fields remount (and reset) each time it opens. Without a trigger, pass open/onOpenChange.
 export function FormDialog({
   trigger,
+  open: controlledOpen,
+  onOpenChange,
   title,
   description,
   submitLabel,
@@ -25,7 +27,9 @@ export function FormDialog({
   onSubmit,
   children,
 }: {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   title: string;
   description: React.ReactNode;
   submitLabel: string;
@@ -35,11 +39,13 @@ export function FormDialog({
   onSubmit: (formData: FormData) => Promise<boolean>;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const open = controlledOpen ?? ownOpen;
+  const setOpen = onOpenChange ?? setOwnOpen;
   const [pending, setPending] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className={className}>
         <form
           className="flex flex-col gap-4"

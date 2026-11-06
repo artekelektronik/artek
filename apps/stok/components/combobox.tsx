@@ -6,16 +6,12 @@ import { Button } from "@artek/ui/components/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@artek/ui/components/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@artek/ui/components/popover";
 import { cn } from "@artek/ui/lib/utils";
+import { compact } from "@/lib/product-search";
 
 type Option = { value: string; label: string };
 
-// Each typed word must appear in the label, ignoring case, spaces and punctuation: "art222" finds "ART-222",
-// "ee 25" finds "EE25". cmdk's default fuzzy match also showed unrelated rows that merely share letters.
-const squash = (s: string) => s.normalize("NFKC").toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu, "");
-function contains(value: string, search: string, keywords?: string[]) {
-  const text = squash([value, ...(keywords ?? [])].join(" "));
-  return search.split(/\s+/).every((word) => text.includes(squash(word))) ? 1 : 0;
-}
+// Every typed word must appear in the label, ignoring case and punctuation ("art222" finds "ART-222").
+const contains = (value: string, search: string) => (search.split(/\s+/).every((word) => compact(value).includes(compact(word))) ? 1 : 0);
 
 // A searchable picker; with `allowNew` the typed text can be picked as a new value.
 export function Combobox({
@@ -32,9 +28,7 @@ export function Combobox({
   onChange: (value: string) => void;
   placeholder: string;
   allowNew?: boolean;
-  className?: string;
-  "aria-label"?: string;
-}) {
+} & Omit<React.ComponentProps<typeof Button>, "value" | "onChange">) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const selected = options.find((o) => o.value === value)?.label ?? value;
@@ -54,7 +48,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          aria-label={props["aria-label"]}
+          {...props}
           className={cn("justify-between font-normal", className)}
         >
           <span className={cn("truncate", !selected && "text-muted-foreground")}>{selected || placeholder}</span>
@@ -68,8 +62,7 @@ export function Combobox({
             {!canAdd && <CommandEmpty>Sonuç yok.</CommandEmpty>}
             <CommandGroup>
               {options.map((o) => (
-                // NFKC keywords let a typed space match the odd spaces in imported names (e.g. NNBSP in "6 A").
-                <CommandItem key={o.value} value={o.label} keywords={[o.label.normalize("NFKC")]} onSelect={() => pick(o.value)}>
+                <CommandItem key={o.value} value={o.label} onSelect={() => pick(o.value)}>
                   <Check className={cn(o.value === value ? "opacity-100" : "opacity-0")} />
                   {o.label}
                 </CommandItem>

@@ -6,6 +6,7 @@ import { customer, customerNote, customerStatus, followUpChannel, invoice, user 
 import { customerChanges, interpretCardNote, matchFirm, recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
 import { logActivity } from "./activity";
+import { countedInvoice } from "./finance";
 import { linksFor } from "./firm-links";
 import { linkLeadsByTaxId } from "./leads";
 import { requirePermission } from "./guard";
@@ -68,7 +69,7 @@ export async function customerHistory(headers: Headers, id: string) {
     db
       .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, type: invoice.type, netAmount: invoice.netAmount })
       .from(invoice)
-      .where(and(eq(invoice.customerId, id), eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt)))
+      .where(and(eq(invoice.customerId, id), countedInvoice))
       .orderBy(desc(invoice.issuedOn)),
     db
       .select({

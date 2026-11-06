@@ -7,6 +7,9 @@ import { requirePermission } from "./guard";
 
 export * from "./finance-calc";
 
+// Only a confirmed, unarchived invoice counts anywhere (Finans, Müşteri paneli, assistant).
+export const countedInvoice = and(eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt));
+
 // Both panels read it: Finans for the totals, Müşteri for each customer's sales and Öncelik.
 export async function financeSummary(headers: Headers, action: "finance.view" | "crm.view") {
   await requirePermission(headers, action);
@@ -21,7 +24,7 @@ export async function salesForMonths(headers: Headers, thisMonth: string, lastMo
   const [row] = await db
     .select({ thisMonth: monthSales(thisMonth), lastMonth: monthSales(lastMonth), asOf: sql<string | null>`max(${invoice.issuedOn})::text` })
     .from(invoice)
-    .where(and(eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt), ne(invoice.type, "IADE")));
+    .where(and(countedInvoice, ne(invoice.type, "IADE")));
   return { thisMonth: Number(row.thisMonth), lastMonth: Number(row.lastMonth), asOf: row.asOf ?? "" };
 }
 

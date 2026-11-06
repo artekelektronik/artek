@@ -23,7 +23,6 @@ export async function restoreInvoiceAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => restoreInvoice(await headers(), id)));
 }
 
-// Takes its lines from stock (or puts an İade back) and adds it to the Finans totals, all at once.
 export async function confirmInvoiceAction(input: ConfirmInvoiceInput): Promise<ActionState> {
   return done(await runStockAction(async () => confirmInvoice(await headers(), input)));
 }

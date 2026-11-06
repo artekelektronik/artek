@@ -1,7 +1,6 @@
 import { Forbidden, NotSignedIn } from "@/lib/guard";
 import { invoicePdf } from "@/lib/invoices";
 
-// The invoice as uploaded, shown inline in the review sheet.
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const file = await invoicePdf(request.headers, (await params).id);

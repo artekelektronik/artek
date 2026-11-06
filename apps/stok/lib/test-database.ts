@@ -56,8 +56,7 @@ export async function signIn(email: string, password = "a-long-password") {
   return new Headers({ cookie: headers.getSetCookie().map((c) => c.split(";")[0]).join("; ") });
 }
 
-// Upload, then confirm as a person would for a firm with no stocked lines: its own Müşteri (new or by VKN), nothing
-// taken from stock. For tests that need invoices to count, not to exercise the review itself.
+// Upload and confirm with the buyer as Müşteri and no line from stock.
 export async function importAndConfirm(headers: Headers, input: { fileName: string; sha256: string; text: string }) {
   const { db } = await import("../db");
   const { invoice, invoiceLine } = await import("../db/schema");
@@ -65,14 +64,9 @@ export async function importAndConfirm(headers: Headers, input: { fileName: stri
   const { confirmInvoice, importInvoiceText } = await import("./invoices");
   const result = await importInvoiceText(headers, input);
   if (result.status === "okunamadi") return result;
-  const [row] = await db.select({ status: invoice.status, customerId: invoice.customerId }).from(invoice).where(eq(invoice.id, result.id));
+  const [row] = await db.select({ status: invoice.status }).from(invoice).where(eq(invoice.id, result.id));
   if (row.status === "onaylandi") return result;
   const lines = await db.select({ seq: invoiceLine.seq }).from(invoiceLine).where(eq(invoiceLine.invoiceId, result.id));
-  await confirmInvoice(headers, {
-    id: result.id,
-    customerId: row.customerId ?? "yeni",
-    lokasyonId: null,
-    lines: lines.map((l) => ({ seq: l.seq, productId: null, quantity: null })),
-  });
+  await confirmInvoice(headers, { id: result.id, customerId: "yeni", lokasyonId: null, lines: lines.map((l) => ({ seq: l.seq, productId: null, quantity: null })) });
   return result;
 }

@@ -39,10 +39,10 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
   });
 
   test("an invoice is logged when uploaded and when confirmed, the first confirmation adds its Müşteri, and a repeat logs nothing", async () => {
-    const { importAndConfirm: importInvoiceText } = await import("./test-database");
-    await importInvoiceText(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
-    await importInvoiceText(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
-    await importInvoiceText(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    const { importAndConfirm } = await import("./test-database");
+    await importAndConfirm(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
     const rows = await log();
     assert.deepEqual(
       rows.map((r) => [r.entity, r.action, r.detail, r.userId]).sort(),
@@ -57,12 +57,12 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
   });
 
   test("hand edits, firm links and Aday work are logged with who did them", async () => {
-    const { importAndConfirm: importInvoiceText } = await import("./test-database");
+    const { importAndConfirm } = await import("./test-database");
     const { updateCustomer } = await import("./crm");
     const { addLink } = await import("./firm-links");
     const { importLeads, updateLead } = await import("./leads");
-    await importInvoiceText(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
-    await importInvoiceText(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "2222222222", "BBB MAKİNA A.Ş") });
+    await importAndConfirm(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "b.pdf", sha256: "s2", text: invoiceText(2, "2222222222", "BBB MAKİNA A.Ş") });
     const [a, b] = await db.select().from(schema.customer).orderBy(schema.customer.name);
     await db.delete(schema.activityLog);
 
@@ -81,9 +81,9 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
   });
 
   test("the page shows invoice rows only to people who may see Faturalar", async () => {
-    const { importAndConfirm: importInvoiceText } = await import("./test-database");
+    const { importAndConfirm } = await import("./test-database");
     const { listActivity } = await import("./activity");
-    await importInvoiceText(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    await importAndConfirm(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
     const crmOnly = await signedInAs(["admin"]);
     await db.insert(schema.userPanel).values({ userId: crmOnly.user.id, panel: "musteri", level: "gorur" });
     assert.deepEqual((await listActivity(editor.headers)).map((r) => r.entity).sort(), ["fatura", "fatura", "musteri"]);

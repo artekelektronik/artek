@@ -5,18 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Subscribe, type ReactTable } from "@tanstack/react-table";
 import { Archive, ArchiveRestore, FileText, MoreHorizontal, PanelRightOpen } from "lucide-react";
-import { toast } from "sonner";
-import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@artek/ui/components/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,9 +19,14 @@ import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
+import { FormDialog } from "@/components/form-dialog";
+import { toastResult } from "@/components/form-status";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 import { day, tl } from "@/lib/finance-calc";
+import { invoiceKind, invoiceKinds, invoiceStatusLabels } from "@/lib/labels";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
+import { InvoiceStatusBadge } from "./invoice-status";
+import { useFatura } from "./use-fatura";
 
 export type InvoiceRow = {
   id: string;
@@ -42,7 +36,7 @@ export type InvoiceRow = {
   issuedOn: string;
   netAmount: string;
   status: "taslak" | "onaylandi";
-  customerId: string | null; // null: a draft whose buyer is not a Müşteri yet
+  customerId: string | null;
   customer: string;
   hasFile: boolean;
   archivedAt: string | null;
@@ -50,17 +44,19 @@ export type InvoiceRow = {
 };
 
 const column = columnHelperFor<InvoiceRow>();
-const kindOf = (r: InvoiceRow) => (r.type === "IADE" ? "İade" : r.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura");
-const statusOf = (r: InvoiceRow) => (r.status === "taslak" ? "Onay bekliyor" : "Onaylı");
-const pdfUrl = (id: string) => `/api/faturalar/${id}/pdf`;
+export const pdfUrl = (id: string) => `/api/faturalar/${id}/pdf`;
 
-// The invoice list on the shared tablecn table: search, date range, type and status filters live in the URL.
-// A fatura number opens the review sheet (?fatura=) without losing those filters.
 export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: InvoiceRow[]; linkCustomers: boolean; canEdit: boolean }) {
   const [showArchived, setShowArchived] = useState(false);
   const archivedCount = all.filter((r) => r.archivedAt).length;
   const rows = useMemo(() => all.filter((r) => Boolean(r.archivedAt) === showArchived), [all, showArchived]);
-  const open = useOpenInvoice();
+  const [, setFatura] = useFatura();
+  // Plain links still work in a new tab; a normal click opens the sheet over the current filters.
+  const open = (id: string) => (event: React.MouseEvent) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    setFatura(id);
+  };
 
   const columns = column.columns([
     searchColumn<InvoiceRow>((r) => `${r.number} ${r.customer}`, "Fatura no veya müşteri ara"),
@@ -110,27 +106,20 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
         ),
       meta: { label: "Müşteri" },
     }),
-    column.accessor(kindOf, {
+    column.accessor(invoiceKind, {
       id: "tur",
       size: 100,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Tür" />,
       enableColumnFilter: true,
-      meta: { label: "Tür", variant: "multiSelect", options: ["e-Fatura", "e-Arşiv", "İade"].map(option) },
+      meta: { label: "Tür", variant: "multiSelect", options: invoiceKinds.map(option) },
     }),
-    column.accessor(statusOf, {
+    column.accessor((r) => invoiceStatusLabels[r.status], {
       id: "durum",
       size: 130,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Durum" />,
-      cell: ({ row }) =>
-        row.original.status === "taslak" ? (
-          <Badge variant="outline" className="border-amber-300 text-amber-800 dark:text-amber-200">
-            Onay bekliyor
-          </Badge>
-        ) : (
-          <Badge variant="secondary">Onaylı</Badge>
-        ),
+      cell: ({ row }) => <InvoiceStatusBadge status={row.original.status} />,
       enableColumnFilter: true,
-      meta: { label: "Durum", variant: "multiSelect", options: ["Onay bekliyor", "Onaylı"].map(option) },
+      meta: { label: "Durum", variant: "multiSelect", options: Object.values(invoiceStatusLabels).map(option) },
     }),
     column.accessor((r) => Number(r.netAmount), {
       id: "tutar",
@@ -164,15 +153,16 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
   );
 }
 
-// Sales and returns of the rows the filters leave; only confirmed invoices are sales, drafts are counted apart.
+// Over the filtered rows; only confirmed invoices are sales.
 function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, unknown> }) {
   return (
     <Subscribe source={table.atoms.columnFilters} selector={(filters) => filters}>
       {() => {
         const shown = table.getFilteredRowModel().rows.map((r) => r.original);
         const confirmed = shown.filter((r) => r.status === "onaylandi");
-        const sales = confirmed.filter((r) => r.type !== "IADE").reduce((s, r) => s + Number(r.netAmount), 0);
-        const returns = confirmed.filter((r) => r.type === "IADE").reduce((s, r) => s + Number(r.netAmount), 0);
+        const sum = (rows: InvoiceRow[]) => rows.reduce((s, r) => s + Number(r.netAmount), 0);
+        const sales = sum(confirmed.filter((r) => r.type !== "IADE"));
+        const returns = sum(confirmed.filter((r) => r.type === "IADE"));
         const waiting = shown.length - confirmed.length;
         return (
           <p className="text-muted-foreground text-xs tabular-nums">
@@ -187,31 +177,14 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, un
   );
 }
 
-// Opens the review sheet on top of the current URL, so the table keeps its filters, sort and page. Read at click
-// time: the table writes its filters to the URL without a render here.
-function useOpenInvoice() {
-  const router = useRouter();
-  return (id: string) => (event: React.MouseEvent) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey) return; // a new tab gets the plain link
-    event.preventDefault();
-    const next = new URLSearchParams(window.location.search);
-    next.set("fatura", id);
-    router.push(`${window.location.pathname}?${next}`, { scroll: false });
-  };
-}
-
 function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolean; onOpen: (event: React.MouseEvent) => void }) {
   const router = useRouter();
   const [archiving, setArchiving] = useState(false);
   const [pending, start] = useTransition();
-  const done = (result: { error?: string } | undefined, message: string) => {
-    if (result?.error) {
-      toast.error(result.error);
-      return false;
-    }
-    toast.success(message);
-    router.refresh();
-    return true;
+  const done = (result: Awaited<ReturnType<typeof restoreInvoiceAction>>, message: string) => {
+    const saved = toastResult(result, message);
+    if (saved) router.refresh();
+    return saved;
   };
 
   return (
@@ -250,41 +223,22 @@ function RowActions({ row, canEdit, onOpen }: { row: InvoiceRow; canEdit: boolea
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={archiving} onOpenChange={setArchiving}>
-        <DialogContent className="sm:max-w-md">
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const reason = String(new FormData(event.currentTarget).get("reason") ?? "");
-              start(async () => {
-                if (done(await archiveInvoiceAction(row.id, reason), "Arşivlendi.")) setArchiving(false);
-              });
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>{row.number} arşivlensin mi?</DialogTitle>
-              <DialogDescription>
-                Arşivdeki fatura listeden ve toplamlardan çıkar; istediğinizde geri alabilirsiniz. Stoktan düşülmüş onaylı bir fatura arşivlenemez.
-              </DialogDescription>
-            </DialogHeader>
-            <Label className="flex-col items-stretch gap-1">
-              Sebep
-              <Input name="reason" autoFocus placeholder="ör. iptal edildi, yanlış yüklendi" className="font-normal" />
-            </Label>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  Vazgeç
-                </Button>
-              </DialogClose>
-              <Button type="submit" variant="destructive" disabled={pending}>
-                {pending ? "Arşivleniyor…" : "Arşivle"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={archiving}
+        onOpenChange={setArchiving}
+        className="sm:max-w-md"
+        title={`${row.number} arşivlensin mi?`}
+        description="Arşivdeki fatura listeden ve toplamlardan çıkar; geri alınabilir. Stoktan düşülmüş onaylı fatura arşivlenemez."
+        submitLabel="Arşivle"
+        pendingLabel="Arşivleniyor…"
+        destructive
+        onSubmit={async (formData) => done(await archiveInvoiceAction(row.id, String(formData.get("reason") ?? "")), "Arşivlendi.")}
+      >
+        <Label className="flex-col items-stretch gap-1">
+          Sebep
+          <Input name="reason" autoFocus placeholder="ör. iptal edildi, yanlış yüklendi" className="font-normal" />
+        </Label>
+      </FormDialog>
     </>
   );
 }

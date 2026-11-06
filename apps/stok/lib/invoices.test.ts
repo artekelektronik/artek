@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 import { after, before, beforeEach, describe, test } from "node:test";
 import { missingNumbers, priorityOf, summarize } from "./finance-calc";
-import { matchCustomer, matchProduct } from "./invoice-match";
+import { matchCustomer, matchProduct, prepareProducts } from "./invoice-match";
 import { importAndConfirm, lokasyonIdsByName, openTestDatabase, resetTestDatabase, signedInAs, skipWithoutDatabase } from "./test-database";
 
 // Made-up invoices in the QNB Dijital Köprü layout; no real customer.
@@ -98,7 +98,6 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
   });
   const upload = (headers: Headers, n: number, extra: Partial<Parameters<typeof invoiceText>[0]> = {}) =>
     invoices.importInvoiceText(headers, file(n, extra));
-  // Uploaded and confirmed with its own Müşteri and no line from stock.
   const confirmed = (headers: Headers, n: number, extra: Partial<Parameters<typeof invoiceText>[0]> = {}) => importAndConfirm(headers, file(n, extra));
 
   before(async () => {
@@ -406,11 +405,11 @@ describe("invoice matching", () => {
     assert.deepEqual(matchCustomer(buyer, customers), { customerId: null, suggestions: ["b", "c"] });
   });
 
-  const products = [
-    { id: "ee25", code: "ART-1", name: "EE 25 Ferrit Nüve", manufacturerCode: "EE25" },
-    { id: "ee30", code: "ART-2", name: "EE 30 Ferrit Nüve", manufacturerCode: "EE30" },
-    { id: "rod", code: "ART-3", name: "ROD 5 x 20", manufacturerCode: null },
-  ];
+  const products = prepareProducts([
+    { id: "ee25", name: "EE 25 Ferrit Nüve", manufacturerCode: "EE25" },
+    { id: "ee30", name: "EE 30 Ferrit Nüve", manufacturerCode: "EE30" },
+    { id: "rod", name: "ROD 5 x 20", manufacturerCode: null },
+  ]);
   test("a product is picked from a manufacturer code, a covering name or an earlier confirmation", () => {
     assert.equal(matchProduct("FERRİTNUVE(EE25)", products, new Map()).productId, "ee25");
     assert.equal(matchProduct("ROD 5X20 FERRİT", products, new Map()).productId, "rod");

@@ -563,8 +563,7 @@ export const customerChange = pgTable(
 );
 
 // The ETTN is unique per invoice in GİB, so uploading the same invoice twice adds nothing.
-// An upload is a draft (taslak): it counts nowhere until a person checks the Müşteri and the products and confirms it.
-// Confirming links the Müşteri, takes the lines from stock (or puts an İade back) and adds it to the Finans totals.
+// An upload is a taslak that counts nowhere until confirmed (ADR 0006).
 export const invoiceStatus = pgEnum("invoice_status", ["taslak", "onaylandi"]);
 export type InvoiceBuyer = { name: string; taxId: string; taxIdType: "VKN" | "TCKN"; city: string; district: string; email: string | null };
 
@@ -608,7 +607,7 @@ export const invoice = pgTable(
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
-// The original PDF as uploaded. Apart from invoice so lists never load it. Invoices uploaded before it was kept have none.
+// The uploaded PDF, apart from invoice so lists never load it.
 export const invoiceFile = pgTable("invoice_file", {
   invoiceId: uuid("invoice_id")
     .primaryKey()
@@ -630,8 +629,7 @@ export const invoiceLine = pgTable(
     unit: text("unit").notNull(),
     unitPrice: numeric("unit_price", { precision: 14, scale: 4 }).notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
-    // Set when confirming: the Ürün this line is (null: not in the catalogue) and how much left stock for it
-    // in the Ürün's unit (null: not taken from stock).
+    // Set on confirm: null product = not in the catalogue, null stockQuantity = not taken from stock.
     productId: uuid("product_id").references(() => product.id),
     stockQuantity: numeric("stock_quantity", { precision: 14, scale: 3 }),
   },

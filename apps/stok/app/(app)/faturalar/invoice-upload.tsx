@@ -7,6 +7,7 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import type { ImportResult } from "@/lib/invoices";
+import { useFatura } from "./use-fatura";
 
 type Row = { file: string } & (ImportResult | { status: "hata"; reason: string });
 
@@ -28,10 +29,10 @@ async function pdfsFrom(files: File[]) {
   return out;
 }
 
-// The header's "Fatura yükle": one invoice opens straight in the review sheet; a batch ends with a summary toast.
-// Nothing is confirmed on upload.
+// One invoice opens in the review sheet; a batch ends with a summary toast.
 export function InvoiceUpload() {
   const router = useRouter();
+  const [, setFatura] = useFatura();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
 
@@ -61,9 +62,7 @@ export function InvoiceUpload() {
     for (const p of problems) toast.error(`${p.file} okunamadı`, { description: "reason" in p ? p.reason : undefined });
     const [only] = rows;
     if (rows.length === 1 && "id" in only) {
-      const next = new URLSearchParams(window.location.search);
-      next.set("fatura", only.id);
-      router.push(`${window.location.pathname}?${next}`, { scroll: false });
+      setFatura(only.id);
       return;
     }
     const added = rows.filter((r) => r.status === "eklendi").length;
