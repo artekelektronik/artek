@@ -61,7 +61,12 @@ const kind = (r: InvoiceReview) => (r.isReturn ? "İade" : r.scenario === "EARSI
 // Half the screen: the invoice as a form to check and confirm, and the original PDF beside it in a tab.
 export function InvoiceSheet({ review, canEdit }: { review: InvoiceSheetData | null; canEdit: boolean }) {
   const router = useRouter();
-  const close = () => router.replace("/faturalar", { scroll: false });
+  // Closing drops only ?fatura=, so the table keeps its filters, sort and page.
+  const close = () => {
+    const next = new URLSearchParams(window.location.search);
+    next.delete("fatura");
+    router.replace(next.size ? `${window.location.pathname}?${next}` : window.location.pathname, { scroll: false });
+  };
   return (
     <Sheet open={Boolean(review)} onOpenChange={(open) => !open && close()}>
       <SheetContent className="w-full gap-0 sm:w-1/2 sm:max-w-none">
@@ -147,7 +152,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceSheetDa
           <Tabs defaultValue="fatura" className="min-h-0 flex-1 gap-0">
             <TabsList className="mx-4 mt-3">
               <TabsTrigger value="fatura">Fatura</TabsTrigger>
-              <TabsTrigger value="pdf">Orijinal fatura</TabsTrigger>
+              <TabsTrigger value="pdf">Orijinal PDF</TabsTrigger>
             </TabsList>
 
             <TabsContent value="fatura" className="flex flex-col gap-5 overflow-y-auto px-4 py-4">

@@ -4,11 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
 import { day } from "@/lib/finance";
-import { invoiceReminderDays, invoiceReminderTo } from "@/lib/finance-reminders";
 import { loadActor } from "@/lib/guard";
 import { invoiceList, invoiceReview } from "@/lib/invoices";
 import { can } from "@/lib/permissions";
-import { formatIstanbulTime, istanbulDate } from "@/lib/time";
+import { formatIstanbulTime } from "@/lib/time";
 import { InvoiceSheet } from "./invoice-sheet";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
@@ -42,23 +41,20 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       }
       lede={
         <>
-          QNB Dijital Köprü’den indirilen satış faturaları: <b>{rows.filter((r) => !r.archivedAt).length.toLocaleString("tr-TR")}</b> fatura
-          {lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}.{" "}
+          QNB Dijital Köprü’den indirilen satış faturaları{lastUpload && <>, son yükleme {formatIstanbulTime(lastUpload)}</>}.
           {waiting > 0 && (
             <>
-              <b>{waiting.toLocaleString("tr-TR")}</b> fatura onay bekliyor; onaylanana kadar Finans’a sayılmaz ve stoğa dokunmaz.{" "}
+              {" "}
+              <b>{waiting.toLocaleString("tr-TR")}</b> fatura onay bekliyor; onaylanınca stoktan düşer ve Finans’a eklenir.
             </>
-          )} {invoiceReminderDays} gün yeni fatura yüklenmezse {invoiceReminderTo}{" "}
-          adresine hatırlatma gider. Fatura numarasına tıklayınca fatura ve orijinal PDF’i açılır.
+          )}
         </>
       }
+      actions={canUpload && <InvoiceUpload />}
     >
-      {canUpload && <InvoiceUpload />}
-
-      <PanelCard title="Yüklenen faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz. Sıralamak için sütun başlığına tıklayın.">
+      <PanelCard title="Faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz.">
         <InvoiceTable
           rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
-          today={istanbulDate(new Date())}
           linkCustomers={canSeeCustomers}
           canEdit={canUpload}
         />

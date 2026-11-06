@@ -9,6 +9,14 @@ import { cn } from "@artek/ui/lib/utils";
 
 type Option = { value: string; label: string };
 
+// Each typed word must appear in the label, ignoring case, spaces and punctuation: "art222" finds "ART-222",
+// "ee 25" finds "EE25". cmdk's default fuzzy match also showed unrelated rows that merely share letters.
+const squash = (s: string) => s.normalize("NFKC").toLocaleLowerCase("tr").replace(/[^\p{L}\p{N}]+/gu, "");
+function contains(value: string, search: string, keywords?: string[]) {
+  const text = squash([value, ...(keywords ?? [])].join(" "));
+  return search.split(/\s+/).every((word) => text.includes(squash(word))) ? 1 : 0;
+}
+
 // A searchable picker; with `allowNew` the typed text can be picked as a new value.
 export function Combobox({
   options,
@@ -54,7 +62,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-72 p-0" align="start">
-        <Command>
+        <Command filter={contains}>
           <CommandInput placeholder={placeholder} value={search} onValueChange={setSearch} />
           <CommandList>
             {!canAdd && <CommandEmpty>Sonuç yok.</CommandEmpty>}

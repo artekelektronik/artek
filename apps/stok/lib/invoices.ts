@@ -135,6 +135,7 @@ export async function invoiceList(headers: Headers) {
       uploadedAt: invoice.uploadedAt,
       archivedAt: invoice.archivedAt,
       archiveReason: invoice.archiveReason,
+      hasFile: sql<boolean>`exists (select 1 from ${invoiceFile} where ${invoiceFile.invoiceId} = ${invoice.id})`,
     })
     .from(invoice)
     .leftJoin(customer, eq(customer.id, invoice.customerId))
