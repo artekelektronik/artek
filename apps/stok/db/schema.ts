@@ -885,3 +885,11 @@ export const expenseFile = pgTable("expense_file", {
   contentType: text("content_type").notNull(),
   bytes: bytea("bytes").notNull(),
 });
+
+// TCMB döviz satış rates by date, fetched once from TCMB's archive; a day without a bulletin keeps the previous one.
+export const exchangeRate = pgTable("exchange_rate", {
+  date: date("date", { mode: "string" }).primaryKey(),
+  usd: numeric("usd", { precision: 12, scale: 4 }).notNull(),
+  eur: numeric("eur", { precision: 12, scale: 4 }).notNull(),
+  bulletinOn: date("bulletin_on", { mode: "string" }).notNull(), // the bulletin it came from
+});

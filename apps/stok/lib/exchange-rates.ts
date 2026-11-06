@@ -1,3 +1,5 @@
+import { addDays } from "./time";
+
 export type Rates = { USD: number; EUR: number; date: string };
 
 const feed = "https://www.tcmb.gov.tr/kurlar/today.xml";
@@ -19,4 +21,21 @@ export async function getRates(): Promise<Rates | null> {
   } catch {
     return null;
   }
+}
+
+const archive = (date: string) => `https://www.tcmb.gov.tr/kurlar/${date.slice(0, 4)}${date.slice(5, 7)}/${date.slice(8)}${date.slice(5, 7)}${date.slice(0, 4)}.xml`;
+
+// The bulletin in force on `date`: weekends and holidays have none, so up to a week back; a day that fails to load is skipped too.
+export async function fetchRatesOn(date: string): Promise<(Rates & { bulletinOn: string }) | null> {
+  for (let back = 0; back < 7; back++) {
+    const on = addDays(date, -back);
+    try {
+      const response = await fetch(archive(on), { signal: AbortSignal.timeout(5000) });
+      const rates = response.ok ? parseRates(await response.text()) : null;
+      if (rates) return { ...rates, bulletinOn: on };
+    } catch {
+      // try the day before
+    }
+  }
+  return null;
 }

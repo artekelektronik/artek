@@ -79,6 +79,9 @@ The screen where counted stock is typed per product, side by side for every Loka
 **Alış fiyatı / Satış fiyatı** (Purchase / sale price):
 The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans paneli sees them.
 
+**Brüt kâr** (Gross profit):
+Confirmed sales minus what the sold Ürünler cost: each line at its Ürün's Alış fiyatı (converted at the TCMB rate of the invoice date), or for an Özel trafo built from Malzeme, at those materials' prices. A line with no Ürün or no Alış fiyatı has no cost; it is shown apart and left out, never counted as free.
+
 **Stok değeri** (Stock value):
 Stok times a price, converted to TL at today's TCMB döviz satış rate. It is worked out when shown, never stored. Products with no price are left out and counted.
 
