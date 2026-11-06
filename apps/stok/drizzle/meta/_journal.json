@@ -225,6 +225,13 @@
       "when": 1793988201073,
       "tag": "0031_giderler",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793988387752,
+      "tag": "0032_gider-tekrar",
+      "breakpoints": true
     }
   ]
 }

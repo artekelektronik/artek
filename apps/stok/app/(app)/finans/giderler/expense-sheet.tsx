@@ -1,23 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import type { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
 import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
+import { Switch } from "@artek/ui/components/switch";
 import { Textarea } from "@artek/ui/components/textarea";
 import { Combobox } from "@/components/combobox";
 import { FormSheet, SheetActions } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
 import { decimalValue, displayDecimal } from "@/lib/decimal";
 import { expenseInput, withKdv } from "@/lib/expense-input";
-import { tl } from "@/lib/finance-calc";
-import { saveExpenseAction } from "./actions";
+import { day, tl } from "@/lib/finance-calc";
+import { saveExpenseAction, stopRecurrenceAction } from "./actions";
 import { receiptUrl, useOpenExpense, type ExpenseRow } from "./expense-table";
 
 type FormValues = z.input<typeof expenseInput>;
@@ -45,10 +46,12 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
       description: expense?.description ?? "",
       netAmount: expense ? displayDecimal(expense.netAmount) : "",
       kdvRate: expense ? displayDecimal(expense.kdvRate) : "20",
+      repeatMonthly: false,
+      repeatUntil: "",
     },
     disabled: !canEdit,
   });
-  const [net, rate] = useWatch({ control: form.control, name: ["netAmount", "kdvRate"] });
+  const [net, rate, repeatMonthly] = useWatch({ control: form.control, name: ["netAmount", "kdvRate", "repeatMonthly"] });
   const total = withKdv(decimalValue(net ?? ""), decimalValue(rate ?? "")) || 0;
   const categoryOptions = categories.map((c) => ({ value: c, label: c }));
 
@@ -65,7 +68,7 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
     router.refresh();
   }
 
-  const text = (name: "spentOn" | "party" | "netAmount" | "kdvRate", label: string, props: React.ComponentProps<typeof Input> = {}) => (
+  const text = (name: "spentOn" | "party" | "netAmount" | "kdvRate" | "repeatUntil", label: string, props: React.ComponentProps<typeof Input> = {}) => (
     <FormField
       control={form.control}
       name={name}
@@ -105,6 +108,28 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
         <p className="text-muted-foreground -mt-2 text-sm tabular-nums">
           KDV dahil: <span className="text-foreground font-medium">{tl(total)}</span>
         </p>
+        {expense?.recurrenceId ? (
+          <RepeatNote expense={expense} canEdit={canEdit} today={today} onStopped={() => router.refresh()} />
+        ) : (
+          <div className="flex flex-col gap-4 rounded-lg border p-3">
+            <FormField
+              control={form.control}
+              name="repeatMonthly"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start gap-3">
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} disabled={field.disabled} />
+                  </FormControl>
+                  <div className="flex flex-col gap-1">
+                    <FormLabel>Her ay tekrarla</FormLabel>
+                    <FormDescription>Kira, maaş, SGK gibi her ay aynı olan giderler için. Bu tarihten itibaren her ay aynı gün kendiliğinden eklenir.</FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            {repeatMonthly && text("repeatUntil", "Bitiş tarihi (isteğe bağlı)", { type: "date", min: form.getValues("spentOn") })}
+          </div>
+        )}
         {text("party", "Kime ödendi (isteğe bağlı)", { placeholder: "Mal sahibi, tedarikçi, çalışan…" })}
         <FormField
           control={form.control}
@@ -142,5 +167,41 @@ function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?
         )}
       </form>
     </Form>
+  );
+}
+
+function RepeatNote({ expense, canEdit, today, onStopped }: { expense: ExpenseRow; canEdit: boolean; today: string; onStopped: () => void }) {
+  const [pending, startTransition] = useTransition();
+  const [endsOn, setEndsOn] = useState(expense.repeatEndsOn ?? today);
+  const ended = expense.repeatEndsOn !== null && expense.repeatEndsOn <= today;
+  return (
+    <div className="bg-muted/40 flex flex-col gap-3 rounded-lg border p-3 text-sm">
+      <span>
+        {ended
+          ? `Her ay tekrarlanıyordu; ${day(expense.repeatEndsOn!)} tarihinde bitti.`
+          : `Her ay tekrarlanan bir giderin bu ayki kaydı${expense.repeatEndsOn ? `; ${day(expense.repeatEndsOn)} tarihinde bitecek` : ""}. Burada değiştirdiğiniz yalnız bu ayı etkiler.`}
+      </span>
+      {canEdit && !ended && (
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-muted-foreground text-xs">Son tekrar günü</span>
+            <Input type="date" value={endsOn} onChange={(e) => setEndsOn(e.target.value)} className="w-auto" />
+          </label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={pending || !endsOn}
+            onClick={() =>
+              startTransition(async () => {
+                if (toastResult(await stopRecurrenceAction(expense.recurrenceId!, endsOn), "Tekrarın bitişi kaydedildi.")) onStopped();
+              })
+            }
+          >
+            Tekrarı bitir
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

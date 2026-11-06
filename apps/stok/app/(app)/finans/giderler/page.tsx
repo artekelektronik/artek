@@ -4,7 +4,7 @@ import { CalendarClock, CalendarDays, CalendarRange, Tags } from "lucide-react";
 import { NoAccess } from "@/components/no-access";
 import { chartColors, HBars, PanelCard, PanelShell } from "@/components/panel";
 import { StatCard } from "@/components/stat-card";
-import { listExpenses, startingCategories } from "@/lib/expenses";
+import { fillRecurringExpenses, listExpenses, startingCategories } from "@/lib/expenses";
 import { monthLabel, tl, tlShort } from "@/lib/finance";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
@@ -20,9 +20,10 @@ export default async function ExpensesPage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canEdit = can(actor, "finance.edit");
+  const today = istanbulDate(new Date());
+  await fillRecurringExpenses(today);
   const rows = await listExpenses(requestHeaders);
 
-  const today = istanbulDate(new Date());
   const month = today.slice(0, 7);
   const y = today.slice(0, 4);
   const lastMonth = addMonths(month, -1);

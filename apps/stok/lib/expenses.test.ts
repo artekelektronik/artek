@@ -89,4 +89,59 @@ describe("Giderler", { skip: skipWithoutDatabase }, () => {
     assert.deepEqual([row.netAmount, row.kdvRate, row.totalAmount], ["20000.50", "18.00", "23600.59"]);
     await assert.rejects(expenses.createExpense(editor.headers, { ...rent, netAmount: "1234567890123" }), /çok büyük/);
   });
+
+  describe("monthly repeats", () => {
+    const salary = { ...rent, spentOn: "2026-08-31", category: "Maaş", description: "Maaşlar", party: "", netAmount: "85000", kdvRate: "0", repeatMonthly: true };
+    const dates = async () => (await expenses.listExpenses(editor.headers)).map((e) => e.spentOn).sort();
+
+    test("every month up to today gets one entry, on the same day or the month's last; filling again adds nothing", async () => {
+      await expenses.createExpense(editor.headers, salary, "2026-11-06");
+      assert.deepEqual(await dates(), ["2026-08-31", "2026-09-30", "2026-10-31"], "November's 30th hasn't come yet");
+      await expenses.fillRecurringExpenses("2026-11-06");
+      assert.equal((await dates()).length, 3);
+      await expenses.fillRecurringExpenses("2026-11-30");
+      assert.deepEqual((await dates()).at(-1), "2026-11-30");
+    });
+
+    test("editing or deleting one month leaves the others, and a deleted month doesn't come back", async () => {
+      await expenses.createExpense(editor.headers, salary, "2026-11-06");
+      const [aug, sep] = (await expenses.listExpenses(editor.headers)).sort((a, b) => a.spentOn.localeCompare(b.spentOn));
+      await expenses.updateExpense(editor.headers, aug.id, { ...salary, netAmount: "90000" });
+      await expenses.deleteExpense(editor.headers, sep.id);
+      await expenses.fillRecurringExpenses("2026-11-06");
+      const rows = await expenses.listExpenses(editor.headers);
+      assert.deepEqual(rows.map((r) => [r.spentOn, r.netAmount]).sort(), [["2026-08-31", "90000.00"], ["2026-10-31", "85000.00"]]);
+      assert.ok(rows.every((r) => r.recurrenceId), "entries know their repeat");
+    });
+
+    test("stopping keeps what was made and makes no more", async () => {
+      const { id } = await expenses.createExpense(editor.headers, salary, "2026-11-06");
+      const [first] = await expenses.listExpenses(editor.headers).then((r) => r.filter((e) => e.id === id));
+      await expenses.stopRecurrence(editor.headers, first.recurrenceId!, "2026-10-31");
+      await expenses.fillRecurringExpenses("2027-02-01");
+      assert.deepEqual(await dates(), ["2026-08-31", "2026-09-30", "2026-10-31"]);
+    });
+
+    test("a repeat may be given an end date when added", async () => {
+      await expenses.createExpense(editor.headers, { ...salary, repeatUntil: "2026-09-30" }, "2026-11-06");
+      assert.deepEqual(await dates(), ["2026-08-31", "2026-09-30"]);
+      await assert.rejects(expenses.createExpense(editor.headers, { ...salary, repeatUntil: "2026-08-01" }, "2026-11-06"), /önce olamaz/);
+    });
+
+    test("an expense added once can be made to repeat later, once", async () => {
+      const { id } = await expenses.createExpense(editor.headers, { ...salary, repeatMonthly: false }, "2026-11-06");
+      await expenses.updateExpense(editor.headers, id, salary, "2026-11-06");
+      await expenses.updateExpense(editor.headers, id, salary, "2026-11-06");
+      assert.deepEqual(await dates(), ["2026-08-31", "2026-09-30", "2026-10-31"]);
+    });
+
+    test("a repeat can be ended on a later day, not before it began", async () => {
+      const { id } = await expenses.createExpense(editor.headers, salary, "2026-11-06");
+      const [row] = (await expenses.listExpenses(editor.headers)).filter((e) => e.id === id);
+      await assert.rejects(expenses.stopRecurrence(editor.headers, row.recurrenceId!, "2026-08-30"), /önce olamaz/);
+      await expenses.stopRecurrence(editor.headers, row.recurrenceId!, "2026-12-15");
+      await expenses.fillRecurringExpenses("2027-02-01");
+      assert.deepEqual((await dates()).at(-1), "2026-11-30", "December's 31st is after the end");
+    });
+  });
 });

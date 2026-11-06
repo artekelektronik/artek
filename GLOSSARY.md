@@ -99,7 +99,7 @@ A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and 
 _Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
 
 **Gider** (Expense):
-Money Artek pays out: kira, maaş, SGK, vergi, a supplier's invoice and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. Only the Finans paneli sees Giderler.
+Money Artek pays out: kira, maaş, SGK, vergi, a supplier's invoice and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. A Gider can repeat every month (kira, maaş, SGK), until an end date or until stopped; each month's entry is its own Gider and can be changed alone. Only the Finans paneli sees Giderler.
 _Avoid_: Masraf (for the same thing), Fatura (a Fatura is a sale)
 
 **Müşteri** (Customer):
