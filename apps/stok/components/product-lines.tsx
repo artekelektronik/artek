@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { Plus, X } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@artek/ui/components/select";
 import { cn } from "@artek/ui/lib/utils";
 import { categoriesOf, searchProducts, type SearchableProduct, type SearchKind } from "@/lib/product-search";
 import { formatQuantity, unitLabels, type Unit } from "@/lib/quantity";
@@ -20,15 +22,20 @@ const heading = (kind: SearchKind, typed: string) => {
   return null;
 };
 
+const allCategories = "__tumu";
+
 // `available` (product id → quantity) shows what can be taken, for screens that take stock out of one Lokasyon.
+// `actions` sit next to the category filter (e.g. adding a product that isn't listed).
 export function ProductLines({
   products,
   available,
   initialRows = 1,
+  actions,
 }: {
   products: PickableProduct[];
   available?: Available;
   initialRows?: number;
+  actions?: React.ReactNode;
 }) {
   const [rows, setRows] = useState(() => Array.from({ length: initialRows }, () => crypto.randomUUID()));
   const [added, setAdded] = useState<string>();
@@ -44,16 +51,27 @@ export function ProductLines({
   }
 
   return (
-    <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-      {categories.length > 1 && (
-        <div role="group" aria-label="Kategori" className="flex flex-wrap gap-1 sm:w-40 sm:flex-col sm:flex-nowrap">
-          <CategoryButton name="Tümü" count={products.length} active={!category} onClick={() => chooseCategory()} />
-          {categories.map((c) => (
-            <CategoryButton key={c.name} name={c.name} count={c.count} active={category === c.name} colored onClick={() => chooseCategory(c.name)} />
-          ))}
+    <section className="flex flex-col gap-3 rounded-lg border p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-medium">Ürünler</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          {actions}
+          {categories.length > 1 && (
+            <Select value={category ?? allCategories} onValueChange={(v) => chooseCategory(v === allCategories ? undefined : v)}>
+              <SelectTrigger className="w-48" aria-label="Kategori">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <CategoryOption value={allCategories} name="Tüm kategoriler" count={products.length} />
+                {categories.map((c) => (
+                  <CategoryOption key={c.name} value={c.name} name={c.name} count={c.count} colored />
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
-      )}
-      <div ref={lines} className="flex min-w-0 flex-1 flex-col gap-2">
+      </div>
+      <div ref={lines} className="flex min-w-0 flex-col gap-2">
         {rows.map((row, index) => (
           <div key={row} className="flex flex-wrap items-start gap-2">
             <ProductLine
@@ -70,7 +88,7 @@ export function ProductLines({
         ))}
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
           className="self-start"
           onClick={() => {
@@ -79,29 +97,20 @@ export function ProductLines({
             setAdded(row);
           }}
         >
-          Satır ekle
+          <Plus /> Satır ekle
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
 
-function CategoryButton({ name, count, active, colored, onClick }: { name: string; count: number; active: boolean; colored?: boolean; onClick: () => void }) {
+function CategoryOption({ value, name, count, colored }: { value: string; name: string; count: number; colored?: boolean }) {
   return (
-    <Button
-      type="button"
-      variant={active ? "secondary" : "ghost"}
-      size="sm"
-      aria-pressed={active}
-      className="justify-between gap-2 font-normal"
-      onClick={onClick}
-    >
-      <span className="flex min-w-0 items-center gap-2">
-        {colored && <CategoryDot category={name} />}
-        <span className="truncate">{name}</span>
-      </span>
+    <SelectItem value={value}>
+      {colored && <CategoryDot category={name} />}
+      <span className="flex-1 truncate">{name}</span>
       <span className="text-muted-foreground text-xs tabular-nums">{count}</span>
-    </Button>
+    </SelectItem>
   );
 }
 
@@ -248,13 +257,11 @@ function ProductLine({
         )}
       </div>
       <input type="hidden" name="productId" value={picked?.id ?? ""} />
-      <Input ref={quantity} name="quantity" inputMode="decimal" placeholder="Miktar" aria-label={`Miktar ${position}`} className="w-28" required />
+      <Input ref={quantity} name="quantity" inputMode="decimal" placeholder="Miktar" aria-label={`Miktar ${position}`} className="w-28 tabular-nums" required />
       <span className="text-muted-foreground w-12 py-2 text-sm">{picked ? unitLabels[picked.unit] : ""}</span>
-      {onRemove && (
-        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-          Kaldır
-        </Button>
-      )}
+      <Button type="button" variant="ghost" size="icon" aria-label={`${position}. satırı kaldır`} disabled={!onRemove} onClick={onRemove}>
+        <X />
+      </Button>
     </>
   );
 }

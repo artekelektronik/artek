@@ -46,26 +46,23 @@ export default async function ReceiptPage() {
             </Button>
           }
         >
-          <div className="flex flex-col gap-4">
-            {canAddProduct && <QuickAddProduct categories={categories} />}
-            <StockForm action={recordReceiptAction} submitLabel="Mal kabulü kaydet" savedMessage="Mal kabul kaydedildi; stok güncellendi.">
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Label className="flex-col items-stretch gap-1">
-                  Lokasyon
-                  <FormSelect name="lokasyonId" options={lokasyon.map((l) => ({ value: l.id, label: l.name }))} className="w-full" />
-                </Label>
-                <Label className="flex-col items-stretch gap-1">
-                  Tedarikçi
-                  <Input name="supplier" className="font-normal" />
-                </Label>
-                <Label className="flex-col items-stretch gap-1">
-                  Belge no (irsaliye / fatura)
-                  <Input name="reference" className="font-normal" />
-                </Label>
-              </div>
-              <ProductLines products={products} />
-            </StockForm>
-          </div>
+          <StockForm action={recordReceiptAction} submitLabel="Mal kabulü kaydet" savedMessage="Mal kabul kaydedildi; stok güncellendi.">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Label className="flex-col items-stretch gap-1">
+                Lokasyon
+                <FormSelect name="lokasyonId" options={lokasyon.map((l) => ({ value: l.id, label: l.name }))} className="w-full" />
+              </Label>
+              <Label className="flex-col items-stretch gap-1">
+                Tedarikçi
+                <Input name="supplier" className="font-normal" />
+              </Label>
+              <Label className="flex-col items-stretch gap-1">
+                Belge no (irsaliye / fatura)
+                <Input name="reference" className="font-normal" />
+              </Label>
+            </div>
+            <ProductLines products={products} actions={canAddProduct && <QuickAddProduct categories={categories} />} />
+          </StockForm>
         </FormSheet>
       }
     >

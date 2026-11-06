@@ -36,14 +36,27 @@ export function StockForm({
     setIdempotencyKey(crypto.randomUUID());
   }
 
+  const submit = (
+    <Button type="submit" disabled={pending}>
+      {pending ? "Kaydediliyor…" : submitLabel}
+    </Button>
+  );
   return (
-    <form onSubmit={onSubmit} className="flex max-w-3xl flex-col gap-4">
+    <form onSubmit={onSubmit} className={closeSheet ? "flex min-h-full flex-col gap-5" : "flex max-w-3xl flex-col gap-4"}>
       <div key={entry} className="contents">
         {children}
       </div>
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Kaydediliyor…" : submitLabel}
-      </Button>
+      {closeSheet ? (
+        // In a sheet the buttons stay in view at the bottom.
+        <div className="bg-background sticky bottom-0 -mx-4 -mb-4 mt-auto flex justify-end gap-2 border-t px-4 py-3">
+          <Button type="button" variant="outline" onClick={closeSheet}>
+            Vazgeç
+          </Button>
+          {submit}
+        </div>
+      ) : (
+        <div>{submit}</div>
+      )}
     </form>
   );
 }

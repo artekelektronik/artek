@@ -23,12 +23,12 @@ export function FormSheet({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{trigger}</SheetTrigger>
-      <SheetContent className="w-full overflow-y-auto sm:w-1/2 sm:max-w-none">
-        <SheetHeader>
+      <SheetContent className="w-full gap-0 sm:w-1/2 sm:max-w-none">
+        <SheetHeader className="border-b">
           <SheetTitle>{title}</SheetTitle>
           {description && <SheetDescription>{description}</SheetDescription>}
         </SheetHeader>
-        <div className="px-4 pb-6">
+        <div className="flex-1 overflow-y-auto p-4">
           <CloseSheet.Provider value={() => setOpen(false)}>{children}</CloseSheet.Provider>
         </div>
       </SheetContent>
