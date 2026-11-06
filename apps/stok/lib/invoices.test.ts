@@ -523,6 +523,11 @@ describe("invoice matching", () => {
     assert.equal(matchProduct("BAKIR SARGILI BOBİN(ART- 9.8FT)", products, new Map([["BAKIR SARGILI BOBİN(ART-9.8FT)", "ee25"]])).productId, "rod");
     assert.equal(matchProduct("FERRİTNUVE(EE25) ART-0002", products, new Map()).productId, "ee30");
     assert.equal(matchProduct("FERRİTNUVE(ART-000)", products, new Map()).productId, null, "a partial code is no match");
+    assert.equal(
+      matchProduct("BAKIR SARGILI TRAFO(ART- 0020SP)", products, new Map([["BAKIR SARGILI TRAFO(ART-0020SP)", "ee25"]])).productId,
+      null,
+      "a code we don't have is never guessed, not even from an earlier confirmation",
+    );
   });
   test("a product is picked from a manufacturer code, a covering name or an earlier confirmation", () => {
     assert.equal(matchProduct("FERRİTNUVE(EE25)", products, new Map()).productId, "ee25");

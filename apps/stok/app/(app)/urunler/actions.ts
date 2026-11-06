@@ -80,19 +80,21 @@ export async function setShowOnSiteAction(id: string, showOnSite: boolean): Prom
   return state;
 }
 
-export async function quickAddProductAction(formData: FormData): Promise<ActionState> {
-  const state = await runAction(async () =>
-    quickAddProduct(await headers(), {
+export async function quickAddProductAction(formData: FormData): Promise<ActionState & { id?: string }> {
+  let id: string | undefined;
+  const state = await runAction(async () => {
+    ({ id } = await quickAddProduct(await headers(), {
       code: text(formData, "code"),
       name: text(formData, "name"),
       category: text(formData, "category"),
       unit: text(formData, "unit") as ProductInput["unit"],
       isMaterial: formData.has("isMaterial"),
       isTradeGoods: formData.has("isTradeGoods"),
-    }),
-  );
+    }));
+  });
   revalidatePath("/stok-girisi");
   revalidatePath("/mal-kabul");
+  revalidatePath("/faturalar");
   revalidatePath("/urunler");
-  return state;
+  return { ...state, id };
 }

@@ -44,12 +44,13 @@ export type PreparedProduct = { id: string; own: string; words: string[]; code: 
 export const prepareProducts = (products: ProductOption[]): PreparedProduct[] =>
   products.map((p) => ({ id: p.id, own: compact(p.code), words: tokens(p.name), code: compact(p.manufacturerCode ?? "") }));
 
-// Our own codes written on the line, e.g. "BOBİN(ART- 9.8FT)" → "art98ft".
-const artCodes = (description: string) => [...description.matchAll(/(?<!\p{L})ART[\s-]*([\p{L}\p{N}][\p{L}\p{N}.\/-]*)/giu)].map((m) => compact(`ART${m[1]}`));
+// Our own codes written on the line, e.g. "BOBİN(ART- 9.8FT)" → "ART-9.8FT".
+export const writtenCodes = (description: string) =>
+  [...description.matchAll(/(?<!\p{L})ART[\s-]*([\p{L}\p{N}][\p{L}\p{N}.\/-]*)/giu)].map((m) => `ART-${m[1].toLocaleUpperCase("tr")}`);
 
 // Picks only when sure (our ART code on the line, an earlier confirmation, a manufacturer code, or a uniquely covering name); always ranks the closest.
 export function matchProduct(description: string, products: PreparedProduct[], learned: Map<string, string>) {
-  const written = artCodes(description);
+  const written = writtenCodes(description).map(compact);
   const byCode = products.find((p) => written.includes(p.own));
   if (byCode) return { productId: byCode.id, suggestions: [byCode.id] };
   const lineWords = new Set(tokens(description));
@@ -62,6 +63,8 @@ export function matchProduct(description: string, products: PreparedProduct[], l
     .filter((p) => p.score > 0)
     .sort((a, b) => b.score - a.score);
   const suggestions = scored.slice(0, suggestionCount).map((p) => p.id);
+  // A code we don't have is a product to add, not one to guess.
+  if (written.length) return { productId: null, suggestions };
   const known = learned.get(productName(description));
   if (known && products.some((p) => p.id === known)) return { productId: known, suggestions };
   const [best, next] = scored;

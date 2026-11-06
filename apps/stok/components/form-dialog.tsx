@@ -51,6 +51,8 @@ export function FormDialog({
           className="flex flex-col gap-4"
           onSubmit={async (event) => {
             event.preventDefault();
+            // The dialog is portalled, but React still bubbles its submit to any form it was opened from.
+            event.stopPropagation();
             setPending(true);
             const done = await onSubmit(new FormData(event.currentTarget));
             setPending(false);

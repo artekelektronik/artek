@@ -75,7 +75,7 @@ export function StockEntrySheet({
       </div>
       <SortBar fields={sortFields} sorts={sorts} onChange={setSorts} />
 
-      {canAddProduct && <QuickAddProduct categories={categories} onAdded={setQuery} />}
+      {canAddProduct && <QuickAddProduct categories={categories} onAdded={(p) => setQuery(p.name)} />}
 
       <div className="max-h-[70vh] overflow-auto rounded-lg border [&_[data-slot=table-container]]:overflow-visible">
         <Table>

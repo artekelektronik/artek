@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -18,7 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@artek/ui/components/t
 import { Combobox } from "@/components/combobox";
 import { toastResult } from "@/components/form-status";
 import { day, tl } from "@/lib/finance-calc";
-import { newCustomer } from "@/lib/invoice-match";
+import { QuickAddProduct } from "@/components/quick-add-product";
+import { newCustomer, writtenCodes } from "@/lib/invoice-match";
+import { compact } from "@/lib/product-search";
 import type { InvoiceReview } from "@/lib/invoices";
 import { invoiceKind } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
@@ -366,6 +369,9 @@ function LineFields({ index, review, productOptions }: { index: number; review: 
     [line.suggestions, review.products],
   );
   const lineAmount = lineNet([{ quantity, unitPrice }]);
+  const router = useRouter();
+  // A code written on the line that the catalogue doesn't have yet, e.g. a new Özel trafo.
+  const missingCode = writtenCodes(line.description).find((code) => !review.products.some((p) => compact(p.code) === compact(code)));
 
   function pickProduct(value: string) {
     setValue(`lines.${index}.productId`, value, { shouldValidate: true });
@@ -401,6 +407,31 @@ function LineFields({ index, review, productOptions }: { index: number; review: 
               </FormControl>
               {!field.disabled && !field.value && line.suggestions.length > 0 && <FormDescription>Benzeyen ürünler listenin başında.</FormDescription>}
               {!field.disabled && field.value && field.value === line.productId && <FormDescription>Otomatik eşleşti; kontrol edin.</FormDescription>}
+              {!field.disabled && !field.value && missingCode && (
+                <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
+                  {missingCode} katalogda yok.
+                  <QuickAddProduct
+                    categories={[...new Set(review.products.map((p) => p.category))]}
+                    defaults={{
+                      code: missingCode,
+                      name: line.description.replace(/\(?\s*ART[\s-]*[^)\s]*\)?/iu, "").trim(),
+                      category: line.builtToOrder ? "Özel trafo" : undefined,
+                      unit: "adet",
+                      isMaterial: false,
+                      isTradeGoods: true,
+                    }}
+                    trigger={
+                      <Button type="button" variant="outline" size="sm">
+                        Ürün olarak ekle
+                      </Button>
+                    }
+                    onAdded={(p) => {
+                      pickProduct(p.id);
+                      router.refresh();
+                    }}
+                  />
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}
