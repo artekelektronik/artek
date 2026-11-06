@@ -222,8 +222,29 @@
     {
       "idx": 31,
       "version": "7",
-      "when": 1793992039694,
-      "tag": "0031_fiyat-abc",
+      "when": 1793988201073,
+      "tag": "0031_giderler",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793988387752,
+      "tag": "0032_gider-tekrar",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793988524254,
+      "tag": "0033_kur-gecmisi",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793992477271,
+      "tag": "0034_fiyat-abc",
       "breakpoints": true
     }
   ]

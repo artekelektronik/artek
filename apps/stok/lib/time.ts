@@ -26,6 +26,13 @@ export function addDays(day: string, days: number): string {
   return new Date(Date.parse(`${day}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);
 }
 
+// A YYYY-MM month moved by whole months.
+export function addMonths(month: string, months: number): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1 + months, 1));
+  return d.toISOString().slice(0, 7);
+}
+
 // A YYYY-MM-DD day moved forward by working days (Monday to Friday; holidays are not known).
 export function addWorkingDays(day: string, days: number): string {
   let d = day;

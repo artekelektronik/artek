@@ -37,7 +37,7 @@ export function FormDialog({
   destructive?: boolean;
   className?: string;
   onSubmit: (formData: FormData) => Promise<boolean>;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const [ownOpen, setOwnOpen] = useState(false);
   const open = controlledOpen ?? ownOpen;

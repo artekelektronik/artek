@@ -50,10 +50,10 @@ const userActions: Record<string, string> = {
 };
 const notableMovements = new Set(["fire", "sayim_duzeltmesi", "transfer_kaybi"]);
 
-// Prices and invoices only for the Finans paneli, customers and Adaylar only for the Müşteri paneli.
+// Prices, invoices and Giderler only for the Finans paneli, customers and Adaylar only for the Müşteri paneli.
 export type ActivityAccess = { finance: boolean; crm: boolean };
 export const mayShow = (entity: ActivityEntity, access: ActivityAccess) =>
-  entity === "fatura" || entity === "fiyat" ? access.finance : entity === "musteri" || entity === "aday" ? access.crm : true;
+  entity === "fatura" || entity === "fiyat" || entity === "gider" ? access.finance : entity === "musteri" || entity === "aday" ? access.crm : true;
 
 const between = (column: Parameters<typeof gte>[0], range: { from?: Date; to?: Date }): SQL | undefined =>
   and(range.from ? gte(column, range.from) : undefined, range.to ? lt(column, range.to) : undefined);

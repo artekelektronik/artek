@@ -62,7 +62,7 @@ _Avoid_: Changing a balance without a movement
 An admin setting a wrongly entered balance to the right number at once. It posts a Stok hareketi for the difference, so the change stays on record.
 
 **İşlem geçmişi** (Activity history):
-Who did what and when across the whole system, for admins: Ürün, Fiyat, Stok hareketi, Fatura, Müşteri, Aday and Kullanıcı. Fiyat and Fatura rows need the Finans paneli, Müşteri and Aday rows the Müşteri paneli. Admins get it as a daily email and a Monday summary.
+Who did what and when across the whole system, for admins: Ürün, Fiyat, Stok hareketi, Fatura, Gider, Müşteri, Aday and Kullanıcı. Fiyat, Fatura and Gider rows need the Finans paneli, Müşteri and Aday rows the Müşteri paneli. Admins get it as a daily email and a Monday summary.
 
 **Transfer**:
 Moving stock between two Lokasyon in two steps, sent and received; while on the way it belongs to neither.
@@ -78,6 +78,12 @@ The screen where counted stock is typed per product, side by side for every Loka
 
 **Alış fiyatı / Satış fiyatı** (Purchase / sale price):
 The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans paneli sees them.
+
+**Brüt kâr** (Gross profit):
+Confirmed sales minus what the sold Ürünler cost: each line at its Ürün's Alış fiyatı (converted at the TCMB rate of the invoice date), or for an Özel trafo built from Malzeme, at those materials' prices. A line with no Ürün or no Alış fiyatı has no cost; it is shown apart and left out, never counted as free.
+
+**Net** (Monthly result):
+A month's Brüt kâr minus its Giderler, KDV hariç: sales by invoice date, expenses by their date. A month with sales of unknown cost is marked as incomplete.
 
 **Stok değeri** (Stock value):
 Stok times a price, converted to TL at today's TCMB döviz satış rate. It is worked out when shown, never stored. Products with no price are left out and counted.
@@ -97,6 +103,10 @@ _Avoid_: İş, proje, PRJ
 **Fatura** (Sales invoice):
 A sales invoice Artek issued in QNB Dijital Köprü, uploaded here as a PDF and identified by its ETTN. This app reads invoices; it never issues or changes them. An upload is a taslak until a person confirms its Müşteri and Ürün lines; only a confirmed Fatura counts in Finans and takes its lines from Stok. A line of an Özel trafo takes its Malzeme out as üretim tüketimi instead. An İade fatura puts its lines back into Stok and is not counted as a sale. A Fatura can be typed by hand before its PDF exists; it can be confirmed only once the PDF with the same number is uploaded.
 _Avoid_: Using Fatura for a supplier's invoice on a Mal kabul
+
+**Gider** (Expense):
+Money Artek pays out: kira, maaş, SGK, vergi, a supplier's invoice and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. A Gider can repeat every month (kira, maaş, SGK), until an end date or until stopped; each month's entry is its own Gider and can be changed alone. Only the Finans paneli sees Giderler.
+_Avoid_: Masraf (for the same thing), Fatura (a Fatura is a sale)
 
 **Müşteri** (Customer):
 A buyer on Artek's sales invoices, identified by the VKN (company) or TCKN (şahıs firması) printed on them.
