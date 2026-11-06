@@ -1,8 +1,8 @@
 "use client";
 
-import { startTransition, useActionState, useState, useTransition } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
-import { Pencil, X } from "lucide-react";
+import { Check, Pencil, X } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
@@ -29,12 +29,6 @@ export type PriceRow = PriceFacts & {
 };
 export type PriceLokasyon = { id: string; name: string; canCorrect: boolean };
 
-const currencies = [
-  { value: "USD", label: "USD" },
-  { value: "EUR", label: "EUR" },
-  { value: "TRY", label: "TL" },
-];
-
 const sortFields: SortField[] = [
   { id: "stok", label: "Stok adedi", kind: "number" },
   { id: "ad", label: "Ürün adı", kind: "text" },
@@ -49,6 +43,12 @@ const distinct = (values: string[]) =>
     .map((value) => ({ value, label: value }));
 const list = parseAsArrayOf(parseAsString).withDefault([]);
 
+const currencies = [
+  { value: "USD", label: "USD" },
+  { value: "EUR", label: "EUR" },
+  { value: "TRY", label: "TL" },
+];
+
 // A plain select, not FormSelect: two per row, and Tab must move straight through a long table.
 function CurrencySelect({ name, defaultValue, disabled, label }: { name: string; defaultValue: string; disabled: boolean; label: string }) {
   return (
@@ -61,6 +61,9 @@ function CurrencySelect({ name, defaultValue, disabled, label }: { name: string;
     </select>
   );
 }
+
+const fields = ["alis", "alisPara", "satis", "satisPara"];
+const rowOf = (name: string) => /^(?:alis|alisPara|satis|satisPara):(.+)$/.exec(name)?.[1];
 
 export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows: PriceRow[]; lokasyon: PriceLokasyon[]; readOnly: boolean; canEditProducts: boolean }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(savePricesAction, undefined);
@@ -76,6 +79,22 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
 
   const [editor, setEditor] = useState<EditorData | null>(null);
   const [opening, startOpening] = useTransition();
+
+  // Rows typed in since the last save; only these are sent.
+  const [dirty, setDirty] = useState<Set<string>>(new Set());
+  const [lastSave, setLastSave] = useState<{ at: string; count: number } | null>(null);
+  const sent = useRef<string[]>([]);
+  useEffect(() => {
+    if (!state?.saved) return;
+    setDirty((d) => new Set([...d].filter((id) => !sent.current.includes(id))));
+    setLastSave({ at: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }), count: sent.current.length });
+  }, [state]);
+  useEffect(() => {
+    if (dirty.size === 0) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
 
   const shown = viewPrices(rows, { price, stock, categories, types, lokasyon: places, q }, sorts);
   const shownIds = new Set(shown.map((r) => r.id));
@@ -96,20 +115,45 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
       {/* Not <form action>: React would clear what was typed when a line has an error. */}
       <form
         className="flex flex-col gap-3"
+        onChange={(event) => {
+          const target = event.target as EventTarget & { name?: string };
+          const id = rowOf(target.name ?? "");
+          if (id && !dirty.has(id)) setDirty(new Set(dirty).add(id));
+        }}
         onSubmit={(event) => {
           event.preventDefault();
-          const data = new FormData(event.currentTarget);
+          if (dirty.size === 0) return;
+          const all = new FormData(event.currentTarget);
+          const data = new FormData();
+          sent.current = [...dirty];
+          for (const id of sent.current) {
+            data.append("productId", id);
+            for (const field of fields) data.append(`${field}:${id}`, all.get(`${field}:${id}`) ?? "");
+          }
           startTransition(() => formAction(data));
         }}
       >
         <div className="flex flex-wrap items-center gap-3">
           <Input value={q} onChange={(e) => void setQ(e.target.value)} placeholder="Kod veya ürün adı ara" aria-label="Ürün ara" className="max-w-xs font-normal" />
           {!readOnly && (
-            <Button type="submit" disabled={pending}>
-              {pending ? "Kaydediliyor…" : "Kaydet"}
+            <Button type="submit" disabled={pending || dirty.size === 0}>
+              {pending ? "Kaydediliyor…" : dirty.size > 0 ? `Kaydet (${dirty.size})` : "Kaydet"}
             </Button>
           )}
-          <FormStatus state={state} saved="Kaydedildi." />
+          {!readOnly && (
+            <span role="status" className="text-sm">
+              {pending ? null : state?.error && dirty.size > 0 ? (
+                <span className="text-destructive">Kaydedilmedi: {state.error}</span>
+              ) : dirty.size > 0 ? (
+                <span className="text-amber-600">{dirty.size} üründe kaydedilmemiş değişiklik var</span>
+              ) : lastSave ? (
+                <span className="inline-flex items-center gap-1 text-green-700">
+                  <Check className="size-4" /> {lastSave.count} ürün kaydedildi · {lastSave.at}
+                </span>
+              ) : null}
+            </span>
+          )}
+          <FormStatus state={state} />
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <ChoiceFilter label="Fiyat" options={entries(priceStates)} value={price} onChange={(v) => void setPrice(v as keyof typeof priceStates)} />
@@ -149,7 +193,7 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
               )}
               {/* Rows outside the view stay in the page, hidden: changing a filter must not drop what was typed in them. */}
               {[...shown, ...rows.filter((r) => !shownIds.has(r.id))].map((row) => (
-                <TableRow key={row.id} className={shownIds.has(row.id) ? undefined : "hidden"}>
+                <TableRow key={row.id} className={shownIds.has(row.id) ? (dirty.has(row.id) ? "bg-amber-50 dark:bg-amber-950/30" : undefined) : "hidden"}>
                   <TableCell className="min-w-64 whitespace-normal">
                     <input type="hidden" name="productId" value={row.id} />
                     <div className="flex items-center gap-3">
