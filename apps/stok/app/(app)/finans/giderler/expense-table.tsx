@@ -24,6 +24,7 @@ export type ExpenseRow = {
   description: string;
   party: string | null;
   netAmount: string;
+  kdvRate: string;
   totalAmount: string;
   fileName: string | null;
 };

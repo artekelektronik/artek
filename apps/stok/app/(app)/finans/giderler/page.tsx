@@ -20,13 +20,14 @@ export default async function ExpensesPage() {
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const canEdit = can(actor, "finance.edit");
-  const rows = (await listExpenses(requestHeaders)).map(({ id, spentOn, category, description, party, netAmount, totalAmount, fileName }) => ({
+  const rows = (await listExpenses(requestHeaders)).map(({ id, spentOn, category, description, party, netAmount, kdvRate, totalAmount, fileName }) => ({
     id,
     spentOn,
     category,
     description,
     party,
     netAmount,
+    kdvRate,
     totalAmount,
     fileName,
   }));

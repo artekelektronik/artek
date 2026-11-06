@@ -1,5 +1,5 @@
 {
-  "id": "780e80cb-4fcc-4519-bfd2-9d069926fbd7",
+  "id": "522ef6eb-92d2-4bfc-800d-fa6f770edc3c",
   "prevId": "336a0389-171b-4f83-989c-be20eeb2faaa",
   "version": "7",
   "dialect": "postgresql",
@@ -1219,6 +1219,12 @@
         "net_amount": {
           "name": "net_amount",
           "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kdv_rate": {
+          "name": "kdv_rate",
+          "type": "numeric(5, 2)",
           "primaryKey": false,
           "notNull": true
         },

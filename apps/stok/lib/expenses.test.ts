@@ -71,4 +71,22 @@ describe("Giderler", { skip: skipWithoutDatabase }, () => {
     await assert.rejects(expenses.createExpense(editor.headers, { ...rent, netAmount: "0" }), /Tutar/);
     await assert.rejects(expenses.createExpense(editor.headers, { ...rent, category: " " }), /Kategori/);
   });
+
+  test("Gider rows in İşlem geçmişi are only for Finans holders; a receipt is logged too", async () => {
+    const { listActivity } = await import("./activity");
+    const { id } = await expenses.createExpense(editor.headers, rent);
+    await expenses.attachExpenseFile(editor.headers, id, { fileName: "kira.pdf", contentType: "application/pdf", bytes: new Uint8Array([1]) });
+    const seen = (await listActivity(editor.headers)).filter((r) => r.entity === "gider");
+    assert.deepEqual(seen.map((r) => r.detail).sort(), ["2026-10-01", "Fiş eklendi: kira.pdf"]);
+    const crmOnly = await signedInAs(["admin"]);
+    await db.insert(schema.userPanel).values({ userId: crmOnly.user.id, panel: "musteri", level: "gorur" });
+    assert.equal((await listActivity(crmOnly.headers)).filter((r) => r.entity === "gider").length, 0);
+  });
+
+  test("the KDV rate is kept as typed and amounts in Turkish format are read right", async () => {
+    await expenses.createExpense(editor.headers, { ...rent, netAmount: "20.000,50", kdvRate: "18" });
+    const [row] = await expenses.listExpenses(editor.headers);
+    assert.deepEqual([row.netAmount, row.kdvRate, row.totalAmount], ["20000.50", "18.00", "23600.59"]);
+    await assert.rejects(expenses.createExpense(editor.headers, { ...rent, netAmount: "1234567890123" }), /çok büyük/);
+  });
 });

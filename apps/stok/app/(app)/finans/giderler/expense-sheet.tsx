@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { z } from "zod";
+import type { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@artek/ui/components/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
@@ -13,24 +13,14 @@ import { Textarea } from "@artek/ui/components/textarea";
 import { Combobox } from "@/components/combobox";
 import { FormSheet, SheetActions } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
+import { decimalValue } from "@/lib/decimal";
+import { expenseInput } from "@/lib/expense-input";
 import { tl } from "@/lib/finance-calc";
 import { saveExpenseAction } from "./actions";
 import { receiptUrl, useOpenExpense, type ExpenseRow } from "./expense-table";
 
-const toNumber = (v: string) => Number(v.includes(",") ? v.replace(/\./g, "").replace(",", ".") : v);
-
-const formSchema = z.object({
-  spentOn: z.iso.date({ error: "Tarihi seçin." }),
-  category: z.string().trim().min(1, { error: "Kategori seçin." }),
-  party: z.string(),
-  description: z.string(),
-  netAmount: z.string().refine((v) => toNumber(v) > 0, { error: "Tutarı yazın." }),
-  kdvRate: z.string().refine((v) => toNumber(v) >= 0 && toNumber(v) <= 100, { error: "0–100" }),
-});
-type FormValues = z.infer<typeof formSchema>;
-
-// KDV rate an existing expense was saved with, e.g. 24000 / 20000 → "20".
-const rateOf = (e: ExpenseRow) => String(Math.round((Number(e.totalAmount) / Number(e.netAmount) - 1) * 10000) / 100).replace(".", ",");
+type FormValues = z.input<typeof expenseInput>;
+const shown = (stored: string) => stored.replace(/\.?0+$/, "").replace(".", ","); // "20.00" → "20", "12.50" → "12,5"
 
 export function ExpenseSheet({ rows, categories, canEdit, today }: { rows: ExpenseRow[]; categories: string[]; canEdit: boolean; today: string }) {
   const [opened, setOpened] = useOpenExpense();
@@ -46,23 +36,23 @@ export function ExpenseSheet({ rows, categories, canEdit, today }: { rows: Expen
 function ExpenseForm({ expense, categories, canEdit, today, onDone }: { expense?: ExpenseRow; categories: string[]; canEdit: boolean; today: string; onDone: () => void }) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
-  const form = useForm<FormValues>({
-    resolver: standardSchemaResolver(formSchema),
+  const form = useForm<FormValues, unknown, z.output<typeof expenseInput>>({
+    resolver: standardSchemaResolver(expenseInput),
     defaultValues: {
       spentOn: expense?.spentOn ?? today,
       category: expense?.category ?? "",
       party: expense?.party ?? "",
       description: expense?.description ?? "",
-      netAmount: expense ? expense.netAmount.replace(".", ",") : "",
-      kdvRate: expense ? rateOf(expense) : "20",
+      netAmount: expense ? shown(expense.netAmount) : "",
+      kdvRate: expense ? shown(expense.kdvRate) : "20",
     },
     disabled: !canEdit,
   });
   const [net, rate] = useWatch({ control: form.control, name: ["netAmount", "kdvRate"] });
-  const total = toNumber(net) * (1 + toNumber(rate) / 100) || 0;
+  const total = decimalValue(net ?? "") * (1 + decimalValue(rate ?? "") / 100) || 0;
   const categoryOptions = useMemo(() => categories.map((c) => ({ value: c, label: c })), [categories]);
 
-  async function onSubmit(values: FormValues) {
+  async function onSubmit(values: z.output<typeof expenseInput>) {
     const result = await saveExpenseAction(expense?.id ?? null, values);
     if (!toastResult(result, expense ? "Gider güncellendi." : "Gider eklendi.") || !result.id) return;
     if (file) {

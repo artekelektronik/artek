@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { runAction, type ActionState } from "@/lib/action-result";
-import { createExpense, deleteExpense, updateExpense, type ExpenseInput } from "@/lib/expenses";
+import { createExpense, deleteExpense, updateExpense } from "@/lib/expenses";
+import type { ExpenseInput } from "@/lib/expense-input";
 
 function done<T extends ActionState>(state: T) {
   revalidatePath("/finans/giderler");

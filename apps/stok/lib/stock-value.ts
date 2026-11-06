@@ -1,5 +1,6 @@
 // Pure calculations for Stok değeri; no database, so tests can import it directly.
 import type { currency } from "../db/schema";
+import { normalizeDecimal } from "./decimal";
 import type { Rates } from "./exchange-rates";
 import { totalsByUnit } from "./overview-totals";
 import type { Unit } from "./quantity";
@@ -9,9 +10,8 @@ export type Price = { purchasePrice: string | null; purchaseCurrency: Currency; 
 
 // Empty is no price. "12,50", "12.50" and "1.234,50" are all accepted; returns the string the numeric column stores.
 export function parsePrice(raw: string): string | null {
-  const typed = raw.trim();
-  if (!typed) return null;
-  const text = typed.includes(",") ? typed.replaceAll(".", "").replace(",", ".") : typed;
+  if (!raw.trim()) return null;
+  const text = normalizeDecimal(raw) ?? "";
   if (!/^\d+(\.\d{1,4})?$/.test(text) || Number(text) <= 0) throw new Error("Fiyat sıfırdan büyük bir sayı olmalı, virgülden sonra en çok 4 hane.");
   if (text.split(".")[0].replace(/^0+/, "").length > 10) throw new Error("Fiyat çok büyük.");
   return text;

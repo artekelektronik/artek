@@ -50,7 +50,7 @@ const userActions: Record<string, string> = {
 };
 const notableMovements = new Set(["fire", "sayim_duzeltmesi", "transfer_kaybi"]);
 
-// Prices and invoices only for the Finans paneli, customers and Adaylar only for the Müşteri paneli.
+// Prices, invoices and Giderler only for the Finans paneli, customers and Adaylar only for the Müşteri paneli.
 export type ActivityAccess = { finance: boolean; crm: boolean };
 export const mayShow = (entity: ActivityEntity, access: ActivityAccess) =>
   entity === "fatura" || entity === "fiyat" || entity === "gider" ? access.finance : entity === "musteri" || entity === "aday" ? access.crm : true;

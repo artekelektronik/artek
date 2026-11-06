@@ -846,6 +846,7 @@ export const expense = pgTable(
     description: text("description").notNull().default(""),
     party: text("party"), // who was paid
     netAmount: numeric("net_amount", { precision: 14, scale: 2 }).notNull(), // KDV hariç
+    kdvRate: numeric("kdv_rate", { precision: 5, scale: 2 }).notNull(), // as typed, so a re-save keeps the same KDV dahil
     totalAmount: numeric("total_amount", { precision: 14, scale: 2 }).notNull(), // KDV dahil
     fileName: text("file_name"), // the attached receipt, if any
     createdBy: text("created_by")

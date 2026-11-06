@@ -6,6 +6,7 @@ CREATE TABLE "expense" (
 	"description" text DEFAULT '' NOT NULL,
 	"party" text,
 	"net_amount" numeric(14, 2) NOT NULL,
+	"kdv_rate" numeric(5, 2) NOT NULL,
 	"total_amount" numeric(14, 2) NOT NULL,
 	"file_name" text,
 	"created_by" text NOT NULL,
