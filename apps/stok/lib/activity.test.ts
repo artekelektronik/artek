@@ -115,9 +115,11 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
       await savePrices(editor.headers, [line]);
       await savePrices(editor.headers, [line]);
       await savePrices(editor.headers, [{ ...line, salePrice: "12,5" }]);
+      await savePrices(editor.headers, [{ ...line, salePrice: "12,5", salePriceA: "10", salePriceC: "15" }]);
       const rows = (await log()).filter((r) => r.entity === "fiyat").map((r) => [r.action, r.detail]);
       assert.deepEqual(rows.sort(), [
-        ["duzenlendi", "Satış: — → 12,5 TL"],
+        ["duzenlendi", "Satış A: — → 10 TL; Satış C: — → 15 TL"],
+        ["duzenlendi", "Satış B: — → 12,5 TL"],
         ["eklendi", "Alış: — → 100 USD"],
       ]);
     });

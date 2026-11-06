@@ -2,7 +2,7 @@
 
 import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { parseAsArrayOf, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
-import { Check, Pencil, X } from "lucide-react";
+import { Check, Pencil, Sparkles, X } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
 import { Input } from "@artek/ui/components/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
@@ -14,6 +14,7 @@ import { decodeSorts, encodeSorts, noType, priceStates, stockStates, typeOf, vie
 import { loadProductEditorAction, savePricesAction } from "./actions";
 import { ChoiceFilter, MultiFilter } from "./filter-menu";
 import { ProductEditor, type EditorData } from "./product-editor";
+import { suggest, TierBadge, TierLegend, tiers } from "./sale-tiers";
 
 export type PriceRow = PriceFacts & {
   id: string;
@@ -24,7 +25,9 @@ export type PriceRow = PriceFacts & {
   physical: Record<string, string>;
   purchasePrice: string;
   purchaseCurrency: string;
+  salePriceA: string;
   salePrice: string;
+  salePriceC: string;
   saleCurrency: string;
 };
 export type PriceLokasyon = { id: string; name: string; canCorrect: boolean };
@@ -62,8 +65,9 @@ function CurrencySelect({ name, defaultValue, disabled, label }: { name: string;
   );
 }
 
-const fields = ["alis", "alisPara", "satis", "satisPara"];
-const rowOf = (name: string) => /^(?:alis|alisPara|satis|satisPara):(.+)$/.exec(name)?.[1];
+const fields = ["alis", "alisPara", "satisA", "satis", "satisC", "satisPara"];
+const fieldOf = (name: string) => /^([a-zA-Z]+):(.+)$/.exec(name);
+const saved = (row: PriceRow) => ({ satisA: row.salePriceA, satis: row.salePrice, satisC: row.salePriceC });
 
 export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows: PriceRow[]; lokasyon: PriceLokasyon[]; readOnly: boolean; canEditProducts: boolean }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(savePricesAction, undefined);
@@ -84,6 +88,9 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
   const [dirty, setDirty] = useState<Set<string>>(new Set());
   const [lastSave, setLastSave] = useState<{ at: string; count: number } | null>(null);
   const sent = useRef<string[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
+  // What is typed in the price fields right now, for the live suggestions; a row not yet touched reads its saved values.
+  const [typed, setTyped] = useState<Record<string, Record<string, string>>>({});
   useEffect(() => {
     if (!state?.saved) return;
     setDirty((d) => new Set([...d].filter((id) => !sent.current.includes(id))));
@@ -101,6 +108,56 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
   const filtered = price !== "tumu" || stock !== "tumu" || categories.length > 0 || types.length > 0 || places.length > 0 || q !== "";
   const editing = editor && rows.find((r) => r.id === editor.product.id);
 
+  // Suggestions show only when alış and satış are in the same currency; there is no rate to convert with here.
+  function suggestions(row: PriceRow) {
+    const now = { alis: row.purchasePrice, alisPara: row.purchaseCurrency, satisPara: row.saleCurrency, ...saved(row), ...typed[row.id] };
+    const same = now.alisPara === now.satisPara;
+    return { now, hints: tiers.map((tier) => (same ? suggest(now.alis, tier) : "")) };
+  }
+
+  // Writes the suggestion into every empty A/B/C field of the row; the user still saves with Kaydet.
+  function fillSuggestions(row: PriceRow) {
+    const { now, hints } = suggestions(row);
+    const next: Record<string, string> = {};
+    tiers.forEach((tier, i) => {
+      const input = formRef.current?.elements.namedItem(`${tier.field}:${row.id}`) as HTMLInputElement | null;
+      if (input && !input.value.trim() && hints[i]) input.value = next[tier.field] = hints[i];
+    });
+    setTyped((t) => ({ ...t, [row.id]: { ...now, ...next } }));
+    setDirty((d) => new Set(d).add(row.id));
+  }
+
+  function saleCell(row: PriceRow) {
+    const { now, hints } = suggestions(row);
+    const fillable = !readOnly && tiers.some((tier, i) => hints[i] && !now[tier.field].trim());
+    return (
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-1.5">
+          {tiers.map((tier, i) => (
+            <label key={tier.key} className="flex items-center gap-1">
+              <TierBadge tier={tier} />
+              <Input
+                name={`${tier.field}:${row.id}`}
+                defaultValue={saved(row)[tier.field]}
+                placeholder={hints[i]}
+                disabled={readOnly}
+                inputMode="decimal"
+                aria-label={`${row.code} satış fiyatı ${tier.key} (${tier.name})`}
+                className="placeholder:text-muted-foreground/60 w-20 font-normal placeholder:italic"
+              />
+            </label>
+          ))}
+          <CurrencySelect name={`satisPara:${row.id}`} defaultValue={row.saleCurrency} disabled={readOnly} label={`${row.code} satış para birimi`} />
+        </div>
+        {fillable && (
+          <Button type="button" variant="link" size="sm" className="h-auto gap-1 p-0 text-xs" onClick={() => fillSuggestions(row)}>
+            <Sparkles className="size-3" /> Önerileri yaz
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   function clearFilters() {
     void setPrice("tumu");
     void setStock("tumu");
@@ -114,11 +171,15 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
     <>
       {/* Not <form action>: React would clear what was typed when a line has an error. */}
       <form
+        ref={formRef}
         className="flex flex-col gap-3"
         onChange={(event) => {
-          const target = event.target as EventTarget & { name?: string };
-          const id = rowOf(target.name ?? "");
-          if (id && !dirty.has(id)) setDirty(new Set(dirty).add(id));
+          const target = event.target as EventTarget & { name?: string; value?: string };
+          const match = fieldOf(target.name ?? "");
+          if (!match || !fields.includes(match[1])) return;
+          const [, field, id] = match;
+          setTyped((t) => ({ ...t, [id]: { ...t[id], [field]: target.value ?? "" } }));
+          if (!dirty.has(id)) setDirty(new Set(dirty).add(id));
         }}
         onSubmit={(event) => {
           event.preventDefault();
@@ -170,6 +231,7 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
             {shown.length} / {rows.length} ürün
           </span>
         </div>
+        <TierLegend />
         <SortBar fields={sortFields} sorts={sorts} onChange={(next) => void setSortText(encodeSorts(next))} />
         <div className="max-h-[70vh] overflow-auto rounded-lg border [&_[data-slot=table-container]]:overflow-visible">
           <Table>
@@ -180,7 +242,7 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
                 <TableHead className="text-right">Stok</TableHead>
                 <TableHead>Nerede</TableHead>
                 <TableHead>Alış fiyatı</TableHead>
-                <TableHead>Satış fiyatı</TableHead>
+                <TableHead>Satış fiyatı · A / B / C</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -235,12 +297,7 @@ export function PricesForm({ rows, lokasyon, readOnly, canEditProducts }: { rows
                       <CurrencySelect name={`alisPara:${row.id}`} defaultValue={row.purchaseCurrency} disabled={readOnly} label={`${row.code} alış para birimi`} />
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Input name={`satis:${row.id}`} defaultValue={row.salePrice} disabled={readOnly} inputMode="decimal" aria-label={`${row.code} satış fiyatı`} className="w-24 font-normal" />
-                      <CurrencySelect name={`satisPara:${row.id}`} defaultValue={row.saleCurrency} disabled={readOnly} label={`${row.code} satış para birimi`} />
-                    </div>
-                  </TableCell>
+                  <TableCell>{saleCell(row)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

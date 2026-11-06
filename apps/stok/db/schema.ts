@@ -162,7 +162,10 @@ export const productPrice = pgTable("product_price", {
     .references(() => product.id),
   purchasePrice: numeric("purchase_price", { precision: 14, scale: 4 }),
   purchaseCurrency: currency("purchase_currency").notNull(),
+  // Satış fiyatı per müşteri sınıfı, all in saleCurrency. salePrice is B (normal), the one stock value uses.
+  salePriceA: numeric("sale_price_a", { precision: 14, scale: 4 }),
   salePrice: numeric("sale_price", { precision: 14, scale: 4 }),
+  salePriceC: numeric("sale_price_c", { precision: 14, scale: 4 }),
   saleCurrency: currency("sale_currency").notNull(),
   updatedBy: text("updated_by")
     .notNull()
