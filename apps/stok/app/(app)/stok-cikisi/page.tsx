@@ -60,7 +60,7 @@ export default async function StockOutPage({ searchParams }: { searchParams: Pro
     >
       <PanelCard title={range.bounded ? "Çıkışlar" : "Son çıkışlar"}>
         <DateRangeFilter />
-        <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
+        <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} correctable />
       </PanelCard>
     </PanelShell>
   );

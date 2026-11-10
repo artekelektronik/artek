@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, describe, test } from "node:test";
+import { eq } from "drizzle-orm";
 import {
   lokasyonIdsByName,
   openTestDatabase,
@@ -165,5 +166,56 @@ describe("manual stock-out", { skip: skipWithoutDatabase }, () => {
       assert.match((r as PromiseRejectedResult).reason.message, /Yetersiz stok/);
     }
     assert.equal((await ledger.getBalances(karakoyUser.headers, core)).total.physical, "0");
+  });
+
+  describe("correcting a stock-out", () => {
+    let fixer: Awaited<ReturnType<typeof signedInAs>>;
+    const out = async (quantity: string) => {
+      const { documentId } = await stockOut.recordStockOut(karakoyUser.headers, {
+        type: "satis_teslimati",
+        lokasyonId: lokasyon["Karaköy Mağaza"],
+        reason: "Yanlış girildi",
+        lines: [{ productId: core, quantity }],
+        idempotencyKey: key(),
+      });
+      const [m] = await db.select().from(schema.stockMovement).where(eq(schema.stockMovement.documentId, documentId));
+      return m.id;
+    };
+    const physical = async () => (await ledger.getBalances(karakoyUser.headers, core)).total.physical;
+    beforeEach(async () => {
+      fixer = await signedInAs(["muhendis"]);
+      await receive(core, "50");
+    });
+
+    test("Düzenle takes the right amount instead, with its new type and reason, in one step", async () => {
+      const id = await out("10");
+      await stockOut.correctStockOut(fixer.headers, id, { type: "fire", quantity: "4", reason: "Kırık çıktı", reference: "", idempotencyKey: key() });
+      assert.equal(await physical(), "46");
+      const moves = await db.select().from(schema.stockMovement).where(eq(schema.stockMovement.productId, core));
+      assert.ok(moves.some((m) => m.reversesId === id), "the wrong one is reversed");
+      assert.ok(moves.some((m) => m.type === "fire" && m.quantity === "-4.000" && m.reason === "Kırık çıktı"));
+    });
+
+    test("Sil puts the stock back", async () => {
+      const id = await out("10");
+      await stockOut.deleteStockOut(fixer.headers, id, { idempotencyKey: key() });
+      assert.equal(await physical(), "50");
+    });
+
+    test("a correction that can't be taken changes nothing", async () => {
+      const id = await out("50");
+      await assert.rejects(stockOut.correctStockOut(fixer.headers, id, { type: "fire", quantity: "60", reason: "x", reference: "", idempotencyKey: key() }), /Yetersiz stok/);
+      assert.equal(await physical(), "0");
+      assert.equal((await db.select().from(schema.stockMovement).where(eq(schema.stockMovement.reversesId, id))).length, 0);
+    });
+
+    test("only a stock-out not yet corrected, by someone who may reverse", async () => {
+      const id = await out("10");
+      await assert.rejects(stockOut.deleteStockOut(karakoyUser.headers, id, { idempotencyKey: key() }));
+      await stockOut.deleteStockOut(fixer.headers, id, { idempotencyKey: key() });
+      await assert.rejects(stockOut.deleteStockOut(fixer.headers, id, { idempotencyKey: key() }), /düzeltilmiş/);
+      const [receipt] = await db.select().from(schema.stockMovement).where(eq(schema.stockMovement.type, "mal_kabul"));
+      await assert.rejects(stockOut.deleteStockOut(fixer.headers, receipt.id, { idempotencyKey: key() }), /yalnız elle girilen stok çıkışı/);
+    });
   });
 });

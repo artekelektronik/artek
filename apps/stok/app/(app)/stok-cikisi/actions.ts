@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { runStockAction, type ActionState } from "@/lib/action-result";
 import { productLinesFrom, text } from "@/lib/form-data";
-import { recordStockOut, stockOutLineText, type StockOutInput } from "@/lib/stock-out";
+import { correctStockOut, deleteStockOut, recordStockOut, stockOutLineText, type StockOutCorrection, type StockOutInput } from "@/lib/stock-out";
 
 export async function recordStockOutAction(formData: FormData): Promise<ActionState> {
   let message: string | undefined;
@@ -19,4 +19,22 @@ export async function recordStockOutAction(formData: FormData): Promise<ActionSt
     message = `Stok çıkışı kaydedildi.\n${lines.map(stockOutLineText).join("\n")}`;
   });
   return { ...state, message };
+}
+
+export async function correctStockOutAction(movementId: string, formData: FormData): Promise<ActionState> {
+  return runStockAction(async () => {
+    await correctStockOut(await headers(), movementId, {
+      type: text(formData, "type") as StockOutCorrection["type"],
+      quantity: text(formData, "quantity"),
+      reason: text(formData, "reason"),
+      reference: text(formData, "reference"),
+      idempotencyKey: text(formData, "idempotencyKey"),
+    });
+  });
+}
+
+export async function deleteStockOutAction(movementId: string, formData: FormData): Promise<ActionState> {
+  return runStockAction(async () => {
+    await deleteStockOut(await headers(), movementId, { idempotencyKey: text(formData, "idempotencyKey") });
+  });
 }
