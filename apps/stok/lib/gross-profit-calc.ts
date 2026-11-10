@@ -16,6 +16,9 @@ export type SoldLine = {
 };
 export type PurchasePrice = { price: string; currency: Currency };
 type Rates = { USD: number; EUR: number };
+// A TL amount on a day in the screen's currency: itself, or USD at that day's rate.
+export type Scale = (tl: number, day: string) => number;
+const asTl: Scale = (v) => v;
 
 export type MonthProfit = { month: string; sales: number; costedSales: number; cost: number; gross: number; uncostedSales: number };
 export type Uncosted = { invoiceId: string; number: string; issuedOn: string; description: string; amount: number; reason: "Katalogda yok" | "Alış fiyatı yok" | "Kur yok" };
@@ -28,8 +31,8 @@ function costOf(productId: string, quantity: string, date: string, prices: Map<s
   return rate ? Number(quantity) * Number(p.price) * rate : ("Kur yok" as const);
 }
 
-// A built line costs its materials; a stocked or linked one, its Ürün. Unknown cost is listed, never counted as zero.
-export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, PurchasePrice>, rateOn: (date: string) => Rates | null) {
+// A built line costs its materials; a stocked or linked one, its Ürün. Unknown cost is listed (in TL), never counted as zero.
+export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, PurchasePrice>, rateOn: (date: string) => Rates | null, scale: Scale = asTl) {
   const byMonth = new Map<string, MonthProfit>();
   const uncosted: Uncosted[] = [];
   for (const l of lines) {
@@ -37,7 +40,8 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
     const m = byMonth.get(month) ?? { month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0 };
     byMonth.set(month, m);
     const sign = l.isReturn ? -1 : 1;
-    const amount = sign * Number(l.amount);
+    const amountTl = sign * Number(l.amount);
+    const amount = scale(amountTl, l.issuedOn);
     m.sales += amount;
 
     const parts = l.components?.length
@@ -48,11 +52,11 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
     const missing = parts.find((p) => typeof p === "string");
     if (missing) {
       m.uncostedSales += amount;
-      uncosted.push({ invoiceId: l.invoiceId, number: l.number, issuedOn: l.issuedOn, description: l.description, amount, reason: missing });
+      uncosted.push({ invoiceId: l.invoiceId, number: l.number, issuedOn: l.issuedOn, description: l.description, amount: amountTl, reason: missing });
       continue;
     }
     m.costedSales += amount;
-    m.cost += sign * (parts as number[]).reduce((s, c) => s + c, 0);
+    m.cost += scale(sign * (parts as number[]).reduce((s, c) => s + c, 0), l.issuedOn);
   }
   const months = [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month)).map((m) => ({ ...m, gross: m.costedSales - m.cost }));
   return { months, uncosted };
@@ -64,15 +68,16 @@ type Spent = { spentOn: string; category: string; netAmount: string; totalAmount
 export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, expenses: 0, expensesWithKdv: 0, byCategory: {}, net: 0, incomplete: false });
 
 // Satış → Brüt kâr → Giderler → Net per month and year, KDV hariç. A month with sales of unknown cost is incomplete.
-export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
+export function monthlyNet(profits: MonthProfit[], expenses: Spent[], scale: Scale = asTl) {
   const byMonth = new Map<string, MonthNet>(profits.map((p) => [p.month, { ...emptyMonth(p.month), ...p }]));
   for (const e of expenses) {
     const month = e.spentOn.slice(0, 7);
     const m = byMonth.get(month) ?? emptyMonth(month);
     byMonth.set(month, m);
-    m.expenses += Number(e.netAmount);
-    m.expensesWithKdv += Number(e.totalAmount);
-    m.byCategory[e.category] = (m.byCategory[e.category] ?? 0) + Number(e.netAmount);
+    const net = scale(Number(e.netAmount), e.spentOn);
+    m.expenses += net;
+    m.expensesWithKdv += scale(Number(e.totalAmount), e.spentOn);
+    m.byCategory[e.category] = (m.byCategory[e.category] ?? 0) + net;
   }
   const months = [...byMonth.values()]
     .sort((a, b) => a.month.localeCompare(b.month))
@@ -85,4 +90,3 @@ export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
   });
   return { months, years };
 }
-export type YearNet = ReturnType<typeof monthlyNet>["years"][number];

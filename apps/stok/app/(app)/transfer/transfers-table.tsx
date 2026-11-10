@@ -17,7 +17,8 @@ export function TransfersTable({ transfers }: { transfers: Transfer[] }) {
     column.accessor("sentAt", {
       id: "sevk",
       header: ({ column }) => <DataTableColumnHeader column={column} label="Sevk" />,
-      meta: { label: "Sevk" },
+      enableColumnFilter: true,
+      meta: { label: "Sevk", variant: "dateRange" },
       cell: ({ row }) => (
         <Link href={`/transfer/${row.original.id}`} className="underline-offset-4 hover:underline">
           {formatDateTime(row.original.sentAt)}

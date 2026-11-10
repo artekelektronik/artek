@@ -3,43 +3,47 @@ import { TriangleAlert } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@artek/ui/components/card";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { cn } from "@artek/ui/lib/utils";
-import { day, monthLabel, share, tl, tlShort } from "@/lib/finance-calc";
-import type { MonthNet, Uncosted, YearNet } from "@/lib/gross-profit-calc";
+import { day, monthLabel, share, tl } from "@/lib/finance-calc";
+import type { MonthNet, Uncosted } from "@/lib/gross-profit-calc";
+import { moneyIn } from "@/lib/period";
 
-const Signed = ({ value: v }: { value: number }) => <span className={cn("tabular-nums", v < 0 && "text-destructive")}>{tlShort(v)}</span>;
+type Row = Pick<MonthNet, "sales" | "gross" | "costedSales" | "expenses" | "net">;
 
-export function MonthlyTable({ months, years }: { months: MonthNet[]; years: YearNet[] }) {
-  const shown = months.slice(-12).reverse();
-  const shownYears = years.slice(-2).reverse();
-  const totals = new Map<string, number>();
-  for (const m of shown) for (const [c, v] of Object.entries(m.byCategory)) totals.set(c, (totals.get(c) ?? 0) + v);
-  const categories = [...totals.keys()].sort((a, b) => totals.get(b)! - totals.get(a)!);
+// Satış → Brüt kâr → Giderler → Net, newest month first, with the period's total under it.
+export function MonthlyTable({ months, usd, note }: { months: MonthNet[]; usd: boolean; note: string }) {
+  const { short } = moneyIn(usd);
+  const sum = (k: keyof Row) => months.reduce((t, m) => t + m[k], 0);
+  const total: Row = { sales: sum("sales"), gross: sum("gross"), costedSales: sum("costedSales"), expenses: sum("expenses"), net: sum("net") };
+  const cells = (r: Row) => (
+    <>
+      <TableCell className="text-right tabular-nums">{short(r.sales)}</TableCell>
+      <TableCell className={cn("text-right tabular-nums", r.gross < 0 && "text-destructive")}>{short(r.gross)}</TableCell>
+      <TableCell className="text-muted-foreground text-right tabular-nums">{share(r.gross, r.costedSales)}</TableCell>
+      <TableCell className="text-right tabular-nums">{short(r.expenses)}</TableCell>
+      <TableCell className={cn("text-right font-medium tabular-nums", r.net < 0 && "text-destructive")}>{short(r.net)}</TableCell>
+    </>
+  );
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Aylık tablo</CardTitle>
-        <CardDescription>KDV hariç; satış fatura tarihine, gider gider tarihine göre. Oran: brüt kârın maliyeti bilinen satışa oranı.</CardDescription>
+        <CardDescription>{note} Kategoriler için Giderler’e bakın.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table className="text-xs">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Ay</TableHead>
               <TableHead className="text-right">Satış</TableHead>
               <TableHead className="text-right">Brüt kâr</TableHead>
               <TableHead className="text-right">Oran</TableHead>
-              {categories.map((c) => (
-                <TableHead key={c} className="text-muted-foreground text-right font-normal">
-                  {c}
-                </TableHead>
-              ))}
               <TableHead className="text-right">Giderler</TableHead>
               <TableHead className="text-right">Net</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {shown.map((m) => (
+            {months.toReversed().map((m) => (
               <TableRow key={m.month}>
                 <TableCell>
                   <span className="flex items-center gap-1.5">
@@ -51,43 +55,15 @@ export function MonthlyTable({ months, years }: { months: MonthNet[]; years: Yea
                     )}
                   </span>
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{tlShort(m.sales)}</TableCell>
-                <TableCell className="text-right">
-                  <Signed value={m.gross} />
-                </TableCell>
-                <TableCell className="text-muted-foreground text-right tabular-nums">{share(m.gross, m.costedSales)}</TableCell>
-                {categories.map((c) => (
-                  <TableCell key={c} className="text-muted-foreground text-right tabular-nums">
-                    {m.byCategory[c] ? tlShort(m.byCategory[c]) : "—"}
-                  </TableCell>
-                ))}
-                <TableCell className="text-right tabular-nums">{tlShort(m.expenses)}</TableCell>
-                <TableCell className="text-right font-medium">
-                  <Signed value={m.net} />
-                </TableCell>
+                {cells(m)}
               </TableRow>
             ))}
           </TableBody>
           <TableFooter>
-            {shownYears.map((y) => (
-              <TableRow key={y.year}>
-                <TableCell>{y.year}</TableCell>
-                <TableCell className="text-right tabular-nums">{tlShort(y.sales)}</TableCell>
-                <TableCell className="text-right">
-                  <Signed value={y.gross} />
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{share(y.gross, y.costedSales)}</TableCell>
-                {categories.map((c) => (
-                  <TableCell key={c} className="text-right tabular-nums">
-                    {tlShort(y.byCategory[c] ?? 0)}
-                  </TableCell>
-                ))}
-                <TableCell className="text-right tabular-nums">{tlShort(y.expenses)}</TableCell>
-                <TableCell className="text-right">
-                  <Signed value={y.net} />
-                </TableCell>
-              </TableRow>
-            ))}
+            <TableRow>
+              <TableCell>Toplam</TableCell>
+              {cells(total)}
+            </TableRow>
           </TableFooter>
         </Table>
       </CardContent>

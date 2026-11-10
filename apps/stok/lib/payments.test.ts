@@ -60,9 +60,9 @@ describe("Tahsilat", { skip: skipWithoutDatabase }, () => {
   test("a delivered proforma that was never invoiced counts as a faturasız sale of its year", async () => {
     const id = await invoices.createManualInvoice(admin.headers, sale({ kdvRate: 0 }));
     await invoices.createManualInvoice(admin.headers, sale({ kdvRate: 0 }));
-    assert.equal(await payments.unInvoicedSales(admin.headers, "2026"), 0, "not delivered yet");
+    assert.equal(await payments.unInvoicedSales(admin.headers, "2026-01-01", "2026-12-31"), 0, "not delivered yet");
     await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: null, lines: [{ seq: 1, productId: null, stockQuantity: null }] });
-    assert.equal(await payments.unInvoicedSales(admin.headers, "2026"), 1000);
+    assert.equal(await payments.unInvoicedSales(admin.headers, "2026-01-01", "2026-12-31"), 1000);
   });
 
   test("only the Finans paneli sees or records payments", async () => {
