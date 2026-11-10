@@ -10,6 +10,7 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { correctStockOutAction, deleteStockOutAction } from "@/app/(app)/stok-cikisi/actions";
 import { FormDialog } from "@/components/form-dialog";
+import type { ActionState } from "@/lib/action-result";
 import { FormSelect } from "@/components/form-select";
 import { toastResult } from "@/components/form-status";
 import { displayQuantity, movementTypeLabels } from "@/lib/labels";
@@ -24,7 +25,8 @@ export function StockOutRowActions({ movement: m }: { movement: Movement }) {
   const router = useRouter();
   const [dialog, setDialog] = useState<"duzenle" | "sil" | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
-  const label = `${m.productCode} · ${displayQuantity(m.quantity.replace("-", ""))} ${unitLabels[m.unit]}`;
+  const quantity = displayQuantity(m.quantity.replace("-", ""));
+  const label = `${m.productCode} · ${quantity} ${unitLabels[m.unit]}`;
 
   if (m.documentKind === "fatura") {
     return (
@@ -37,7 +39,7 @@ export function StockOutRowActions({ movement: m }: { movement: Movement }) {
   }
   if (m.documentKind !== "stok_cikisi") return null;
 
-  const done = (result: Awaited<ReturnType<typeof deleteStockOutAction>>, message: string) => {
+  const done = (result: ActionState, message: string) => {
     if (!toastResult(result, message)) return false;
     setIdempotencyKey(crypto.randomUUID());
     router.refresh();
@@ -82,7 +84,7 @@ export function StockOutRowActions({ movement: m }: { movement: Movement }) {
           </Label>
           <Label className="flex-col items-stretch gap-1">
             Miktar ({unitLabels[m.unit]})
-            <Input name="quantity" defaultValue={displayQuantity(m.quantity.replace("-", ""))} inputMode="decimal" className="font-normal tabular-nums" />
+            <Input name="quantity" defaultValue={quantity} inputMode="decimal" className="font-normal tabular-nums" />
           </Label>
         </div>
         <Label className="flex-col items-stretch gap-1">

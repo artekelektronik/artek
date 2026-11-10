@@ -4,11 +4,9 @@ import { db } from "../db";
 import { lokasyon, product, stock, stockDocument, stockMovement } from "../db/schema";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
-import { postDocument, postDocumentIn, reversalLine } from "./ledger";
+import { postDocument, postDocumentIn, reversalLine, reverseMovement } from "./ledger";
 import { addQuantities, formatQuantity, subtractQuantity, unitLabels } from "./quantity";
 import { stockOutTypes } from "./stock-out-types";
-
-export { stockOutTypes };
 
 const stockOutInput = z.object({
   type: z.enum(stockOutTypes, { error: "Çıkış türü seçin." }),
@@ -83,11 +81,8 @@ export async function correctStockOut(headers: Headers, movementId: string, inpu
 export async function deleteStockOut(headers: Headers, movementId: string, { idempotencyKey }: { idempotencyKey: string }) {
   const done = await alreadyDone(idempotencyKey);
   if (done) return done;
-  const original = await correctable(headers, movementId);
-  const actor = await requirePermission(headers, "stock.reverse");
-  return postDocument({ kind: "ters_kayit", lokasyonId: original.lokasyonId, reason: "Stok çıkışı silindi", userId: actor.userId, idempotencyKey }, [
-    reversalLine(original, "Stok çıkışı silindi"),
-  ]);
+  await correctable(headers, movementId);
+  return reverseMovement(headers, movementId, { reason: "Stok çıkışı silindi", idempotencyKey });
 }
 
 // Each product of a stock-out with its balance before and after, so the person saving it sees it was taken off.

@@ -12,7 +12,7 @@ import { ratesOn } from "./historic-rates";
 import { priceInvoiceMoves } from "./invoice-move-prices";
 import { loadPrices } from "./prices";
 import { addQuantities, formatQuantity, unitLabels, type Unit } from "./quantity";
-import { stockOutTypes } from "./stock-out";
+import { stockOutTypes } from "./stock-out-types";
 import { exitValue, type Price } from "./stock-value";
 import { addDays, istanbulDate, istanbulTimeOn, weekStart } from "./time";
 

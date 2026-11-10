@@ -12,7 +12,7 @@ import { movementTypeLabels } from "@/lib/labels";
 import { listMovements } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { activeProducts, availableByLokasyon, lokasyonFor } from "@/lib/pickers";
-import { stockOutTypes } from "@/lib/stock-out";
+import { stockOutTypes } from "@/lib/stock-out-types";
 import { dayRange, type DateRangeParams } from "@/lib/time";
 import { movementPrices } from "@/lib/stock-out-report";
 import { recordStockOutAction } from "./actions";
