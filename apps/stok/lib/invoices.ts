@@ -14,7 +14,7 @@ import { postDocumentIn, reversalLine } from "./ledger";
 import { can } from "./permissions";
 import { formatIstanbulTime, istanbulDate } from "./time";
 import { linkLeadsByTaxId } from "./leads";
-import { missingNumbers, money } from "./finance-calc";
+import { manualTotals, missingNumbers, money } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
 
 export type ImportResult =
@@ -506,13 +506,13 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
     if (!data.buyer.name || !/^\d{10,11}$/.test(data.buyer.taxId)) throw new UserError("Yeni müşteri için ad ve 10 haneli VKN ya da 11 haneli TCKN yazın.");
     buyer = { name: data.buyer.name, taxId: data.buyer.taxId, taxIdType: data.buyer.taxId.length === 11 ? "TCKN" : "VKN", city: "", district: "", email: null };
   }
-  const kdv = 1 + data.kdvRate / 100;
-  const typed = data.pricesIncludeKdv ? kdv : 1;
-  const unitPrices = data.lines.map((l) => (Number(l.unitPrice) / typed).toFixed(4));
-  const amounts = data.lines.map((l) => money((Number(l.quantity) * Number(l.unitPrice)) / typed));
-  const net = amounts.reduce((s, a) => s + Number(a), 0);
-  // Typed with KDV, the total is what was typed; otherwise KDV is added on top.
-  const total = data.pricesIncludeKdv ? data.lines.reduce((s, l) => s + Number(l.quantity) * Number(l.unitPrice), 0) : net * kdv;
+  const { amounts: lineNets, net, total } = manualTotals(
+    data.lines.map((l) => ({ quantity: Number(l.quantity), unitPrice: Number(l.unitPrice) })),
+    data.kdvRate,
+    data.pricesIncludeKdv,
+  );
+  const amounts = lineNets.map(money);
+  const unitPrices = data.lines.map((l) => (Number(l.unitPrice) / (data.pricesIncludeKdv ? 1 + data.kdvRate / 100 : 1)).toFixed(4));
 
   return db.transaction(async (tx) => {
     const [taken] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.number, data.number));

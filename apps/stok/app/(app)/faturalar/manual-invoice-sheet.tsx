@@ -13,13 +13,13 @@ import { Switch } from "@artek/ui/components/switch";
 import { Combobox } from "@/components/combobox";
 import { FormSheet, SheetActions } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
-import { tl } from "@/lib/finance-calc";
+import { kdvRates, manualTotals, tl } from "@/lib/finance-calc";
 import { newCustomer } from "@/lib/invoice-match";
 import type { manualInvoiceOptions } from "@/lib/invoices";
 import { unitLabels } from "@/lib/quantity";
 import { createManualInvoiceAction } from "./actions";
 import { Materials, ModeField } from "./line-fields";
-import { amount, componentsSchema, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe } from "./options";
+import { amount, componentsSchema, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
 import { useFatura, useManualInvoice } from "./use-fatura";
 
 type Options = Awaited<ReturnType<typeof manualInvoiceOptions>>;
@@ -31,7 +31,7 @@ const formSchema = z
     issuedOn: z.iso.date({ error: "Tarihi seçin." }),
     type: z.enum(["SATIS", "IADE"]),
     scenario: z.enum(["TEMELFATURA", "EARSIVFATURA"]),
-    kdvRate: z.enum(["20", "10", "1", "0"]),
+    kdvRate: z.enum(kdvRates.map(String) as [string, ...string[]]),
     pricesIncludeKdv: z.boolean(),
     customerId: z.string().min(1, { error: "Müşteriyi seçin." }),
     buyerName: z.string().trim(),
@@ -169,12 +169,11 @@ function ManualInvoiceForm({ options }: { options: Options }) {
         <div className="grid gap-4 sm:grid-cols-3">
           {text("number", "Fatura no", { placeholder: "AAA2026000000330", className: "tabular-nums" })}
           {text("issuedOn", "Tarih", { type: "date" })}
-          {choice("kdvRate", "KDV", [
-            ["20", "%20"],
-            ["10", "%10"],
-            ["1", "%1"],
-            ["0", "%0 · istisna / ihracat"],
-          ])}
+          {choice(
+            "kdvRate",
+            "KDV",
+            kdvRates.map((r) => [String(r), r ? `%${r}` : "%0 · istisna / ihracat"]),
+          )}
           {choice("type", "Tür", [
             ["SATIS", "Satış"],
             ["IADE", "İade"],
@@ -243,10 +242,11 @@ function ManualInvoiceForm({ options }: { options: Options }) {
 
 function Totals() {
   const [lines, kdvRate, included] = useWatch<FormValues, ["lines", "kdvRate", "pricesIncludeKdv"]>({ name: ["lines", "kdvRate", "pricesIncludeKdv"] });
-  const kdv = 1 + Number(kdvRate) / 100;
-  const typed = lineNet(lines);
-  const net = included ? typed / kdv : typed;
-  const total = included ? typed : typed * kdv;
+  const { net, total } = manualTotals(
+    lines.map((l) => ({ quantity: toNumber(l.quantity) || 0, unitPrice: toNumber(l.unitPrice) || 0 })),
+    Number(kdvRate),
+    included,
+  );
   return (
     <p className="text-muted-foreground text-xs tabular-nums">
       KDV hariç {tl(net)} · KDV {tl(total - net)} · KDV dahil {tl(total)}

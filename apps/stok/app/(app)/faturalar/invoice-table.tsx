@@ -183,8 +183,9 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, un
       {(shown) => {
         const confirmed = shown.filter((r) => r.status === "onaylandi");
         const sum = (rows: InvoiceRow[], key: "netAmount" | "totalAmount" = "netAmount") => rows.reduce((s, r) => s + Number(r[key]), 0);
-        const sales = sum(confirmed.filter((r) => r.type !== "IADE"));
-        const salesWithKdv = sum(confirmed.filter((r) => r.type !== "IADE"), "totalAmount");
+        const sold = confirmed.filter((r) => r.type !== "IADE");
+        const sales = sum(sold);
+        const salesWithKdv = sum(sold, "totalAmount");
         const returns = sum(confirmed.filter((r) => r.type === "IADE"));
         const waiting = shown.length - confirmed.length;
         return (
