@@ -2,6 +2,9 @@ import { z } from "zod";
 import { displayQuantity } from "@/lib/labels";
 import { formatQuantity } from "@/lib/quantity";
 
+// ?elle= opens the manual sheet as a hand-typed invoice or a proforma (ADR-0008).
+export const manualModes = ["fatura", "proforma"] as const;
+
 export const notInCatalogue = "yok"; // a line's product choice when it isn't an Ürün (labour, freight)
 
 export const decimal = (value: string) => displayQuantity(formatQuantity(value));

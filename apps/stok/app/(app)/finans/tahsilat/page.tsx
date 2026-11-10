@@ -18,20 +18,19 @@ export const metadata = { title: "Tahsilat | Artek" };
 
 type Sale = Awaited<ReturnType<typeof listCollections>>[number];
 
-// The three lists of ADR-0008: what is owed, what is invoiced and paid, what was paid without an invoice.
 export default async function CollectionsPage() {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
   const sales = await listCollections(requestHeaders);
+  const sum = (rows: Sale[], f: (s: Sale) => number) => rows.reduce((t, s) => t + f(s), 0);
+  const paid = sales.filter((s) => s.state === "odendi");
   const lists = [
-    { key: "beklenen", title: "Beklenen ödemeler", rows: sales.filter((s) => s.state !== "odendi") },
-    { key: "faturali", title: "Faturalı, ödenmiş", rows: sales.filter((s) => s.state === "odendi" && !s.proforma) },
-    { key: "faturasiz", title: "Faturasız, ödenmiş", rows: sales.filter((s) => s.state === "odendi" && s.proforma) },
+    { key: "beklenen", title: "Beklenen ödemeler", card: "Beklenen ödeme", icon: Clock, unit: "satış", amount: (s: Sale) => s.owed, rows: sales.filter((s) => s.state !== "odendi") },
+    { key: "faturali", title: "Faturalı, ödenmiş", card: "Faturalı, ödenmiş", icon: CircleCheck, unit: "fatura", amount: (s: Sale) => s.total, rows: paid.filter((s) => !s.proforma) },
+    { key: "faturasiz", title: "Faturasız, ödenmiş", card: "Faturasız, ödenmiş", icon: Receipt, unit: "proforma", amount: (s: Sale) => s.total, rows: paid.filter((s) => s.proforma) },
   ];
-  const owed = (rows: Sale[]) => rows.reduce((t, s) => t + s.total - s.paid, 0);
-  const totalOf = (rows: Sale[]) => rows.reduce((t, s) => t + s.total, 0);
 
   return (
     <PanelShell
@@ -39,9 +38,9 @@ export default async function CollectionsPage() {
       lede={`Satışların ödemeleri, KDV dahil. Ödeme, faturanın ya da proformanın kendi sayfasından girilir. ${day(paymentsTrackedFrom)} öncesi satışlar ödenmiş sayılır.`}
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <StatCard label="Beklenen ödeme" value={tl(owed(lists[0].rows))} note={`${lists[0].rows.length} satış`} icon={Clock} />
-        <StatCard label="Faturalı, ödenmiş" value={tl(totalOf(lists[1].rows))} note={`${lists[1].rows.length} fatura`} icon={CircleCheck} />
-        <StatCard label="Faturasız, ödenmiş" value={tl(totalOf(lists[2].rows))} note={`${lists[2].rows.length} proforma`} icon={Receipt} />
+        {lists.map((l) => (
+          <StatCard key={l.key} label={l.card} value={tl(sum(l.rows, l.amount))} note={`${l.rows.length} ${l.unit}`} icon={l.icon} />
+        ))}
       </div>
 
       <PanelCard title="Satışlar" note="Proformalar onaylanmadan da burada görünür; ön ödeme alınabilir.">
@@ -93,7 +92,7 @@ function SalesTable({ rows }: { rows: Sale[] }) {
             <TableCell className="max-w-64 truncate">{s.customer}</TableCell>
             <TableCell className="text-right tabular-nums">{tl(s.total)}</TableCell>
             <TableCell className="text-right tabular-nums">{tl(s.paid)}</TableCell>
-            <TableCell className="text-right font-medium tabular-nums">{tl(Math.max(0, s.total - s.paid))}</TableCell>
+            <TableCell className="text-right font-medium tabular-nums">{tl(s.owed)}</TableCell>
             <TableCell>
               <Badge variant="outline">{paymentStateLabels[s.state]}</Badge>
             </TableCell>
@@ -105,7 +104,7 @@ function SalesTable({ rows }: { rows: Sale[] }) {
           <TableCell colSpan={3}>{rows.length.toLocaleString("tr-TR")} satış</TableCell>
           <TableCell className="text-right tabular-nums">{tl(sum((s) => s.total))}</TableCell>
           <TableCell className="text-right tabular-nums">{tl(sum((s) => s.paid))}</TableCell>
-          <TableCell className="text-right tabular-nums">{tl(sum((s) => Math.max(0, s.total - s.paid)))}</TableCell>
+          <TableCell className="text-right tabular-nums">{tl(sum((s) => s.owed))}</TableCell>
           <TableCell />
         </TableRow>
       </TableFooter>

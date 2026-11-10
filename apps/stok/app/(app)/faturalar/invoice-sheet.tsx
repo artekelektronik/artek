@@ -25,15 +25,15 @@ import { compact } from "@/lib/product-search";
 import type { InvoiceReview } from "@/lib/invoices";
 import { invoiceKind } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
+import { istanbulDate } from "@/lib/time";
 import { confirmInvoiceAction } from "./actions";
 import { AttachProforma } from "./attach-proforma";
 import { DeleteInvoiceDialog } from "./invoice-delete";
-import { SalePayments } from "./sale-payments";
 import { InvoiceStatusBadge } from "./invoice-status";
 import { pdfUrl } from "./invoice-table";
 import { Materials, ModeField } from "./line-fields";
+import { SalePayments } from "./sale-payments";
 import { amount, componentsSchema, decimal, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber, type Mode } from "./options";
-import { istanbulDate } from "@/lib/time";
 import { useFatura } from "./use-fatura";
 
 const formSchema = z
@@ -94,7 +94,9 @@ export function InvoiceSheet({ review, canEdit }: { review: InvoiceReview | null
 
 function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview; canEdit: boolean; onDone: () => void }) {
   const confirmed = review.status === "onaylandi";
-  const editable = canEdit && !confirmed && !review.archivedAt && (!review.manual || review.proforma);
+  const handTyped = review.manual && !review.proforma; // a manual invoice waiting for its PDF
+  const kind = review.proforma ? "Proforma" : "Fatura";
+  const editable = canEdit && !confirmed && !review.archivedAt && !handTyped;
   const [deleting, setDeleting] = useState(false);
   const lokasyonId = review.lokasyonId ?? lokasyonLike(review, /mağaza/i);
 
@@ -137,7 +139,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
         };
       }),
     });
-    if (toastResult(result, `${review.proforma ? "Proforma" : "Fatura"} ${review.number} onaylandı.`)) onDone();
+    if (toastResult(result, `${kind} ${review.number} onaylandı.`)) onDone();
   }
 
   const productOptions = useMemo(() => review.products.map(productOption), [review.products]);
@@ -151,11 +153,11 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
       <SheetHeader className="border-b">
         <div className="flex flex-wrap items-center gap-2 pr-8">
           <SheetTitle className="tabular-nums">
-            {review.proforma ? "Proforma" : "Fatura"} {review.number}
+            {kind} {review.number}
           </SheetTitle>
           {review.archivedAt ? <Badge variant="outline">Arşivde</Badge> : <InvoiceStatusBadge status={review.status} />}
           <Badge variant="outline">{invoiceKind(review)}</Badge>
-          {review.manual && !review.proforma && <Badge variant="outline">Elle girildi</Badge>}
+          {handTyped && <Badge variant="outline">Elle girildi</Badge>}
         </div>
         <SheetDescription className="tabular-nums">
           {day(review.issuedOn)} · {tl(Number(review.netAmount))} KDV hariç · KDV {tl(Number(review.totalAmount) - Number(review.netAmount))} ({kdvRateLabel(Number(review.netAmount), Number(review.totalAmount))}) ·{" "}
@@ -172,14 +174,14 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
             </TabsList>
 
             <TabsContent value="fatura" className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
-              {canEdit && review.ettn && !confirmed && !review.archivedAt && <AttachProforma review={review} />}
+              {canEdit && <AttachProforma review={review} />}
               {review.proforma && !confirmed && (
                 <Alert>
                   <FileText />
                   <AlertDescription>Proforma. Ürünler teslim edilince onaylayın; stok o zaman düşer. e-Faturası gelince PDF’i yükleyip bu proformaya bağlayın.</AlertDescription>
                 </Alert>
               )}
-              {review.manual && !review.proforma && (
+              {handTyped && (
                 <Alert>
                   <FileText />
                   <AlertDescription>
@@ -223,7 +225,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
                 )}
               </section>
 
-              {(confirmed || review.proforma) && !review.isReturn && !review.archivedAt && <SalePayments review={review} canEdit={canEdit} today={istanbulDate(new Date())} />}
+              {review.payable && <SalePayments review={review} canEdit={canEdit} today={istanbulDate(new Date())} />}
 
               <FormField
                 control={form.control}

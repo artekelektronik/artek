@@ -16,6 +16,7 @@ import { formatIstanbulTime, istanbulDate } from "./time";
 import { linkLeadsByTaxId } from "./leads";
 import { manualTotals, missingNumbers, money } from "./finance-calc";
 import { InvoiceParseError, parseInvoiceText, productGroup, productName } from "./invoice-parse";
+import { proformaScenario } from "./labels";
 
 export type ImportResult =
   | { status: "eklendi" | "tekrar"; id: string; number: string; customer: string; issuedOn: string; pdfAdded?: boolean }
@@ -260,13 +261,13 @@ export async function invoiceReview(headers: Headers, id: string) {
           )
           .orderBy(asc(invoice.confirmedAt)),
     db.select().from(payment).where(eq(payment.invoiceId, id)).orderBy(asc(payment.paidOn), asc(payment.createdAt)),
-    // An uploaded e-Fatura still waiting can become one of these (ADR-0008); the buyer's own first.
-    row.ettn && !confirmed
+    // Proformas a waiting e-Fatura can become (same KDV-hariç total, ADR-0008); the buyer's own first.
+    row.ettn && !confirmed && !row.archivedAt
       ? db
-          .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, netAmount: invoice.netAmount, buyer: invoice.buyer })
+          .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, netAmount: invoice.netAmount, buyerName: sql<string>`${invoice.buyer}->>'name'`, sameBuyer: sql<boolean>`${invoice.buyer}->>'taxId' = ${row.buyer.taxId}` })
           .from(invoice)
-          .where(and(eq(invoice.scenario, proformaScenario), isNull(invoice.archivedAt)))
-          .orderBy(desc(invoice.issuedOn))
+          .where(and(eq(invoice.scenario, proformaScenario), isNull(invoice.archivedAt), sql`abs(${invoice.netAmount} - ${row.netAmount}) <= 1`))
+          .orderBy(sql`${invoice.buyer}->>'taxId' = ${row.buyer.taxId} desc`, desc(invoice.issuedOn))
       : [],
   ]);
   const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
@@ -277,10 +278,9 @@ export async function invoiceReview(headers: Headers, id: string) {
   return {
     ...row,
     proforma,
+    payable: (confirmed || proforma) && !isReturn && !row.archivedAt,
     payments,
-    openProformas: openProformas
-      .map(({ buyer, ...p }) => ({ ...p, buyerName: buyer.name, sameBuyer: buyer.taxId === row.buyer.taxId }))
-      .sort((a, b) => Number(b.sameBuyer) - Number(a.sameBuyer)),
+    openProformas,
     confirmedAtText: row.confirmedAt ? formatIstanbulTime(row.confirmedAt) : null,
     isReturn,
     customerMatch: row.customerId ? { customerId: row.customerId, suggestions: [] } : matchCustomer(row.buyer, customers),
@@ -484,8 +484,6 @@ export async function deleteInvoice(headers: Headers, id: string) {
   });
 }
 
-export const proformaScenario = "PROFORMA";
-
 const manualInput = z.object({
   proforma: z.boolean().default(false), // numbered PRF-…, confirmed without a PDF (ADR-0008)
   number: z.string().trim(),
@@ -585,8 +583,7 @@ async function nextProformaNumber(tx: Tx, year: string) {
   return `PRF-${year}-${String(n).padStart(4, "0")}`;
 }
 
-// The uploaded e-Fatura becomes its proforma: the proforma takes the PDF's identity, file and totals,
-// keeps its lines, stock and payments, and the upload goes away (ADR-0008).
+// The proforma takes the upload's identity, file and totals and keeps its lines, stock and payments; the upload is deleted (ADR-0008).
 export async function attachToProforma(headers: Headers, uploadedId: string, proformaId: string) {
   const actor = await requirePermission(headers, "finance.edit");
   if (!isUuid(uploadedId) || !isUuid(proformaId)) throw new UserError("Fatura bulunamadı.");

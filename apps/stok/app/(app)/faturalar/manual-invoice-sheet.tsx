@@ -19,7 +19,7 @@ import type { manualInvoiceOptions } from "@/lib/invoices";
 import { unitLabels } from "@/lib/quantity";
 import { createManualInvoiceAction } from "./actions";
 import { Materials, ModeField } from "./line-fields";
-import { amount, componentsSchema, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
+import { amount, componentsSchema, manualModes, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
 import { useFatura, useManualInvoice } from "./use-fatura";
 
 type Options = Awaited<ReturnType<typeof manualInvoiceOptions>>;
@@ -324,20 +324,11 @@ function ManualLine({ index, options, productOptions, onRemove }: { index: numbe
   );
 }
 
-export function ManualInvoiceButton() {
+export function ManualInvoiceButton({ mode }: { mode: (typeof manualModes)[number] }) {
   const [, setManual] = useManualInvoice();
   return (
-    <Button type="button" variant="outline" onClick={() => setManual("fatura")}>
-      <Plus /> Elle fatura
-    </Button>
-  );
-}
-
-export function ProformaButton() {
-  const [, setManual] = useManualInvoice();
-  return (
-    <Button type="button" variant="outline" onClick={() => setManual("proforma")}>
-      <Plus /> Proforma
+    <Button type="button" variant="outline" onClick={() => setManual(mode)}>
+      <Plus /> {mode === "proforma" ? "Proforma" : "Elle fatura"}
     </Button>
   );
 }

@@ -6,7 +6,8 @@ import { runAction, runStockAction, type ActionState } from "@/lib/action-result
 import { archiveInvoice, restoreInvoice } from "@/lib/archive";
 import { invoicesChanged } from "@/lib/finance";
 import { attachToProforma, confirmInvoice, createManualInvoice, deleteInvoice, type ConfirmInvoiceInput, type ManualInvoiceInput } from "@/lib/invoices";
-import { addPayment, deletePayment, type PaymentInput } from "@/lib/payments";
+import type { PaymentInput } from "@/lib/payment-state";
+import { addPayment, deletePayment } from "@/lib/payments";
 
 function done(state: ActionState) {
   if (state?.saved) invoicesChanged();

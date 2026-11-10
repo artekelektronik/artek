@@ -11,7 +11,8 @@ import { formatIstanbulTime } from "@/lib/time";
 import { InvoiceSheet } from "./invoice-sheet";
 import { InvoiceTable } from "./invoice-table";
 import { InvoiceUpload } from "./invoice-upload";
-import { ManualInvoiceButton, ManualInvoiceSheet, ProformaButton } from "./manual-invoice-sheet";
+import { ManualInvoiceButton, ManualInvoiceSheet } from "./manual-invoice-sheet";
+import { manualModes } from "./options";
 
 export const metadata = { title: "Faturalar | Artek" };
 
@@ -26,7 +27,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
   const [{ rows, lastUpload, gaps }, review, manualOptions] = await Promise.all([
     invoiceList(requestHeaders),
     fatura ? invoiceReview(requestHeaders, fatura) : null,
-    (elle === "fatura" || elle === "proforma") && canUpload ? manualInvoiceOptions(requestHeaders) : null,
+    manualModes.some((m) => m === elle) && canUpload ? manualInvoiceOptions(requestHeaders) : null,
   ]);
   const waiting = rows.filter((r) => r.status === "taslak" && !r.archivedAt).length;
 
@@ -55,8 +56,8 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
       actions={
         canUpload && (
           <>
-            <ProformaButton />
-            <ManualInvoiceButton />
+            <ManualInvoiceButton mode="proforma" />
+            <ManualInvoiceButton mode="fatura" />
             <InvoiceUpload />
           </>
         )

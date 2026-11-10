@@ -1,39 +1,41 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import type { z } from "zod";
 import { Trash2 } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
 import { Input } from "@artek/ui/components/input";
-import { Label } from "@artek/ui/components/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@artek/ui/components/select";
 import { DatePicker } from "@/components/date-picker";
-import { FormSelect } from "@/components/form-select";
 import { toastResult } from "@/components/form-status";
-import { day, tl } from "@/lib/finance-calc";
+import { displayDecimal } from "@/lib/decimal";
+import { day, money, tl } from "@/lib/finance-calc";
 import type { InvoiceReview } from "@/lib/invoices";
-import { paymentMethodLabels, paymentState, paymentStateLabels, type PaymentMethod } from "@/lib/payment-state";
+import { owed, paymentInput, paymentMethodLabels, paymentState, paymentStateLabels, type PaymentInput } from "@/lib/payment-state";
 import { addPaymentAction, deletePaymentAction } from "./actions";
 
-const methodOptions = Object.entries(paymentMethodLabels).map(([value, label]) => ({ value, label }));
-
-// Tahsilat of one sale; not a <form>, because it sits inside the invoice's confirm form.
+// Tahsilat of one sale. No <form> element: it sits inside the invoice's confirm form, so the button submits it.
 export function SalePayments({ review, canEdit, today }: { review: InvoiceReview; canEdit: boolean; today: string }) {
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [paidOn, setPaidOn] = useState(today);
-  const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<PaymentMethod>("havale");
-  const [note, setNote] = useState("");
+  const form = useForm<PaymentInput, unknown, z.output<typeof paymentInput>>({
+    resolver: standardSchemaResolver(paymentInput),
+    defaultValues: { paidOn: today, amount: "", method: "havale", note: "" },
+  });
   const total = Number(review.totalAmount);
   const paid = review.payments.reduce((s, p) => s + Number(p.amount), 0);
+  const left = owed(total, paid);
   const state = paymentState(total, paid, review.issuedOn);
 
-  const add = () =>
+  const add = (values: z.output<typeof paymentInput>) =>
     start(async () => {
-      if (!toastResult(await addPaymentAction(review.id, { paidOn, amount, method, note }), "Tahsilat eklendi.")) return;
-      setAmount("");
-      setNote("");
+      if (!toastResult(await addPaymentAction(review.id, values), "Tahsilat eklendi.")) return;
+      form.reset({ ...values, amount: "", note: "" });
       router.refresh();
     });
   const remove = (id: string) =>
@@ -48,7 +50,7 @@ export function SalePayments({ review, canEdit, today }: { review: InvoiceReview
         <Badge variant="outline">{paymentStateLabels[state]}</Badge>
       </div>
       <p className="text-muted-foreground text-xs tabular-nums">
-        Toplam {tl(total)} (KDV dahil) · Ödenen {tl(paid)} · Kalan {tl(Math.max(0, total - paid))}
+        Toplam {tl(total)} (KDV dahil) · Ödenen {tl(paid)} · Kalan {tl(left)}
       </p>
       {review.payments.length > 0 && (
         <ul className="divide-y rounded-md border">
@@ -67,28 +69,81 @@ export function SalePayments({ review, canEdit, today }: { review: InvoiceReview
           ))}
         </ul>
       )}
-      {canEdit && total - paid > 0.005 && (
-        <div className="grid items-end gap-2 sm:grid-cols-[auto_8rem_10rem_1fr_auto]">
-          <Label className="flex-col items-stretch gap-1 text-xs">
-            Tarih
-            <DatePicker name="paidOn" defaultValue={today} onChange={setPaidOn} />
-          </Label>
-          <Label className="flex-col items-stretch gap-1 text-xs">
-            Tutar
-            <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder={String(Math.round((total - paid) * 100) / 100).replace(".", ",")} className="font-normal tabular-nums" />
-          </Label>
-          <Label className="flex-col items-stretch gap-1 text-xs">
-            Şekli
-            <FormSelect name="method" options={methodOptions} defaultValue={method} onValueChange={(v) => setMethod(v as PaymentMethod)} className="w-full" />
-          </Label>
-          <Label className="flex-col items-stretch gap-1 text-xs">
-            Not
-            <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Dekont no, banka…" className="font-normal" />
-          </Label>
-          <Button type="button" disabled={pending || !amount} onClick={add}>
-            Ekle
-          </Button>
-        </div>
+      {canEdit && left > 0 && (
+        <Form {...form}>
+          <div
+            className="grid items-start gap-2 sm:grid-cols-[auto_8rem_10rem_1fr_auto]"
+            // Enter would otherwise submit the invoice's confirm form around it.
+            onKeyDown={(e) => {
+              if (e.key !== "Enter") return;
+              e.preventDefault();
+              void form.handleSubmit(add)();
+            }}
+          >
+            <FormField
+              control={form.control}
+              name="paidOn"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Tarih</FormLabel>
+                  <DatePicker name={field.name} defaultValue={field.value} onChange={field.onChange} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Tutar</FormLabel>
+                  <FormControl>
+                    <Input {...field} inputMode="decimal" placeholder={displayDecimal(money(left))} className="tabular-nums" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Şekli</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(paymentMethodLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="note"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">Not</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Dekont no, banka…" />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button type="button" className="mt-5" disabled={pending} onClick={form.handleSubmit(add)}>
+              Ekle
+            </Button>
+          </div>
+        </Form>
       )}
     </section>
   );

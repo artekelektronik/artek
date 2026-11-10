@@ -15,7 +15,7 @@ import { useFatura } from "./use-fatura";
 export function AttachProforma({ review }: { review: InvoiceReview }) {
   const [, setFatura] = useFatura();
   const [pending, start] = useTransition();
-  const [picked, setPicked] = useState(review.openProformas.find((p) => p.sameBuyer)?.id ?? "");
+  const [picked, setPicked] = useState(review.openProformas[0]?.sameBuyer ? review.openProformas[0].id : "");
   if (!review.openProformas.length) return null;
   const options = review.openProformas.map((p) => ({ value: p.id, label: `${p.number} · ${p.buyerName} · ${day(p.issuedOn)} · ${tl(Number(p.netAmount))}` }));
 
