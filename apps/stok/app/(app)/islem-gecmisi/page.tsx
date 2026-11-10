@@ -1,12 +1,12 @@
 import { headers } from "next/headers";
 import { connection } from "next/server";
-import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { NoAccess } from "@/components/no-access";
 import { PanelShell } from "@/components/panel";
 import { listActivity } from "@/lib/activity";
 import { loadActor } from "@/lib/guard";
 import { can } from "@/lib/permissions";
-import { dayRange } from "@/lib/time";
+import { dayRange, type DateRangeParams } from "@/lib/time";
 import { ActivityList, type ActivityRow } from "./activity-list";
 
 export const metadata = { title: "İşlem geçmişi | Artek" };
@@ -24,7 +24,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
       title="İşlem geçmişi"
       lede="Sistemde kim neyi ne zaman yaptı: ürünler, fiyatlar, stok, faturalar, müşteriler, adaylar ve kullanıcılar. En yenisi en üstte. Fiyat, fatura ve müşteri kayıtlarını yalnızca o panelin izni olanlar görür."
     >
-      <DateRangeForm params={params} />
+      <DateRangeFilter />
       <ActivityList key={range.key} rows={rows} />
     </PanelShell>
   );

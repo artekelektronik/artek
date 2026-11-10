@@ -21,19 +21,22 @@ const column = columnHelperFor<Movement>();
 const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boolean).join(" · ");
 
 // `values` (movement id to TL) is passed only to a Finans paneli holder; without it there is no Tutar column.
+// `forProduct`: every row is the same Ürün, so its Ürün and Kategori columns are left out.
 export function MovementTable({
   movements,
   canReverse,
   values,
+  forProduct = false,
 }: {
   movements: Movement[];
   canReverse: boolean;
   values?: Record<string, number | null>;
+  forProduct?: boolean;
 }) {
   const reversed = new Set(movements.map((m) => m.reversesId).filter(Boolean));
 
   const columns = column.columns([
-    searchColumn<Movement>((m) => [m.productCode, m.productName, m.productCategory, document(m), m.userName].join(" "), "Ürün, kategori, belge veya neden"),
+    searchColumn<Movement>((m) => [m.productCode, m.productName, m.productCategory, document(m), m.userName].join(" "), forProduct ? "Belge, neden veya kullanıcı" : "Ürün, kategori, belge veya neden"),
     column.accessor("createdAt", {
       id: "zaman",
       size: 130,
@@ -54,28 +57,32 @@ export function MovementTable({
       enableColumnFilter: true,
       meta: { label: "Tür", variant: "multiSelect", options: options(movements.map((m) => movementTypeLabels[m.type])) },
     }),
-    column.accessor("productName", {
-      id: "urun",
-      size: 180,
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Ürün" />,
-      cell: ({ row }) => (
-        <div className="flex flex-col whitespace-normal">
-          <Link href={`/urunler/${row.original.productId}`} className="font-medium underline-offset-4 hover:underline">
-            {row.original.productName}
-          </Link>
-          <span className="text-muted-foreground font-mono text-xs">{row.original.productCode}</span>
-        </div>
-      ),
-      meta: { label: "Ürün" },
-    }),
-    column.accessor("productCategory", {
-      id: "kategori",
-      size: 100,
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Kategori" />,
-      cell: ({ row }) => <CategoryBadge category={row.original.productCategory} />,
-      enableColumnFilter: true,
-      meta: { label: "Kategori", variant: "multiSelect", options: options(movements.map((m) => m.productCategory)) },
-    }),
+    ...(forProduct
+      ? []
+      : [
+          column.accessor("productName", {
+            id: "urun",
+            size: 180,
+            header: ({ column }) => <DataTableColumnHeader column={column} label="Ürün" />,
+            cell: ({ row }) => (
+              <div className="flex flex-col whitespace-normal">
+                <Link href={`/urunler/${row.original.productId}`} className="font-medium underline-offset-4 hover:underline">
+                  {row.original.productName}
+                </Link>
+                <span className="text-muted-foreground font-mono text-xs">{row.original.productCode}</span>
+              </div>
+            ),
+            meta: { label: "Ürün" },
+          }),
+          column.accessor("productCategory", {
+            id: "kategori",
+            size: 100,
+            header: ({ column }) => <DataTableColumnHeader column={column} label="Kategori" />,
+            cell: ({ row }) => <CategoryBadge category={row.original.productCategory} />,
+            enableColumnFilter: true,
+            meta: { label: "Kategori", variant: "multiSelect", options: options(movements.map((m) => m.productCategory)) },
+          }),
+        ]),
     column.accessor((m) => m.lokasyonName ?? "Yolda", {
       id: "lokasyon",
       size: 130,
@@ -89,7 +96,12 @@ export function MovementTable({
       size: 90,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Miktar" className="ml-auto" />,
       cell: ({ row }) => (
-        <div className={cn("text-right font-medium tabular-nums", Number(row.original.quantity) < 0 ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400")}>
+        <div
+          className={cn(
+            "text-right font-medium tabular-nums",
+            Number(row.original.quantity) < 0 ? "text-red-700 dark:text-red-400" : "text-green-700 dark:text-green-400",
+          )}
+        >
           {displayQuantity(row.original.quantity)} {unitLabels[row.original.unit]}
         </div>
       ),
@@ -132,8 +144,7 @@ export function MovementTable({
             size: 70,
             header: () => null,
             cell: ({ row }) =>
-              !row.original.reversesId &&
-              !reversed.has(row.original.id) && <ReverseButton action={reverseMovementAction.bind(null, row.original.id)} />,
+              !row.original.reversesId && !reversed.has(row.original.id) && <ReverseButton action={reverseMovementAction.bind(null, row.original.id)} />,
             enableHiding: false,
           }),
         ]
@@ -164,7 +175,10 @@ function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, 
       {[...byUnit].map(([unit, total]) => (
         <span key={unit}>
           {" "}
-          · <b className="text-foreground font-medium">{quantityFormat.format(Number(total))} {unitLabels[unit]}</b>
+          ·{" "}
+          <b className="text-foreground font-medium">
+            {quantityFormat.format(Number(total))} {unitLabels[unit]}
+          </b>
         </span>
       ))}
       {value !== undefined && (
