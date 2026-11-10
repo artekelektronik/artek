@@ -5,7 +5,7 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { FormSelect } from "@/components/form-select";
 import { FormSheet } from "@/components/form-sheet";
-import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { MovementTable } from "@/components/movement-table";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
@@ -17,7 +17,7 @@ import { listMovements } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { listCategories } from "@/lib/products";
-import { dayRange } from "@/lib/time";
+import { dayRange, type DateRangeParams } from "@/lib/time";
 import { recordReceiptAction } from "./actions";
 
 export const metadata = { title: "Mal kabul | Artek" };
@@ -71,7 +71,7 @@ export default async function ReceiptPage({ searchParams }: { searchParams: Prom
       }
     >
       <PanelCard title={range.bounded ? "Mal kabuller" : "Son mal kabuller"}>
-        <DateRangeForm params={params} />
+        <DateRangeFilter />
         <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} />
       </PanelCard>
     </PanelShell>

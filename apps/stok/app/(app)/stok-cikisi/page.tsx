@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { Plus } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
-import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { FormSheet } from "@/components/form-sheet";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
@@ -13,7 +13,7 @@ import { listMovements } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { activeProducts, availableByLokasyon, lokasyonFor } from "@/lib/pickers";
 import { stockOutTypes } from "@/lib/stock-out";
-import { dayRange } from "@/lib/time";
+import { dayRange, type DateRangeParams } from "@/lib/time";
 import { exitValues } from "@/lib/stock-out-report";
 import { recordStockOutAction } from "./actions";
 import { StockOutFields } from "./stock-out-fields";
@@ -59,7 +59,7 @@ export default async function StockOutPage({ searchParams }: { searchParams: Pro
       }
     >
       <PanelCard title={range.bounded ? "Çıkışlar" : "Son çıkışlar"}>
-        <DateRangeForm params={params} />
+        <DateRangeFilter />
         <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
       </PanelCard>
     </PanelShell>

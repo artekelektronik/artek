@@ -5,7 +5,7 @@ import { Boxes, Lock, PackageCheck, Pencil, Plus, Truck } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
-import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { EditStock } from "@/components/edit-stock";
 import { MovementTable } from "@/components/movement-table";
 import { PanelCard, PanelShell } from "@/components/panel";
@@ -18,7 +18,7 @@ import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
 import { addQuantities, unitLabels } from "@/lib/quantity";
-import { dayRange } from "@/lib/time";
+import { dayRange, type DateRangeParams } from "@/lib/time";
 import { inTransit } from "@/lib/transfers";
 import { archiveProductAction, restoreProductAction } from "../actions";
 import { ProductSheet } from "../product-sheet";
@@ -158,7 +158,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
 
       <PanelCard title={range.from || range.to ? "Hareketler" : "Son hareketler"} note={range.from || range.to ? "Seçilen tarihler arasında." : "En yeni 20 hareket; tarih seçince o aralığın tamamı gelir."}>
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <DateRangeForm params={dates} />
+          <DateRangeFilter />
           <Button asChild variant="outline" size="sm">
             <Link href={`/hareketler?urun=${product.id}`}>Tüm hareketler</Link>
           </Button>

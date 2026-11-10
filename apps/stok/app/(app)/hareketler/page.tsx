@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { MovementTable } from "@/components/movement-table";
-import { DateRangeForm } from "@/components/date-range-form";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { isUuid } from "@/lib/errors";
 import { loadActor } from "@/lib/guard";
 import { listMovements, movementLimit } from "@/lib/ledger";
@@ -33,7 +33,7 @@ export default async function MovementsPage({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <h1 className="text-2xl font-semibold">Stok hareketleri</h1>
-      <DateRangeForm params={params} keep={{ urun: params.urun }} />
+      <DateRangeFilter />
       <MovementTable
         key={`${range.key}|${params.urun ?? ""}`}
         movements={movements}
