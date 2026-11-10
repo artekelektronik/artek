@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Subscribe, type ReactTable } from "@tanstack/react-table";
+import type { ReactTable } from "@tanstack/react-table";
 import { parseAsString, useQueryState } from "nuqs";
 import { MoreHorizontal, Paperclip, Pencil, Plus, Repeat, Trash2 } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { FilteredRows } from "@/components/data-table/filtered-rows";
 import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { FormDialog } from "@/components/form-dialog";
 import { toastResult } from "@/components/form-status";
@@ -129,9 +130,8 @@ export function ExpenseTable({ rows, canEdit }: { rows: ExpenseRow[]; canEdit: b
 
 function Totals({ table }: { table: ReactTable<DataTableFeatures, ExpenseRow, unknown> }) {
   return (
-    <Subscribe source={table.atoms.columnFilters} selector={(filters) => filters}>
-      {() => {
-        const shown = table.getFilteredRowModel().rows.map((r) => r.original);
+    <FilteredRows table={table}>
+      {(shown) => {
         const sum = (key: "netAmount" | "totalAmount") => shown.reduce((s, r) => s + Number(r[key]), 0);
         return (
           <p className="text-muted-foreground text-xs tabular-nums">
@@ -140,7 +140,7 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, ExpenseRow, un
           </p>
         );
       }}
-    </Subscribe>
+    </FilteredRows>
   );
 }
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Subscribe, type ReactTable } from "@tanstack/react-table";
+import type { ReactTable } from "@tanstack/react-table";
 import { Archive, ArchiveRestore, FileText, MoreHorizontal, PanelRightOpen, Trash2 } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
 import { Button } from "@artek/ui/components/button";
@@ -19,6 +19,7 @@ import { Label } from "@artek/ui/components/label";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { FilteredRows } from "@/components/data-table/filtered-rows";
 import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { FormDialog } from "@/components/form-dialog";
 import { toastResult } from "@/components/form-status";
@@ -160,9 +161,8 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
 // Over the filtered rows; only confirmed invoices are sales.
 function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, unknown> }) {
   return (
-    <Subscribe source={table.atoms.columnFilters} selector={(filters) => filters}>
-      {() => {
-        const shown = table.getFilteredRowModel().rows.map((r) => r.original);
+    <FilteredRows table={table}>
+      {(shown) => {
         const confirmed = shown.filter((r) => r.status === "onaylandi");
         const sum = (rows: InvoiceRow[]) => rows.reduce((s, r) => s + Number(r.netAmount), 0);
         const sales = sum(confirmed.filter((r) => r.type !== "IADE"));
@@ -177,7 +177,7 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, un
           </p>
         );
       }}
-    </Subscribe>
+    </FilteredRows>
   );
 }
 

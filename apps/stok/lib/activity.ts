@@ -139,7 +139,7 @@ export async function loadActivity(access: ActivityAccess, range: { from?: Date;
 
 export const activityAccess = (actor: Actor): ActivityAccess => ({ finance: can(actor, "finance.view"), crm: can(actor, "crm.view") });
 
-export async function listActivity(headers: Headers, limit = 2000) {
+export async function listActivity(headers: Headers, range: { from?: Date; to?: Date } = {}, limit = 2000) {
   const actor = await requirePermission(headers, "activity.view");
-  return loadActivity(activityAccess(actor), {}, limit);
+  return loadActivity(activityAccess(actor), range, limit);
 }

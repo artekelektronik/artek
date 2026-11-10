@@ -21,6 +21,15 @@ export function istanbulTimeOn(day: string, time = "00:00:00"): Date {
   return new Date(`${day}T${time}+03:00`);
 }
 
+const isDay = (day: string | undefined): day is string => !!day && /^\d{4}-\d{2}-\d{2}$/.test(day);
+
+// ?baslangic=&bitis= as instants covering whole Istanbul days; a malformed day is left out. `key` resets a table when it changes.
+export function dayRange(params: { baslangic?: string; bitis?: string }) {
+  const from = isDay(params.baslangic) ? istanbulTimeOn(params.baslangic) : undefined;
+  const to = isDay(params.bitis) ? istanbulTimeOn(params.bitis, "23:59:59.999") : undefined;
+  return { from, to, bounded: Boolean(from || to), key: `${params.baslangic ?? ""}|${params.bitis ?? ""}` };
+}
+
 // A YYYY-MM-DD day moved by whole days.
 export function addDays(day: string, days: number): string {
   return new Date(Date.parse(`${day}T12:00:00Z`) + days * 86_400_000).toISOString().slice(0, 10);

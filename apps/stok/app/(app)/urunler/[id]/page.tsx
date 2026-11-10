@@ -24,11 +24,15 @@ import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
 import { Pencil } from "lucide-react";
 import { archiveProductAction, restoreProductAction } from "../actions";
+import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
 import { ProductImage } from "@/components/product-image";
 import { ProductSheet } from "../product-sheet";
+import { dayRange } from "@/lib/time";
 
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProductPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<DateRangeParams> }) {
   const { id } = await params;
+  const dates = await searchParams;
+  const range = dayRange(dates);
   const requestHeaders = await headers();
   const [actor, product, lokasyon, categories] = await Promise.all([
     loadActor(requestHeaders),
@@ -39,7 +43,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!product) notFound();
   const [balances, movements, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
-    listMovements(requestHeaders, { productId: product.id, limit: 20 }),
+    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
   // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
@@ -155,7 +159,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             Tümü
           </Link>
         </div>
-        <MovementTable movements={movements} canReverse={can(actor, "stock.reverse")} />
+        <DateRangeForm params={dates} />
+        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} />
       </section>
 
     </div>
