@@ -113,7 +113,7 @@ export function YearCard({ totals }: { totals: YearNet }) {
   const rows = [
     { label: "Satış", value: tl(totals.sales) },
     { label: "Brüt kâr", value: tl(totals.gross), note: share(totals.gross, totals.costedSales) },
-    { label: "Giderler", value: tl(totals.expenses) },
+    { label: "Giderler", value: tl(totals.expenses), note: `KDV dahil ${tl(totals.expensesWithKdv)}` },
   ];
   return (
     <Card>

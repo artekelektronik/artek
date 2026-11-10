@@ -27,7 +27,7 @@ export default async function ExpensesPage() {
   const month = today.slice(0, 7);
   const y = today.slice(0, 4);
   const lastMonth = addMonths(month, -1);
-  const sum = (prefix: string) => rows.filter((r) => r.spentOn.startsWith(prefix)).reduce((s, r) => s + Number(r.netAmount), 0);
+  const sum = (prefix: string, key: "netAmount" | "totalAmount" = "netAmount") => rows.filter((r) => r.spentOn.startsWith(prefix)).reduce((s, r) => s + Number(r[key]), 0);
   const thisYear = rows.filter((r) => r.spentOn.startsWith(y));
   const byCategory = Object.entries(Object.groupBy(thisYear, (r) => r.category))
     .map(([category, list]) => ({ category, total: list!.reduce((s, r) => s + Number(r.netAmount), 0) }))
@@ -37,13 +37,13 @@ export default async function ExpensesPage() {
   return (
     <PanelShell
       title="Giderler"
-      lede="Artek’in ödediği giderler: kira, maaş, vergi, tedarikçi faturaları… Tutarlar KDV hariç; aylık net hesabında satıştan düşülür."
+      lede="Artek’in ödediği giderler: kira, maaş, vergi, tedarikçi faturaları… Tutarlar KDV hariç ve dahil gösterilir; aylık net hesabında KDV hariç tutar satıştan düşülür."
       actions={canEdit && <AddExpenseButton />}
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Bu ay" value={tl(sum(month))} note={monthLabel(month)} icon={CalendarDays} />
-        <StatCard label="Geçen ay" value={tl(sum(lastMonth))} note={monthLabel(lastMonth)} icon={CalendarClock} />
-        <StatCard label={`${y} toplamı`} value={tl(sum(y))} note={`${thisYear.length.toLocaleString("tr-TR")} gider`} icon={CalendarRange} />
+        <StatCard label={`Bu ay · ${monthLabel(month)}`} value={tl(sum(month))} note={`KDV dahil ${tl(sum(month, "totalAmount"))}`} icon={CalendarDays} />
+        <StatCard label={`Geçen ay · ${monthLabel(lastMonth)}`} value={tl(sum(lastMonth))} note={`KDV dahil ${tl(sum(lastMonth, "totalAmount"))}`} icon={CalendarClock} />
+        <StatCard label={`${y} · ${thisYear.length.toLocaleString("tr-TR")} gider`} value={tl(sum(y))} note={`KDV dahil ${tl(sum(y, "totalAmount"))}`} icon={CalendarRange} />
         <StatCard
           label="En büyük kalem"
           value={byCategory[0] ? tlShort(byCategory[0].total) : "—"}
@@ -52,18 +52,17 @@ export default async function ExpensesPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-3">
-        <PanelCard title={`${y} kategoriye göre`} note="KDV hariç." className="xl:col-span-1">
-          {byCategory.length ? (
-            <HBars rows={byCategory.map((c, i) => ({ key: c.category, label: c.category, value: c.total, display: tlShort(c.total), color: chartColors[i % chartColors.length] }))} />
-          ) : (
-            <p className="text-muted-foreground text-sm">Bu yıl henüz gider yok.</p>
-          )}
-        </PanelCard>
-        <PanelCard title="Tüm giderler" note="Tarihe, kategoriye göre süzün; toplamlar süzülen satırlardan." className="xl:col-span-2">
-          <ExpenseTable rows={rows} canEdit={canEdit} />
-        </PanelCard>
-      </div>
+      <PanelCard title="Tüm giderler" note="Tarihe, kategoriye göre süzün; toplamlar süzülen satırlardan.">
+        <ExpenseTable rows={rows} canEdit={canEdit} />
+      </PanelCard>
+
+      <PanelCard title={`${y} kategoriye göre`} note="KDV hariç.">
+        {byCategory.length ? (
+          <HBars rows={byCategory.map((c, i) => ({ key: c.category, label: c.category, value: c.total, display: tlShort(c.total), color: chartColors[i % chartColors.length] }))} />
+        ) : (
+          <p className="text-muted-foreground text-sm">Bu yıl henüz gider yok.</p>
+        )}
+      </PanelCard>
 
       <ExpenseSheet rows={rows} categories={categories} canEdit={canEdit} today={today} />
     </PanelShell>
