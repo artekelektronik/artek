@@ -50,6 +50,15 @@ test("values convert to TL; products out of stock or without a price are not cou
   assert.deepEqual(categories.map((c) => [c.category, c.products]), [["Ferrit", 2], ["Filtre", 1]]);
 });
 
+test("stock is also valued at the A (Toptan) price, where one is set", () => {
+  const prices = new Map<string, Price>([
+    ["p1", { ...usd("2", "150"), salePriceA: "120" }],
+    ["p2", usd("1", "30")],
+  ]);
+  const { overall } = stockSummary([row("p1", "Ferrit", "10"), row("p2", "Ferrit", "4")], ["a"], prices, rates);
+  assert.deepEqual([overall.saleA, overall.saleACounted], [1200, 1]);
+});
+
 test("without rates only TL prices are counted", () => {
   const prices = new Map([["p1", usd("2", "150")]]);
   const { overall } = stockSummary([row("p1", "Ferrit", "10")], ["a"], prices, null);

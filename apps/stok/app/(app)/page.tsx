@@ -11,7 +11,7 @@ import { ProductImage } from "@/components/product-image";
 import { StatCard } from "@/components/stat-card";
 import { CategoryBadge, MovementTypeBadge } from "@/components/stock-badges";
 import { getDashboard, getStockSummary } from "@/lib/dashboard";
-import { salesForMonths, tl, tlShort, day } from "@/lib/finance";
+import { salesForMonths, tl, tlShort, day, usdShort } from "@/lib/finance";
 import { Forbidden, loadActor } from "@/lib/guard";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { unitLabels, type Unit } from "@/lib/quantity";
@@ -31,6 +31,30 @@ function perUnit(lines: { unit: Unit; value: string }[]) {
 
 // A category with no price at all shows no value, not "0 TL".
 const value = (amount: number, counted: number) => (counted ? tlShort(amount) : "—");
+type Valued = { purchase: number; purchaseCounted: number; saleA: number; saleACounted: number; sale: number; saleCounted: number };
+// Alış, Toptan (A) and Normal (B) value cells of a Stok özeti row.
+function ValueCells({ v, usd }: { v: Valued; usd: number | undefined }) {
+  return (
+    <>
+      {([["purchase", "purchaseCounted"], ["saleA", "saleACounted"], ["sale", "saleCounted"]] as const).map(([amount, counted]) => (
+        <TableCell key={amount} className="text-right tabular-nums">
+          <Value amount={v[amount]} counted={v[counted]} usd={usd} />
+        </TableCell>
+      ))}
+    </>
+  );
+}
+
+// TL over USD at today's rate, for the Stok özeti value columns.
+function Value({ amount, counted, usd }: { amount: number; counted: number; usd: number | undefined }) {
+  if (!counted) return <>—</>;
+  return (
+    <span className="flex flex-col items-end">
+      {tlShort(amount)}
+      {usd && <span className="text-muted-foreground text-xs">{usdShort(amount / usd)}</span>}
+    </span>
+  );
+}
 
 const initials = (name: string) =>
   name
@@ -127,9 +151,9 @@ export default async function HomePage() {
           <>
             <StatCard
               icon={Wallet}
-              label="Stok değeri (satış)"
+              label="Stok değeri (satış B)"
               value={value(o.sale, o.saleCounted)}
-              note={`Alış: ${value(o.purchase, o.purchaseCounted)}${o.marginCounted ? ` · Beklenen kâr ${tlShort(o.margin)}` : ""}`}
+              note={[s.rates && o.saleCounted ? usdShort(o.sale / s.rates.USD) : null, `Alış ${value(o.purchase, o.purchaseCounted)}`, o.marginCounted ? `Beklenen kâr ${tlShort(o.margin)}` : null].filter(Boolean).join(" · ")}
               href="/finans/fiyatlar"
             />
             <StatCard
@@ -285,7 +309,8 @@ export default async function HomePage() {
                   ))}
                   {hasTransit && <TableHead className="text-right">Yolda</TableHead>}
                   {s.finance && <TableHead className="text-right">Alış değeri</TableHead>}
-                  {s.finance && <TableHead className="text-right">Satış değeri</TableHead>}
+                  {s.finance && <TableHead className="text-right">Toptan (A)</TableHead>}
+                  {s.finance && <TableHead className="text-right">Normal (B)</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -299,8 +324,7 @@ export default async function HomePage() {
                       </TableCell>
                     ))}
                     {hasTransit && <TableCell className="text-right tabular-nums">{perUnit(c.units.map((u) => ({ unit: u.unit, value: u.inTransit })))}</TableCell>}
-                    {s.finance && <TableCell className="text-right tabular-nums">{value(c.purchase, c.purchaseCounted)}</TableCell>}
-                    {s.finance && <TableCell className="text-right tabular-nums">{value(c.sale, c.saleCounted)}</TableCell>}
+                    {s.finance && <ValueCells v={c} usd={s.rates?.USD} />}
                   </TableRow>
                 ))}
               </TableBody>
@@ -314,8 +338,7 @@ export default async function HomePage() {
                     </TableCell>
                   ))}
                   {hasTransit && <TableCell className="text-right tabular-nums">{perUnit(o.units.map((u) => ({ unit: u.unit, value: u.inTransit })))}</TableCell>}
-                  {s.finance && <TableCell className="text-right tabular-nums">{value(o.purchase, o.purchaseCounted)}</TableCell>}
-                  {s.finance && <TableCell className="text-right tabular-nums">{value(o.sale, o.saleCounted)}</TableCell>}
+                  {s.finance && <ValueCells v={o} usd={s.rates?.USD} />}
                 </TableRow>
               </TableFooter>
             </Table>

@@ -6,7 +6,8 @@ import { totalsByUnit } from "./overview-totals";
 import type { Unit } from "./quantity";
 
 export type Currency = (typeof currency.enumValues)[number];
-export type Price = { purchasePrice: string | null; purchaseCurrency: Currency; salePrice: string | null; saleCurrency: Currency };
+// salePrice is B (Normal); salePriceA is A (Toptan), the lowest, in the same currency.
+export type Price = { purchasePrice: string | null; purchaseCurrency: Currency; salePrice: string | null; salePriceA?: string | null; saleCurrency: Currency };
 
 // Empty is no price. "12,50", "12.50" and "1.234,50" are all accepted; returns the string the numeric column stores.
 export function parsePrice(raw: string): string | null {
@@ -28,7 +29,8 @@ export function inTl(quantity: string, price: string | null | undefined, currenc
 function unitValue(row: { total: string; price: Price | undefined }, rates: Rates | null) {
   const purchase = inTl(row.total, row.price?.purchasePrice, row.price?.purchaseCurrency, rates);
   const sale = inTl(row.total, row.price?.salePrice, row.price?.saleCurrency, rates);
-  return { purchase, sale };
+  const saleA = inTl(row.total, row.price?.salePriceA, row.price?.saleCurrency, rates);
+  return { purchase, sale, saleA };
 }
 
 type Row = { id: string; category: string; unit: Unit; stock: Record<string, { physical: string }>; inTransit: string; total: string };
@@ -47,6 +49,8 @@ export function stockSummary(rows: Row[], lokasyonIds: string[], prices: Map<str
       sale: sum(values.map((v) => v.sale)),
       purchaseCounted: values.filter((v) => v.purchase !== null).length,
       saleCounted: values.filter((v) => v.sale !== null).length,
+      saleA: sum(values.map((v) => v.saleA)),
+      saleACounted: values.filter((v) => v.saleA !== null).length,
       // Kâr only where both prices exist, or a missing alış fiyatı would read as profit.
       margin: both.reduce((s, v) => s + v.sale! - v.purchase!, 0),
       marginCounted: both.length,

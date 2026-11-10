@@ -9,6 +9,8 @@ export const usd = (v: number) => usdFormat.format(v);
 export const amountShort = (v: number) =>
   Math.abs(v) >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon` : Math.abs(v) >= 1e3 ? `${tlFormat.format(v / 1e3)} bin` : tlFormat.format(v);
 export const tlShort = (v: number) => `${amountShort(v)} TL`;
+// USD amounts are smaller, so below 100 bin they keep every digit: "1.005 USD", not "1 bin USD".
+export const usdShort = (v: number) => `${Math.abs(v) < 1e5 ? tlFormat.format(v) : amountShort(v)} USD`;
 export const pct = (v: number) => `%${tlFormat.format(v * 100)}`;
 export const share = (part: number, whole: number) => (whole ? pct(part / whole) : "—");
 export const kdvRates = [20, 10, 1, 0] as const;
