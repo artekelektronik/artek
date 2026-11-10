@@ -74,6 +74,7 @@ export function ExpensesOverview({ current, previous }: { current: MonthNet; pre
             <Change now={current.expenses} before={previous.expenses} upIsGood={false} />
           </Figure>
         </CardTitle>
+        <CardDescription className="tabular-nums">KDV dahil {tl(current.expensesWithKdv)}</CardDescription>
         <CardAction>
           <Link href="/finans/giderler" className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline">
             Giderler

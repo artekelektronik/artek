@@ -42,7 +42,7 @@ export default async function FinancePage() {
   const at = (ym: string) => months.find((m) => m.month === ym) ?? emptyMonth(ym);
   const current = at(thisMonth);
   const previous = at(addMonths(thisMonth, -1));
-  const yearTotals = years.find((y) => y.year === year) ?? { year, sales: 0, costedSales: 0, gross: 0, uncostedSales: 0, expenses: 0, net: 0, byCategory: {} };
+  const yearTotals = years.find((y) => y.year === year) ?? { year, sales: 0, costedSales: 0, gross: 0, uncostedSales: 0, expenses: 0, expensesWithKdv: 0, net: 0, byCategory: {} };
   const hasSales = s.invoiceCount > 0;
 
   const overview = (

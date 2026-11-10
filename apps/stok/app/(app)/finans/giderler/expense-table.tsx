@@ -96,7 +96,7 @@ export function ExpenseTable({ rows, canEdit }: { rows: ExpenseRow[]; canEdit: b
       id: "toplam",
       size: 130,
       header: ({ column }) => <DataTableColumnHeader column={column} label="KDV dahil" className="justify-end" />,
-      cell: ({ row }) => <span className="text-muted-foreground block text-right tabular-nums">{tl(Number(row.original.totalAmount))}</span>,
+      cell: ({ row }) => <span className="block text-right tabular-nums">{tl(Number(row.original.totalAmount))}</span>,
       meta: { label: "KDV dahil" },
     }),
     column.display({
@@ -136,7 +136,7 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, ExpenseRow, un
         return (
           <p className="text-muted-foreground text-xs tabular-nums">
             <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> gider · KDV hariç{" "}
-            <b className="text-foreground font-medium">{tl(sum("netAmount"))}</b> · KDV dahil {tl(sum("totalAmount"))}
+            <b className="text-foreground font-medium">{tl(sum("netAmount"))}</b> · KDV dahil <b className="text-foreground font-medium">{tl(sum("totalAmount"))}</b>
           </p>
         );
       }}

@@ -109,13 +109,14 @@ QNB FİNANSBANK`,
 
 describe("monthly Net", () => {
   const month = (over: Partial<MonthProfit>): MonthProfit => ({ month: "2026-10", sales: 10000, costedSales: 10000, cost: 6000, gross: 4000, uncostedSales: 0, ...over });
-  const spent = (spentOn: string, category: string, netAmount: string) => ({ spentOn, category, netAmount });
+  const spent = (spentOn: string, category: string, netAmount: string, totalAmount = String(Number(netAmount) * 1.2)) => ({ spentOn, category, netAmount, totalAmount });
 
   test("Net is Brüt kâr minus the month's Giderler, broken down by category", () => {
     const { months } = monthlyNet([month({})], [spent("2026-10-01", "Kira", "1500"), spent("2026-10-05", "Maaş", "2000"), spent("2026-10-20", "Kira", "500")]);
     assert.deepEqual(months[0], {
       ...month({}),
       expenses: 4000,
+      expensesWithKdv: 4800,
       byCategory: { Kira: 2000, Maaş: 2000 },
       net: 0,
       incomplete: false,
@@ -140,6 +141,6 @@ describe("monthly Net", () => {
 
   test("a year sums its months", () => {
     const { years } = monthlyNet([month({}), month({ month: "2026-11", gross: 1000, sales: 2000, costedSales: 2000, cost: 1000 })], [spent("2026-11-01", "Kira", "1500")]);
-    assert.deepEqual(years, [{ year: "2026", sales: 12000, costedSales: 12000, gross: 5000, uncostedSales: 0, expenses: 1500, net: 3500, byCategory: { Kira: 1500 } }]);
+    assert.deepEqual(years, [{ year: "2026", sales: 12000, costedSales: 12000, gross: 5000, uncostedSales: 0, expenses: 1500, expensesWithKdv: 1800, net: 3500, byCategory: { Kira: 1500 } }]);
   });
 });

@@ -58,10 +58,10 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
   return { months, uncosted };
 }
 
-export type MonthNet = MonthProfit & { expenses: number; byCategory: Record<string, number>; net: number; incomplete: boolean };
-type Spent = { spentOn: string; category: string; netAmount: string };
+export type MonthNet = MonthProfit & { expenses: number; expensesWithKdv: number; byCategory: Record<string, number>; net: number; incomplete: boolean };
+type Spent = { spentOn: string; category: string; netAmount: string; totalAmount: string };
 
-export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, expenses: 0, byCategory: {}, net: 0, incomplete: false });
+export const emptyMonth = (month: string): MonthNet => ({ month, sales: 0, costedSales: 0, cost: 0, gross: 0, uncostedSales: 0, expenses: 0, expensesWithKdv: 0, byCategory: {}, net: 0, incomplete: false });
 
 // Satış → Brüt kâr → Giderler → Net per month and year, KDV hariç. A month with sales of unknown cost is incomplete.
 export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
@@ -71,16 +71,17 @@ export function monthlyNet(profits: MonthProfit[], expenses: Spent[]) {
     const m = byMonth.get(month) ?? emptyMonth(month);
     byMonth.set(month, m);
     m.expenses += Number(e.netAmount);
+    m.expensesWithKdv += Number(e.totalAmount);
     m.byCategory[e.category] = (m.byCategory[e.category] ?? 0) + Number(e.netAmount);
   }
   const months = [...byMonth.values()]
     .sort((a, b) => a.month.localeCompare(b.month))
     .map((m) => ({ ...m, net: m.gross - m.expenses, incomplete: m.uncostedSales !== 0 }));
   const years = Object.entries(Object.groupBy(months, (m) => m.month.slice(0, 4))).map(([year, list]) => {
-    const sum = (key: "sales" | "costedSales" | "gross" | "uncostedSales" | "expenses" | "net") => list!.reduce((s, m) => s + m[key], 0);
+    const sum = (key: "sales" | "costedSales" | "gross" | "uncostedSales" | "expenses" | "expensesWithKdv" | "net") => list!.reduce((s, m) => s + m[key], 0);
     const byCategory: Record<string, number> = {};
     for (const m of list!) for (const [c, v] of Object.entries(m.byCategory)) byCategory[c] = (byCategory[c] ?? 0) + v;
-    return { year, sales: sum("sales"), costedSales: sum("costedSales"), gross: sum("gross"), uncostedSales: sum("uncostedSales"), expenses: sum("expenses"), net: sum("net"), byCategory };
+    return { year, sales: sum("sales"), costedSales: sum("costedSales"), gross: sum("gross"), uncostedSales: sum("uncostedSales"), expenses: sum("expenses"), expensesWithKdv: sum("expensesWithKdv"), net: sum("net"), byCategory };
   });
   return { months, years };
 }
