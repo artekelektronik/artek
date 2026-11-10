@@ -10,7 +10,7 @@ import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/co
 import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
 import type { MovementPrice } from "@/lib/stock-out-report";
-import { tl } from "@/lib/finance-calc";
+import { tl, usd } from "@/lib/finance-calc";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { addQuantities, unitLabels } from "@/lib/quantity";
 import { ReverseButton } from "./reverse-button";
@@ -168,8 +168,6 @@ export function MovementTable({
 
 const quantityFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3 });
 
-const usdFormat = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
-
 // TL over USD; "≈" when priced from today's list instead of an invoice.
 function Money({ price, pick }: { price: MovementPrice | undefined; pick: "unit" | "total" }) {
   const value = price?.[pick];
@@ -180,7 +178,7 @@ function Money({ price, pick }: { price: MovementPrice | undefined; pick: "unit"
         {price!.estimate && "≈ "}
         {tl(value)}
       </span>
-      {price!.usdRate && <span className="text-muted-foreground text-xs">{usdFormat.format(value / price!.usdRate)}</span>}
+      {price!.usdRate && <span className="text-muted-foreground text-xs">{usd(value / price!.usdRate)}</span>}
     </div>
   );
 }
@@ -210,7 +208,7 @@ function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, 
         <>
           {" "}
           · Tutar <b className="text-foreground font-medium">{tl(sum((p) => p.total!))}</b>
-          {usdKnown && <> · {usdFormat.format(sum((p) => p.total! / p.usdRate!))}</>}
+          {usdKnown && <> · {usd(sum((p) => p.total! / p.usdRate!))}</>}
         </>
       )}
     </p>

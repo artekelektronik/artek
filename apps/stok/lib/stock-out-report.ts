@@ -27,8 +27,7 @@ const loadPricing = async (): Promise<Pricing> => {
 // What a stock movement sold for, KDV hariç, in TL; `usdRate` turns it into USD. `estimate`: no invoice, priced from today's list.
 export type MovementPrice = { key: string; unit: number | null; total: number | null; usdRate: number | null; estimate: boolean };
 
-// Movement id to its price for a Finans paneli holder; undefined for anyone else, so no price leaves the server.
-// A movement made by a confirmed Fatura shows that invoice's line at the TCMB rate of its date; any other, today's list price.
+// Finans holders only (undefined otherwise): an invoice's line at its day's TCMB rate, else today's list price.
 export async function movementPrices(actor: Actor, movements: { id: string; type: string; quantity: string; productId: string; documentId: string; documentKind: string }[]) {
   if (!can(actor, "finance.view")) return undefined;
   const invoiceDocs = [...new Set(movements.filter((m) => m.documentKind === "fatura").map((m) => m.documentId))];

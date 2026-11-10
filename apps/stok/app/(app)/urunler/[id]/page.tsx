@@ -36,12 +36,14 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     listCategories(requestHeaders),
   ]);
   if (!product) notFound();
-  const [balances, movements, transit] = await Promise.all([
+  const [balances, { movements, values }, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
-    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }),
+    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }).then(async (movements) => ({
+      movements,
+      values: await movementPrices(actor, movements),
+    })),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
-  const values = await movementPrices(actor, movements);
   // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
   const showTransit = transit !== "0";
   const canManage = can(actor, "products.manage");

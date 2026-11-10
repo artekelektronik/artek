@@ -22,8 +22,9 @@ const same = (a: string, b: string) => Math.abs(Math.abs(Number(a)) - Number(b))
 export function priceInvoiceMoves(moves: InvoiceMove[], lines: InvoiceLineSold[]) {
   const prices = new Map<string, MovePrice>();
   const used = new Set<InvoiceLineSold>();
+  const byDocument = Map.groupBy(lines, (l) => l.documentId);
   for (const m of moves) {
-    const candidates = lines.filter((l) => l.documentId === m.documentId);
+    const candidates = byDocument.get(m.documentId) ?? [];
     const l =
       m.type === "uretim_tuketimi"
         ? candidates.find((c) => c.components?.some((k) => k.productId === m.productId && same(m.quantity, k.quantity)))
