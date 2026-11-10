@@ -1,14 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "../db";
-import { lokasyon, product, stock, stockMovement } from "../db/schema";
-import { parseInput } from "./errors";
+import { lokasyon, product, stock, stockDocument, stockMovement } from "../db/schema";
+import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
-import { postDocument } from "./ledger";
+import { postDocument, postDocumentIn, reversalLine, reverseMovement } from "./ledger";
 import { addQuantities, formatQuantity, subtractQuantity, unitLabels } from "./quantity";
-
-// Recorded by hand until Sipariş (Phase 3) and Üretim emri (Phase 4) create these movements themselves.
-export const stockOutTypes = ["satis_teslimati", "uretim_tuketimi", "fire"] as const;
+import { stockOutTypes } from "./stock-out-types";
 
 const stockOutInput = z.object({
   type: z.enum(stockOutTypes, { error: "Çıkış türü seçin." }),
@@ -33,6 +31,58 @@ export async function recordStockOut(headers: Headers, input: StockOutInput) {
     lines.map((line) => ({ ...line, lokasyonId, direction: "out" as const, type, reason })),
   );
   return { ...posted, lines: await balancesAfter(posted.documentId) };
+}
+
+const correctionInput = stockOutInput.pick({ type: true, reason: true, reference: true, idempotencyKey: true }).extend({ quantity: z.string().trim().min(1, { error: "Miktarı yazın." }) });
+export type StockOutCorrection = z.input<typeof correctionInput>;
+
+// A retry of a correction that already went through returns that result.
+async function alreadyDone(idempotencyKey: string) {
+  const done = await db.query.stockDocument.findFirst({ where: eq(stockDocument.idempotencyKey, idempotencyKey) });
+  return done ? { documentId: done.id, created: false } : null;
+}
+
+// A hand-made stock-out not yet reversed; a Fatura's own stock is corrected from the invoice.
+async function correctable(headers: Headers, movementId: string) {
+  await requirePermission(headers, "stock.reverse");
+  const [row] = isUuid(movementId)
+    ? await db
+        .select({ movement: stockMovement, kind: stockDocument.kind })
+        .from(stockMovement)
+        .innerJoin(stockDocument, eq(stockDocument.id, stockMovement.documentId))
+        .where(eq(stockMovement.id, movementId))
+    : [];
+  if (!row) throw new UserError("Hareket bulunamadı.");
+  if (row.kind !== "stok_cikisi" || row.movement.reversesId) throw new UserError("Burada yalnız elle girilen stok çıkışı düzenlenip silinebilir.");
+  if (await db.query.stockMovement.findFirst({ where: eq(stockMovement.reversesId, movementId) })) throw new UserError("Bu çıkış zaten düzeltilmiş.");
+  return row.movement;
+}
+
+// Düzenle: the wrong movement is reversed and the right one recorded, together or not at all.
+export async function correctStockOut(headers: Headers, movementId: string, input: StockOutCorrection) {
+  const data = parseInput(correctionInput, input);
+  const done = await alreadyDone(data.idempotencyKey);
+  if (done) return done;
+  const original = await correctable(headers, movementId);
+  const actor = await requirePermission(headers, "stock.out", original.lokasyonId!);
+  return db.transaction(async (tx) => {
+    await postDocumentIn(tx, { kind: "ters_kayit", lokasyonId: original.lokasyonId, reason: `Düzeltildi: ${data.reason}`, userId: actor.userId, idempotencyKey: `${data.idempotencyKey}:ters` }, [
+      reversalLine(original, `Düzeltildi: ${data.reason}`),
+    ]);
+    return postDocumentIn(
+      tx,
+      { kind: "stok_cikisi", lokasyonId: original.lokasyonId, reason: data.reason, reference: data.reference || null, userId: actor.userId, idempotencyKey: data.idempotencyKey },
+      [{ productId: original.productId, lokasyonId: original.lokasyonId, direction: "out", quantity: data.quantity, type: data.type, reason: data.reason }],
+    );
+  });
+}
+
+// Sil: reversed, so the stock comes back; both rows stay in the history.
+export async function deleteStockOut(headers: Headers, movementId: string, { idempotencyKey }: { idempotencyKey: string }) {
+  const done = await alreadyDone(idempotencyKey);
+  if (done) return done;
+  await correctable(headers, movementId);
+  return reverseMovement(headers, movementId, { reason: "Stok çıkışı silindi", idempotencyKey });
 }
 
 // Each product of a stock-out with its balance before and after, so the person saving it sees it was taken off.

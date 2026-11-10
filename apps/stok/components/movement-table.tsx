@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { Label } from "@artek/ui/components/label";
+import { Switch } from "@artek/ui/components/switch";
 import { cn } from "@artek/ui/lib/utils";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
@@ -14,6 +17,7 @@ import { tl, usd } from "@/lib/finance-calc";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { addQuantities, unitLabels } from "@/lib/quantity";
 import { ReverseButton } from "./reverse-button";
+import { StockOutRowActions } from "./stock-out-row-actions";
 import { CategoryBadge, MovementTypeBadge } from "./stock-badges";
 
 type Movement = Awaited<ReturnType<typeof listMovements>>[number];
@@ -23,18 +27,24 @@ const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boo
 
 // `values` is passed only to a Finans paneli holder; without it there are no price columns.
 // `forProduct`: every row is the same Ürün, so its Ürün and Kategori columns are left out.
+// `correctable` (Stok çıkışı): rows get Düzenle / Sil, and corrected pairs are hidden until asked for.
 export function MovementTable({
   movements,
   canReverse,
   values,
   forProduct = false,
+  correctable = false,
 }: {
   movements: Movement[];
   canReverse: boolean;
   values?: Record<string, MovementPrice>;
   forProduct?: boolean;
+  correctable?: boolean;
 }) {
   const reversed = new Set(movements.map((m) => m.reversesId).filter(Boolean));
+  const [showCorrected, setShowCorrected] = useState(false);
+  const corrected = (m: Movement) => !!m.reversesId || reversed.has(m.id);
+  const rows = correctable && !showCorrected ? movements.filter((m) => !corrected(m)) : movements;
 
   const columns = column.columns([
     searchColumn<Movement>((m) => [m.productCode, m.productName, m.productCategory, document(m), m.userName].join(" "), forProduct ? "Belge, neden veya kullanıcı" : "Ürün, kategori, belge veya neden"),
@@ -149,19 +159,28 @@ export function MovementTable({
             size: 70,
             header: () => null,
             cell: ({ row }) =>
-              !row.original.reversesId && !reversed.has(row.original.id) && <ReverseButton action={reverseMovementAction.bind(null, row.original.id)} />,
+              !corrected(row.original) &&
+              (correctable ? <StockOutRowActions movement={row.original} /> : <ReverseButton action={reverseMovementAction.bind(null, row.original.id)} />),
             enableHiding: false,
           }),
         ]
       : []),
   ]);
 
-  const { table } = useClientDataTable({ data: movements, columns, sorting: [{ id: "zaman", desc: true }] });
+  const { table } = useClientDataTable({ data: rows, columns, sorting: [{ id: "zaman", desc: true }] });
 
   return (
     <DataTable table={table} aria-label="Stok hareketleri">
       <DataTableToolbar table={table} />
-      <FilteredRows table={table}>{(shown) => <Totals shown={shown} values={values} />}</FilteredRows>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <FilteredRows table={table}>{(shown) => <Totals shown={shown} values={values} />}</FilteredRows>
+        {correctable && reversed.size > 0 && (
+          <Label className="text-muted-foreground gap-2 text-xs font-normal">
+            <Switch checked={showCorrected} onCheckedChange={setShowCorrected} />
+            Düzeltilenleri göster
+          </Label>
+        )}
+      </div>
     </DataTable>
   );
 }
