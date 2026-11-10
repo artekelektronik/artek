@@ -19,7 +19,7 @@ import type { manualInvoiceOptions } from "@/lib/invoices";
 import { unitLabels } from "@/lib/quantity";
 import { createManualInvoiceAction } from "./actions";
 import { Materials, ModeField } from "./line-fields";
-import { amount, componentsSchema, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
+import { amount, componentsSchema, manualModes, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
 import { useFatura, useManualInvoice } from "./use-fatura";
 
 type Options = Awaited<ReturnType<typeof manualInvoiceOptions>>;
@@ -27,7 +27,7 @@ type ProductOptions = ReturnType<typeof productOption>[];
 
 const formSchema = z
   .object({
-    number: z.string().trim().min(3, { error: "Fatura numarasını yazın." }),
+    number: z.string().trim(),
     issuedOn: z.iso.date({ error: "Tarihi seçin." }),
     type: z.enum(["SATIS", "IADE"]),
     scenario: z.enum(["TEMELFATURA", "EARSIVFATURA"]),
@@ -60,20 +60,25 @@ const emptyLine = { description: "", quantity: "1", unit: "Adet", unitPrice: "",
 
 // Typed by hand before its PDF exists; waits as a draft until the PDF with the same number is uploaded.
 export function ManualInvoiceSheet({ options }: { options: Options | null }) {
-  const [, setManual] = useManualInvoice();
+  const [mode, setManual] = useManualInvoice();
+  const proforma = mode === "proforma";
   return (
     <FormSheet
-      open={Boolean(options)}
+      open={Boolean(options && mode)}
       onOpenChange={(open) => !open && setManual(null, { history: "replace" })}
-      title="Elle fatura"
-      description="PDF’i gelene kadar onay bekler; aynı numaralı PDF yüklenince ona bağlanır."
+      title={proforma ? "Proforma" : "Elle fatura"}
+      description={
+        proforma
+          ? "Numarası kendiliğinden verilir. Ürünler teslim edilince onaylanır; e-Faturası gelince ona bağlanır."
+          : "PDF’i gelene kadar onay bekler; aynı numaralı PDF yüklenince ona bağlanır."
+      }
     >
-      {options && <ManualInvoiceForm options={options} />}
+      {options && mode && <ManualInvoiceForm key={mode} options={options} proforma={proforma} />}
     </FormSheet>
   );
 }
 
-function ManualInvoiceForm({ options }: { options: Options }) {
+function ManualInvoiceForm({ options, proforma }: { options: Options; proforma: boolean }) {
   const [, setManual] = useManualInvoice();
   const [, setFatura] = useFatura();
   const form = useForm<FormValues>({
@@ -105,6 +110,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
       issuedOn: v.issuedOn,
       type: v.type,
       scenario: v.scenario,
+      proforma,
       kdvRate: Number(v.kdvRate),
       pricesIncludeKdv: v.pricesIncludeKdv,
       customerId: v.customerId === newCustomer ? null : v.customerId,
@@ -116,7 +122,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
         components: mode === "uretim" ? components : [],
       })),
     });
-    if (toastResult(result, `${v.number} elle eklendi; PDF’i bekliyor.`) && result.id) {
+    if (toastResult(result, proforma ? "Proforma eklendi." : `${v.number} elle eklendi; PDF’i bekliyor.`) && result.id) {
       await setManual(null);
       await setFatura(result.id);
     }
@@ -167,7 +173,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-full flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-3">
-          {text("number", "Fatura no", { placeholder: "AAA2026000000330", className: "tabular-nums" })}
+          {!proforma && text("number", "Fatura no", { placeholder: "AAA2026000000330", className: "tabular-nums" })}
           {text("issuedOn", "Tarih", { type: "date" })}
           {choice(
             "kdvRate",
@@ -178,10 +184,11 @@ function ManualInvoiceForm({ options }: { options: Options }) {
             ["SATIS", "Satış"],
             ["IADE", "İade"],
           ])}
-          {choice("scenario", "Senaryo", [
-            ["TEMELFATURA", "e-Fatura"],
-            ["EARSIVFATURA", "e-Arşiv"],
-          ])}
+          {!proforma &&
+            choice("scenario", "Senaryo", [
+              ["TEMELFATURA", "e-Fatura"],
+              ["EARSIVFATURA", "e-Arşiv"],
+            ])}
         </div>
 
         <FormField
@@ -317,11 +324,11 @@ function ManualLine({ index, options, productOptions, onRemove }: { index: numbe
   );
 }
 
-export function ManualInvoiceButton() {
+export function ManualInvoiceButton({ mode }: { mode: (typeof manualModes)[number] }) {
   const [, setManual] = useManualInvoice();
   return (
-    <Button type="button" variant="outline" onClick={() => setManual(true)}>
-      <Plus /> Elle fatura
+    <Button type="button" variant="outline" onClick={() => setManual(mode)}>
+      <Plus /> {mode === "proforma" ? "Proforma" : "Elle fatura"}
     </Button>
   );
 }

@@ -5,12 +5,15 @@ import { headers } from "next/headers";
 import { runAction, runStockAction, type ActionState } from "@/lib/action-result";
 import { archiveInvoice, restoreInvoice } from "@/lib/archive";
 import { invoicesChanged } from "@/lib/finance";
-import { confirmInvoice, createManualInvoice, deleteInvoice, type ConfirmInvoiceInput, type ManualInvoiceInput } from "@/lib/invoices";
+import { attachToProforma, confirmInvoice, createManualInvoice, deleteInvoice, type ConfirmInvoiceInput, type ManualInvoiceInput } from "@/lib/invoices";
+import type { PaymentInput } from "@/lib/payment-state";
+import { addPayment, deletePayment } from "@/lib/payments";
 
 function done(state: ActionState) {
   if (state?.saved) invoicesChanged();
   revalidatePath("/faturalar");
   revalidatePath("/finans");
+  revalidatePath("/finans/tahsilat");
   revalidatePath("/musteriler");
   return state;
 }
@@ -37,4 +40,16 @@ export async function createManualInvoiceAction(input: ManualInvoiceInput): Prom
     id = await createManualInvoice(await headers(), input);
   });
   return { ...done(state), id };
+}
+
+export async function attachToProformaAction(uploadedId: string, proformaId: string): Promise<ActionState> {
+  return done(await runAction(async () => attachToProforma(await headers(), uploadedId, proformaId)));
+}
+
+export async function addPaymentAction(invoiceId: string, input: PaymentInput): Promise<ActionState> {
+  return done(await runAction(async () => addPayment(await headers(), invoiceId, input)));
+}
+
+export async function deletePaymentAction(paymentId: string): Promise<ActionState> {
+  return done(await runAction(async () => deletePayment(await headers(), paymentId)));
 }

@@ -25,11 +25,14 @@ import { compact } from "@/lib/product-search";
 import type { InvoiceReview } from "@/lib/invoices";
 import { invoiceKind } from "@/lib/labels";
 import { unitLabels } from "@/lib/quantity";
+import { istanbulDate } from "@/lib/time";
 import { confirmInvoiceAction } from "./actions";
+import { AttachProforma } from "./attach-proforma";
 import { DeleteInvoiceDialog } from "./invoice-delete";
 import { InvoiceStatusBadge } from "./invoice-status";
 import { pdfUrl } from "./invoice-table";
 import { Materials, ModeField } from "./line-fields";
+import { SalePayments } from "./sale-payments";
 import { amount, componentsSchema, decimal, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber, type Mode } from "./options";
 import { useFatura } from "./use-fatura";
 
@@ -91,7 +94,9 @@ export function InvoiceSheet({ review, canEdit }: { review: InvoiceReview | null
 
 function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview; canEdit: boolean; onDone: () => void }) {
   const confirmed = review.status === "onaylandi";
-  const editable = canEdit && !confirmed && !review.archivedAt && !review.manual;
+  const handTyped = review.manual && !review.proforma; // a manual invoice waiting for its PDF
+  const kind = review.proforma ? "Proforma" : "Fatura";
+  const editable = canEdit && !confirmed && !review.archivedAt && !handTyped;
   const [deleting, setDeleting] = useState(false);
   const lokasyonId = review.lokasyonId ?? lokasyonLike(review, /mağaza/i);
 
@@ -134,7 +139,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
         };
       }),
     });
-    if (toastResult(result, `Fatura ${review.number} onaylandı.`)) onDone();
+    if (toastResult(result, `${kind} ${review.number} onaylandı.`)) onDone();
   }
 
   const productOptions = useMemo(() => review.products.map(productOption), [review.products]);
@@ -147,10 +152,12 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
     <>
       <SheetHeader className="border-b">
         <div className="flex flex-wrap items-center gap-2 pr-8">
-          <SheetTitle className="tabular-nums">Fatura {review.number}</SheetTitle>
+          <SheetTitle className="tabular-nums">
+            {kind} {review.number}
+          </SheetTitle>
           {review.archivedAt ? <Badge variant="outline">Arşivde</Badge> : <InvoiceStatusBadge status={review.status} />}
           <Badge variant="outline">{invoiceKind(review)}</Badge>
-          {review.manual && <Badge variant="outline">Elle girildi</Badge>}
+          {handTyped && <Badge variant="outline">Elle girildi</Badge>}
         </div>
         <SheetDescription className="tabular-nums">
           {day(review.issuedOn)} · {tl(Number(review.netAmount))} KDV hariç · KDV {tl(Number(review.totalAmount) - Number(review.netAmount))} ({kdvRateLabel(Number(review.netAmount), Number(review.totalAmount))}) ·{" "}
@@ -167,7 +174,14 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
             </TabsList>
 
             <TabsContent value="fatura" className="flex flex-col gap-5 overflow-y-auto px-4 py-4">
-              {review.manual && (
+              {canEdit && <AttachProforma review={review} />}
+              {review.proforma && !confirmed && (
+                <Alert>
+                  <FileText />
+                  <AlertDescription>Proforma. Ürünler teslim edilince onaylayın; stok o zaman düşer. e-Faturası gelince PDF’i yükleyip bu proformaya bağlayın.</AlertDescription>
+                </Alert>
+              )}
+              {handTyped && (
                 <Alert>
                   <FileText />
                   <AlertDescription>
@@ -210,6 +224,8 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
                   </p>
                 )}
               </section>
+
+              {review.payable && <SalePayments review={review} canEdit={canEdit} today={istanbulDate(new Date())} />}
 
               <FormField
                 control={form.control}
@@ -267,7 +283,9 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
                     </EmptyMedia>
                     <EmptyTitle>PDF yok</EmptyTitle>
                     <EmptyDescription>
-                      {review.manual
+                      {review.proforma
+                        ? "Proforma; e-Faturası bağlanınca PDF’i burada görünür."
+                        : review.manual
                         ? "Fatura elle girildi; PDF’i yüklenince burada görünür."
                         : `Bu fatura, PDF’ler saklanmaya başlamadan önce yüklendi. Aynı PDF’i (${review.fileName}) tekrar yüklerseniz buraya eklenir.`}
                     </EmptyDescription>

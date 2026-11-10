@@ -25,9 +25,7 @@ type Movement = Awaited<ReturnType<typeof listMovements>>[number];
 const column = columnHelperFor<Movement>();
 const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boolean).join(" · ");
 
-// `values` is passed only to a Finans paneli holder; without it there are no price columns.
-// `forProduct`: every row is the same Ürün, so its Ürün and Kategori columns are left out.
-// `correctable` (Stok çıkışı): rows get Düzenle / Sil, and corrected pairs are hidden until asked for.
+// values: Finans holders only; forProduct hides Ürün and Kategori; correctable (Stok çıkışı) adds Düzenle / Sil.
 export function MovementTable({
   movements,
   canReverse,
@@ -202,8 +200,7 @@ function Money({ price, pick }: { price: MovementPrice | undefined; pick: "unit"
   );
 }
 
-// Over the filtered rows: Miktar per unit (signed, so out is negative) and, for Finans holders, Tutar in TL and USD.
-// A built line's materials share its price, so each line is counted once.
+// Totals of the filtered rows; a built line's materials share its price, so it counts once.
 function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, MovementPrice> }) {
   const byUnit = new Map<Movement["unit"], string>();
   for (const m of shown) byUnit.set(m.unit, addQuantities(byUnit.get(m.unit) ?? "0", m.quantity));

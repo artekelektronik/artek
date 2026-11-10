@@ -25,7 +25,7 @@ import { FormDialog } from "@/components/form-dialog";
 import { toastResult } from "@/components/form-status";
 import type { DataTableFeatures } from "@/lib/data-table-features";
 import { day, kdvRateLabel, tl } from "@/lib/finance-calc";
-import { invoiceKind, invoiceKinds, invoiceStatusLabels } from "@/lib/labels";
+import { invoiceKind, invoiceKinds, invoiceStatusLabels, proformaScenario } from "@/lib/labels";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
 import { DeleteInvoiceDialog } from "./invoice-delete";
 import { InvoiceStatusBadge } from "./invoice-status";
@@ -86,7 +86,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
           >
             {row.original.number}
           </Link>
-          {row.original.manual && <Badge variant="outline">Elle</Badge>}
+          {row.original.manual && row.original.scenario !== proformaScenario && <Badge variant="outline">Elle</Badge>}
           {row.original.hasFile && (
             <a href={pdfUrl(row.original.id)} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground" title="Orijinal PDF">
               <FileText className="size-4" />

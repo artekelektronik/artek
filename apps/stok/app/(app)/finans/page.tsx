@@ -10,6 +10,7 @@ import { grossProfit } from "@/lib/gross-profit";
 import { emptyMonth, monthlyNet } from "@/lib/gross-profit-calc";
 import { loadActor } from "@/lib/guard";
 import { recentInvoices } from "@/lib/invoices";
+import { unInvoicedSales } from "@/lib/payments";
 import { can } from "@/lib/permissions";
 import { addMonths, istanbulDate } from "@/lib/time";
 import { CustomersTab } from "./customers-tab";
@@ -28,12 +29,13 @@ export default async function FinancePage() {
   const crm = can(actor, "crm.view");
   const today = istanbulDate(new Date());
   await fillRecurringExpenses(today);
-  const [s, gp, spent, upcoming, recent] = await Promise.all([
+  const [s, gp, spent, upcoming, recent, unInvoiced] = await Promise.all([
     financeSummary(requestHeaders, "finance.view"),
     grossProfit(requestHeaders),
     listExpenses(requestHeaders),
     upcomingExpenses(requestHeaders),
     recentInvoices(requestHeaders, 5),
+    unInvoicedSales(requestHeaders, today.slice(0, 4)),
   ]);
 
   const { months, years } = monthlyNet(gp.months, spent);
@@ -67,7 +69,7 @@ export default async function FinancePage() {
             ; satış ve brüt kâr onlardan hesaplanır.
           </p>
         )}
-        <YearCard totals={yearTotals} />
+        <YearCard totals={yearTotals} unInvoiced={unInvoiced} />
       </div>
       {months.length > 0 && <MonthlyTable months={months} years={years} />}
       <UncostedLines lines={gp.uncosted} />

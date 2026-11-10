@@ -60,9 +60,10 @@ export const countStatusLabels: Record<(typeof countStatus.enumValues)[number], 
 };
 
 export const invoiceStatusLabels = { taslak: "Onay bekliyor", onaylandi: "Onaylandı" } as const;
-export const invoiceKinds = ["e-Fatura", "e-Arşiv", "İade"] as const;
+export const proformaScenario = "PROFORMA"; // see ADR-0008
+export const invoiceKinds = ["e-Fatura", "e-Arşiv", "İade", "Proforma"] as const;
 export const invoiceKind = (i: { type: string; scenario: string }) =>
-  i.type === "IADE" ? "İade" : i.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura";
+  i.type === "IADE" ? "İade" : i.scenario === proformaScenario ? "Proforma" : i.scenario === "EARSIVFATURA" ? "e-Arşiv" : "e-Fatura";
 
 export const transferStatusLabels: Record<(typeof transferStatus.enumValues)[number], string> = {
   yolda: "Yolda",

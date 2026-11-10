@@ -611,6 +611,27 @@ export const invoice = pgTable(
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
 
+// Tahsilat: money a customer paid for one sale (a Fatura or Proforma), KDV dahil. See ADR-0008.
+export const paymentMethod = pgEnum("payment_method", ["nakit", "havale", "kredi_karti", "cek_senet"]);
+export const payment = pgTable(
+  "payment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    invoiceId: uuid("invoice_id")
+      .notNull()
+      .references(() => invoice.id, { onDelete: "cascade" }),
+    paidOn: date("paid_on", { mode: "string" }).notNull(),
+    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+    method: paymentMethod("method").notNull(),
+    note: text("note").notNull().default(""),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("payment_invoice_idx").on(t.invoiceId), check("payment_positive", sql`${t.amount} > 0`)],
+);
+
 // The uploaded PDF, apart from invoice so lists never load it.
 export const invoiceFile = pgTable("invoice_file", {
   invoiceId: uuid("invoice_id")

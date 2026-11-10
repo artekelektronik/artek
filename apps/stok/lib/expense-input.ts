@@ -1,13 +1,6 @@
 // What a Gider form may hold; the server and the form check with the same rules. Pure, so the browser can import it.
 import { z } from "zod";
-import { normalizeDecimal } from "./decimal";
-
-const decimal = (error: string) =>
-  z.string().transform((raw, ctx) => {
-    const value = normalizeDecimal(raw);
-    if (value === null) ctx.addIssue({ code: "custom", message: error });
-    return value ?? "";
-  });
+import { decimalText as decimal } from "./decimal";
 
 export const expenseInput = z.object({
   spentOn: z.iso.date({ error: "Tarihi seçin." }),
