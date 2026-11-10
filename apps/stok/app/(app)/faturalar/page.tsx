@@ -61,7 +61,7 @@ export default async function InvoicesPage({ searchParams }: { searchParams: Pro
         )
       }
     >
-      <PanelCard title="Faturalar" note="Tutarlar KDV hariç; iade faturaları satışa sayılmaz.">
+      <PanelCard title="Faturalar" note="Tutarlar KDV hariç ve dahil; iade faturaları satışa sayılmaz.">
         <InvoiceTable
           rows={rows.map((r) => ({ ...r, archivedAt: r.archivedAt?.toISOString() ?? null }))}
           linkCustomers={canSeeCustomers}

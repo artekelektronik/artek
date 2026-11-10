@@ -11,6 +11,24 @@ export const amountShort = (v: number) =>
 export const tlShort = (v: number) => `${amountShort(v)} TL`;
 export const pct = (v: number) => `%${tlFormat.format(v * 100)}`;
 export const share = (part: number, whole: number) => (whole ? pct(part / whole) : "—");
+export const kdvRates = [20, 10, 1, 0] as const;
+
+// A manual invoice's lines, typed with or without KDV, as net line amounts (stored) and the invoice's totals.
+export function manualTotals(lines: { quantity: number; unitPrice: number }[], rate: number, included: boolean) {
+  const kdv = 1 + rate / 100;
+  const typed = lines.map((l) => l.quantity * l.unitPrice);
+  const amounts = typed.map((t) => Math.round((included ? t / kdv : t) * 100) / 100);
+  const net = amounts.reduce((s, a) => s + a, 0);
+  return { amounts, net, total: included ? typed.reduce((s, t) => s + t, 0) : net * kdv };
+}
+
+// The KDV rate an invoice's totals add up to; an invoice whose lines carry different rates is "karma".
+export const kdvRateLabel = (net: number, total: number) => {
+  if (!net) return "—";
+  const ratio = total / net - 1;
+  const rate = kdvRates.find((r) => Math.abs(ratio - r / 100) < 0.001); // line rounding moves it a hair
+  return rate === undefined ? "karma" : `%${rate}`;
+};
 export const day = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 export const monthLabel = (ym: string) => `${monthNames[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;

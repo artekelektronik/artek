@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@artek/ui/components/tabs";
 import { Combobox } from "@/components/combobox";
 import { toastResult } from "@/components/form-status";
-import { day, tl } from "@/lib/finance-calc";
+import { day, kdvRateLabel, tl } from "@/lib/finance-calc";
 import { QuickAddProduct } from "@/components/quick-add-product";
 import { newCustomer, writtenCodes } from "@/lib/invoice-match";
 import { compact } from "@/lib/product-search";
@@ -153,7 +153,8 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
           {review.manual && <Badge variant="outline">Elle girildi</Badge>}
         </div>
         <SheetDescription className="tabular-nums">
-          {day(review.issuedOn)} · {tl(Number(review.netAmount))} KDV hariç · {tl(Number(review.totalAmount))} KDV dahil
+          {day(review.issuedOn)} · {tl(Number(review.netAmount))} KDV hariç · KDV {tl(Number(review.totalAmount) - Number(review.netAmount))} ({kdvRateLabel(Number(review.netAmount), Number(review.totalAmount))}) ·{" "}
+          {tl(Number(review.totalAmount))} KDV dahil
         </SheetDescription>
       </SheetHeader>
 
