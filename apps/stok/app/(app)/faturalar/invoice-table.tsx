@@ -24,7 +24,7 @@ import { columnHelperFor, option, searchColumn, useClientDataTable } from "@/com
 import { FormDialog } from "@/components/form-dialog";
 import { toastResult } from "@/components/form-status";
 import type { DataTableFeatures } from "@/lib/data-table-features";
-import { day, tl } from "@/lib/finance-calc";
+import { day, kdvRateLabel, tl } from "@/lib/finance-calc";
 import { invoiceKind, invoiceKinds, invoiceStatusLabels } from "@/lib/labels";
 import { archiveInvoiceAction, restoreInvoiceAction } from "./actions";
 import { DeleteInvoiceDialog } from "./invoice-delete";
@@ -38,6 +38,7 @@ export type InvoiceRow = {
   type: string;
   issuedOn: string;
   netAmount: string;
+  totalAmount: string;
   status: "taslak" | "onaylandi";
   manual: boolean;
   customerId: string | null;
@@ -74,7 +75,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
     }),
     column.accessor("number", {
       id: "no",
-      size: 230,
+      size: 200,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Fatura no" />,
       cell: ({ row }) => (
         <span className="flex items-center gap-2 whitespace-nowrap">
@@ -99,7 +100,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
     }),
     column.accessor("customer", {
       id: "musteri",
-      size: 320,
+      size: 240,
       header: ({ column }) => <DataTableColumnHeader column={column} label="Müşteri" />,
       cell: ({ row }) =>
         linkCustomers && row.original.customerId ? (
@@ -129,9 +130,26 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
     column.accessor((r) => Number(r.netAmount), {
       id: "tutar",
       size: 120,
-      header: ({ column }) => <DataTableColumnHeader column={column} label="Tutar" className="justify-end" />,
-      cell: ({ row }) => <span className="block text-right tabular-nums">{tl(Number(row.original.netAmount))}</span>,
-      meta: { label: "Tutar" },
+      header: ({ column }) => <DataTableColumnHeader column={column} label="KDV hariç" className="justify-end" />,
+      cell: ({ row }) => <span className="block text-right font-medium tabular-nums">{tl(Number(row.original.netAmount))}</span>,
+      meta: { label: "KDV hariç" },
+    }),
+    column.accessor((r) => Number(r.totalAmount), {
+      id: "kdvDahil",
+      size: 150,
+      header: ({ column }) => <DataTableColumnHeader column={column} label="KDV dahil" className="justify-end" />,
+      cell: ({ row }) => {
+        const { netAmount, totalAmount } = row.original;
+        return (
+          <span className="flex flex-col items-end tabular-nums">
+            {tl(Number(totalAmount))}
+            <span className="text-muted-foreground text-xs">
+              KDV {tl(Number(totalAmount) - Number(netAmount))} · {kdvRateLabel(Number(netAmount), Number(totalAmount))}
+            </span>
+          </span>
+        );
+      },
+      meta: { label: "KDV dahil" },
     }),
     column.display({
       id: "islemler",
@@ -164,14 +182,15 @@ function Totals({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, un
     <FilteredRows table={table}>
       {(shown) => {
         const confirmed = shown.filter((r) => r.status === "onaylandi");
-        const sum = (rows: InvoiceRow[]) => rows.reduce((s, r) => s + Number(r.netAmount), 0);
+        const sum = (rows: InvoiceRow[], key: "netAmount" | "totalAmount" = "netAmount") => rows.reduce((s, r) => s + Number(r[key]), 0);
         const sales = sum(confirmed.filter((r) => r.type !== "IADE"));
+        const salesWithKdv = sum(confirmed.filter((r) => r.type !== "IADE"), "totalAmount");
         const returns = sum(confirmed.filter((r) => r.type === "IADE"));
         const waiting = shown.length - confirmed.length;
         return (
           <p className="text-muted-foreground text-xs tabular-nums">
             <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> fatura · satış{" "}
-            <b className="text-foreground font-medium">{tl(sales)}</b>
+            <b className="text-foreground font-medium">{tl(sales)}</b> KDV hariç · {tl(salesWithKdv)} KDV dahil
             {returns > 0 && <> · iade {tl(returns)}</>}
             {waiting > 0 && <> · {waiting.toLocaleString("tr-TR")} onay bekliyor</>}
           </p>

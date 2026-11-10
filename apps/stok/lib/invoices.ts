@@ -147,6 +147,7 @@ export async function invoiceList(headers: Headers) {
       type: invoice.type,
       issuedOn: invoice.issuedOn,
       netAmount: invoice.netAmount,
+      totalAmount: invoice.totalAmount,
       status: invoice.status,
       manual: isManual,
       customerId: invoice.customerId,
@@ -474,6 +475,7 @@ const manualInput = z.object({
   type: z.enum(["SATIS", "IADE"]),
   scenario: z.enum(["TEMELFATURA", "EARSIVFATURA"]),
   kdvRate: z.coerce.number().min(0).max(100),
+  pricesIncludeKdv: z.boolean().default(false), // typed prices are KDV dahil; stored without KDV like every line
   customerId: z.uuid().nullable(),
   buyer: z.object({ name: z.string().trim(), taxId: z.string().trim() }),
   lines: z
@@ -504,8 +506,13 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
     if (!data.buyer.name || !/^\d{10,11}$/.test(data.buyer.taxId)) throw new UserError("Yeni müşteri için ad ve 10 haneli VKN ya da 11 haneli TCKN yazın.");
     buyer = { name: data.buyer.name, taxId: data.buyer.taxId, taxIdType: data.buyer.taxId.length === 11 ? "TCKN" : "VKN", city: "", district: "", email: null };
   }
-  const amounts = data.lines.map((l) => money(Number(l.quantity) * Number(l.unitPrice)));
+  const kdv = 1 + data.kdvRate / 100;
+  const typed = data.pricesIncludeKdv ? kdv : 1;
+  const unitPrices = data.lines.map((l) => (Number(l.unitPrice) / typed).toFixed(4));
+  const amounts = data.lines.map((l) => money((Number(l.quantity) * Number(l.unitPrice)) / typed));
   const net = amounts.reduce((s, a) => s + Number(a), 0);
+  // Typed with KDV, the total is what was typed; otherwise KDV is added on top.
+  const total = data.pricesIncludeKdv ? data.lines.reduce((s, l) => s + Number(l.quantity) * Number(l.unitPrice), 0) : net * kdv;
 
   return db.transaction(async (tx) => {
     const [taken] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.number, data.number));
@@ -520,7 +527,7 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
         buyer,
         customerId: data.customerId,
         netAmount: money(net),
-        totalAmount: money(net * (1 + data.kdvRate / 100)),
+        totalAmount: money(total),
         uploadedBy: actor.userId,
       })
       .returning({ id: invoice.id });
@@ -533,7 +540,7 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
         productGroup: productGroup(l.description),
         quantity: l.quantity,
         unit: l.unit,
-        unitPrice: l.unitPrice,
+        unitPrice: unitPrices[i],
         amount: amounts[i],
         productId: l.productId,
         stockQuantity: l.productId ? l.stockQuantity : null,

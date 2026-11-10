@@ -11,6 +11,13 @@ export const amountShort = (v: number) =>
 export const tlShort = (v: number) => `${amountShort(v)} TL`;
 export const pct = (v: number) => `%${tlFormat.format(v * 100)}`;
 export const share = (part: number, whole: number) => (whole ? pct(part / whole) : "—");
+// The KDV rate an invoice's totals add up to; an invoice whose lines carry different rates is "karma".
+export const kdvRateLabel = (net: number, total: number) => {
+  if (!net) return "—";
+  const ratio = total / net - 1;
+  const rate = [0, 1, 10, 20].find((r) => Math.abs(ratio - r / 100) < 0.001); // line rounding moves it a hair
+  return rate === undefined ? "karma" : `%${rate}`;
+};
 export const day = (iso: string) => `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}`;
 const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 export const monthLabel = (ym: string) => `${monthNames[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}`;

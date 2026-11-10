@@ -9,6 +9,7 @@ import { Button } from "@artek/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@artek/ui/components/form";
 import { Input } from "@artek/ui/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@artek/ui/components/select";
+import { Switch } from "@artek/ui/components/switch";
 import { Combobox } from "@/components/combobox";
 import { FormSheet, SheetActions } from "@/components/form-sheet";
 import { toastResult } from "@/components/form-status";
@@ -18,7 +19,7 @@ import type { manualInvoiceOptions } from "@/lib/invoices";
 import { unitLabels } from "@/lib/quantity";
 import { createManualInvoiceAction } from "./actions";
 import { Materials, ModeField } from "./line-fields";
-import { amount, componentsSchema, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, toNumber } from "./options";
+import { amount, componentsSchema, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe } from "./options";
 import { useFatura, useManualInvoice } from "./use-fatura";
 
 type Options = Awaited<ReturnType<typeof manualInvoiceOptions>>;
@@ -30,7 +31,8 @@ const formSchema = z
     issuedOn: z.iso.date({ error: "Tarihi seçin." }),
     type: z.enum(["SATIS", "IADE"]),
     scenario: z.enum(["TEMELFATURA", "EARSIVFATURA"]),
-    kdvRate: z.string().refine((v) => toNumber(v) >= 0, { error: "KDV oranı?" }),
+    kdvRate: z.enum(["20", "10", "1", "0"]),
+    pricesIncludeKdv: z.boolean(),
     customerId: z.string().min(1, { error: "Müşteriyi seçin." }),
     buyerName: z.string().trim(),
     buyerTaxId: z.string().trim(),
@@ -82,6 +84,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
       type: "SATIS",
       scenario: "TEMELFATURA",
       kdvRate: "20",
+      pricesIncludeKdv: false,
       customerId: "",
       buyerName: "",
       buyerTaxId: "",
@@ -102,7 +105,8 @@ function ManualInvoiceForm({ options }: { options: Options }) {
       issuedOn: v.issuedOn,
       type: v.type,
       scenario: v.scenario,
-      kdvRate: toNumber(v.kdvRate),
+      kdvRate: Number(v.kdvRate),
+      pricesIncludeKdv: v.pricesIncludeKdv,
       customerId: v.customerId === newCustomer ? null : v.customerId,
       buyer: { name: v.buyerName, taxId: v.buyerTaxId },
       lines: v.lines.map(({ mode, components, ...l }) => ({
@@ -118,7 +122,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
     }
   }
 
-  const text = (name: "number" | "issuedOn" | "kdvRate" | "buyerName" | "buyerTaxId", label: string, props: React.ComponentProps<typeof Input> = {}) => (
+  const text = (name: "number" | "issuedOn" | "buyerName" | "buyerTaxId", label: string, props: React.ComponentProps<typeof Input> = {}) => (
     <FormField
       control={form.control}
       name={name}
@@ -133,7 +137,7 @@ function ManualInvoiceForm({ options }: { options: Options }) {
       )}
     />
   );
-  const choice = (name: "type" | "scenario", label: string, items: [string, string][]) => (
+  const choice = (name: "type" | "scenario" | "kdvRate", label: string, items: [string, string][]) => (
     <FormField
       control={form.control}
       name={name}
@@ -165,7 +169,12 @@ function ManualInvoiceForm({ options }: { options: Options }) {
         <div className="grid gap-4 sm:grid-cols-3">
           {text("number", "Fatura no", { placeholder: "AAA2026000000330", className: "tabular-nums" })}
           {text("issuedOn", "Tarih", { type: "date" })}
-          {text("kdvRate", "KDV %", { inputMode: "decimal" })}
+          {choice("kdvRate", "KDV", [
+            ["20", "%20"],
+            ["10", "%10"],
+            ["1", "%1"],
+            ["0", "%0 · istisna / ihracat"],
+          ])}
           {choice("type", "Tür", [
             ["SATIS", "Satış"],
             ["IADE", "İade"],
@@ -196,6 +205,19 @@ function ManualInvoiceForm({ options }: { options: Options }) {
           </div>
         )}
 
+        <FormField
+          control={form.control}
+          name="pricesIncludeKdv"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center gap-3">
+              <FormControl>
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <FormLabel className="font-normal">Fiyatlar KDV dahil yazıldı</FormLabel>
+            </FormItem>
+          )}
+        />
+
         <section className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
             <h3 className="text-sm font-medium">Satırlar</h3>
@@ -220,11 +242,14 @@ function ManualInvoiceForm({ options }: { options: Options }) {
 }
 
 function Totals() {
-  const [lines, kdvRate] = useWatch<FormValues, ["lines", "kdvRate"]>({ name: ["lines", "kdvRate"] });
-  const net = lineNet(lines);
+  const [lines, kdvRate, included] = useWatch<FormValues, ["lines", "kdvRate", "pricesIncludeKdv"]>({ name: ["lines", "kdvRate", "pricesIncludeKdv"] });
+  const kdv = 1 + Number(kdvRate) / 100;
+  const typed = lineNet(lines);
+  const net = included ? typed / kdv : typed;
+  const total = included ? typed : typed * kdv;
   return (
     <p className="text-muted-foreground text-xs tabular-nums">
-      KDV hariç {tl(net)} · KDV dahil {tl(net * (1 + (toNumber(kdvRate) || 0) / 100))}
+      KDV hariç {tl(net)} · KDV {tl(total - net)} · KDV dahil {tl(total)}
     </p>
   );
 }

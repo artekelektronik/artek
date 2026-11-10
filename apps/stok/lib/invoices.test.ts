@@ -481,6 +481,15 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       assert.equal((await loadSalesSummary()).total, 452.5);
     });
 
+    test("a manual invoice typed with KDV-included prices is stored without KDV; %0 has no KDV", async () => {
+      await invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000011", kdvRate: 20, pricesIncludeKdv: true, lines: [{ ...manualSample.lines[0], quantity: "10", unitPrice: "120" }] });
+      await invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000012", kdvRate: 0, lines: [{ ...manualSample.lines[0], quantity: "10", unitPrice: "100" }] });
+      const rows = await db.select().from(schema.invoice).orderBy(schema.invoice.number);
+      assert.deepEqual(rows.map((r) => [r.number, r.netAmount, r.totalAmount]), [["AAA2025000000011", "1000.00", "1200.00"], ["AAA2025000000012", "1000.00", "1000.00"]]);
+      const [line] = await db.select().from(schema.invoiceLine).where(eq(schema.invoiceLine.invoiceId, rows[0].id));
+      assert.deepEqual([line.unitPrice, line.amount], ["100.0000", "1000.00"]);
+    });
+
     test("a manual invoice waits for its PDF; uploading the PDF with its number joins it and keeps the picked products", async () => {
       const id = await invoices.createManualInvoice(admin.headers, {
         number: "AAA2025000000007",
