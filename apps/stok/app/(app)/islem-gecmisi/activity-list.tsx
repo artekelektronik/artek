@@ -20,7 +20,6 @@ const actionTones: Record<ActivityRow["action"], string> = {
   hareket: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
   kullanici: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
 };
-const periods = { tumu: "Tüm zamanlar", bugun: "Bugün", hafta: "Son 7 gün" };
 const href = (r: ActivityRow) => {
   if (r.entity === "musteri") return `/musteriler?secili=${r.entityId}`;
   if (r.entity === "aday") return `/musteriler/adaylar?secili=${r.entityId}`;
@@ -32,13 +31,11 @@ const href = (r: ActivityRow) => {
 const timeText = (iso: string) =>
   new Date(iso).toLocaleString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 
-export function ActivityList({ rows, todayStart, weekAgo }: { rows: ActivityRow[]; todayStart: string; weekAgo: string }) {
+export function ActivityList({ rows }: { rows: ActivityRow[] }) {
   const [entity, setEntity] = useState("tumu");
   const [who, setWho] = useState("herkes");
-  const [period, setPeriod] = useState("tumu");
   const people = [...new Set(rows.map((r) => r.who))].sort((a, b) => a.localeCompare(b, "tr"));
-  const inPeriod = (r: ActivityRow) => period === "tumu" || r.at >= (period === "hafta" ? weekAgo : todayStart);
-  const shown = rows.filter((r) => (entity === "tumu" || r.entity === entity) && (who === "herkes" || r.who === who) && inPeriod(r));
+  const shown = rows.filter((r) => (entity === "tumu" || r.entity === entity) && (who === "herkes" || r.who === who));
 
   return (
     <div className="flex flex-col gap-3">
@@ -58,14 +55,6 @@ export function ActivityList({ rows, todayStart, weekAgo }: { rows: ActivityRow[
           onValueChange={setWho}
           aria-label="Kim"
           className="w-48"
-        />
-        <FormSelect
-          name="donem"
-          options={Object.entries(periods).map(([value, label]) => ({ value, label }))}
-          defaultValue="tumu"
-          onValueChange={setPeriod}
-          aria-label="Dönem"
-          className="w-40"
         />
         <span className="text-muted-foreground text-xs">{shown.length} işlem</span>
       </div>

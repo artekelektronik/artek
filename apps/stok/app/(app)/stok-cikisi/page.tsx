@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { Plus } from "lucide-react";
 import { Button } from "@artek/ui/components/button";
+import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
 import { FormSheet } from "@/components/form-sheet";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
@@ -12,19 +13,22 @@ import { listMovements } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { activeProducts, availableByLokasyon, lokasyonFor } from "@/lib/pickers";
 import { stockOutTypes } from "@/lib/stock-out";
+import { dayRange } from "@/lib/time";
 import { exitValues } from "@/lib/stock-out-report";
 import { recordStockOutAction } from "./actions";
 import { StockOutFields } from "./stock-out-fields";
 
 export const metadata = { title: "Stok çıkışı | Artek" };
 
-export default async function StockOutPage() {
+export default async function StockOutPage({ searchParams }: { searchParams: Promise<DateRangeParams> }) {
+  const params = await searchParams;
+  const range = dayRange(params);
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   const [lokasyon, products, recent] = await Promise.all([
     lokasyonFor(actor, "stock.out"),
     activeProducts(),
-    listMovements(requestHeaders, { types: stockOutTypes, limit: 50 }),
+    listMovements(requestHeaders, { types: stockOutTypes, ...range, limit: range.from || range.to ? undefined : 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
   const [available, values] = await Promise.all([availableByLokasyon(lokasyon.map((l) => l.id)), exitValues(actor, recent)]);
@@ -54,8 +58,9 @@ export default async function StockOutPage() {
         </FormSheet>
       }
     >
-      <PanelCard title="Son çıkışlar">
-        <MovementTable movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
+      <PanelCard title={range.from || range.to ? "Çıkışlar" : "Son çıkışlar"}>
+        <DateRangeForm params={params} />
+        <MovementTable key={[params.baslangic, params.bitis].join("|")} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
       </PanelCard>
     </PanelShell>
   );

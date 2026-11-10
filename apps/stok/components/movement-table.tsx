@@ -5,6 +5,7 @@ import { cn } from "@artek/ui/lib/utils";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { FilteredRows } from "@/components/data-table/filtered-rows";
 import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
@@ -144,6 +145,34 @@ export function MovementTable({
   return (
     <DataTable table={table} aria-label="Stok hareketleri">
       <DataTableToolbar table={table} />
+      <FilteredRows table={table}>{(shown) => <Totals shown={shown} values={values} />}</FilteredRows>
     </DataTable>
+  );
+}
+
+const quantityFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3 });
+
+// Over the filtered rows: Miktar per unit (signed, so out is negative) and, for Finans holders, Tutar.
+function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, number | null> }) {
+  const byUnit = new Map<Movement["unit"], number>();
+  for (const m of shown) byUnit.set(m.unit, (byUnit.get(m.unit) ?? 0) + Number(m.quantity));
+  const priced = values ? shown.filter((m) => values[m.id] != null) : [];
+  const value = priced.length ? priced.reduce((s, m) => s + values![m.id]!, 0) : undefined;
+  return (
+    <p className="text-muted-foreground text-xs tabular-nums">
+      <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> hareket
+      {[...byUnit].map(([unit, total]) => (
+        <span key={unit}>
+          {" "}
+          · <b className="text-foreground font-medium">{quantityFormat.format(total)} {unitLabels[unit]}</b>
+        </span>
+      ))}
+      {value !== undefined && (
+        <>
+          {" "}
+          · Tutar <b className="text-foreground font-medium">{tl(value)}</b>
+        </>
+      )}
+    </p>
   );
 }

@@ -80,6 +80,16 @@ describe("İşlem geçmişi", { skip: skipWithoutDatabase }, () => {
     assert.equal(find("aday", "Yeni → Ulaşıldı, not eklendi")?.userId, editor.user.id);
   });
 
+  test("a date range leaves out what happened outside it", async () => {
+    const { importAndConfirm } = await import("./test-database");
+    const { listActivity } = await import("./activity");
+    await importAndConfirm(editor.headers, { fileName: "a.pdf", sha256: "s1", text: invoiceText(1, "1111111111", "AAA ELEKTRONİK LTD ŞTİ") });
+    const now = Date.now();
+    assert.equal((await listActivity(editor.headers, { from: new Date(now - 60_000), to: new Date(now + 60_000) })).length, 3);
+    assert.equal((await listActivity(editor.headers, { from: new Date(now + 60_000) })).length, 0);
+    assert.equal((await listActivity(editor.headers, { to: new Date(now - 3_600_000) })).length, 0);
+  });
+
   test("the page shows invoice rows only to people who may see Faturalar", async () => {
     const { importAndConfirm } = await import("./test-database");
     const { listActivity } = await import("./activity");

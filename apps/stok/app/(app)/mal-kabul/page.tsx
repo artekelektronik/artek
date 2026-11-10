@@ -5,6 +5,7 @@ import { Input } from "@artek/ui/components/input";
 import { Label } from "@artek/ui/components/label";
 import { FormSelect } from "@/components/form-select";
 import { FormSheet } from "@/components/form-sheet";
+import { DateRangeForm, type DateRangeParams } from "@/components/date-range-form";
 import { MovementTable } from "@/components/movement-table";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
@@ -16,11 +17,14 @@ import { listMovements } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
 import { activeProducts, lokasyonFor } from "@/lib/pickers";
 import { listCategories } from "@/lib/products";
+import { dayRange } from "@/lib/time";
 import { recordReceiptAction } from "./actions";
 
 export const metadata = { title: "Mal kabul | Artek" };
 
-export default async function ReceiptPage() {
+export default async function ReceiptPage({ searchParams }: { searchParams: Promise<DateRangeParams> }) {
+  const params = await searchParams;
+  const range = dayRange(params);
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   const canAddProduct = can(actor, "products.manage");
@@ -28,7 +32,7 @@ export default async function ReceiptPage() {
     lokasyonFor(actor, "stock.receive"),
     activeProducts(),
     canAddProduct ? listCategories(requestHeaders) : [],
-    listMovements(requestHeaders, { type: "mal_kabul", limit: 50 }),
+    listMovements(requestHeaders, { type: "mal_kabul", ...range, limit: range.from || range.to ? undefined : 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
 
@@ -66,8 +70,9 @@ export default async function ReceiptPage() {
         </FormSheet>
       }
     >
-      <PanelCard title="Son mal kabuller">
-        <MovementTable movements={recent} canReverse={can(actor, "stock.reverse")} />
+      <PanelCard title={range.from || range.to ? "Mal kabuller" : "Son mal kabuller"}>
+        <DateRangeForm params={params} />
+        <MovementTable key={[params.baslangic, params.bitis].join("|")} movements={recent} canReverse={can(actor, "stock.reverse")} />
       </PanelCard>
     </PanelShell>
   );
