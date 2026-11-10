@@ -5,7 +5,7 @@ import { isUuid } from "@/lib/errors";
 import { loadActor } from "@/lib/guard";
 import { listMovements, movementLimit } from "@/lib/ledger";
 import { can } from "@/lib/permissions";
-import { exitValues } from "@/lib/stock-out-report";
+import { movementPrices } from "@/lib/stock-out-report";
 import { dayRange } from "@/lib/time";
 
 export const metadata = { title: "Stok hareketleri | Artek" };
@@ -28,7 +28,7 @@ export default async function MovementsPage({
     productId: id(params.urun),
   });
 
-  const values = await exitValues(actor, movements);
+  const values = await movementPrices(actor, movements);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">

@@ -18,6 +18,7 @@ import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
 import { addQuantities, unitLabels } from "@/lib/quantity";
+import { movementPrices } from "@/lib/stock-out-report";
 import { dayRange, type DateRangeParams } from "@/lib/time";
 import { inTransit } from "@/lib/transfers";
 import { archiveProductAction, restoreProductAction } from "../actions";
@@ -35,9 +36,12 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     listCategories(requestHeaders),
   ]);
   if (!product) notFound();
-  const [balances, movements, transit] = await Promise.all([
+  const [balances, { movements, values }, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
-    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }),
+    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }).then(async (movements) => ({
+      movements,
+      values: await movementPrices(actor, movements),
+    })),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
   // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
@@ -163,7 +167,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
             <Link href={`/hareketler?urun=${product.id}`}>Tüm hareketler</Link>
           </Button>
         </div>
-        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} forProduct />
+        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} values={values} forProduct />
       </PanelCard>
     </PanelShell>
   );

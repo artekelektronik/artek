@@ -3,6 +3,8 @@
 const tlFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 0 });
 const oneDecimal = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
 export const tl = (v: number) => `${tlFormat.format(v)} TL`;
+const usdFormat = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+export const usd = (v: number) => usdFormat.format(v);
 // "7,3 milyon", "843 bin": the compact "Mn"/"B" reads as billion to many. Chart axes use it bare.
 export const amountShort = (v: number) =>
   Math.abs(v) >= 1e6 ? `${oneDecimal.format(v / 1e6)} milyon` : Math.abs(v) >= 1e3 ? `${tlFormat.format(v / 1e3)} bin` : tlFormat.format(v);

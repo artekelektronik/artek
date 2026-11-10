@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
 import { db } from "../db";
-import { lokasyon, notification, product, stockDocument, stockMovement, user, userPanel, userRole } from "../db/schema";
+import { invoice, invoiceLine, lokasyon, notification, product, stockDocument, stockMovement, user, userPanel, userRole } from "../db/schema";
 import { getRates, type Rates } from "./exchange-rates";
 import { tl } from "./finance-calc";
 import { appUrl, sentSince } from "./finance-reminders";
@@ -8,6 +8,8 @@ import { loadActor } from "./guard";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "./labels";
 import { visibleLokasyonIds, type MovementType } from "./ledger";
 import { can, type Actor } from "./permissions";
+import { ratesOn } from "./historic-rates";
+import { priceInvoiceMoves } from "./invoice-move-prices";
 import { loadPrices } from "./prices";
 import { addQuantities, formatQuantity, unitLabels, type Unit } from "./quantity";
 import { stockOutTypes } from "./stock-out";
@@ -22,11 +24,43 @@ const loadPricing = async (): Promise<Pricing> => {
   return { prices, rates };
 };
 
-// Movement id to TL for a Finans paneli holder; undefined for anyone else, so no price leaves the server.
-export async function exitValues(actor: Actor, movements: { id: string; type: string; quantity: string; productId: string }[]) {
+// What a stock movement sold for, KDV hariç, in TL; `usdRate` turns it into USD. `estimate`: no invoice, priced from today's list.
+export type MovementPrice = { key: string; unit: number | null; total: number | null; usdRate: number | null; estimate: boolean };
+
+// Finans holders only (undefined otherwise): an invoice's line at its day's TCMB rate, else today's list price.
+export async function movementPrices(actor: Actor, movements: { id: string; type: string; quantity: string; productId: string; documentId: string; documentKind: string }[]) {
   if (!can(actor, "finance.view")) return undefined;
-  const { prices, rates } = await loadPricing();
-  return Object.fromEntries(movements.map((m) => [m.id, exitValue(m.type, m.quantity, prices.get(m.productId), rates)]));
+  const invoiceDocs = [...new Set(movements.filter((m) => m.documentKind === "fatura").map((m) => m.documentId))];
+  const [{ prices, rates }, lines] = await Promise.all([
+    loadPricing(),
+    invoiceDocs.length
+      ? db
+          .select({
+            invoiceId: invoice.id,
+            documentId: sql<string>`${invoice.stockDocumentId}`,
+            seq: invoiceLine.seq,
+            issuedOn: invoice.issuedOn,
+            productId: invoiceLine.productId,
+            quantity: invoiceLine.quantity,
+            stockQuantity: invoiceLine.stockQuantity,
+            amount: invoiceLine.amount,
+            components: invoiceLine.components,
+          })
+          .from(invoiceLine)
+          .innerJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
+          .where(inArray(invoice.stockDocumentId, invoiceDocs))
+      : [],
+  ]);
+  const sold = priceInvoiceMoves(movements, lines);
+  const usdOn = await ratesOn([...sold.values()].map((p) => p.on));
+  return Object.fromEntries(
+    movements.map((m): [string, MovementPrice] => {
+      const p = sold.get(m.id);
+      if (p) return [m.id, { key: p.key, unit: p.unit, total: p.total, usdRate: usdOn.get(p.on)?.USD ?? null, estimate: false }];
+      const total = exitValue(m.type, m.quantity, prices.get(m.productId), rates);
+      return [m.id, { key: m.id, unit: total === null ? null : total / Math.abs(Number(m.quantity)), total, usdRate: rates?.USD ?? null, estimate: true }];
+    }),
+  );
 }
 
 // Exits and corrections that lowered stock. A reversed one and its reversal count as if nothing happened.

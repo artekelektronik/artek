@@ -9,7 +9,8 @@ import { FilteredRows } from "@/components/data-table/filtered-rows";
 import { columnHelperFor, options, searchColumn, useClientDataTable } from "@/components/data-table/columns";
 import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
-import { tl } from "@/lib/finance-calc";
+import type { MovementPrice } from "@/lib/stock-out-report";
+import { tl, usd } from "@/lib/finance-calc";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
 import { addQuantities, unitLabels } from "@/lib/quantity";
 import { ReverseButton } from "./reverse-button";
@@ -20,7 +21,7 @@ type Movement = Awaited<ReturnType<typeof listMovements>>[number];
 const column = columnHelperFor<Movement>();
 const document = (m: Movement) => [m.supplier, m.reference, m.reason].filter(Boolean).join(" · ");
 
-// `values` (movement id to TL) is passed only to a Finans paneli holder; without it there is no Tutar column.
+// `values` is passed only to a Finans paneli holder; without it there are no price columns.
 // `forProduct`: every row is the same Ürün, so its Ürün and Kategori columns are left out.
 export function MovementTable({
   movements,
@@ -30,7 +31,7 @@ export function MovementTable({
 }: {
   movements: Movement[];
   canReverse: boolean;
-  values?: Record<string, number | null>;
+  values?: Record<string, MovementPrice>;
   forProduct?: boolean;
 }) {
   const reversed = new Set(movements.map((m) => m.reversesId).filter(Boolean));
@@ -109,14 +110,18 @@ export function MovementTable({
     }),
     ...(values
       ? [
-          column.accessor((m) => values[m.id] ?? 0, {
+          column.accessor((m) => values[m.id]?.unit ?? 0, {
+            id: "birim",
+            size: 100,
+            header: ({ column }) => <DataTableColumnHeader column={column} label="Birim fiyat" className="ml-auto" />,
+            cell: ({ row }) => <Money price={values[row.original.id]} pick="unit" />,
+            meta: { label: "Birim fiyat" },
+          }),
+          column.accessor((m) => values[m.id]?.total ?? 0, {
             id: "tutar",
-            size: 80,
+            size: 110,
             header: ({ column }) => <DataTableColumnHeader column={column} label="Tutar" className="ml-auto" />,
-            cell: ({ row }) => {
-              const value = values[row.original.id];
-              return <div className="text-right tabular-nums">{value === null || value === undefined ? "—" : tl(value)}</div>;
-            },
+            cell: ({ row }) => <Money price={values[row.original.id]} pick="total" />,
             meta: { label: "Tutar" },
           }),
         ]
@@ -163,12 +168,30 @@ export function MovementTable({
 
 const quantityFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3 });
 
-// Over the filtered rows: Miktar per unit (signed, so out is negative) and, for Finans holders, Tutar.
-function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, number | null> }) {
+// TL over USD; "≈" when priced from today's list instead of an invoice.
+function Money({ price, pick }: { price: MovementPrice | undefined; pick: "unit" | "total" }) {
+  const value = price?.[pick];
+  if (value == null) return <div className="text-muted-foreground text-right">—</div>;
+  return (
+    <div className={cn("flex flex-col items-end tabular-nums", price!.estimate && "text-muted-foreground")} title={price!.estimate ? "Faturası yok; bugünkü liste fiyatıyla" : undefined}>
+      <span>
+        {price!.estimate && "≈ "}
+        {tl(value)}
+      </span>
+      {price!.usdRate && <span className="text-muted-foreground text-xs">{usd(value / price!.usdRate)}</span>}
+    </div>
+  );
+}
+
+// Over the filtered rows: Miktar per unit (signed, so out is negative) and, for Finans holders, Tutar in TL and USD.
+// A built line's materials share its price, so each line is counted once.
+function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, MovementPrice> }) {
   const byUnit = new Map<Movement["unit"], string>();
   for (const m of shown) byUnit.set(m.unit, addQuantities(byUnit.get(m.unit) ?? "0", m.quantity));
-  const priced = values ? shown.filter((m) => values[m.id] != null) : [];
-  const value = priced.length ? priced.reduce((s, m) => s + values![m.id]!, 0) : undefined;
+  const priced = new Map<string, MovementPrice>();
+  for (const m of shown) if (values?.[m.id]?.total != null) priced.set(values[m.id].key, values[m.id]);
+  const sum = (f: (p: MovementPrice) => number) => [...priced.values()].reduce((s, p) => s + f(p), 0);
+  const usdKnown = [...priced.values()].every((p) => p.usdRate);
   return (
     <p className="text-muted-foreground text-xs tabular-nums">
       <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> hareket
@@ -181,10 +204,11 @@ function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, 
           </b>
         </span>
       ))}
-      {value !== undefined && (
+      {priced.size > 0 && (
         <>
           {" "}
-          · Tutar <b className="text-foreground font-medium">{tl(value)}</b>
+          · Tutar <b className="text-foreground font-medium">{tl(sum((p) => p.total!))}</b>
+          {usdKnown && <> · {usd(sum((p) => p.total! / p.usdRate!))}</>}
         </>
       )}
     </p>
