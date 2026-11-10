@@ -3,7 +3,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm
 import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, type Tx } from "../db";
-import { customer, invoice, invoiceFile, invoiceLine, lokasyon, product, productComponent, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
+import { customer, invoice, invoiceFile, invoiceLine, lokasyon, payment, product, productComponent, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
 import { logActivity } from "./activity";
 import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
@@ -239,7 +239,8 @@ export async function invoiceReview(headers: Headers, id: string) {
   if (!row) return null;
   const confirmed = row.status === "onaylandi";
 
-  const [lines, { customers, products, recipes }, places, learnedRows] = await Promise.all([
+  const proforma = row.scenario === proformaScenario;
+  const [lines, { customers, products, recipes }, places, learnedRows, payments, openProformas] = await Promise.all([
     db.select().from(invoiceLine).where(eq(invoiceLine.invoiceId, id)).orderBy(asc(invoiceLine.seq)),
     pickerOptions(),
     db.select({ id: lokasyon.id, name: lokasyon.name, openedAt: lokasyon.openedAt }).from(lokasyon).orderBy(asc(lokasyon.name)),
@@ -258,6 +259,15 @@ export async function invoiceReview(headers: Headers, id: string) {
             ),
           )
           .orderBy(asc(invoice.confirmedAt)),
+    db.select().from(payment).where(eq(payment.invoiceId, id)).orderBy(asc(payment.paidOn), asc(payment.createdAt)),
+    // An uploaded e-Fatura still waiting can become one of these (ADR-0008); the buyer's own first.
+    row.ettn && !confirmed
+      ? db
+          .select({ id: invoice.id, number: invoice.number, issuedOn: invoice.issuedOn, netAmount: invoice.netAmount, buyer: invoice.buyer })
+          .from(invoice)
+          .where(and(eq(invoice.scenario, proformaScenario), isNull(invoice.archivedAt)))
+          .orderBy(desc(invoice.issuedOn))
+      : [],
   ]);
   const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
   const prepared = prepareProducts(products);
@@ -266,6 +276,11 @@ export async function invoiceReview(headers: Headers, id: string) {
 
   return {
     ...row,
+    proforma,
+    payments,
+    openProformas: openProformas
+      .map(({ buyer, ...p }) => ({ ...p, buyerName: buyer.name, sameBuyer: buyer.taxId === row.buyer.taxId }))
+      .sort((a, b) => Number(b.sameBuyer) - Number(a.sameBuyer)),
     confirmedAtText: row.confirmedAt ? formatIstanbulTime(row.confirmedAt) : null,
     isReturn,
     customerMatch: row.customerId ? { customerId: row.customerId, suggestions: [] } : matchCustomer(row.buyer, customers),
@@ -329,7 +344,7 @@ export async function confirmInvoice(headers: Headers, input: ConfirmInvoiceInpu
   return db.transaction(async (tx) => {
     const [inv] = await tx.select().from(invoice).where(eq(invoice.id, data.id)).for("update");
     if (!inv) throw new UserError("Fatura bulunamadı.");
-    if (!inv.ettn) throw new UserError("Elle girilen fatura, PDF'i yüklenmeden onaylanamaz.");
+    if (!inv.ettn && inv.scenario !== proformaScenario) throw new UserError("Elle girilen fatura, PDF'i yüklenmeden onaylanamaz.");
     if (inv.archivedAt) throw new UserError("Arşivdeki fatura onaylanamaz; önce geri alın.");
     if (inv.status === "onaylandi") throw new UserError("Bu fatura zaten onaylandı.");
     const isReturn = inv.type === "IADE";
@@ -469,8 +484,11 @@ export async function deleteInvoice(headers: Headers, id: string) {
   });
 }
 
+export const proformaScenario = "PROFORMA";
+
 const manualInput = z.object({
-  number: z.string().trim().min(3, { error: "Fatura numarasını yazın." }),
+  proforma: z.boolean().default(false), // numbered PRF-…, confirmed without a PDF (ADR-0008)
+  number: z.string().trim(),
   issuedOn: z.iso.date({ error: "Tarihi seçin." }),
   type: z.enum(["SATIS", "IADE"]),
   scenario: z.enum(["TEMELFATURA", "EARSIVFATURA"]),
@@ -497,6 +515,7 @@ export type ManualInvoiceInput = z.input<typeof manualInput>;
 export async function createManualInvoice(headers: Headers, input: ManualInvoiceInput) {
   const actor = await requirePermission(headers, "finance.edit");
   const data = parseInput(manualInput, input);
+  if (!data.proforma && data.number.length < 3) throw new UserError("Fatura numarasını yazın.");
   let buyer: InvoiceBuyer;
   if (data.customerId) {
     const [c] = await db.select().from(customer).where(eq(customer.id, data.customerId));
@@ -515,14 +534,15 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
   const unitPrices = data.lines.map((l) => (Number(l.unitPrice) / (data.pricesIncludeKdv ? 1 + data.kdvRate / 100 : 1)).toFixed(4));
 
   return db.transaction(async (tx) => {
-    const [taken] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.number, data.number));
-    if (taken) throw new UserError(`${data.number} numaralı fatura zaten var.`);
+    const number = data.proforma ? await nextProformaNumber(tx, data.issuedOn.slice(0, 4)) : data.number;
+    const [taken] = await tx.select({ id: invoice.id }).from(invoice).where(eq(invoice.number, number));
+    if (taken) throw new UserError(`${number} numaralı fatura zaten var.`);
     const [added] = await tx
       .insert(invoice)
       .values({
-        number: data.number,
+        number,
         issuedOn: data.issuedOn,
-        scenario: data.scenario,
+        scenario: data.proforma ? proformaScenario : data.scenario,
         type: data.type,
         buyer,
         customerId: data.customerId,
@@ -547,8 +567,49 @@ export async function createManualInvoice(headers: Headers, input: ManualInvoice
         components: l.productId && l.components.length ? l.components : null,
       })),
     );
-    await logActivity(tx, { entity: "fatura", entityId: added.id, label: `${data.number} · ${buyer.name}`, action: "eklendi", detail: "Elle girildi", userId: actor.userId });
+    await logActivity(tx, { entity: "fatura", entityId: added.id, label: `${number} · ${buyer.name}`, action: "eklendi", detail: data.proforma ? "Proforma" : "Elle girildi", userId: actor.userId });
     return added.id;
+  });
+}
+
+// PRF-2026-0001, PRF-2026-0002 … per year; a lock per year keeps two at once from taking the same number.
+async function nextProformaNumber(tx: Tx, year: string) {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`proforma:${year}`}))`);
+  const [last] = await tx
+    .select({ number: invoice.number })
+    .from(invoice)
+    .where(sql`${invoice.number} like ${`PRF-${year}-%`}`)
+    .orderBy(desc(invoice.number))
+    .limit(1);
+  const n = last ? Number(last.number.slice(-4)) + 1 : 1;
+  return `PRF-${year}-${String(n).padStart(4, "0")}`;
+}
+
+// The uploaded e-Fatura becomes its proforma: the proforma takes the PDF's identity, file and totals,
+// keeps its lines, stock and payments, and the upload goes away (ADR-0008).
+export async function attachToProforma(headers: Headers, uploadedId: string, proformaId: string) {
+  const actor = await requirePermission(headers, "finance.edit");
+  if (!isUuid(uploadedId) || !isUuid(proformaId)) throw new UserError("Fatura bulunamadı.");
+  await db.transaction(async (tx) => {
+    const [up] = await tx.select().from(invoice).where(eq(invoice.id, uploadedId)).for("update");
+    const [pro] = await tx.select().from(invoice).where(eq(invoice.id, proformaId)).for("update");
+    if (!up?.ettn || up.status !== "taslak" || up.archivedAt) throw new UserError("Yalnız onay bekleyen yüklenmiş bir e-Fatura bağlanabilir.");
+    if (pro?.scenario !== proformaScenario) throw new UserError("Proforma bulunamadı.");
+    if (Math.abs(Number(up.netAmount) - Number(pro.netAmount)) > 1) {
+      throw new UserError(`Tutarlar tutmuyor: e-Fatura ${up.netAmount} TL, proforma ${pro.netAmount} TL (KDV hariç). Önce proformayı düzeltin.`);
+    }
+    const [file] = await tx.select().from(invoiceFile).where(eq(invoiceFile.invoiceId, up.id));
+    await tx.update(payment).set({ invoiceId: pro.id }).where(eq(payment.invoiceId, up.id));
+    await tx.delete(invoiceFile).where(eq(invoiceFile.invoiceId, up.id));
+    await tx.delete(invoiceLine).where(eq(invoiceLine.invoiceId, up.id));
+    await tx.delete(invoice).where(eq(invoice.id, up.id));
+    const { ettn, number, issuedOn, scenario, type, buyer, netAmount, totalAmount, fileName, fileSha256, rawText } = up;
+    await tx
+      .update(invoice)
+      .set({ ettn, number, issuedOn, scenario, type, buyer, netAmount, totalAmount, fileName, fileSha256, rawText, customerId: pro.customerId ?? up.customerId })
+      .where(eq(invoice.id, pro.id));
+    if (file) await tx.insert(invoiceFile).values({ invoiceId: pro.id, bytes: file.bytes });
+    await logActivity(tx, { entity: "fatura", entityId: pro.id, label: `${number} · ${buyer.name}`, action: "duzenlendi", detail: `${pro.number} proformasına bağlandı`, userId: actor.userId });
   });
 }
 

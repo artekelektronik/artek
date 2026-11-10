@@ -86,7 +86,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
           >
             {row.original.number}
           </Link>
-          {row.original.manual && <Badge variant="outline">Elle</Badge>}
+          {row.original.manual && row.original.scenario !== "PROFORMA" && <Badge variant="outline">Elle</Badge>}
           {row.original.hasFile && (
             <a href={pdfUrl(row.original.id)} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground" title="Orijinal PDF">
               <FileText className="size-4" />

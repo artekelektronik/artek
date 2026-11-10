@@ -2,30 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  ArrowLeftRight,
-  Bell,
-  Boxes,
-  CalendarCheck,
-  ClipboardCheck,
-  ClipboardList,
-  Contact,
-  FileText,
-  Receipt,
-  History,
-  LineChart,
-  LayoutDashboard,
-  Package,
-  PackageMinus,
-  PackagePlus,
-  Sparkles,
-  ShoppingBag,
-  Truck,
-  UserPlus,
-  Users,
-  Tag,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeftRight, Bell, Boxes, CalendarCheck, ClipboardCheck, ClipboardList, Contact, FileText, HandCoins, History, LayoutDashboard, LineChart, Package, PackageMinus, PackagePlus, Receipt, ShoppingBag, Sparkles, Tag, Truck, UserPlus, Users, type LucideIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -60,6 +37,7 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
   { group: "Finans", label: "Fiyatlar", href: "/finans/fiyatlar", icon: Tag, requires: "finance" },
   { group: "Finans", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
+  { group: "Finans", label: "Tahsilat", href: "/finans/tahsilat", icon: HandCoins, requires: "finance" },
   { group: "Finans", label: "Giderler", href: "/finans/giderler", icon: Receipt, requires: "finance" },
   { group: "Yönetim", label: "İşlem geçmişi", href: "/islem-gecmisi", icon: History, requires: "activity" },
   { group: "Yönetim", label: "Bildirimler", href: "/bildirimler", icon: Bell, requires: "notifications" },

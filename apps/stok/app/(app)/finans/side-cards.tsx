@@ -109,9 +109,10 @@ export function RecentInvoicesCard({ rows }: { rows: Recent }) {
   );
 }
 
-export function YearCard({ totals }: { totals: YearNet }) {
+// `unInvoiced`: delivered proformas never invoiced, part of Satış (ADR-0008).
+export function YearCard({ totals, unInvoiced }: { totals: YearNet; unInvoiced: number }) {
   const rows = [
-    { label: "Satış", value: tl(totals.sales) },
+    { label: "Satış", value: tl(totals.sales), note: unInvoiced ? `faturasız ${tl(unInvoiced)}` : undefined },
     { label: "Brüt kâr", value: tl(totals.gross), note: share(totals.gross, totals.costedSales) },
     { label: "Giderler", value: tl(totals.expenses), note: `KDV dahil ${tl(totals.expensesWithKdv)}` },
   ];

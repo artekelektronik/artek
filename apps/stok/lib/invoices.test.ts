@@ -481,6 +481,38 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       assert.equal((await loadSalesSummary()).total, 452.5);
     });
 
+    test("a proforma gets its own number and is confirmed as delivered without a PDF, taking its stock", async () => {
+      const proforma = { ...manualSample, issuedOn: "2025-04-07", kdvRate: 0, proforma: true, lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, stockQuantity: "10" }] };
+      const id = await invoices.createManualInvoice(admin.headers, proforma);
+      await invoices.createManualInvoice(admin.headers, proforma);
+      const numbers = (await db.select().from(schema.invoice)).map((r) => [r.number, r.scenario]).sort();
+      assert.deepEqual(numbers, [["PRF-2025-0001", "PROFORMA"], ["PRF-2025-0002", "PROFORMA"]]);
+      await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });
+      assert.equal(await stockOf(core), "15.000");
+    });
+
+    test("an uploaded e-Fatura attached to its proforma becomes it: one sale, its stock taken once, its payments kept", async () => {
+      const id = await invoices.createManualInvoice(admin.headers, { ...manualSample, kdvRate: 0, proforma: true, lines: [{ description: "FERRİT NÜVE", quantity: "10", unit: "Adet", unitPrice: "100", productId: core, stockQuantity: "10" }] });
+      await invoices.confirmInvoice(admin.headers, { id, customerId: "yeni", lokasyonId: lokasyon["Karaköy Mağaza"], lines: lines(core, "10") });
+      const { addPayment } = await import("./payments");
+      await addPayment(admin.headers, id, { paidOn: "2025-04-08", amount: "400", method: "havale", note: "" });
+      const uploaded = await invoices.importInvoiceText(admin.headers, { ...file(21), bytes: new Uint8Array([7]) });
+      assert.ok("id" in uploaded);
+      await invoices.attachToProforma(admin.headers, uploaded.id, id);
+      const rows = await db.select().from(schema.invoice);
+      assert.deepEqual(rows.map((r) => [r.id, r.number, r.scenario, r.status, r.ettn]), [[id, "AAA2025000000021", "TEMELFATURA", "onaylandi", ettn(21)]]);
+      assert.equal(await stockOf(core), "15.000", "the stock went out once, with the proforma");
+      assert.equal((await db.select().from(schema.payment)).length, 1);
+      assert.ok((await db.select().from(schema.invoiceFile)).some((f) => f.invoiceId === id), "the PDF moved to the proforma");
+    });
+
+    test("an e-Fatura whose totals differ from the proforma is not attached", async () => {
+      const id = await invoices.createManualInvoice(admin.headers, { ...manualSample, kdvRate: 0, proforma: true, lines: [{ description: "KARGO", quantity: "1", unit: "Adet", unitPrice: "50", productId: null }] });
+      const uploaded = await invoices.importInvoiceText(admin.headers, file(22));
+      assert.ok("id" in uploaded);
+      await assert.rejects(invoices.attachToProforma(admin.headers, uploaded.id, id), /tutmuyor/);
+    });
+
     test("a manual invoice typed with KDV-included prices is stored without KDV; %0 has no KDV", async () => {
       await invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000011", kdvRate: 20, pricesIncludeKdv: true, lines: [{ ...manualSample.lines[0], quantity: "10", unitPrice: "120" }] });
       await invoices.createManualInvoice(admin.headers, { ...manualSample, number: "AAA2025000000012", kdvRate: 0, lines: [{ ...manualSample.lines[0], quantity: "10", unitPrice: "100" }] });
