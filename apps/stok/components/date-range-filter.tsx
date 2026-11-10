@@ -8,9 +8,8 @@ import { tr } from "react-day-picker/locale";
 import { Button } from "@artek/ui/components/button";
 import { Calendar } from "@artek/ui/components/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@artek/ui/components/popover";
+import { fromDay, toDay } from "./date-picker";
 
-const toDay = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-const fromDay = (day: string | null) => (day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T00:00:00`) : undefined);
 const shown = (date: Date) => date.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
 
 // Sets ?baslangic=&bitis= (read on the server) as soon as both days are picked; the other URL filters stay.
@@ -22,7 +21,6 @@ export function DateRangeFilter() {
   const to = fromDay(searchParams.get("bitis"));
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
-  const [picks, setPicks] = useState(0);
 
   function go(range: { from: Date; to: Date } | null) {
     const next = new URLSearchParams(searchParams);
@@ -44,7 +42,6 @@ export function DateRangeFilter() {
         onOpenChange={(next) => {
           setOpen(next);
           setDraft(undefined);
-          setPicks(0);
         }}
       >
         <PopoverTrigger asChild>
@@ -61,8 +58,8 @@ export function DateRangeFilter() {
             defaultMonth={from ?? new Date(new Date().getFullYear(), new Date().getMonth() - 1)}
             selected={draft}
             onSelect={(range) => {
-              setDraft(range);
-              if (picks + 1 < 2 || !range?.from || !range.to) return setPicks(picks + 1);
+              // The first click only starts the range; the second one applies it.
+              if (!draft || !range?.from || !range.to) return setDraft(range);
               setOpen(false);
               go({ from: range.from, to: range.to });
             }}

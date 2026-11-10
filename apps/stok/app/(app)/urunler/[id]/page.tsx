@@ -156,7 +156,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
         </PanelCard>
       </div>
 
-      <PanelCard title={range.from || range.to ? "Hareketler" : "Son hareketler"} note={range.from || range.to ? "Seçilen tarihler arasında." : "En yeni 20 hareket; tarih seçince o aralığın tamamı gelir."}>
+      <PanelCard title={range.bounded ? "Hareketler" : "Son hareketler"} note={range.bounded ? "Seçilen tarihler arasında." : "En yeni 20 hareket; tarih seçince o aralığın tamamı gelir."}>
         <div className="flex flex-wrap items-end justify-between gap-2">
           <DateRangeFilter />
           <Button asChild variant="outline" size="sm">
