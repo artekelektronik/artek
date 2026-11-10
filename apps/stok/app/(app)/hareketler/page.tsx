@@ -21,9 +21,10 @@ export default async function MovementsPage({
   const params = await searchParams;
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
+  const range = dayRange(params);
   // Dates and product narrow what is loaded; the table filters the rest.
   const movements = await listMovements(requestHeaders, {
-    ...dayRange(params),
+    ...range,
     productId: id(params.urun),
   });
 
@@ -34,7 +35,7 @@ export default async function MovementsPage({
       <h1 className="text-2xl font-semibold">Stok hareketleri</h1>
       <DateRangeForm params={params} keep={{ urun: params.urun }} />
       <MovementTable
-        key={[params.baslangic, params.bitis, params.urun].join("|")}
+        key={`${range.key}|${params.urun ?? ""}`}
         movements={movements}
         canReverse={can(actor, "stock.reverse")}
         values={values}

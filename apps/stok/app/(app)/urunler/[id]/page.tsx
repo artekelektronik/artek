@@ -43,7 +43,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
   if (!product) notFound();
   const [balances, movements, transit] = await Promise.all([
     getBalances(requestHeaders, product.id),
-    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.from || range.to ? undefined : 20 }),
+    listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
   // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
@@ -160,7 +160,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
           </Link>
         </div>
         <DateRangeForm params={dates} />
-        <MovementTable key={[dates.baslangic, dates.bitis].join("|")} movements={movements} canReverse={can(actor, "stock.reverse")} />
+        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} />
       </section>
 
     </div>

@@ -32,7 +32,7 @@ export default async function ReceiptPage({ searchParams }: { searchParams: Prom
     lokasyonFor(actor, "stock.receive"),
     activeProducts(),
     canAddProduct ? listCategories(requestHeaders) : [],
-    listMovements(requestHeaders, { type: "mal_kabul", ...range, limit: range.from || range.to ? undefined : 50 }),
+    listMovements(requestHeaders, { type: "mal_kabul", ...range, limit: range.bounded ? undefined : 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
 
@@ -70,9 +70,9 @@ export default async function ReceiptPage({ searchParams }: { searchParams: Prom
         </FormSheet>
       }
     >
-      <PanelCard title={range.from || range.to ? "Mal kabuller" : "Son mal kabuller"}>
+      <PanelCard title={range.bounded ? "Mal kabuller" : "Son mal kabuller"}>
         <DateRangeForm params={params} />
-        <MovementTable key={[params.baslangic, params.bitis].join("|")} movements={recent} canReverse={can(actor, "stock.reverse")} />
+        <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} />
       </PanelCard>
     </PanelShell>
   );

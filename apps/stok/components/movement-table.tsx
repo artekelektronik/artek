@@ -11,7 +11,7 @@ import { reverseMovementAction } from "@/app/(app)/hareketler/actions";
 import type { listMovements } from "@/lib/ledger";
 import { tl } from "@/lib/finance-calc";
 import { displayQuantity, formatDateTime, movementTypeLabels } from "@/lib/labels";
-import { unitLabels } from "@/lib/quantity";
+import { addQuantities, unitLabels } from "@/lib/quantity";
 import { ReverseButton } from "./reverse-button";
 import { CategoryBadge, MovementTypeBadge } from "./stock-badges";
 
@@ -154,8 +154,8 @@ const quantityFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3
 
 // Over the filtered rows: Miktar per unit (signed, so out is negative) and, for Finans holders, Tutar.
 function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, number | null> }) {
-  const byUnit = new Map<Movement["unit"], number>();
-  for (const m of shown) byUnit.set(m.unit, (byUnit.get(m.unit) ?? 0) + Number(m.quantity));
+  const byUnit = new Map<Movement["unit"], string>();
+  for (const m of shown) byUnit.set(m.unit, addQuantities(byUnit.get(m.unit) ?? "0", m.quantity));
   const priced = values ? shown.filter((m) => values[m.id] != null) : [];
   const value = priced.length ? priced.reduce((s, m) => s + values![m.id]!, 0) : undefined;
   return (
@@ -164,7 +164,7 @@ function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, 
       {[...byUnit].map(([unit, total]) => (
         <span key={unit}>
           {" "}
-          · <b className="text-foreground font-medium">{quantityFormat.format(total)} {unitLabels[unit]}</b>
+          · <b className="text-foreground font-medium">{quantityFormat.format(Number(total))} {unitLabels[unit]}</b>
         </span>
       ))}
       {value !== undefined && (

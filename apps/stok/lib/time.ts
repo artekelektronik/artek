@@ -23,12 +23,11 @@ export function istanbulTimeOn(day: string, time = "00:00:00"): Date {
 
 const isDay = (day: string | undefined): day is string => !!day && /^\d{4}-\d{2}-\d{2}$/.test(day);
 
-// ?baslangic=&bitis= as instants covering whole Istanbul days; a malformed day is left out.
+// ?baslangic=&bitis= as instants covering whole Istanbul days; a malformed day is left out. `key` resets a table when it changes.
 export function dayRange(params: { baslangic?: string; bitis?: string }) {
-  return {
-    from: isDay(params.baslangic) ? istanbulTimeOn(params.baslangic) : undefined,
-    to: isDay(params.bitis) ? istanbulTimeOn(params.bitis, "23:59:59.999") : undefined,
-  };
+  const from = isDay(params.baslangic) ? istanbulTimeOn(params.baslangic) : undefined;
+  const to = isDay(params.bitis) ? istanbulTimeOn(params.bitis, "23:59:59.999") : undefined;
+  return { from, to, bounded: Boolean(from || to), key: `${params.baslangic ?? ""}|${params.bitis ?? ""}` };
 }
 
 // A YYYY-MM-DD day moved by whole days.

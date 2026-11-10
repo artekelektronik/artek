@@ -19,5 +19,6 @@ test("a day range from the URL covers whole Istanbul days; a malformed day is ig
   const range = dayRange({ baslangic: "2026-11-01", bitis: "2026-11-05" });
   assert.equal(range.from?.toISOString(), "2026-10-31T21:00:00.000Z");
   assert.equal(range.to?.toISOString(), "2026-11-05T20:59:59.999Z");
-  assert.deepEqual(dayRange({ baslangic: "1 Kasım", bitis: undefined }), { from: undefined, to: undefined });
+  const none = dayRange({ baslangic: "1 Kasım", bitis: undefined });
+  assert.deepEqual([none.from, none.to, none.bounded], [undefined, undefined, false]);
 });

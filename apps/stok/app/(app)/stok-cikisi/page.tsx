@@ -28,7 +28,7 @@ export default async function StockOutPage({ searchParams }: { searchParams: Pro
   const [lokasyon, products, recent] = await Promise.all([
     lokasyonFor(actor, "stock.out"),
     activeProducts(),
-    listMovements(requestHeaders, { types: stockOutTypes, ...range, limit: range.from || range.to ? undefined : 50 }),
+    listMovements(requestHeaders, { types: stockOutTypes, ...range, limit: range.bounded ? undefined : 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
   const [available, values] = await Promise.all([availableByLokasyon(lokasyon.map((l) => l.id)), exitValues(actor, recent)]);
@@ -58,9 +58,9 @@ export default async function StockOutPage({ searchParams }: { searchParams: Pro
         </FormSheet>
       }
     >
-      <PanelCard title={range.from || range.to ? "Çıkışlar" : "Son çıkışlar"}>
+      <PanelCard title={range.bounded ? "Çıkışlar" : "Son çıkışlar"}>
         <DateRangeForm params={params} />
-        <MovementTable key={[params.baslangic, params.bitis].join("|")} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
+        <MovementTable key={range.key} movements={recent} canReverse={can(actor, "stock.reverse")} values={values} />
       </PanelCard>
     </PanelShell>
   );
