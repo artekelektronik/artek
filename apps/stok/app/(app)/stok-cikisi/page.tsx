@@ -14,7 +14,7 @@ import { can } from "@/lib/permissions";
 import { activeProducts, availableByLokasyon, lokasyonFor } from "@/lib/pickers";
 import { stockOutTypes } from "@/lib/stock-out";
 import { dayRange, type DateRangeParams } from "@/lib/time";
-import { exitValues } from "@/lib/stock-out-report";
+import { movementPrices } from "@/lib/stock-out-report";
 import { recordStockOutAction } from "./actions";
 import { StockOutFields } from "./stock-out-fields";
 
@@ -31,7 +31,7 @@ export default async function StockOutPage({ searchParams }: { searchParams: Pro
     listMovements(requestHeaders, { types: stockOutTypes, ...range, limit: range.bounded ? undefined : 50 }),
   ]);
   if (lokasyon.length === 0) return <NoAccess />;
-  const [available, values] = await Promise.all([availableByLokasyon(lokasyon.map((l) => l.id)), exitValues(actor, recent)]);
+  const [available, values] = await Promise.all([availableByLokasyon(lokasyon.map((l) => l.id)), movementPrices(actor, recent)]);
 
   return (
     <PanelShell

@@ -18,6 +18,7 @@ import { listLokasyon } from "@/lib/lokasyon";
 import { can } from "@/lib/permissions";
 import { getProduct, listCategories } from "@/lib/products";
 import { addQuantities, unitLabels } from "@/lib/quantity";
+import { movementPrices } from "@/lib/stock-out-report";
 import { dayRange, type DateRangeParams } from "@/lib/time";
 import { inTransit } from "@/lib/transfers";
 import { archiveProductAction, restoreProductAction } from "../actions";
@@ -40,6 +41,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
     listMovements(requestHeaders, { productId: product.id, ...range, limit: range.bounded ? undefined : 20 }),
     visibleLokasyonIds(actor).then((visible) => inTransit(product.id, visible)),
   ]);
+  const values = await movementPrices(actor, movements);
   // On-the-way stock to or from the user's Lokasyon counts in their total, as in the overview.
   const showTransit = transit !== "0";
   const canManage = can(actor, "products.manage");
@@ -163,7 +165,7 @@ export default async function ProductPage({ params, searchParams }: { params: Pr
             <Link href={`/hareketler?urun=${product.id}`}>Tüm hareketler</Link>
           </Button>
         </div>
-        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} forProduct />
+        <MovementTable key={range.key} movements={movements} canReverse={can(actor, "stock.reverse")} values={values} forProduct />
       </PanelCard>
     </PanelShell>
   );
