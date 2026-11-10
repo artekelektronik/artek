@@ -164,6 +164,7 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
 
   return (
     <DataTable table={table} aria-label="Faturalar">
+      <SalesLabels table={table} />
       <DataTableToolbar table={table}>
         {(archivedCount > 0 || showArchived) && (
           <Button type="button" variant="ghost" size="sm" onClick={() => setShowArchived((v) => !v)}>
@@ -173,6 +174,34 @@ export function InvoiceTable({ rows: all, linkCustomers, canEdit }: { rows: Invo
       </DataTableToolbar>
       <Totals table={table} />
     </DataTable>
+  );
+}
+
+// Faturalı and proforma sales over the filtered rows: confirmed (delivered) sales, iade left out.
+function SalesLabels({ table }: { table: ReactTable<DataTableFeatures, InvoiceRow, unknown> }) {
+  return (
+    <FilteredRows table={table}>
+      {(shown) => {
+        const sold = shown.filter((r) => r.status === "onaylandi" && r.type !== "IADE");
+        const kinds = [
+          { label: "Faturalı satış", rows: sold.filter((r) => r.scenario !== proformaScenario) },
+          { label: "Proforma satış", rows: sold.filter((r) => r.scenario === proformaScenario) },
+        ];
+        return (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {kinds.map((k) => (
+              <div key={k.label} className="flex flex-col gap-1 rounded-lg border p-4">
+                <span className="text-muted-foreground text-sm">{k.label}</span>
+                <span className="text-2xl font-semibold tracking-tight tabular-nums">{tl(k.rows.reduce((t, r) => t + Number(r.netAmount), 0))}</span>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  KDV hariç · {tl(k.rows.reduce((t, r) => t + Number(r.totalAmount), 0))} KDV dahil · {k.rows.length.toLocaleString("tr-TR")} satış
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      }}
+    </FilteredRows>
   );
 }
 
