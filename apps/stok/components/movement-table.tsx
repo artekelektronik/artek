@@ -185,29 +185,45 @@ export function MovementTable({
 
 const quantityFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 3 });
 
-// TL over USD; "≈" when priced from today's list instead of an invoice.
+// TL over USD; "≈" when priced from today's list instead of an invoice. Material used in production shows its cost.
 function Money({ price, pick }: { price: MovementPrice | undefined; pick: "unit" | "total" }) {
   const value = price?.[pick];
   if (value == null) return <div className="text-muted-foreground text-right">—</div>;
+  const title = [price!.cost && "Malzemenin alış fiyatıyla maliyeti; trafonun satış tutarı faturasında", price!.estimate && "Faturası yok; bugünkü liste fiyatıyla"].filter(Boolean).join(". ");
   return (
-    <div className={cn("flex flex-col items-end tabular-nums", price!.estimate && "text-muted-foreground")} title={price!.estimate ? "Faturası yok; bugünkü liste fiyatıyla" : undefined}>
+    <div className={cn("flex flex-col items-end tabular-nums", price!.estimate && "text-muted-foreground")} title={title || undefined}>
       <span>
         {price!.estimate && "≈ "}
         {tl(value)}
       </span>
       {price!.usdRate && <span className="text-muted-foreground text-xs">{usd(value / price!.usdRate)}</span>}
+      {price!.cost && pick === "total" && <span className="text-muted-foreground text-xs">maliyet</span>}
     </div>
   );
 }
 
-// Totals of the filtered rows; a built line's materials share its price, so it counts once.
+// Totals of the filtered rows: what was sold, and what the materials used in production cost. A built line's materials
+// share its sale under one key, so it counts once.
 function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, MovementPrice> }) {
   const byUnit = new Map<Movement["unit"], string>();
   for (const m of shown) byUnit.set(m.unit, addQuantities(byUnit.get(m.unit) ?? "0", m.quantity));
-  const priced = new Map<string, MovementPrice>();
-  for (const m of shown) if (values?.[m.id]?.total != null) priced.set(values[m.id].key, values[m.id]);
-  const sum = (f: (p: MovementPrice) => number) => [...priced.values()].reduce((s, p) => s + f(p), 0);
-  const usdKnown = [...priced.values()].every((p) => p.usdRate);
+  const sales = new Map<string, { total: number; usdRate: number | null }>();
+  const costs: { total: number; usdRate: number | null }[] = [];
+  for (const m of shown) {
+    const p = values?.[m.id];
+    if (!p) continue;
+    if (p.cost && p.total != null) costs.push({ total: p.total, usdRate: p.usdRate });
+    const sale = p.cost ? p.sale : p.total;
+    if (sale != null) sales.set(p.key, { total: sale, usdRate: p.usdRate });
+  }
+  const amount = (label: string, list: { total: number; usdRate: number | null }[]) =>
+    list.length > 0 && (
+      <>
+        {" "}
+        · {label} <b className="text-foreground font-medium">{tl(list.reduce((s, p) => s + p.total, 0))}</b>
+        {list.every((p) => p.usdRate) && <> · {usd(list.reduce((s, p) => s + p.total / p.usdRate!, 0))}</>}
+      </>
+    );
   return (
     <p className="text-muted-foreground text-xs tabular-nums">
       <b className="text-foreground font-medium">{shown.length.toLocaleString("tr-TR")}</b> hareket
@@ -220,13 +236,8 @@ function Totals({ shown, values }: { shown: Movement[]; values?: Record<string, 
           </b>
         </span>
       ))}
-      {priced.size > 0 && (
-        <>
-          {" "}
-          · Tutar <b className="text-foreground font-medium">{tl(sum((p) => p.total!))}</b>
-          {usdKnown && <> · {usd(sum((p) => p.total! / p.usdRate!))}</>}
-        </>
-      )}
+      {amount("Satış", [...sales.values()])}
+      {amount("Malzeme maliyeti", costs)}
     </p>
   );
 }

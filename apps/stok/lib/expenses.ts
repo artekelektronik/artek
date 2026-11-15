@@ -9,7 +9,7 @@ import { money, tl } from "./finance-calc";
 import { requirePermission } from "./guard";
 import { addMonths, istanbulDate } from "./time";
 
-export const startingCategories = ["Kira", "Maaş", "SGK", "Vergi", "Elektrik / su / doğalgaz", "Kargo", "Banka masrafı", "Muhasebe", "Tedarikçi faturası", "Diğer"];
+export const startingCategories = ["Kira", "Maaş", "SGK", "Vergi", "Elektrik / su / doğalgaz", "Kargo", "Banka masrafı", "Muhasebe", "Diğer"];
 
 
 type Repeat = { endsOn: string | null };

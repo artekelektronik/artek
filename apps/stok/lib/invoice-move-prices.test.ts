@@ -19,7 +19,7 @@ const move = (over: Partial<InvoiceMove>): InvoiceMove => ({ id: "m1", documentI
 describe("stock-outs priced from their invoice", () => {
   test("a sold line's stock-out shows what one unit and the whole line sold for", () => {
     const prices = priceInvoiceMoves([move({})], [line({})]);
-    assert.deepEqual(prices.get("m1"), { key: "inv1:1", unit: 100, total: 2000, on: "2026-11-06" });
+    assert.deepEqual(prices.get("m1"), { key: "inv1:1", unit: 100, total: 2000, on: "2026-11-06", material: false });
   });
 
   test("two lines of the same product are told apart by quantity", () => {
@@ -31,10 +31,10 @@ describe("stock-outs priced from their invoice", () => {
     assert.equal(prices.get("b")?.total, 2000);
   });
 
-  test("materials used for a built line show that line's price, under one key so it is counted once", () => {
+  test("materials used for a built line carry that line's sale under one key, marked as material", () => {
     const built = line({ seq: 3, productId: "trafo", quantity: "300", stockQuantity: null, amount: "45000", components: [{ productId: "core", quantity: "600" }, { productId: "bobbin", quantity: "300" }] });
     const prices = priceInvoiceMoves([move({ id: "c", type: "uretim_tuketimi", quantity: "-600" }), move({ id: "d", type: "uretim_tuketimi", productId: "bobbin", quantity: "-300" })], [built]);
-    assert.deepEqual(prices.get("c"), { key: "inv1:3", unit: 150, total: 45000, on: "2026-11-06" });
+    assert.deepEqual(prices.get("c"), { key: "inv1:3", unit: 150, total: 45000, on: "2026-11-06", material: true });
     assert.equal(prices.get("d")?.key, "inv1:3");
   });
 

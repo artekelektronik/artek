@@ -18,7 +18,7 @@ import { can } from "@/lib/permissions";
 import { istanbulDate } from "@/lib/time";
 import { CustomersTab } from "./customers-tab";
 import { MonthResults } from "./month-results";
-import { MonthlyTable, UncostedLines } from "./monthly-table";
+import { BusinessTable, MonthlyTable, UncostedLines } from "./monthly-table";
 
 export const metadata = { title: "Finansal özet | Artek" };
 
@@ -50,6 +50,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Prom
       </div>
       {r.months.length > 0 ? (
         <>
+          <BusinessTable split={r.split} usd={period.usd} search={`?baslangic=${period.from}&bitis=${period.to}`} />
           <MonthResults months={r.months} usd={period.usd} />
           <MonthlyTable months={r.months} usd={period.usd} note={note} />
         </>

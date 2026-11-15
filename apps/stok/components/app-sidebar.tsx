@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeftRight, Bell, Boxes, CalendarCheck, ClipboardCheck, ClipboardList, Contact, FileText, HandCoins, History, LayoutDashboard, LineChart, Package, PackageMinus, PackagePlus, Percent, Receipt, ShoppingBag, Sparkles, Tag, Truck, UserPlus, Users, Warehouse, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, Bell, Boxes, Calculator, CalendarCheck, ClipboardCheck, ClipboardList, Contact, Factory, FileText, HandCoins, History, LayoutDashboard, LineChart, Package, PackageMinus, PackagePlus, Percent, Receipt, ShoppingBag, Sparkles, Tag, Truck, UserPlus, Users, Warehouse, type LucideIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -35,8 +35,10 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "Satış", label: "Adaylar", href: "/musteriler/adaylar", icon: UserPlus, requires: "crm" },
   { group: "Finans", label: "Finansal özet", href: "/finans", icon: LineChart, requires: "finance" },
   { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
+  { group: "Finans", label: "Trafo kârlılığı", href: "/finans/trafo", icon: Factory, requires: "finance" },
   { group: "Finans", label: "Stok değeri", href: "/finans/stok-degeri", icon: Warehouse, requires: "finance" },
   { group: "Finans", label: "Fiyatlar", href: "/finans/fiyatlar", icon: Tag, requires: "finance" },
+  { group: "Finans", label: "Fiyat hesapla", href: "/finans/fiyat-hesapla", icon: Calculator, requires: "finance" },
   { group: "Finans", label: "Faturalar", href: "/faturalar", icon: FileText, requires: "finance" },
   { group: "Finans", label: "Tahsilat", href: "/finans/tahsilat", icon: HandCoins, requires: "finance" },
   { group: "Finans", label: "Giderler", href: "/finans/giderler", icon: Receipt, requires: "finance" },

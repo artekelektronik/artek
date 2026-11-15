@@ -18,7 +18,8 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@artek/ui/components/tabs";
 import { Combobox } from "@/components/combobox";
 import { toastResult } from "@/components/form-status";
-import { day, kdvRateLabel, tl } from "@/lib/finance-calc";
+import { cn } from "@artek/ui/lib/utils";
+import { day, kdvRateLabel, pct, tl } from "@/lib/finance-calc";
 import { QuickAddProduct } from "@/components/quick-add-product";
 import { newCustomer, writtenCodes } from "@/lib/invoice-match";
 import { compact } from "@/lib/product-search";
@@ -375,6 +376,21 @@ function LokasyonFields({ review }: { review: InvoiceReview }) {
   );
 }
 
+// A confirmed line's sale against what it cost: materials at the invoice day's rate, plus İşçilik for a built line.
+function LineProfit({ amount, profit, built }: { amount: number; profit: NonNullable<InvoiceReview["lines"][number]["profit"]>; built: boolean }) {
+  if ("missing" in profit) return <p className="text-muted-foreground text-xs">Kâr hesaplanamadı: {profit.missing.toLocaleLowerCase("tr")}.</p>;
+  const cost = profit.cost + profit.labor;
+  const gain = amount - cost;
+  return (
+    <p className="text-muted-foreground text-xs tabular-nums">
+      {built ? "Malzeme" : "Maliyet"} {tl(profit.cost)}
+      {profit.labor > 0 && <> · İşçilik {tl(profit.labor)}</>} · Kâr{" "}
+      <span className={cn("font-medium", gain < 0 ? "text-destructive" : "text-foreground")}>{tl(gain)}</span>
+      {cost > 0 && <> (maliyet üzerine {pct(gain / cost)})</>}
+    </p>
+  );
+}
+
 function LineFields({ index, review, productOptions }: { index: number; review: InvoiceReview; productOptions: ReturnType<typeof productOption>[] }) {
   const line = review.lines[index];
   const { control, setValue, getValues } = useFormContext<FormValues>();
@@ -414,6 +430,7 @@ function LineFields({ index, review, productOptions }: { index: number; review: 
           </span>
         </div>
       </div>
+      {line.profit && <LineProfit amount={Number(line.amount)} profit={line.profit} built={!!line.components?.length} />}
       <div className="grid gap-3 sm:grid-cols-[1fr_11rem_8rem] sm:items-start">
         <FormField
           control={control}

@@ -37,7 +37,7 @@ export default async function ExpensesPage() {
   return (
     <PanelShell
       title="Giderler"
-      lede="Artek’in ödediği giderler: kira, maaş, vergi, tedarikçi faturaları… Tutarlar KDV hariç ve dahil gösterilir; aylık net hesabında KDV hariç tutar satıştan düşülür."
+      lede="Artek’in ödediği giderler: kira, maaş, vergi, kargo… Satmak ya da trafo yapmak için alınan mal (ferrit, karkas, bakır tel) buraya yazılmaz: Mal kabul ile stoğa girer, satılınca maliyet olarak düşülür. Tutarlar KDV hariç ve dahil gösterilir; aylık net hesabında KDV hariç tutar satıştan düşülür."
       actions={canEdit && <AddExpenseButton />}
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
