@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
-import { priceAt, profitPctOf, unitCost } from "./quote-calc";
+import { laborPerUnit, lineLabor, minutesPerUnit, priceAt, profitPctOf, unitCost } from "./quote-calc";
 
 const rates = { USD: 40, EUR: 44, date: "15.11.2026" };
 
@@ -33,5 +33,19 @@ describe("Fiyat hesapla", () => {
     assert.equal(priceAt(60, 40), 84);
     assert.equal(Math.round(profitPctOf(60, 84)!), 40);
     assert.equal(profitPctOf(0, 84), null);
+  });
+
+  test("İşçilik is minutes at the Saat ücreti; a flat TL saved earlier still counts", () => {
+    assert.equal(laborPerUnit({ minutes: "4", cost: null }, 300), 20);
+    assert.equal(laborPerUnit({ minutes: null, cost: "12" }, 300), 12);
+    assert.equal(laborPerUnit(undefined, 300), 0);
+  });
+
+  test("hours typed for a job win over the trafo's usual time", () => {
+    assert.equal(lineLabor("20", "300", 20, 300), 6000);
+    assert.equal(lineLabor(null, "300", 20, 300), 6000);
+    assert.equal(lineLabor("25", "300", 20, 300), 7500);
+    assert.equal(minutesPerUnit(20, 300), 4);
+    assert.equal(minutesPerUnit(20, 0), null);
   });
 });

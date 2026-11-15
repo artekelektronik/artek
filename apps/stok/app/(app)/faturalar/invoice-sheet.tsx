@@ -34,6 +34,7 @@ import { InvoiceStatusBadge } from "./invoice-status";
 import { pdfUrl } from "./invoice-table";
 import { Materials, ModeField } from "./line-fields";
 import { SalePayments } from "./sale-payments";
+import { MaterialsCorrection } from "./materials-correction";
 import { amount, componentsSchema, decimal, lineNet, modeFor, modeSchema, needsMaterials, notInCatalogue, productOption, scaledRecipe, suggestedFirst, toNumber, type Mode } from "./options";
 import { useFatura } from "./use-fatura";
 
@@ -263,7 +264,7 @@ function InvoiceReviewBody({ review, canEdit, onDone }: { review: InvoiceReview;
                 </div>
                 {review.lines.length === 0 && <p className="text-muted-foreground text-sm">Faturada okunabilen satır yok.</p>}
                 {review.lines.map((line, i) => (
-                  <LineFields key={line.seq} index={i} review={review} productOptions={productOptions} />
+                  <LineFields key={line.seq} index={i} review={review} productOptions={productOptions} canCorrect={canEdit && confirmed && !review.isReturn && !review.archivedAt} />
                 ))}
               </section>
             </TabsContent>
@@ -391,7 +392,7 @@ function LineProfit({ amount, profit, built }: { amount: number; profit: NonNull
   );
 }
 
-function LineFields({ index, review, productOptions }: { index: number; review: InvoiceReview; productOptions: ReturnType<typeof productOption>[] }) {
+function LineFields({ index, review, productOptions, canCorrect }: { index: number; review: InvoiceReview; productOptions: ReturnType<typeof productOption>[]; canCorrect: boolean }) {
   const line = review.lines[index];
   const { control, setValue, getValues } = useFormContext<FormValues>();
   const [productId, mode, quantity, unitPrice, lokasyonId] = useWatch({
@@ -493,6 +494,9 @@ function LineFields({ index, review, productOptions }: { index: number; review: 
         )}
       </div>
       {mode === "uretim" && <Materials index={index} options={productOptions} />}
+      {canCorrect && line.productId && !line.stockQuantity && (
+        <MaterialsCorrection key={`${JSON.stringify(line.components)}:${line.laborHours}`} review={review} line={line} options={productOptions} />
+      )}
     </div>
   );
 }

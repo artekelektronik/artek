@@ -525,6 +525,66 @@ describe("invoice import, CRM and reminders", { skip: skipWithoutDatabase }, () 
       assert.equal(wireMove.key, bobbinMove.key, "under one key, so it is counted once");
     });
 
+    test("a confirmed sale's materials and hours can be corrected: only what changed moves stock", async () => {
+      const [trafo, wire, bobbin] = await db
+        .insert(schema.product)
+        .values([
+          { code: "T-TRAFO", name: "Bakır sargılı trafo", category: "Özel trafo", isTradeGoods: true, isMaterial: false, unit: "adet", showOnSite: false },
+          { code: "T-TEL", name: "Bakır tel", category: "Malzeme", isTradeGoods: false, isMaterial: true, unit: "kg", showOnSite: false },
+          { code: "T-KARKAS", name: "Karkas", category: "Malzeme", isTradeGoods: false, isMaterial: true, unit: "adet", showOnSite: false },
+        ])
+        .returning();
+      const priced = { purchaseCurrency: "TRY" as const, saleCurrency: "TRY" as const, updatedBy: admin.user.id };
+      await db.insert(schema.productPrice).values([
+        { productId: wire.id, purchasePrice: "100", ...priced },
+        { productId: bobbin.id, purchasePrice: "5", ...priced },
+      ]);
+      const { recordReceipt } = await import("./receipts");
+      const { saveHourlyRate } = await import("./quote");
+      await saveHourlyRate(admin.headers, "300");
+      const atelier = lokasyon["Çekmeköy İmalathane"];
+      const inAtelier = async (p: { id: string }) => (await db.select().from(schema.stock)).find((s) => s.productId === p.id && s.lokasyonId === atelier)?.physical;
+      await recordReceipt(admin.headers, { supplier: "Test", reference: "T-4", lokasyonId: atelier, lines: [{ productId: wire.id, quantity: "100" }, { productId: bobbin.id, quantity: "100" }], idempotencyKey: crypto.randomUUID() });
+      const r = await upload(admin.headers, 1);
+      assert.ok("id" in r);
+      // The copper was forgotten when the invoice was confirmed.
+      await invoices.confirmInvoice(admin.headers, { id: r.id, customerId: "yeni", lokasyonId: null, materialsLokasyonId: atelier, lines: [{ seq: 1, productId: trafo.id, stockQuantity: null, components: [{ productId: bobbin.id, quantity: "10" }] }] });
+
+      const result = await invoices.correctInvoiceMaterials(admin.headers, {
+        id: r.id,
+        materialsLokasyonId: null,
+        lines: [{ seq: 1, components: [{ productId: bobbin.id, quantity: "10" }, { productId: wire.id, quantity: "2,5" }], laborHours: "2" }],
+      });
+      assert.deepEqual(result, { posted: 1, reversed: 0 }, "the karkas movement stays; only the copper goes out");
+      assert.equal(await inAtelier(wire), "97.500");
+      assert.equal(await inAtelier(bobbin), "90.000");
+      const review = await invoices.invoiceReview(admin.headers, r.id);
+      assert.deepEqual(review?.lines[0].profit, { cost: 2.5 * 100 + 10 * 5, labor: 2 * 300 }, "2 hours at 300 TL");
+      const [labor] = await db.select().from(schema.productLabor);
+      assert.equal(labor.minutes, "12.000", "2 hours for 10 adet is 12 minutes each, remembered for the trafo");
+
+      // Less copper than first typed: the wrong movement comes back, the right one goes out.
+      const again = await invoices.correctInvoiceMaterials(admin.headers, { id: r.id, materialsLokasyonId: null, lines: [{ seq: 1, components: [{ productId: bobbin.id, quantity: "10" }, { productId: wire.id, quantity: "2" }], laborHours: "" }] });
+      assert.deepEqual(again, { posted: 1, reversed: 1 });
+      assert.equal(await inAtelier(wire), "98.000");
+
+      const { movementPrices } = await import("./stock-out-report");
+      const { loadActor } = await import("./guard");
+      const moves = await db
+        .select({ id: schema.stockMovement.id, type: schema.stockMovement.type, quantity: schema.stockMovement.quantity, productId: schema.stockMovement.productId, documentId: schema.stockMovement.documentId, documentKind: schema.stockDocument.kind })
+        .from(schema.stockMovement)
+        .innerJoin(schema.stockDocument, eq(schema.stockDocument.id, schema.stockMovement.documentId))
+        .where(eq(schema.stockMovement.type, "uretim_tuketimi"));
+      const values = await movementPrices(await loadActor(admin.headers), moves);
+      const copper = moves.find((m) => m.productId === wire.id && m.quantity === "-2.000")!;
+      assert.equal(values![copper.id].total, 200, "the corrected movement is still priced as this sale's material");
+      assert.equal(values![copper.id].sale, Number(review!.lines[0].amount));
+
+      await invoices.deleteInvoice(admin.headers, r.id);
+      assert.equal(await inAtelier(wire), "100.000", "deleting the sale brings back corrected materials too");
+      assert.equal(await inAtelier(bobbin), "100.000");
+    });
+
     test("an edited quantity or price recomputes the line and the invoice totals", async () => {
       const { loadSalesSummary } = await import("./finance");
       const r = await upload(admin.headers, 1);

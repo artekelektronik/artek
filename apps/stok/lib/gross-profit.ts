@@ -1,11 +1,13 @@
 import { and, eq, gte, isNotNull, lte, sql } from "drizzle-orm";
 import { db } from "../db";
-import { customer, expense, invoice, invoiceLine, product, productLabor, productPrice } from "../db/schema";
+import { customer, expense, invoice, invoiceLine, product, productPrice } from "../db/schema";
 import { ratesOn, usdScale } from "./historic-rates";
 import { countedInvoice } from "./finance";
 import { requirePermission } from "./guard";
 import { monthlyGrossProfit, monthlyNet, type PurchasePrice } from "./gross-profit-calc";
 import type { Period } from "./period";
+import { loadLabor } from "./quote";
+import { laborPerUnit } from "./quote-calc";
 import { businessSplit, trafoProfit } from "./trafo-profit-calc";
 
 // Confirmed lines in the period with what costing them needs: today's Alış fiyatı and the invoice days' rates.
@@ -23,6 +25,7 @@ async function soldLines(period?: Period) {
         stockQuantity: invoiceLine.stockQuantity,
         amount: invoiceLine.amount,
         components: invoiceLine.components,
+        laborHours: invoiceLine.laborHours,
         productLabel: sql<string>`coalesce(${product.name} || ' · ' || ${product.code}, ${invoiceLine.description})`,
         customer: sql<string>`coalesce(${customer.name}, ${invoice.buyer}->>'name')`,
       })
@@ -51,11 +54,12 @@ export async function grossProfit(headers: Headers, period?: Period) {
   return { ...monthlyGrossProfit(lines, prices, rateOn, scale), split: businessSplit(lines, prices, rateOn, scale) };
 }
 
-// Trafo kârlılığı: each built trafo's sale against its materials and İşçilik, per model and per Müşteri, in TL.
+// Trafo kârlılığı: each built trafo's sale against its materials and İşçilik, per sale, model and Müşteri, in TL.
 export async function trafoProfitability(headers: Headers, period: Period) {
   await requirePermission(headers, "finance.view");
-  const [{ lines, prices, rateOn }, laborRows] = await Promise.all([soldLines(period), db.select({ productId: productLabor.productId, cost: productLabor.cost }).from(productLabor)]);
-  return trafoProfit(lines, prices, new Map(laborRows.map((l) => [l.productId, Number(l.cost)])), rateOn);
+  const [{ lines, prices, rateOn }, labor] = await Promise.all([soldLines(period), loadLabor()]);
+  const perUnit = new Map([...labor.byProduct].map(([id, l]) => [id, laborPerUnit(l, labor.rate)]));
+  return { ...trafoProfit(lines, prices, perUnit, labor.rate, rateOn), hourlyRate: labor.rate };
 }
 
 // Satış → Brüt kâr → Giderler → Net per month within the period, in its currency.

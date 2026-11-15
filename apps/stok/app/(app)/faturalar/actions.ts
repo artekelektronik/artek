@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { runAction, runStockAction, type ActionState } from "@/lib/action-result";
 import { archiveInvoice, restoreInvoice } from "@/lib/archive";
 import { invoicesChanged } from "@/lib/finance";
-import { attachToProforma, confirmInvoice, createManualInvoice, deleteInvoice, type ConfirmInvoiceInput, type ManualInvoiceInput } from "@/lib/invoices";
+import { attachToProforma, confirmInvoice, correctInvoiceMaterials, createManualInvoice, deleteInvoice, type ConfirmInvoiceInput, type ManualInvoiceInput, type MaterialsCorrection } from "@/lib/invoices";
 import type { PaymentInput } from "@/lib/payment-state";
 import { addPayment, deletePayment } from "@/lib/payments";
 
@@ -24,6 +24,12 @@ export async function archiveInvoiceAction(id: string, reason: string): Promise<
 
 export async function restoreInvoiceAction(id: string): Promise<ActionState> {
   return done(await runAction(async () => restoreInvoice(await headers(), id)));
+}
+
+export async function correctMaterialsAction(input: MaterialsCorrection): Promise<ActionState> {
+  const state = done(await runStockAction(async () => correctInvoiceMaterials(await headers(), input)));
+  revalidatePath("/finans/trafo");
+  return state;
 }
 
 export async function confirmInvoiceAction(input: ConfirmInvoiceInput): Promise<ActionState> {

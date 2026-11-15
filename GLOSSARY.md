@@ -36,7 +36,7 @@ _Avoid_: Hammadde stoğu as a separate pile
 A transformer Artek manufactures to a specific customer's request.
 
 **Reçete** (Bill of materials):
-The Malzeme one unit of an Ürün is built from. It is saved from the last confirmed Fatura that built the Ürün, and pre-fills the next one.
+The Malzeme one unit of an Ürün is built from. It is where the next job starts from, never a rule: it is saved from the last Fatura that built the Ürün (or its last Malzemeleri düzelt), or from Fiyat hesapla, and pre-fills the next one.
 
 **Seri numarası** (Serial number):
 The identity of one manufactured transformer unit; every unit gets its own, even within a batch. Ticari mal never has one.
@@ -82,11 +82,20 @@ The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans
 **Brüt kâr** (Gross profit):
 Confirmed sales minus what the sold Ürünler cost: each line at its Ürün's Alış fiyatı (converted at the TCMB rate of the invoice date), or for an Özel trafo built from Malzeme, at those materials' prices. A line with no Ürün or no Alış fiyatı has no cost; it is shown apart and left out, never counted as free.
 
-**İşçilik** (Labour per unit):
-What building one unit of an Ürün costs in labour, in TL, typed per Ürün. It is used when pricing and in the kâr shown on a Fatura line built from Malzeme; wages are Gider, so it is never subtracted from Brüt kâr or Net.
+**Saat ücreti** (Hourly rate):
+What an hour of production work costs, in TL: one number for the company, typed by a Finans holder. Changing it changes every İşçilik.
+
+**İşçilik** (Labour):
+What the work on a trafo costs: time × Saat ücreti. A Fatura line built from Malzeme uses the hours typed for that job; without them, the Ürün's usual minutes per unit. It is used when pricing and in a built line's kâr; wages are Gider, so it is never subtracted from Brüt kâr or Net.
 
 **Fiyat hesapla** (Price calculator):
-The screen that works out what a trafo costs today (its Malzeme at today's Alış fiyatı and TCMB rate, plus İşçilik) and what it sells for at a chosen kâr, a percentage on top of cost. It moves no stock and saves nothing but İşçilik.
+The screen that works out what a trafo job costs today (its Malzeme at today's Alış fiyatı and TCMB rate, plus İşçilik) and what it sells for at a chosen kâr, a percentage on top of cost. It moves no stock.
+
+**Fiyat çalışması** (Price study):
+One saved calculation from Fiyat hesapla for one job: its materials and minutes per unit, quantity, and the kâr or price that was typed. Every trafo job is different, so a çalışma stands on its own; it can be reopened, changed, or copied for a similar job.
+
+**Malzemeleri düzelt** (Correct materials):
+Changing, on a confirmed Fatura, the Malzeme and hours a built line really used. Only what changed moves Stok: a material no longer listed comes back as a ters kayıt, a new or changed one goes out. See ADR-0009.
 
 **İşe göre** (By business):
 Brüt kâr split in two: Trafo, the Fatura lines built from Malzeme, and Ticari mal, every other line. The two add up to Brüt kâr.

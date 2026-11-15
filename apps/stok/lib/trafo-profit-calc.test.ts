@@ -15,6 +15,7 @@ const line = (over: Partial<BuiltLine>): BuiltLine => ({
   components: null,
   productLabel: "Ferrit",
   customer: "Yıldız",
+  laborHours: null,
   ...over,
 });
 const trafo = (over: Partial<BuiltLine>) =>
@@ -36,13 +37,19 @@ describe("Trafo and Ticari mal apart", () => {
 describe("Trafo kârlılığı", () => {
   test("a trafo's kâr is its sale minus materials and İşçilik, summed per model and per Müşteri", () => {
     const labor = new Map([["trafo", 2]]);
-    const result = trafoProfit([trafo({}), trafo({ invoiceId: "inv2", customer: "Demir", quantity: "100", amount: "10000", components: [{ productId: "core", quantity: "200" }, { productId: "bobbin", quantity: "100" }] }), line({})], prices, labor, rates);
+    const result = trafoProfit([trafo({}), trafo({ invoiceId: "inv2", customer: "Demir", quantity: "100", amount: "10000", components: [{ productId: "core", quantity: "200" }, { productId: "bobbin", quantity: "100" }] }), line({})], prices, labor, 300, rates);
     assert.deepEqual(result.byProduct, [{ key: "trafo", label: "Trafo A", quantity: 400, sales: 37000, material: 34000, labor: 800, profit: 2200 }]);
     assert.deepEqual(result.byCustomer.map((r) => [r.label, r.profit]), [["Demir", 1300], ["Yıldız", 900]]);
   });
 
+  test("hours typed for a job replace the trafo's usual İşçilik for that sale only", () => {
+    const result = trafoProfit([trafo({ laborHours: "10" }), trafo({ invoiceId: "inv2", issuedOn: "2026-11-09" })], prices, new Map([["trafo", 2]]), 300, rates);
+    assert.deepEqual(result.bySale.map((r) => [r.invoiceId, r.labor]), [["inv2", 600], ["inv1", 3000]], "newest first");
+    assert.equal(result.byProduct[0].labor, 3600);
+  });
+
   test("a trafo whose materials have no Alış fiyatı is counted apart, never as free", () => {
-    const result = trafoProfit([trafo({ components: [{ productId: "unknown", quantity: "1" }] })], prices, new Map(), rates);
+    const result = trafoProfit([trafo({ components: [{ productId: "unknown", quantity: "1" }] })], prices, new Map(), 300, rates);
     assert.equal(result.uncosted, 1);
     assert.equal(result.byProduct.length, 0);
   });
