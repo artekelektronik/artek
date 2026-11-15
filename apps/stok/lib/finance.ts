@@ -4,6 +4,8 @@ import { db } from "../db";
 import { customer, invoice, invoiceLine } from "../db/schema";
 import { missingNumbers, summarize } from "./finance-calc";
 import { requirePermission } from "./guard";
+import { usdScale } from "./historic-rates";
+import { inPeriod, type Period } from "./period";
 
 export * from "./finance-calc";
 
@@ -11,9 +13,10 @@ export * from "./finance-calc";
 export const countedInvoice = and(eq(invoice.status, "onaylandi"), isNull(invoice.archivedAt));
 
 // Both panels read it: Finans for the totals, Müşteri for each customer's sales and Öncelik.
-export async function financeSummary(headers: Headers, action: "finance.view" | "crm.view") {
+// `period`: only sales between its days, in its currency.
+export async function financeSummary(headers: Headers, action: "finance.view" | "crm.view", period?: Period) {
   await requirePermission(headers, action);
-  return loadSalesSummary({ cached: true });
+  return loadSalesSummary({ cached: true, period });
 }
 
 // Home card totals, summed in SQL.
@@ -66,14 +69,20 @@ export function invoicesChanged() {
 }
 
 // Unchecked: for callers that already checked access. Customers are never cached; they change all day.
-export async function loadSalesSummary({ cached = false } = {}) {
+export async function loadSalesSummary({ cached = false, period }: { cached?: boolean; period?: Period } = {}) {
   const [[invoices, lines], customers] = await Promise.all([cached ? cachedInvoiceRows() : loadInvoiceRows(), db.select().from(customer)]);
   // Drafts and archived invoices leave every total but still count as issued, so they don't show up as missing numbers.
-  const live = invoices.flatMap((i) => (i.status === "onaylandi" && !i.archivedAt && i.customerId ? [{ ...i, customerId: i.customerId }] : []));
-  const liveIds = new Set(live.map((i) => i.id));
+  const live = invoices.flatMap((i) =>
+    i.status === "onaylandi" && !i.archivedAt && i.customerId && (!period || inPeriod(i.issuedOn, period)) ? [{ ...i, customerId: i.customerId }] : [],
+  );
+  const dayOf = new Map(live.map((i) => [i.id, i.issuedOn]));
+  const scale = period?.usd ? await usdScale(live.map((i) => i.issuedOn)) : (v: number) => v;
   const summary = summarize(
-    live.filter((i) => i.type !== "IADE").map((i) => ({ ...i, netAmount: Number(i.netAmount) })),
-    lines.filter((l) => liveIds.has(l.invoiceId)).map((l) => ({ ...l, amount: Number(l.amount), quantity: Number(l.quantity) })),
+    live.filter((i) => i.type !== "IADE").map((i) => ({ ...i, netAmount: scale(Number(i.netAmount), i.issuedOn) })),
+    lines.flatMap((l) => {
+      const day = dayOf.get(l.invoiceId);
+      return day ? [{ ...l, amount: scale(Number(l.amount), day), quantity: Number(l.quantity) }] : [];
+    }),
     customers,
   );
   return { ...summary, customerRows: customers, gaps: missingNumbers(invoices) };

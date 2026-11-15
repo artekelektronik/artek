@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, isNull, lt, ne, or, sql, sum } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lte, ne, or, sql, sum } from "drizzle-orm";
 import { db } from "../db";
 import { customer, invoice, payment } from "../db/schema";
 import { logActivity } from "./activity";
@@ -68,12 +68,12 @@ export async function listCollections(headers: Headers) {
   });
 }
 
-// Delivered proformas never invoiced, KDV hariç: how much of a year's Satış had no e-invoice.
-export async function unInvoicedSales(headers: Headers, year: string) {
+// Delivered proformas never invoiced, KDV hariç: how much of the Satış between two days (inclusive) had no e-invoice.
+export async function unInvoicedSales(headers: Headers, from: string, to: string) {
   await requirePermission(headers, "finance.view");
   const [row] = await db
     .select({ net: sum(invoice.netAmount) })
     .from(invoice)
-    .where(and(countedInvoice, eq(invoice.scenario, proformaScenario), ne(invoice.type, "IADE"), gte(invoice.issuedOn, `${year}-01-01`), lt(invoice.issuedOn, `${Number(year) + 1}-01-01`)));
+    .where(and(countedInvoice, eq(invoice.scenario, proformaScenario), ne(invoice.type, "IADE"), gte(invoice.issuedOn, from), lte(invoice.issuedOn, to)));
   return Number(row.net ?? 0);
 }

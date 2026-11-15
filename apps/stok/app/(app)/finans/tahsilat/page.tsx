@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
-import { CircleCheck, Clock, Receipt } from "lucide-react";
+import { CircleCheck, Clock } from "lucide-react";
 import { Badge } from "@artek/ui/components/badge";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@artek/ui/components/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@artek/ui/components/tabs";
+import { DateRangeFilter } from "@/components/date-range-filter";
 import { NoAccess } from "@/components/no-access";
 import { PanelCard, PanelShell } from "@/components/panel";
 import { StatCard } from "@/components/stat-card";
@@ -12,24 +13,30 @@ import { day, tl } from "@/lib/finance-calc";
 import { loadActor } from "@/lib/guard";
 import { paymentStateLabels, paymentsTrackedFrom } from "@/lib/payment-state";
 import { listCollections } from "@/lib/payments";
+import { financePeriod, inPeriod, type PeriodParams } from "@/lib/period";
 import { can } from "@/lib/permissions";
+import { istanbulDate } from "@/lib/time";
 
 export const metadata = { title: "Tahsilat | Artek" };
 
 type Sale = Awaited<ReturnType<typeof listCollections>>[number];
 
-export default async function CollectionsPage() {
+export default async function CollectionsPage({ searchParams }: { searchParams: Promise<PeriodParams> }) {
   await connection();
   const requestHeaders = await headers();
   const actor = await loadActor(requestHeaders);
   if (!can(actor, "finance.view")) return <NoAccess />;
-  const sales = await listCollections(requestHeaders);
+  // No range: every sale, so nothing owed is hidden; a range narrows the sales by their date.
+  const params = await searchParams;
+  const picked = Boolean(params.baslangic && params.bitis);
+  const period = financePeriod(params, istanbulDate(new Date()));
+  const sales = (await listCollections(requestHeaders)).filter((s) => !picked || inPeriod(s.issuedOn, period));
   const sum = (rows: Sale[], f: (s: Sale) => number) => rows.reduce((t, s) => t + f(s), 0);
   const paid = sales.filter((s) => s.state === "odendi");
+  const unInvoiced = paid.filter((s) => s.proforma).length;
   const lists = [
-    { key: "beklenen", title: "Beklenen ödemeler", card: "Beklenen ödeme", icon: Clock, unit: "satış", amount: (s: Sale) => s.owed, rows: sales.filter((s) => s.state !== "odendi") },
-    { key: "faturali", title: "Faturalı, ödenmiş", card: "Faturalı, ödenmiş", icon: CircleCheck, unit: "fatura", amount: (s: Sale) => s.total, rows: paid.filter((s) => !s.proforma) },
-    { key: "faturasiz", title: "Faturasız, ödenmiş", card: "Faturasız, ödenmiş", icon: Receipt, unit: "proforma", amount: (s: Sale) => s.total, rows: paid.filter((s) => s.proforma) },
+    { key: "beklenen", title: "Bekleyen", card: "Bekleyen ödeme", icon: Clock, note: (n: number) => `${n} satış`, amount: (s: Sale) => s.owed, rows: sales.filter((s) => s.state !== "odendi") },
+    { key: "odenen", title: "Ödenen", card: "Ödenen", icon: CircleCheck, note: (n: number) => `${n} satış · ${unInvoiced} faturasız`, amount: (s: Sale) => s.total, rows: paid },
   ];
 
   return (
@@ -37,13 +44,14 @@ export default async function CollectionsPage() {
       title="Tahsilat"
       lede={`Satışların ödemeleri, KDV dahil. Ödeme, faturanın ya da proformanın kendi sayfasından girilir. ${day(paymentsTrackedFrom)} öncesi satışlar ödenmiş sayılır.`}
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {lists.map((l) => (
-          <StatCard key={l.key} label={l.card} value={tl(sum(l.rows, l.amount))} note={`${l.rows.length} ${l.unit}`} icon={l.icon} />
+          <StatCard key={l.key} label={l.card} value={tl(sum(l.rows, l.amount))} note={l.note(l.rows.length)} icon={l.icon} />
         ))}
       </div>
 
       <PanelCard title="Satışlar" note="Proformalar onaylanmadan da burada görünür; ön ödeme alınabilir.">
+        <DateRangeFilter />
         <Tabs defaultValue="beklenen" className="gap-3">
           <TabsList>
             {lists.map((l) => (

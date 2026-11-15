@@ -31,31 +31,6 @@ function perUnit(lines: { unit: Unit; value: string }[]) {
 
 // A category with no price at all shows no value, not "0 TL".
 const value = (amount: number, counted: number) => (counted ? tlShort(amount) : "—");
-type Valued = { purchase: number; purchaseCounted: number; saleA: number; saleACounted: number; sale: number; saleCounted: number };
-// Alış, Toptan (A) and Normal (B) value cells of a Stok özeti row.
-function ValueCells({ v, usd }: { v: Valued; usd: number | undefined }) {
-  return (
-    <>
-      {([["purchase", "purchaseCounted"], ["saleA", "saleACounted"], ["sale", "saleCounted"]] as const).map(([amount, counted]) => (
-        <TableCell key={amount} className="text-right tabular-nums">
-          <Value amount={v[amount]} counted={v[counted]} usd={usd} />
-        </TableCell>
-      ))}
-    </>
-  );
-}
-
-// TL over USD at today's rate, for the Stok özeti value columns.
-function Value({ amount, counted, usd }: { amount: number; counted: number; usd: number | undefined }) {
-  if (!counted) return <>—</>;
-  return (
-    <span className="flex flex-col items-end">
-      {tlShort(amount)}
-      {usd && <span className="text-muted-foreground text-xs">{usdShort(amount / usd)}</span>}
-    </span>
-  );
-}
-
 const initials = (name: string) =>
   name
     .split(" ")
@@ -151,10 +126,10 @@ export default async function HomePage() {
           <>
             <StatCard
               icon={Wallet}
-              label="Stok değeri (satış B)"
-              value={value(o.sale, o.saleCounted)}
-              note={[s.rates && o.saleCounted ? usdShort(o.sale / s.rates.USD) : null, `Alış ${value(o.purchase, o.purchaseCounted)}`, o.marginCounted ? `Beklenen kâr ${tlShort(o.margin)}` : null].filter(Boolean).join(" · ")}
-              href="/finans/fiyatlar"
+              label="Stok değeri (alış)"
+              value={value(o.purchase, o.purchaseCounted)}
+              note={[s.rates && o.purchaseCounted ? usdShort(o.purchase / s.rates.USD) : null, "A / B / C fiyatlarıyla gör"].filter(Boolean).join(" · ")}
+              href="/finans/stok-degeri"
             />
             <StatCard
               icon={ChartColumn}
@@ -280,13 +255,6 @@ export default async function HomePage() {
       <Card>
         <CardHeader>
           <CardTitle>Stok özeti</CardTitle>
-          {s.finance && (
-            <CardDescription>
-              {s.rates
-                ? `Kur: 1 USD = ${s.rates.USD.toLocaleString("tr-TR")} TL, 1 EUR = ${s.rates.EUR.toLocaleString("tr-TR")} TL (TCMB döviz satış, ${s.rates.date})`
-                : "TCMB kuru şu an alınamadı; değerlerde yalnızca TL fiyatlı ürünler sayıldı."}
-            </CardDescription>
-          )}
           <CardAction>
             <Button asChild variant="outline" size="sm">
               <Link href="/stok-durumu">Tüm ürünler</Link>
@@ -308,9 +276,6 @@ export default async function HomePage() {
                     </TableHead>
                   ))}
                   {hasTransit && <TableHead className="text-right">Yolda</TableHead>}
-                  {s.finance && <TableHead className="text-right">Alış değeri</TableHead>}
-                  {s.finance && <TableHead className="text-right">Toptan (A)</TableHead>}
-                  {s.finance && <TableHead className="text-right">Normal (B)</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -324,7 +289,6 @@ export default async function HomePage() {
                       </TableCell>
                     ))}
                     {hasTransit && <TableCell className="text-right tabular-nums">{perUnit(c.units.map((u) => ({ unit: u.unit, value: u.inTransit })))}</TableCell>}
-                    {s.finance && <ValueCells v={c} usd={s.rates?.USD} />}
                   </TableRow>
                 ))}
               </TableBody>
@@ -338,7 +302,6 @@ export default async function HomePage() {
                     </TableCell>
                   ))}
                   {hasTransit && <TableCell className="text-right tabular-nums">{perUnit(o.units.map((u) => ({ unit: u.unit, value: u.inTransit })))}</TableCell>}
-                  {s.finance && <ValueCells v={o} usd={s.rates?.USD} />}
                 </TableRow>
               </TableFooter>
             </Table>

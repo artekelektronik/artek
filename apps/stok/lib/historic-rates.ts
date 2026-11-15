@@ -1,7 +1,7 @@
 import { inArray } from "drizzle-orm";
 import { db } from "../db";
 import { exchangeRate } from "../db/schema";
-import { fetchRatesOn } from "./exchange-rates";
+import { fetchRatesOn, getRates } from "./exchange-rates";
 
 // Rates for the given dates: cached ones from the database, the rest fetched from TCMB once and kept.
 export async function ratesOn(dates: string[]) {
@@ -17,4 +17,13 @@ export async function ratesOn(dates: string[]) {
     for (const f of found) rates.set(f.date, { USD: Number(f.usd), EUR: Number(f.eur) });
   }
   return rates;
+}
+
+// TL to USD at each day's TCMB rate (today's when a day's can't be had).
+export async function usdScale(days: string[]) {
+  const [rates, today] = await Promise.all([ratesOn(days), getRates()]);
+  return (v: number, day: string) => {
+    const rate = rates.get(day)?.USD ?? today?.USD;
+    return rate ? v / rate : 0;
+  };
 }
