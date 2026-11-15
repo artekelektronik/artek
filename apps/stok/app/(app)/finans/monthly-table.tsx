@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
 import { cn } from "@artek/ui/lib/utils";
 import { day, monthLabel, share, tl } from "@/lib/finance-calc";
 import type { MonthNet, Uncosted } from "@/lib/gross-profit-calc";
+import type { BusinessSplit } from "@/lib/trafo-profit-calc";
 import { moneyIn } from "@/lib/period";
 
 type Row = Pick<MonthNet, "sales" | "gross" | "costedSales" | "expenses" | "net">;
@@ -109,6 +110,57 @@ export function UncostedLines({ lines }: { lines: Uncosted[] }) {
                 <TableCell className="max-w-72 truncate">{u.description}</TableCell>
                 <TableCell>{u.reason}</TableCell>
                 <TableCell className="text-right tabular-nums">{tl(u.amount)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+// The period's Brüt kâr split into Artek's two businesses: trafo built from Malzeme, and Ticari mal sold from stock.
+export function BusinessTable({ split, usd, search }: { split: BusinessSplit; usd: boolean; search: string }) {
+  const { full: short } = moneyIn(usd);
+  const rows = [
+    { label: "Trafo (üretim)", hint: "Malzemeden yapılan satırlar", ...split.trafo },
+    { label: "Ticari mal", hint: "Stoktan satılan ve diğer satırlar", ...split.ticari },
+  ];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>İşe göre</CardTitle>
+        <CardDescription>
+          Maliyet: trafoda kullanılan malzemeler, ticari malda ürünün alış fiyatı. İşçilik burada düşülmez; maaşlar Giderler’dedir.{" "}
+          <Link href={`/finans/trafo${search}`} className="text-foreground underline underline-offset-4">
+            Trafo kârlılığı
+          </Link>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>İş</TableHead>
+              <TableHead className="text-right">Satış</TableHead>
+              <TableHead className="text-right">Maliyet</TableHead>
+              <TableHead className="text-right">Brüt kâr</TableHead>
+              <TableHead className="text-right">Oran</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r) => (
+              <TableRow key={r.label}>
+                <TableCell>
+                  <span className="flex flex-col">
+                    {r.label}
+                    <span className="text-muted-foreground text-xs">{r.uncostedSales ? `${short(r.uncostedSales)} satışın maliyeti bilinmiyor` : r.hint}</span>
+                  </span>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{short(r.sales)}</TableCell>
+                <TableCell className="text-right tabular-nums">{short(r.cost)}</TableCell>
+                <TableCell className={cn("text-right font-medium tabular-nums", r.gross < 0 && "text-destructive")}>{short(r.gross)}</TableCell>
+                <TableCell className="text-muted-foreground text-right tabular-nums">{share(r.gross, r.costedSales)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

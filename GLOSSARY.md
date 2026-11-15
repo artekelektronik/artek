@@ -88,6 +88,12 @@ What building one unit of an Ürün costs in labour, in TL, typed per Ürün. It
 **Fiyat hesapla** (Price calculator):
 The screen that works out what a trafo costs today (its Malzeme at today's Alış fiyatı and TCMB rate, plus İşçilik) and what it sells for at a chosen kâr, a percentage on top of cost. It moves no stock and saves nothing but İşçilik.
 
+**İşe göre** (By business):
+Brüt kâr split in two: Trafo, the Fatura lines built from Malzeme, and Ticari mal, every other line. The two add up to Brüt kâr.
+
+**Trafo kârlılığı** (Trafo profitability):
+Per trafo and per Müşteri: the sale of each line built from Malzeme minus those materials and its İşçilik.
+
 **Net** (Monthly result):
 A month's Brüt kâr minus its Giderler, KDV hariç: sales by invoice date, expenses by their date. A month with sales of unknown cost is marked as incomplete.
 
@@ -117,8 +123,8 @@ A sale typed before, or instead of, its e-invoice, numbered `PRF-…`. Confirmed
 Money a customer paid for one sale: date, amount (KDV dahil), method and a note. A sale is beklenen ödeme until its Tahsilatlar reach its total; sales before 1 Kasım 2026 count as paid.
 
 **Gider** (Expense):
-Money Artek pays out: kira, maaş, SGK, vergi, a supplier's invoice and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. A Gider can repeat every month (kira, maaş, SGK), until an end date or until stopped; each month's entry is its own Gider and can be changed alone. Only the Finans paneli sees Giderler.
-_Avoid_: Masraf (for the same thing), Fatura (a Fatura is a sale)
+Money Artek pays out that never enters Stok: kira, maaş, SGK, vergi, kargo and the like, with its date, category and amount KDV hariç and dahil, optionally with its receipt. A Gider can repeat every month (kira, maaş, SGK), until an end date or until stopped; each month's entry is its own Gider and can be changed alone. Only the Finans paneli sees Giderler. Goods bought to sell or to build with are not a Gider: they enter Stok by Mal kabul and are counted as cost when sold, or they would be subtracted twice.
+_Avoid_: Masraf (for the same thing), Fatura (a Fatura is a sale), entering a purchase of Ticari mal or Malzeme as a Gider
 
 **Müşteri** (Customer):
 A buyer on Artek's sales invoices, identified by the VKN (company) or TCKN (şahıs firması) printed on them.
