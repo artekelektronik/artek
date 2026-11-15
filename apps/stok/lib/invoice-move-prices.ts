@@ -13,8 +13,9 @@ export type InvoiceLineSold = {
   amount: string;
   components: LineComponent[] | null;
 };
-// TL, KDV hariç; `key` is the line, so a built line's several materials count once in a total.
-export type MovePrice = { key: string; unit: number; total: number; on: string };
+// TL, KDV hariç; `key` is the line, so a built line's several materials count its sale once in a total.
+// `material`: the movement is a material of a built line, so the price is the trafo's, not this product's.
+export type MovePrice = { key: string; unit: number; total: number; on: string; material: boolean };
 
 const same = (a: string, b: string) => Math.abs(Math.abs(Number(a)) - Number(b)) < 1e-9;
 
@@ -31,7 +32,7 @@ export function priceInvoiceMoves(moves: InvoiceMove[], lines: InvoiceLineSold[]
         : candidates.find((c) => !used.has(c) && !c.components && c.productId === m.productId && c.stockQuantity !== null && same(m.quantity, c.stockQuantity));
     if (!l) continue;
     if (m.type !== "uretim_tuketimi") used.add(l);
-    prices.set(m.id, { key: `${l.invoiceId}:${l.seq}`, unit: Number(l.amount) / Number(l.quantity), total: Number(l.amount), on: l.issuedOn });
+    prices.set(m.id, { key: `${l.invoiceId}:${l.seq}`, unit: Number(l.amount) / Number(l.quantity), total: Number(l.amount), on: l.issuedOn, material: m.type === "uretim_tuketimi" });
   }
   return prices;
 }

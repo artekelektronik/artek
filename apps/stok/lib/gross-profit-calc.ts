@@ -28,7 +28,17 @@ function costOf(productId: string, quantity: string, date: string, prices: Map<s
   return rate ? Number(quantity) * Number(p.price) * rate : ("Kur yok" as const);
 }
 
-// A built line costs its materials; a stocked or linked one, its Ürün. Unknown cost is listed, never counted as zero.
+// What a line cost in TL: a built line its materials, a stocked or linked one its Ürün; or why it can't be said.
+export function lineCost(l: Pick<SoldLine, "issuedOn" | "productId" | "quantity" | "stockQuantity" | "components">, prices: Map<string, PurchasePrice>, rateOn: (date: string) => Rates | null) {
+  const parts = l.components?.length
+    ? l.components.map((c) => costOf(c.productId, c.quantity, l.issuedOn, prices, rateOn))
+    : l.productId
+      ? [costOf(l.productId, l.stockQuantity ?? l.quantity, l.issuedOn, prices, rateOn)]
+      : ["Katalogda yok" as const];
+  return parts.find((p) => typeof p === "string") ?? (parts as number[]).reduce((s, c) => s + c, 0);
+}
+
+// Unknown cost is listed, never counted as zero.
 export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, PurchasePrice>, rateOn: (date: string) => Rates | null) {
   const byMonth = new Map<string, MonthProfit>();
   const uncosted: Uncosted[] = [];
@@ -40,19 +50,14 @@ export function monthlyGrossProfit(lines: SoldLine[], prices: Map<string, Purcha
     const amount = sign * Number(l.amount);
     m.sales += amount;
 
-    const parts = l.components?.length
-      ? l.components.map((c) => costOf(c.productId, c.quantity, l.issuedOn, prices, rateOn))
-      : l.productId
-        ? [costOf(l.productId, l.stockQuantity ?? l.quantity, l.issuedOn, prices, rateOn)]
-        : ["Katalogda yok" as const];
-    const missing = parts.find((p) => typeof p === "string");
-    if (missing) {
+    const cost = lineCost(l, prices, rateOn);
+    if (typeof cost === "string") {
       m.uncostedSales += amount;
-      uncosted.push({ invoiceId: l.invoiceId, number: l.number, issuedOn: l.issuedOn, description: l.description, amount, reason: missing });
+      uncosted.push({ invoiceId: l.invoiceId, number: l.number, issuedOn: l.issuedOn, description: l.description, amount, reason: cost });
       continue;
     }
     m.costedSales += amount;
-    m.cost += sign * (parts as number[]).reduce((s, c) => s + c, 0);
+    m.cost += sign * cost;
   }
   const months = [...byMonth.values()].sort((a, b) => a.month.localeCompare(b.month)).map((m) => ({ ...m, gross: m.costedSales - m.cost }));
   return { months, uncosted };

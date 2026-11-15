@@ -678,6 +678,18 @@ export const productComponent = pgTable(
   (t) => [primaryKey({ columns: [t.productId, t.componentId] })],
 );
 
+// İşçilik: what building one unit costs in labour, in TL. Used when pricing a trafo; wages themselves are Gider.
+export const productLabor = pgTable("product_labor", {
+  productId: uuid("product_id")
+    .primaryKey()
+    .references(() => product.id),
+  cost: numeric("cost", { precision: 14, scale: 4 }).notNull(),
+  updatedBy: text("updated_by")
+    .notNull()
+    .references(() => user.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // The morning assistant's suggestions: call this customer and ask this, or send this email. Nothing goes out
 // until a person approves it on the Bugün screen.
 export const suggestionKind = pgEnum("suggestion_kind", ["arama", "eposta"]);

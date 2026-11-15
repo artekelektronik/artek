@@ -82,6 +82,12 @@ The current price per unit of an Ürün, each in TL, USD or EUR. Only the Finans
 **Brüt kâr** (Gross profit):
 Confirmed sales minus what the sold Ürünler cost: each line at its Ürün's Alış fiyatı (converted at the TCMB rate of the invoice date), or for an Özel trafo built from Malzeme, at those materials' prices. A line with no Ürün or no Alış fiyatı has no cost; it is shown apart and left out, never counted as free.
 
+**İşçilik** (Labour per unit):
+What building one unit of an Ürün costs in labour, in TL, typed per Ürün. It is used when pricing and in the kâr shown on a Fatura line built from Malzeme; wages are Gider, so it is never subtracted from Brüt kâr or Net.
+
+**Fiyat hesapla** (Price calculator):
+The screen that works out what a trafo costs today (its Malzeme at today's Alış fiyatı and TCMB rate, plus İşçilik) and what it sells for at a chosen kâr, a percentage on top of cost. It moves no stock and saves nothing but İşçilik.
+
 **Net** (Monthly result):
 A month's Brüt kâr minus its Giderler, KDV hariç: sales by invoice date, expenses by their date. A month with sales of unknown cost is marked as incomplete.
 

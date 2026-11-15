@@ -253,6 +253,13 @@
       "when": 1794334511681,
       "tag": "0035_tahsilat",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794768277257,
+      "tag": "0036_iscilik",
+      "breakpoints": true
     }
   ]
 }

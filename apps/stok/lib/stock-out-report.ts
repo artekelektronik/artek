@@ -24,8 +24,10 @@ const loadPricing = async (): Promise<Pricing> => {
   return { prices, rates };
 };
 
-// What a stock movement sold for, KDV hariç, in TL; `usdRate` turns it into USD. `estimate`: no invoice, priced from today's list.
-export type MovementPrice = { key: string; unit: number | null; total: number | null; usdRate: number | null; estimate: boolean };
+// A stock movement's amount, KDV hariç, in TL; `usdRate` turns it into USD. `estimate`: no invoice, priced from today's list.
+// A sale shows what it sold for. Material used in production shows what it cost (`cost`), and carries the sale of the
+// trafo it went into as `sale`, under the line's `key`, so several materials count that sale once.
+export type MovementPrice = { key: string; unit: number | null; total: number | null; usdRate: number | null; estimate: boolean; cost: boolean; sale?: number };
 
 // Finans holders only (undefined otherwise): an invoice's line at its day's TCMB rate, else today's list price.
 export async function movementPrices(actor: Actor, movements: { id: string; type: string; quantity: string; productId: string; documentId: string; documentKind: string }[]) {
@@ -56,9 +58,16 @@ export async function movementPrices(actor: Actor, movements: { id: string; type
   return Object.fromEntries(
     movements.map((m): [string, MovementPrice] => {
       const p = sold.get(m.id);
-      if (p) return [m.id, { key: p.key, unit: p.unit, total: p.total, usdRate: usdOn.get(p.on)?.USD ?? null, estimate: false }];
+      const cost = m.type === "uretim_tuketimi";
+      const perUnit = (total: number | null) => (total === null ? null : total / Math.abs(Number(m.quantity)));
+      if (p?.material) {
+        // At the invoice day's rate, as Brüt kâr counts it.
+        const total = exitValue(m.type, m.quantity, prices.get(m.productId), usdOn.get(p.on) ?? null);
+        return [m.id, { key: p.key, unit: perUnit(total), total, usdRate: usdOn.get(p.on)?.USD ?? null, estimate: false, cost, sale: p.total }];
+      }
+      if (p) return [m.id, { key: p.key, unit: p.unit, total: p.total, usdRate: usdOn.get(p.on)?.USD ?? null, estimate: false, cost }];
       const total = exitValue(m.type, m.quantity, prices.get(m.productId), rates);
-      return [m.id, { key: m.id, unit: total === null ? null : total / Math.abs(Number(m.quantity)), total, usdRate: rates?.USD ?? null, estimate: true }];
+      return [m.id, { key: m.id, unit: perUnit(total), total, usdRate: rates?.USD ?? null, estimate: true, cost }];
     }),
   );
 }

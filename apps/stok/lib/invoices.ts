@@ -3,12 +3,14 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm
 import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, type Tx } from "../db";
-import { customer, invoice, invoiceFile, invoiceLine, lokasyon, payment, product, productComponent, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
+import { customer, invoice, invoiceFile, invoiceLine, lokasyon, payment, product, productComponent, productLabor, productPrice, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
 import { logActivity } from "./activity";
 import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
 import { isUuid, parseInput, UserError } from "./errors";
 import { requirePermission } from "./guard";
+import { lineCost, type PurchasePrice } from "./gross-profit-calc";
+import { ratesOn } from "./historic-rates";
 import { matchCustomer, matchProduct, newCustomer, prepareProducts } from "./invoice-match";
 import { postDocumentIn, reversalLine } from "./ledger";
 import { can } from "./permissions";
@@ -207,6 +209,23 @@ export async function manualInvoiceOptions(headers: Headers) {
   return pickerOptions();
 }
 
+// What each line of a confirmed sale cost, as Brüt kâr counts it, plus the İşçilik of a built line; `missing` says why not.
+async function lineCosts(issuedOn: string, lines: (typeof invoiceLine.$inferSelect)[]) {
+  const ids = [...new Set(lines.flatMap((l) => [l.productId, ...(l.components ?? []).map((c) => c.productId)]).filter((id) => id !== null))];
+  const [priceRows, laborRows, rates] = await Promise.all([
+    ids.length ? db.select({ productId: productPrice.productId, price: productPrice.purchasePrice, currency: productPrice.purchaseCurrency }).from(productPrice).where(inArray(productPrice.productId, ids)) : [],
+    ids.length ? db.select({ productId: productLabor.productId, cost: productLabor.cost }).from(productLabor).where(inArray(productLabor.productId, ids)) : [],
+    ratesOn([issuedOn]),
+  ]);
+  const prices = new Map<string, PurchasePrice>(priceRows.flatMap((p) => (p.price ? [[p.productId, { price: p.price, currency: p.currency }]] : [])));
+  const labor = new Map(laborRows.map((l) => [l.productId, Number(l.cost)]));
+  return (l: typeof invoiceLine.$inferSelect): { missing: string } | { cost: number; labor: number } => {
+    const cost = lineCost({ ...l, issuedOn }, prices, (date) => rates.get(date) ?? null);
+    if (typeof cost === "string") return { missing: cost };
+    return { cost, labor: l.components?.length && l.productId ? (labor.get(l.productId) ?? 0) * Number(l.quantity) : 0 };
+  };
+}
+
 // The review sheet's data: the invoice, its suggested matches and the choices.
 export async function invoiceReview(headers: Headers, id: string) {
   const actor = await requirePermission(headers, "finance.view");
@@ -273,6 +292,7 @@ export async function invoiceReview(headers: Headers, id: string) {
   const learned = new Map(learnedRows.map((r) => [r.productName, r.productId!]));
   const prepared = prepareProducts(products);
   const isReturn = row.type === "IADE";
+  const costOf = confirmed && !isReturn ? await lineCosts(row.issuedOn, lines) : undefined;
   const stockAction = isReturn ? "stock.receive" : "stock.out";
 
   return {
@@ -300,6 +320,7 @@ export async function invoiceReview(headers: Headers, id: string) {
       amount: l.amount,
       stockQuantity: l.stockQuantity,
       components: l.components,
+      profit: costOf?.(l),
       ...(confirmed || l.productId ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, prepared, learned)),
     })),
     recipes,
