@@ -595,6 +595,8 @@ export const invoice = pgTable(
     lokasyonId: uuid("lokasyon_id").references(() => lokasyon.id), // where its stock left from (or came back to)
     materialsLokasyonId: uuid("materials_lokasyon_id").references(() => lokasyon.id), // where Özel trafo materials were used from
     stockDocumentId: uuid("stock_document_id").references(() => stockDocument.id), // null: no line moved stock
+    // Documents posted when a confirmed invoice's materials were corrected later; their movements belong to it too.
+    correctionDocumentIds: uuid("correction_document_ids").array().notNull().default(sql`'{}'::uuid[]`),
     confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
     confirmedBy: text("confirmed_by").references(() => user.id),
     archivedAt: timestamp("archived_at", { withTimezone: true }), // archived: out of lists and totals, kept and restorable
@@ -658,6 +660,7 @@ export const invoiceLine = pgTable(
     productId: uuid("product_id").references(() => product.id),
     stockQuantity: numeric("stock_quantity", { precision: 14, scale: 3 }),
     components: jsonb("components").$type<LineComponent[]>(), // set on confirm for a line built from materials
+    laborHours: numeric("labor_hours", { precision: 10, scale: 2 }), // hours worked on a built line, when someone typed them
   },
   (t) => [primaryKey({ columns: [t.invoiceId, t.seq] })],
 );
@@ -683,10 +686,42 @@ export const productLabor = pgTable("product_labor", {
   productId: uuid("product_id")
     .primaryKey()
     .references(() => product.id),
-  cost: numeric("cost", { precision: 14, scale: 4 }).notNull(),
+  // Either minutes of work per unit (priced at the Saat ücreti) or, from before that existed, a flat TL per unit.
+  cost: numeric("cost", { precision: 14, scale: 4 }),
+  minutes: numeric("minutes", { precision: 10, scale: 3 }),
   updatedBy: text("updated_by")
     .notNull()
     .references(() => user.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Company-wide numbers typed by an admin. saat_ucreti: what an hour of production work costs, in TL.
+export const appSetting = pgTable("app_setting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedBy: text("updated_by")
+    .notNull()
+    .references(() => user.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Fiyat çalışması: a saved price calculation for one job. Every trafo job is different, so it stands on its own:
+// its materials and minutes are per unit, and it keeps whichever of kâr % or unit price was typed.
+export const quote = pgTable("quote", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  customer: text("customer"),
+  productId: uuid("product_id").references(() => product.id),
+  quantity: numeric("quantity", { precision: 14, scale: 3 }).notNull(),
+  materials: jsonb("materials").$type<LineComponent[]>().notNull(),
+  laborMinutes: numeric("labor_minutes", { precision: 10, scale: 3 }),
+  profitPct: numeric("profit_pct", { precision: 10, scale: 2 }),
+  unitPrice: numeric("unit_price", { precision: 14, scale: 4 }),
+  note: text("note"),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

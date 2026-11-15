@@ -28,7 +28,7 @@ export default async function TrafoProfitPage({ searchParams }: { searchParams: 
   return (
     <PanelShell
       title="Trafo kârlılığı"
-      lede="Malzemeden yapılan her trafonun satışı, kullanılan malzemenin ve işçiliğin maliyeti, kalan kâr. Malzeme fatura günündeki kurla, işçilik trafoda kayıtlı tutarla hesaplanır. KDV hariç, TL."
+      lede="Malzemeden yapılan her trafonun satışı, kullanılan malzemenin ve işçiliğin maliyeti, kalan kâr. Malzeme fatura günündeki kurla hesaplanır. KDV hariç, TL."
       warning={
         r.uncosted ? (
           <>
@@ -40,7 +40,13 @@ export default async function TrafoProfitPage({ searchParams }: { searchParams: 
     >
       {r.byProduct.length ? (
         <>
-          <PanelCard title="Trafoya göre" note="En çok kazandıran en üstte. İşçilik 0 görünüyorsa o trafo için Fiyat hesapla’da işçilik kaydedilmemiştir.">
+          <PanelCard
+            title="Satışa göre"
+            note={`Her iş ayrı. Malzemesi ya da saati eksik bir satışı düzeltmek için faturasını açın. İşçilik: o iş için yazılan saat, yoksa trafonun olağan süresi × saat ücreti (${r.hourlyRate ? tl(r.hourlyRate) : "girilmedi"}).`}
+          >
+            <Rows rows={r.bySale} first="Satış" quantity />
+          </PanelCard>
+          <PanelCard title="Trafoya göre" note="En çok kazandıran en üstte.">
             <Rows rows={r.byProduct} first="Trafo" quantity />
           </PanelCard>
           <PanelCard title="Müşteriye göre">
@@ -81,7 +87,15 @@ function Rows({ rows, first, quantity = false }: { rows: TrafoRow[]; first: stri
       <TableBody>
         {rows.map((r) => (
           <TableRow key={r.key}>
-            <TableCell className="max-w-72 whitespace-normal">{r.label}</TableCell>
+            <TableCell className="max-w-72 whitespace-normal">
+              {r.invoiceId ? (
+                <Link href={`/faturalar?fatura=${r.invoiceId}`} className="underline-offset-4 hover:underline">
+                  {r.label}
+                </Link>
+              ) : (
+                r.label
+              )}
+            </TableCell>
             {quantity && <TableCell className="text-right tabular-nums">{displayQuantity(String(r.quantity))}</TableCell>}
             {cells(r)}
           </TableRow>

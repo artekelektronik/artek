@@ -4,6 +4,8 @@ import { z } from "zod";
 import { extractText, getDocumentProxy } from "unpdf";
 import { db, type Tx } from "../db";
 import { customer, invoice, invoiceFile, invoiceLine, lokasyon, payment, product, productComponent, productLabor, productPrice, stockMovement, user, type InvoiceBuyer, type LineComponent } from "../db/schema";
+import { loadLabor } from "./quote";
+import { laborPerUnit, lineLabor } from "./quote-calc";
 import { logActivity } from "./activity";
 import { restoreCustomerIn, restoreInvoiceIn } from "./archive";
 import { recordChanges } from "./customer-changes";
@@ -212,17 +214,17 @@ export async function manualInvoiceOptions(headers: Headers) {
 // What each line of a confirmed sale cost, as Brüt kâr counts it, plus the İşçilik of a built line; `missing` says why not.
 async function lineCosts(issuedOn: string, lines: (typeof invoiceLine.$inferSelect)[]) {
   const ids = [...new Set(lines.flatMap((l) => [l.productId, ...(l.components ?? []).map((c) => c.productId)]).filter((id) => id !== null))];
-  const [priceRows, laborRows, rates] = await Promise.all([
+  const [priceRows, labor, rates] = await Promise.all([
     ids.length ? db.select({ productId: productPrice.productId, price: productPrice.purchasePrice, currency: productPrice.purchaseCurrency }).from(productPrice).where(inArray(productPrice.productId, ids)) : [],
-    ids.length ? db.select({ productId: productLabor.productId, cost: productLabor.cost }).from(productLabor).where(inArray(productLabor.productId, ids)) : [],
+    loadLabor(),
     ratesOn([issuedOn]),
   ]);
   const prices = new Map<string, PurchasePrice>(priceRows.flatMap((p) => (p.price ? [[p.productId, { price: p.price, currency: p.currency }]] : [])));
-  const labor = new Map(laborRows.map((l) => [l.productId, Number(l.cost)]));
   return (l: typeof invoiceLine.$inferSelect): { missing: string } | { cost: number; labor: number } => {
     const cost = lineCost({ ...l, issuedOn }, prices, (date) => rates.get(date) ?? null);
     if (typeof cost === "string") return { missing: cost };
-    return { cost, labor: l.components?.length && l.productId ? (labor.get(l.productId) ?? 0) * Number(l.quantity) : 0 };
+    const perUnit = laborPerUnit(l.productId ? labor.byProduct.get(l.productId) : undefined, labor.rate);
+    return { cost, labor: l.components?.length ? lineLabor(l.laborHours, l.quantity, perUnit, labor.rate) : 0 };
   };
 }
 
@@ -320,6 +322,7 @@ export async function invoiceReview(headers: Headers, id: string) {
       amount: l.amount,
       stockQuantity: l.stockQuantity,
       components: l.components,
+      laborHours: l.laborHours,
       profit: costOf?.(l),
       ...(confirmed || l.productId ? { productId: l.productId, suggestions: [] } : matchProduct(l.description, prepared, learned)),
     })),
@@ -476,8 +479,9 @@ export async function deleteInvoice(headers: Headers, id: string) {
     const [inv] = await tx.select().from(invoice).where(eq(invoice.id, id)).for("update");
     if (!inv) throw new UserError("Fatura bulunamadı.");
     const reason = `Fatura ${inv.number} silindi`;
-    if (inv.stockDocumentId) {
-      const moves = await tx.select().from(stockMovement).where(eq(stockMovement.documentId, inv.stockDocumentId));
+    const documents = [inv.stockDocumentId, ...inv.correctionDocumentIds].filter((d) => d !== null);
+    if (documents.length) {
+      const moves = await tx.select().from(stockMovement).where(inArray(stockMovement.documentId, documents));
       // Movements someone already reversed by hand stay as they are.
       const reversed = moves.length
         ? new Set((await tx.select({ id: stockMovement.reversesId }).from(stockMovement).where(inArray(stockMovement.reversesId, moves.map((m) => m.id)))).map((r) => r.id))
@@ -499,9 +503,114 @@ export async function deleteInvoice(headers: Headers, id: string) {
       entityId: id,
       label: `${inv.number} · ${inv.buyer.name}`,
       action: "silindi",
-      detail: inv.stockDocumentId ? "Stok hareketleri ters kaydedildi" : null,
+      detail: documents.length ? "Stok hareketleri ters kaydedildi" : null,
       userId: actor.userId,
     });
+  });
+}
+
+const correctionInput = z.object({
+  id: z.uuid(),
+  materialsLokasyonId: z.uuid().nullable(),
+  lines: z.array(
+    z.object({
+      seq: z.number().int(),
+      components: componentsInput,
+      laborHours: z
+        .string()
+        .trim()
+        .transform((v) => v.replace(",", "."))
+        .refine((v) => v === "" || (/^\d+(\.\d+)?$/.test(v) && Number(v) > 0), { error: "Saat sıfırdan büyük bir sayı olmalı; bilinmiyorsa boş bırakın." }),
+    }),
+  ),
+});
+export type MaterialsCorrection = z.input<typeof correctionInput>;
+
+// Malzemeleri düzelt: a confirmed sale's built lines get the materials and hours that were really used. Only what
+// changed moves stock: a material no longer listed comes back as a ters kayıt, a new or changed one goes out now.
+export async function correctInvoiceMaterials(headers: Headers, input: MaterialsCorrection) {
+  const data = parseInput(correctionInput, input);
+  const actor = await requirePermission(headers, "finance.edit");
+  return db.transaction(async (tx) => {
+    const [inv] = await tx.select().from(invoice).where(eq(invoice.id, data.id)).for("update");
+    if (!inv) throw new UserError("Fatura bulunamadı.");
+    if (inv.status !== "onaylandi" || inv.archivedAt) throw new UserError("Yalnızca onaylı, arşivde olmayan bir satışın malzemeleri düzeltilebilir.");
+    if (inv.type === "IADE") throw new UserError("İade faturasında malzeme olmaz.");
+    const stored = await tx.select().from(invoiceLine).where(eq(invoiceLine.invoiceId, inv.id));
+    const bySeq = new Map(stored.map((l) => [l.seq, l]));
+    for (const l of data.lines) {
+      const was = bySeq.get(l.seq);
+      if (!was) throw new UserError("Fatura satırı bulunamadı.");
+      if (was.stockQuantity && l.components.length) throw new UserError(`${was.seq}. satır stoktan satılmış; malzeme eklenemez.`);
+      if (new Set(l.components.map((c) => c.productId)).size !== l.components.length) throw new UserError(`${was.seq}. satırda aynı malzeme iki kez yazılmış; tek satırda toplayın.`);
+    }
+    const changed = new Map(data.lines.map((l) => [l.seq, l]));
+    const wanted = stored.flatMap((l) => changed.get(l.seq)?.components ?? l.components ?? []);
+
+    // Keep every movement that still matches a listed material; reverse the rest, post what is missing.
+    const documents = [inv.stockDocumentId, ...inv.correctionDocumentIds].filter((d) => d !== null);
+    const moves = documents.length ? await tx.select().from(stockMovement).where(and(inArray(stockMovement.documentId, documents), eq(stockMovement.type, "uretim_tuketimi"), isNull(stockMovement.reversesId))) : [];
+    const reversed = moves.length
+      ? new Set((await tx.select({ id: stockMovement.reversesId }).from(stockMovement).where(inArray(stockMovement.reversesId, moves.map((m) => m.id)))).map((r) => r.id))
+      : new Set();
+    const open = moves.filter((m) => !reversed.has(m.id));
+    const missing = wanted.filter((c) => {
+      const kept = open.findIndex((m) => m.productId === c.productId && Math.abs(Math.abs(Number(m.quantity)) - Number(c.quantity)) < 1e-9);
+      if (kept < 0) return true;
+      open.splice(kept, 1);
+      return false;
+    });
+
+    const lokasyonId = data.materialsLokasyonId ?? inv.materialsLokasyonId;
+    const key = crypto.randomUUID();
+    const reason = `Fatura ${inv.number} · malzemeler düzeltildi`;
+    let posted: string | null = null;
+    if (open.length) {
+      await requirePermission(headers, "stock.out", open[0].lokasyonId!);
+      await postDocumentIn(tx, { kind: "ters_kayit", lokasyonId: open[0].lokasyonId, reference: inv.number, reason, userId: actor.userId, idempotencyKey: `fatura-duzelt:${inv.id}:${key}:ters` }, open.map((m) => reversalLine(m, reason)));
+    }
+    if (missing.length) {
+      if (!lokasyonId) throw new UserError("Malzemelerin çıktığı Lokasyonu seçin.");
+      await requirePermission(headers, "stock.out", lokasyonId);
+      const result = await postDocumentIn(
+        tx,
+        { kind: "fatura", lokasyonId, reference: inv.number, reason, userId: actor.userId, idempotencyKey: `fatura-duzelt:${inv.id}:${key}` },
+        missing.map((c) => ({ productId: c.productId, lokasyonId, direction: "out" as const, quantity: c.quantity, type: "uretim_tuketimi" as const, reason })),
+      );
+      posted = result.documentId;
+    }
+
+    for (const l of data.lines) {
+      const was = bySeq.get(l.seq)!;
+      const laborHours = l.laborHours || null;
+      await tx
+        .update(invoiceLine)
+        .set({ components: l.components.length ? l.components : null, laborHours })
+        .where(and(eq(invoiceLine.invoiceId, inv.id), eq(invoiceLine.seq, l.seq)));
+      if (!was.productId) continue;
+      // The product remembers this job as its usual one, as a confirmation does.
+      if (l.components.length) {
+        await tx.delete(productComponent).where(eq(productComponent.productId, was.productId));
+        await tx.insert(productComponent).values(l.components.map((m) => ({ productId: was.productId!, componentId: m.productId, quantity: (Number(m.quantity) / Number(was.quantity)).toFixed(3) })));
+      }
+      if (laborHours) {
+        const values = { minutes: ((Number(laborHours) * 60) / Number(was.quantity)).toFixed(3), cost: null, updatedBy: actor.userId, updatedAt: new Date() };
+        await tx.insert(productLabor).values({ productId: was.productId, ...values }).onConflictDoUpdate({ target: productLabor.productId, set: values });
+      }
+    }
+    await tx
+      .update(invoice)
+      .set({ materialsLokasyonId: wanted.length ? lokasyonId : null, ...(posted && { correctionDocumentIds: [...inv.correctionDocumentIds, posted] }) })
+      .where(eq(invoice.id, inv.id));
+    await logActivity(tx, {
+      entity: "fatura",
+      entityId: inv.id,
+      label: `${inv.number} · ${inv.buyer.name}`,
+      action: "duzenlendi",
+      detail: `Malzemeler düzeltildi: ${missing.length} çıkış, ${open.length} geri alındı`,
+      userId: actor.userId,
+    });
+    return { posted: missing.length, reversed: open.length };
   });
 }
 

@@ -1,4 +1,4 @@
-import { and, eq, gte, inArray, isNull, lt, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { db } from "../db";
 import { invoice, invoiceLine, lokasyon, notification, product, stockDocument, stockMovement, user, userPanel, userRole } from "../db/schema";
 import { getRates, type Rates } from "./exchange-rates";
@@ -39,7 +39,8 @@ export async function movementPrices(actor: Actor, movements: { id: string; type
       ? db
           .select({
             invoiceId: invoice.id,
-            documentId: sql<string>`${invoice.stockDocumentId}`,
+            stockDocumentId: invoice.stockDocumentId,
+            correctionDocumentIds: invoice.correctionDocumentIds,
             seq: invoiceLine.seq,
             issuedOn: invoice.issuedOn,
             productId: invoiceLine.productId,
@@ -50,10 +51,14 @@ export async function movementPrices(actor: Actor, movements: { id: string; type
           })
           .from(invoiceLine)
           .innerJoin(invoice, eq(invoice.id, invoiceLine.invoiceId))
-          .where(inArray(invoice.stockDocumentId, invoiceDocs))
+          .where(or(inArray(invoice.stockDocumentId, invoiceDocs), sql`${invoice.correctionDocumentIds} && array[${sql.join(invoiceDocs.map((d) => sql`${d}::uuid`), sql`, `)}]`))
       : [],
   ]);
-  const sold = priceInvoiceMoves(movements, lines);
+  // A sale's movements sit in its own document and in any posted when its materials were corrected.
+  const sold = priceInvoiceMoves(
+    movements,
+    lines.flatMap((l) => [l.stockDocumentId, ...l.correctionDocumentIds].filter((d) => d !== null).map((documentId) => ({ ...l, documentId }))),
+  );
   const usdOn = await ratesOn([...sold.values()].map((p) => p.on));
   return Object.fromEntries(
     movements.map((m): [string, MovementPrice] => {
