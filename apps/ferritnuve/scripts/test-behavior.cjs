@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 9);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 9);
+  assert.equal(blogPosts.length, 14);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 14);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
@@ -95,7 +95,7 @@ test('published blog guides have working source anchors and safe rendered markup
   assert.doesNotMatch(sample.html, /<img/);
   assert.match(sample.html, /&lt;img/);
   assert.match(sample.html, /href="\/contact"/);
-  for (const [category, type] of [['PEM', undefined], ['IRON-POWDER', undefined], ['Ferrit', ['ETD']], ['Ferrit', ['YUVARLAK']], ['Ferrit', ['YASSI']]]) {
+  for (const [category, type] of [['PEM', undefined], ['IRON-POWDER', undefined], ['Ferrit', ['ETD']], ['Ferrit', ['YUVARLAK']], ['Ferrit', ['YASSI']], ['Ferrit', ['TOROID']], ['Ferrit', ['CUBUK']]]) {
     assert.ok(blogPosts.some(post => post.slug === productGuideSlug(category, type)));
   }
 });
@@ -111,6 +111,12 @@ test('every blog guide lists its own catalog products and links to them in the c
       } else if (post.slug === '26-52-toroid-karsilastirmasi') {
         assert.equal(product.fields.Category, 'IRON-POWDER');
         assert.match(product.fields['Product Name'], /-\s*(26|52)\s*$/);
+      } else if (post.slug === 'ferrit-demir-tozu-toroid') {
+        assert.ok(product.fields.Category === 'IRON-POWDER' || product.fields['Ürün Tipi'].includes('TOROID'));
+      } else if (post.slug === 'cf-ferrit-malzeme-kodlari') {
+        assert.match(product.fields['Product Name'], /CF\s?\d{3}/);
+      } else if (post.slug === 'ozel-induktor-teklif-rehberi') {
+        assert.ok(product.fields.Category === 'IRON-POWDER' || product.fields['Ürün Tipi'].some(type => ['TOROID', 'CUBUK'].includes(type)));
       } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi'], product.fields['Product Name']), post.slug);
     }
     const query = new URL(related.catalogHref, 'https://test.invalid').searchParams;
@@ -135,6 +141,21 @@ test('every blog guide lists its own catalog products and links to them in the c
   const uuCores = relatedProducts(products, 'uu-nuve-secimi').products;
   assert.deepEqual(new Set(uuCores.map(p => p.fields['Product Name'].split(' ')[0])), new Set(['UU', 'UUR']));
   assert.equal(productGuideSlug('Ferrit', undefined, 'UY 5858'), undefined);
+  // Ferrite toroids, rods and drum cores each have their own guide; drum cores are found by name.
+  assert.equal(productGuideSlug('Ferrit', ['TOROID']), 'ferrit-toroid-nuve-secimi');
+  assert.equal(productGuideSlug('IRON-POWDER', ['TOROID']), 'ferrit-demir-tozu-toroid');
+  assert.equal(relatedProducts(products, 'ferrit-cubuk-nuve-secimi').catalogHref, '/products?categories=Ferrit&productTypes=CUBUK');
+  const drums = relatedProducts(products, 'makara-ferrit-nuve-secimi').products;
+  assert.equal(drums.length, 3);
+  for (const drum of drums) assert.match(drum.fields['Product Name'], /^MAKARA /);
+  // The material guide shows a different material marking on each card.
+  const marks = relatedProducts(products, 'cf-ferrit-malzeme-kodlari').products.map(p => p.fields['Product Name'].match(/CF\s?(\d{3})/)[1]);
+  assert.equal(new Set(marks).size, marks.length);
+  assert.ok(marks.includes('139') && marks.includes('297'));
+  // The inductor enquiry guide shows the core families a wound inductor can be built on.
+  const inductorCores = relatedProducts(products, 'ozel-induktor-teklif-rehberi').products;
+  assert.ok(inductorCores.some(p => p.fields.Category === 'IRON-POWDER'));
+  assert.ok(inductorCores.some(p => p.fields['Ürün Tipi'].includes('CUBUK')));
   // Flat cable ferrites get their own guide, not the round cable one.
   const flat = relatedProducts(products, 'yassi-kablo-ferriti-secimi');
   assert.equal(flat.products.length, products.filter(p => p.fields['Ürün Tipi']?.includes('YASSI')).length);

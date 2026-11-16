@@ -119,14 +119,21 @@ export function blogStructuredData(post: typeof blogPosts[number], siteUrl: stri
 
 export function productGuideSlug(category?: string, productTypes?: string[], name = "") {
   if (category === "PEM") return "tek-fazli-emi-filtre-secimi";
-  if (category === "IRON-POWDER" || productTypes?.includes("TOROID")) return "ferrit-demir-tozu-toroid";
+  if (category === "IRON-POWDER") return "ferrit-demir-tozu-toroid";
+  if (productTypes?.includes("TOROID")) return "ferrit-toroid-nuve-secimi";
+  if (productTypes?.includes("CUBUK")) return "ferrit-cubuk-nuve-secimi";
   if (productTypes?.includes("ETD")) return "etd-nuve-secimi";
   if (productTypes?.includes("EE")) return "ee-nuve-secimi";
   if (productTypes?.includes("YUVARLAK")) return "kablo-ferriti-secimi";
   if (productTypes?.includes("YASSI")) return "yassi-kablo-ferriti-secimi";
   // UU cores have no Ürün Tipi in the catalog yet, so they are recognised by name.
   if (category === "Ferrit" && /^UUR?\s/.test(name)) return "uu-nuve-secimi";
+  // Drum cores have no Ürün Tipi either.
+  if (category === "Ferrit" && /^MAKARA\s/.test(name)) return "makara-ferrit-nuve-secimi";
 }
+
+// The material marking at the end of a catalog name, such as CF139 in "EE 25 / 13 / 7 - CF139".
+const materialMark = (name: string) => name.match(/CF\s?(\d{3})/)?.[1];
 
 // A product can support more than one guide. Take groups in turn so comparisons
 // and the transformer and UU guides show both relevant material/type/shape families.
@@ -134,9 +141,17 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
   const transformer = guideSlug === "ozel-trafo-teklif-rehberi";
   const powderComparison = guideSlug === "26-52-toroid-karsilastirmasi";
   const uu = guideSlug === "uu-nuve-secimi";
+  const toroidComparison = guideSlug === "ferrit-demir-tozu-toroid";
+  const materials = guideSlug === "cf-ferrit-malzeme-kodlari";
+  const inductor = guideSlug === "ozel-induktor-teklif-rehberi";
+  const toroid = (p: AirtableProduct) => p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.includes("TOROID");
   const matches = products.filter(p => {
     if (transformer) return p.fields.Category === "Ferrit" && p.fields["Ürün Tipi"]?.some(type => type === "EE" || type === "ETD");
     if (powderComparison) return p.fields.Category === "IRON-POWDER" && /-\s*(26|52)\s*$/.test(p.fields["Product Name"]);
+    if (toroidComparison) return p.fields.Category === "IRON-POWDER" || toroid(p);
+    // Only typed products, so the catalog link can filter to exactly the shapes shown.
+    if (materials) return p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.length && !!materialMark(p.fields["Product Name"]);
+    if (inductor) return p.fields.Category === "IRON-POWDER" || toroid(p) || !!p.fields["Ürün Tipi"]?.includes("CUBUK");
     return productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"], p.fields["Product Name"]) === guideSlug;
   });
   if (guideSlug === "ee-nuve-secimi") {
@@ -145,7 +160,7 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
   }
   const categories = [...new Set(matches.map(p => p.fields.Category ?? ""))];
   const types = [...new Set(matches.flatMap(p => p.fields["Ürün Tipi"] ?? []))];
-  const groupKey = (p: AirtableProduct) => transformer ? p.fields["Ürün Tipi"]?.[0] : powderComparison ? p.fields["Product Name"].match(/(26|52)\s*$/)?.[1] : uu ? p.fields["Product Name"].split(" ")[0] : p.fields.Category;
+  const groupKey = (p: AirtableProduct) => transformer ? p.fields["Ürün Tipi"]?.[0] : powderComparison ? p.fields["Product Name"].match(/(26|52)\s*$/)?.[1] : uu ? p.fields["Product Name"].split(" ")[0] : materials ? materialMark(p.fields["Product Name"]) : inductor ? p.fields["Ürün Tipi"]?.[0] : p.fields.Category;
   const keys = [...new Set(matches.map(groupKey))];
   const groups = keys.map(key => matches.filter(p => groupKey(p) === key));
   const longest = Math.max(0, ...groups.map(group => group.length));
