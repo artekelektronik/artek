@@ -151,5 +151,90 @@
       "alt": "Flat cable ferrite from the catalog",
       "description": "Choose a flat (ribbon) cable ferrite by width, conductor count, material, core length and mounting. Practical selection and enquiry guidance."
     }
+  },
+  {
+    "file": "10-ferrit-toroid-nuve-secimi.md",
+    "slug": "ferrit-toroid-nuve-secimi",
+    "category": "Malzeme seçimi / Ferrit toroidler",
+    "image": "/products-images/f2906219-02.webp",
+    "alt": "Katalogdaki ferrit toroid nüve",
+    "description": "Ferrit toroid nüve seçerken ölçü, malzeme, AL değeri, kaplama ve doyma nasıl değerlendirilir? Toroid bobin ve ortak mod şok bobini için seçim rehberi.",
+    "publishedAt": "2026-11-16T00:00:00+03:00",
+    "modifiedAt": "2026-11-16T00:00:00+03:00",
+    "en": {
+      "file": "en/ferrite-toroid-core-selection.md",
+      "slug": "ferrite-toroid-core-selection",
+      "category": "Material selection / Ferrite toroids",
+      "alt": "Ferrite toroid core from the catalog",
+      "description": "Choose a ferrite toroid core by size, material, AL value, coating and saturation. Selection guide for toroid inductors and common-mode chokes."
+    }
+  },
+  {
+    "file": "11-ferrit-cubuk-nuve-secimi.md",
+    "slug": "ferrit-cubuk-nuve-secimi",
+    "category": "Ferrit nüveler / Çubuk nüveler",
+    "image": "/products-images/screenshot-2025-10-31-at-11.53.54-am.png",
+    "alt": "Katalogdaki ferrit çubuk nüve",
+    "description": "Ferrit çubuk nüve seçerken çap, boy, delikli yapı, malzeme ve frekans nasıl değerlendirilir? Anten ve şok bobini uygulamaları için seçim rehberi.",
+    "publishedAt": "2026-11-16T00:00:00+03:00",
+    "modifiedAt": "2026-11-16T00:00:00+03:00",
+    "en": {
+      "file": "en/ferrite-rod-core-selection.md",
+      "slug": "ferrite-rod-core-selection",
+      "category": "Ferrite cores / Rod cores",
+      "alt": "Ferrite rod core from the catalog",
+      "description": "Choose a ferrite rod core by diameter, length, centre hole, material and frequency. Selection guide for antenna and choke applications."
+    }
+  },
+  {
+    "file": "12-makara-ferrit-nuve-secimi.md",
+    "slug": "makara-ferrit-nuve-secimi",
+    "category": "Ferrit nüveler / Makara nüveler",
+    "image": "/products-images/dr2w10x16.jpg",
+    "alt": "Katalogdaki makara tipi ferrit nüve",
+    "description": "Makara tipi ferrit nüve nedir, plastik karkastan farkı ne? Ölçü, pin, malzeme, endüktans ve doyma akımına göre seçim ve teklif rehberi.",
+    "publishedAt": "2026-11-16T00:00:00+03:00",
+    "modifiedAt": "2026-11-16T00:00:00+03:00",
+    "en": {
+      "file": "en/drum-core-selection.md",
+      "slug": "drum-core-selection",
+      "category": "Ferrite cores / Drum cores",
+      "alt": "Ferrite drum core from the catalog",
+      "description": "What is a ferrite drum core and how does it differ from a plastic bobbin? Selection by size, pins, material, inductance and saturation current."
+    }
+  },
+  {
+    "file": "13-cf-ferrit-malzeme-kodlari.md",
+    "slug": "cf-ferrit-malzeme-kodlari",
+    "category": "Malzeme seçimi / Ferrit malzemeler",
+    "image": "/products-images/i-bar-cores.jpg",
+    "alt": "Katalogdaki CF139 işaretli ferrit nüve",
+    "description": "CF139, CF297 ve CF199 gibi ferrit malzeme kodları ne anlatır? Güç ve yüksek geçirgenlikli malzemeler, N87 ve 3C90 ile muadil karşılaştırma yöntemi.",
+    "publishedAt": "2026-11-16T00:00:00+03:00",
+    "modifiedAt": "2026-11-16T00:00:00+03:00",
+    "en": {
+      "file": "en/cf-ferrite-material-codes.md",
+      "slug": "cf-ferrite-material-codes",
+      "category": "Material selection / Ferrite materials",
+      "alt": "Ferrite core marked CF139 from the catalog",
+      "description": "What do ferrite material codes such as CF139, CF297 and CF199 mean? Power and high-permeability grades, and how to compare with N87 or 3C90."
+    }
+  },
+  {
+    "file": "14-ozel-induktor-teklif-rehberi.md",
+    "slug": "ozel-induktor-teklif-rehberi",
+    "category": "Özel sarım / Teklif hazırlama",
+    "image": "/products-images/ir184.jpg",
+    "alt": "Katalogdaki toroid nüve",
+    "description": "Özel indüktör veya şok bobini teklifi için hangi bilgiler gerekir? Endüktans, doyma ve anma akımı, nüve tipi ve montaj için kontrol listesi.",
+    "publishedAt": "2026-11-16T00:00:00+03:00",
+    "modifiedAt": "2026-11-16T00:00:00+03:00",
+    "en": {
+      "file": "en/custom-inductor-rfq-guide.md",
+      "slug": "custom-inductor-rfq-guide",
+      "category": "Custom winding / RFQ preparation",
+      "alt": "Toroid core from the catalog",
+      "description": "What to include in a custom inductor or choke RFQ: inductance, saturation and rated current, core type and mounting checklist."
+    }
   }
 ]
