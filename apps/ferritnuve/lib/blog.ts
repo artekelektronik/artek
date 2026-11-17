@@ -87,6 +87,40 @@ export function getBlogPost(slug: string, locale = "tr") {
   return (locale === "en" ? englishBlogPosts : blogPosts).find(post => post.slug === slug);
 }
 
+// The guides read as one book. Chapters and the guides inside them are in reading order;
+// a new guide must be added to a chapter here (the tests fail until it is).
+const chapters = [
+  {key: "basics", tr: "Temel bilgiler", en: "Basics",
+    trIntro: "Ferrit nüvenin ne olduğu, ne işe yaradığı ve hangi biçimlerde bulunduğu.", enIntro: "What a ferrite core is, what it does and which shapes it comes in.",
+    slugs: ["ferrit-nuve-nedir", "ferrit-nuve-cesitleri"]},
+  {key: "shapes", tr: "Nüve biçimleri", en: "Core shapes",
+    trIntro: "Her nüve biçimi için ölçü, malzeme ve kullanım yerine göre seçim adımları.", enIntro: "Selection steps for each core shape by size, material and application.",
+    slugs: ["ee-nuve-secimi", "etd-nuve-secimi", "uu-nuve-secimi", "ferrit-toroid-nuve-secimi", "ferrit-cubuk-nuve-secimi", "makara-ferrit-nuve-secimi"]},
+  {key: "materials", tr: "Malzemeler", en: "Materials",
+    trIntro: "Ferrit ve demir tozu malzemeler, malzeme kodları ve muadil karşılaştırması.", enIntro: "Ferrite and iron-powder materials, material codes and comparing equivalents.",
+    slugs: ["ferrit-demir-tozu-toroid", "26-52-toroid-karsilastirmasi", "cf-ferrit-malzeme-kodlari"]},
+  {key: "emi", tr: "EMI ve filtreler", en: "EMI and filters",
+    trIntro: "Kablo üzerindeki paraziti bastıran ferritler ve şebeke girişi filtreleri.", enIntro: "Ferrites that suppress interference on cables, and mains input filters.",
+    slugs: ["kablo-ferriti-secimi", "yassi-kablo-ferriti-secimi", "tek-fazli-emi-filtre-secimi"]},
+  {key: "rfq", tr: "Teklif hazırlama", en: "Preparing an enquiry",
+    trIntro: "Özel trafo ve indüktör talebinde hangi bilgilerin verilmesi gerektiği.", enIntro: "What to include when asking for a custom transformer or inductor.",
+    slugs: ["ozel-trafo-teklif-rehberi", "ozel-induktor-teklif-rehberi"]},
+];
+export function libraryChapters(locale = "tr") {
+  const en = locale === "en";
+  const posts = en ? englishBlogPosts : blogPosts;
+  return chapters.map((chapter, index) => ({
+    key: chapter.key, number: index + 1, title: en ? chapter.en : chapter.tr, intro: en ? chapter.enIntro : chapter.trIntro,
+    posts: chapter.slugs.flatMap(slug => posts.filter(post => post.translations.tr === slug)),
+  }));
+}
+export function readingNeighbours(slug: string, locale = "tr") {
+  const library = libraryChapters(locale);
+  const order = library.flatMap(chapter => chapter.posts);
+  const index = order.findIndex(post => post.slug === slug);
+  return {previous: order[index - 1], next: order[index + 1], chapter: library.find(chapter => chapter.posts.includes(order[index]))!};
+}
+
 export function blogStructuredData(post: typeof blogPosts[number], siteUrl: string) {
   const prefix = post.locale === "en" ? "/en" : "";
   const url = `${siteUrl}${prefix}/blog/${post.slug}`;

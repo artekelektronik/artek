@@ -99,6 +99,27 @@ test('published blog guides have working source anchors and safe rendered markup
     assert.ok(blogPosts.some(post => post.slug === productGuideSlug(category, type)));
   }
 });
+test('the guides read as one library: every guide sits in exactly one chapter, with previous and next in reading order', () => {
+  const {blogPosts, englishBlogPosts, libraryChapters, readingNeighbours} = require('../lib/blog.ts');
+  for (const [locale, posts] of [['tr', blogPosts], ['en', englishBlogPosts]]) {
+    const chapters = libraryChapters(locale);
+    const order = chapters.flatMap(chapter => chapter.posts);
+    assert.deepEqual(order.map(post => post.slug).sort(), posts.map(post => post.slug).sort());
+    assert.deepEqual(chapters.map(chapter => chapter.number), chapters.map((_, index) => index + 1));
+    for (const chapter of chapters) assert.ok(chapter.posts.length > 0 && chapter.title && chapter.intro, chapter.key);
+    assert.equal(readingNeighbours(order[0].slug, locale).previous, undefined);
+    assert.equal(readingNeighbours(order.at(-1).slug, locale).next, undefined);
+    for (const [index, post] of order.entries()) {
+      const {previous, next, chapter} = readingNeighbours(post.slug, locale);
+      assert.equal(previous?.slug, order[index - 1]?.slug);
+      assert.equal(next?.slug, order[index + 1]?.slug);
+      assert.ok(chapter.posts.includes(post));
+    }
+  }
+  // The book opens with what a ferrite core is, then the overview of shapes.
+  assert.deepEqual(libraryChapters('tr')[0].posts.map(post => post.slug), ['ferrit-nuve-nedir', 'ferrit-nuve-cesitleri']);
+  assert.equal(readingNeighbours('what-is-a-ferrite-core', 'en').next.slug, 'ferrite-core-shapes');
+});
 test('every blog guide lists its own catalog products and links to them in the catalog', () => {
   const {blogPosts, productGuideSlug, relatedProducts} = require('../lib/blog.ts');
   for (const post of blogPosts) {
