@@ -30,6 +30,7 @@ export default async function BlogPage({params}: Props) {
       <ol className="mt-4 grid gap-x-8 gap-y-2 text-sm leading-6 sm:grid-cols-2 lg:grid-cols-3">
         {chapters.map(chapter => <li key={chapter.key}><a href={`#${chapter.key}`} className="font-medium hover:text-artek-violet">{chapter.number}. {chapter.title}</a> <span className="text-slate-600">· {chapter.posts.length} {tr ? "rehber" : chapter.posts.length === 1 ? "guide" : "guides"}</span></li>)}
       </ol>
+      <p className="mt-4 text-sm text-slate-600">{tr ? "Bir terimin anlamını mı arıyorsunuz? " : "Looking for what a term means? "}<Link href="/sozluk" className="font-medium underline underline-offset-4">{tr ? "Sözlüğe bakın" : "See the glossary"} →</Link></p>
     </nav>
     {chapters.map(chapter => <section key={chapter.key} id={chapter.key} aria-labelledby={`${chapter.key}-title`} className="mt-16 scroll-mt-24">
       <p className="text-xs font-bold uppercase tracking-wider text-artek-violet">{tr ? "Bölüm" : "Chapter"} {chapter.number}</p>

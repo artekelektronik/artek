@@ -34,6 +34,7 @@ export function llmsText(siteUrl: string) {
     "",
     "## Company",
     "",
+    `- [Glossary](${siteUrl}/en/sozluk): short, sourced definitions of ferrite core and EMI filter terms (Turkish: ${siteUrl}/sozluk)`,
     `- [Frequently asked questions](${siteUrl}/en/faq): technical answers (AL value, air gap, MnZn/NiZn ferrite, common-mode chokes) and the quote process`,
     `- [About](${siteUrl}/en/about)`,
     `- [Certificates](${siteUrl}/en/certificates)`,
