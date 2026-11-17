@@ -236,5 +236,39 @@
       "alt": "Toroid core from the catalog",
       "description": "What to include in a custom inductor or choke RFQ: inductance, saturation and rated current, core type and mounting checklist."
     }
+  },
+  {
+    "file": "15-ferrit-nuve-cesitleri.md",
+    "slug": "ferrit-nuve-cesitleri",
+    "category": "Ferrit nüveler / Nüve biçimleri",
+    "image": "/products-images/uu-cores-soft-ferrite-cores.jpg",
+    "alt": "Katalogdaki U biçimli ferrit nüveler",
+    "description": "Ferrit nüve çeşitleri: EE, ETD, UU, toroid, çubuk ve makara nüveler ne için kullanılır, hangisi karkaslıdır? Her biçim için kısa açıklama ve seçim rehberi.",
+    "publishedAt": "2026-11-17T00:00:00+03:00",
+    "modifiedAt": "2026-11-17T00:00:00+03:00",
+    "en": {
+      "file": "en/ferrite-core-shapes.md",
+      "slug": "ferrite-core-shapes",
+      "category": "Ferrite cores / Core shapes",
+      "alt": "U-shaped ferrite cores from the catalog",
+      "description": "Ferrite core shapes compared: what EE, ETD, UU, toroid, rod and drum cores are used for, which use a bobbin, and which selection guide to read next."
+    }
+  },
+  {
+    "file": "16-ferrit-nuve-nedir.md",
+    "slug": "ferrit-nuve-nedir",
+    "category": "Temel bilgiler / Ferrit nüveler",
+    "image": "/products-images/ee-cores.jpg",
+    "alt": "Katalogdaki EE ferrit nüve grubu",
+    "description": "Ferrit nüve nedir, ne işe yarar? Yumuşak ve sert ferrit, MnZn ve NiZn farkı, ferritin yüksek frekansta neden kullanıldığı ve kullanım alanları.",
+    "publishedAt": "2026-11-17T00:00:00+03:00",
+    "modifiedAt": "2026-11-17T00:00:00+03:00",
+    "en": {
+      "file": "en/what-is-a-ferrite-core.md",
+      "slug": "what-is-a-ferrite-core",
+      "category": "Basics / Ferrite cores",
+      "alt": "EE ferrite core group from the catalog",
+      "description": "What is a ferrite core and what does it do? Soft vs hard ferrite, MnZn vs NiZn, why ferrite is used at high frequency and where it is used."
+    }
   }
 ]
