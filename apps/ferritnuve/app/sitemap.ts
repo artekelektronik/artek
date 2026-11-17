@@ -46,6 +46,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     },
     {
+      url: `${siteUrl}/sozluk`,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/sozluk`,
+          en: `${siteUrl}/en/sozluk`,
+        },
+      },
+    },
+    {
       url: `${siteUrl}/about`,
       changeFrequency: "monthly" as const,
       priority: 0.7,

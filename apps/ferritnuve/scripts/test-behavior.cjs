@@ -231,6 +231,32 @@ test('business data is structured and llms.txt lists every guide and the catalog
   assert.ok(text.includes(`${site}/en/products?categories=PEM`));
   assert.doesNotMatch(text, /fiyat|price:|stok adedi/i);
 });
+test('the glossary defines each term once per language, with a source, and links only to existing guides', () => {
+  const {glossaryTerms, glossaryStructuredData} = require('../lib/glossary.ts');
+  const {getBlogPost} = require('../lib/blog.ts');
+  const {llmsText} = require('../lib/llms.ts');
+  const counts = [];
+  for (const locale of ['tr', 'en']) {
+    const terms = glossaryTerms(locale);
+    counts.push(terms.length);
+    assert.ok(terms.length >= 30, `${locale}: ${terms.length} terms`);
+    assert.equal(new Set(terms.map(term => term.id)).size, terms.length);
+    assert.deepEqual(terms.map(term => term.term), [...terms.map(term => term.term)].sort((a, b) => a.localeCompare(b, locale)));
+    for (const term of terms) {
+      const words = term.definition.split(/\s+/).length;
+      assert.ok(words >= 25 && words <= 90, `${term.term}: ${words} words`);
+      assert.doesNotMatch(term.definition, /\[\d+\]|\]\(|\*\*|<|\n|üretiyoruz|we manufacture|fiyat|price/i, term.term);
+      assert.match(term.source.href, /^https:\/\//);
+      assert.ok(term.source.label.length > 5, term.term);
+      if (term.guide) assert.ok(getBlogPost(term.guide.href.replace('/blog/', ''), locale), `${term.term}: ${term.guide.href}`);
+    }
+    const data = glossaryStructuredData(terms, 'https://www.ferritnuve.com/sozluk', locale);
+    assert.equal(data['@type'], 'DefinedTermSet');
+    assert.deepEqual(data.hasDefinedTerm.map(term => term.name), terms.map(term => term.term));
+  }
+  assert.equal(counts[0], counts[1]);
+  assert.ok(llmsText('https://www.ferritnuve.com').includes('https://www.ferritnuve.com/en/sozluk'));
+});
 test('FAQ page combines own questions with every guide FAQ and searches like a visitor types', () => {
   const {faqItems, faqStructuredData} = require('../lib/faq.ts');
   const {matchFaq, scrubSearch} = require('../lib/faq-search.ts');

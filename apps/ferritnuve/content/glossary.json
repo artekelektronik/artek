@@ -1,0 +1,669 @@
+[
+  {
+    "tr": {
+      "term": "AL değeri",
+      "definition": "AL değeri, bir nüvenin endüktans faktörüdür: sarım sayısının karesi başına elde edilen endüktansı verir, yani bir sargının endüktansı AL değeri ile sarım sayısının karesinin çarpımına eşittir. Her nüve ve malzeme için veri sayfasında, genellikle nanohenri cinsinden ve toleransıyla birlikte verilir. Hedef endüktans için gereken sarım sayısı bu değerle hesaplanır."
+    },
+    "en": {
+      "term": "AL value",
+      "definition": "The AL value is the inductance factor of a core: the inductance obtained per turn squared, so that the inductance of a winding equals the AL value multiplied by the square of the number of turns. It is given in the data sheet for each core and material, usually in nanohenries with a tolerance, and lets a designer work out the number of turns needed for a target inductance."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ferrit-toroid-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Başlangıç geçirgenliği",
+      "definition": "Başlangıç geçirgenliği, manyetik bir malzemenin çok düşük uyarma seviyelerindeki bağıl geçirgenliğidir ve halka nüve gibi kapalı bir manyetik devre üzerinde ölçülür. Yumuşak manyetik malzemeleri karşılaştırmada kullanılan başlıca değerdir; bu nedenle ferrit malzeme seçerken genellikle ilk bakılan veridir. Sıcaklıkla ve nüve üzerindeki mekanik gerilmeyle değişir."
+    },
+    "en": {
+      "term": "Initial permeability",
+      "definition": "Initial permeability is the relative permeability of a magnetic material at very low excitation levels, measured on a closed magnetic circuit such as a ring core. It is the main figure used to compare soft magnetic materials, so it is usually the first value to check when choosing a ferrite material. It changes with temperature and with mechanical stress on the core."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "Etkin geçirgenlik",
+      "definition": "Etkin geçirgenlik, hava aralığı içeren bir nüvenin bütün olarak gösterdiği geçirgenliktir; aralıklı manyetik devre, tek ve homojen bir malzemeden yapılmış kapalı bir nüve gibi ele alınır. Ferritin başlangıç geçirgenliğinden düşüktür ve aralık büyüdükçe azalır. Bitmiş parçanın endüktansı, kayıp faktörü ve sıcaklık katsayısı bu değere bağlı olduğu için veri sayfalarında her aralıklı nüve için ayrıca verilir."
+    },
+    "en": {
+      "term": "Effective permeability",
+      "definition": "Effective permeability is the permeability of a complete core that contains an air gap, treating the gapped magnetic circuit as if it were a closed core made of one uniform material. It is lower than the initial permeability of the ferrite and falls as the gap widens. Data sheets list it for each gapped core because the inductance, loss factor and temperature coefficient of the finished part scale with it."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    }
+  },
+  {
+    "tr": {
+      "term": "Doyma",
+      "definition": "Doyma, manyetik nüvenin daha fazla manyetik akı depolayamadığı durumdur; sargıdan geçen akım daha da arttığında nüvenin geçirgenliği düşer. Bunun sonucunda parçanın endüktansı azalır; bu düşüş ferrit nüvelerde keskin, demir tozu nüvelerde daha yumuşaktır. Bu nedenle nüve, devredeki en yüksek akım doymanın başladığı noktanın altında kalacak şekilde seçilir; hava nüveli bobinlerde doyma olmaz."
+    },
+    "en": {
+      "term": "Saturation",
+      "definition": "Saturation is the condition in which a magnetic core cannot store any more magnetic flux, so its permeability falls as the current through the winding rises further. The inductance of the part then drops, sharply in ferrite cores and more gradually in iron-powder cores. A core is therefore chosen so that the highest current in the circuit stays below the point where saturation begins; air-core inductors do not saturate."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Doyma akı yoğunluğu",
+      "definition": "Doyma akı yoğunluğu, bir malzemenin belirli bir sıcaklıkta ulaşabildiği en yüksek manyetik akı yoğunluğudur; bu değerin üzerinde manyetik alan artırılsa da akı yoğunluğu artmaz. Sıcaklık yükseldikçe düşer ve Curie sıcaklığında sıfıra iner. Bu yüzden bir nüvenin ne kadar zorlanabileceğini oda sıcaklığındaki değer değil, gerçek çalışma sıcaklığındaki değer belirler."
+    },
+    "en": {
+      "term": "Saturation flux density",
+      "definition": "Saturation flux density is the highest magnetic flux density a material can reach at a given temperature; beyond it, a stronger magnetic field no longer increases the flux density. It falls as temperature rises and reaches zero at the Curie temperature. The value at the actual operating temperature, not the room-temperature value, therefore sets how far a core can be driven."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "Doyma akımı",
+      "definition": "Doyma akımı, bir bobinin endüktansının, DC akım yokken ölçülen değere göre belirtilen bir yüzde kadar düştüğü DC ön akımdır. Bu yüzde üreticiye ve nüve malzemesine göre değişir; bu nedenle iki parça ancak aynı endüktans düşüşü için verilen değerlerle karşılaştırılabilir. Nüvenin belirlediği manyetik bir sınırdır ve ısıl bir sınır olan anma akımından ayrıdır."
+    },
+    "en": {
+      "term": "Saturation current",
+      "definition": "Saturation current is the DC bias current through an inductor at which its inductance has fallen by a specified percentage from the value measured with no DC current. The percentage differs between manufacturers and core materials, so two parts can only be compared when the stated inductance drop is the same. It is a magnetic limit set by the core and is separate from the rated current, which is a thermal limit."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Anma akımı",
+      "definition": "Anma akımı, bir bobinin en yüksek anma ortam sıcaklığında, belirtilen sıcaklık artışını aşmadan sürekli taşıyabildiği DC akımdır. Sargının DC direncine ve parçanın ısıyı ne kadar iyi attığına bağlıdır; nüvenin manyetik özellikleriyle ilgili değildir. Bir parça hem anma akımına hem doyma akımına göre kontrol edilmelidir, çünkü iki sınırdan herhangi birine önce ulaşılabilir."
+    },
+    "en": {
+      "term": "Rated current",
+      "definition": "Rated current is the continuous DC current an inductor can carry without exceeding a stated temperature rise at its maximum rated ambient temperature. It depends on the DC resistance of the winding and on how well the part sheds heat, not on the magnetic properties of the core. A part should be checked against both its rated current and its saturation current, because either limit can be reached first."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Hava aralığı",
+      "definition": "Hava aralığı, nüvenin manyetik yolunda ferritin kesildiği bölümdür; böylece manyetik devre, yüksek geçirgenlikli ferrit ile geçirgenliği havanınkine eşit bir bölgeden oluşur. Nüvenin etkin geçirgenliğini düşürür, kayıp faktörünü ve sıcaklık katsayısını da aynı oranda azaltır. Bu nedenle veri sayfalarında etkin geçirgenlik, nüvenin her aralıklı sürümü için ayrı ayrı verilir."
+    },
+    "en": {
+      "term": "Air gap",
+      "definition": "An air gap is a section of a core's magnetic path where the ferrite is interrupted, so that the magnetic circuit consists of high-permeability ferrite together with a region whose permeability is that of air. It lowers the effective permeability of the core and reduces the loss factor and temperature coefficient in the same ratio. Data sheets therefore give the effective permeability separately for each gapped version of a core."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Nüve kaybı",
+      "definition": "Nüve kaybı, alternatif alanla sürülen manyetik nüvede harcanan güçtür; histerezis, girdap akımı ve artık kayıpların toplamından oluşur. Sıcaklığa, frekansa ve akı yoğunluğuna, ayrıca ferrit malzemeye ve nüve şekline bağlıdır. Güç nüvelerinin veri sayfalarında belirli bir frekans, akı yoğunluğu ve sıcaklık için verilir; bir bileşenin toplam kaybını bulmak için sargı kayıpları da eklenmelidir."
+    },
+    "en": {
+      "term": "Core loss",
+      "definition": "Core loss is the power dissipated in a magnetic core when it is driven by an alternating field, made up of hysteresis, eddy-current and residual losses. It depends on temperature, frequency and flux density as well as on the ferrite material and the core shape. Data sheets for power cores state it at a specific frequency, flux density and temperature, and winding losses must be added to find the total loss of a component."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "Histerezis",
+      "definition": "Histerezis, manyetik bir malzemede akı yoğunluğunun, manyetik alan azaltılırken alan artırılırkenkinden farklı bir eğri izlemesidir; ikisi birbirine göre çizildiğinde kapalı bir çevrim ortaya çıkar. Alan sıfıra döndüğünde malzemede bir miktar akı yoğunluğu kalır. Nüve kaybı çevrimin alanıyla orantılıdır; bu nedenle çevrimin şekli, malzemenin ne kadar güç harcayacağı konusunda fikir verir."
+    },
+    "en": {
+      "term": "Hysteresis",
+      "definition": "Hysteresis is the behaviour of a magnetic material in which the flux density follows a different curve when the magnetic field is reduced than when it was increased, so that plotting one against the other gives a closed loop. Some flux density remains when the field returns to zero. Core loss is proportional to the area of the loop, so the shape of the loop indicates how much power a material will dissipate."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ferrit-nuve-nedir"
+  },
+  {
+    "tr": {
+      "term": "Girdap akımı",
+      "definition": "Girdap akımı, alternatif manyetik akının iletken bir malzemede endüklediği ve akı çizgilerine dik bir düzlemde dolaşan akımdır. Girdap akımları hem nüve malzemesi elektriği iletiyorsa manyetik nüvede hem de sargıda kayba yol açar; sargıda deri etkisi ve yakınlık etkisi olarak görülür. Elektriksel özdirenci yüksek nüve malzemeleri, frekans yükseldikçe bu kayıpları düşük tutar."
+    },
+    "en": {
+      "term": "Eddy current",
+      "definition": "An eddy current is a current induced in a conductive material by an alternating magnetic flux, flowing in a plane perpendicular to the flux lines. Eddy currents cause losses both in the magnetic core, if the core material conducts electricity, and in the winding, where they appear as skin and proximity effects. Core materials with high electrical resistivity keep these losses low as frequency rises."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    }
+  },
+  {
+    "tr": {
+      "term": "DC direnç (DCR)",
+      "definition": "DC direnç (DCR), bir bobin sargısının alternatif akım yokken ölçülen direncidir; ohm cinsinden ifade edilir ve genellikle en yüksek değer olarak belirtilir. Akımın karesi ile direncin çarpımına eşit olan ve ısıya dönüşen bakır kaybını belirler. Bu nedenle DCR düştükçe, aynı sıcaklık artışı için daha yüksek bir anma akımı elde edilir."
+    },
+    "en": {
+      "term": "DC resistance (DCR)",
+      "definition": "DC resistance (DCR) is the resistance of an inductor's winding measured with no alternating current, expressed in ohms and usually specified as a maximum value. It determines the copper loss, which is the square of the current multiplied by the resistance and is turned into heat. A lower DCR therefore allows a higher rated current for the same temperature rise."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Curie sıcaklığı",
+      "definition": "Curie sıcaklığı, üzerine çıkıldığında ferritin ferrimanyetik özelliklerini yitirdiği ve başlangıç geçirgenliğinin havanınkine düştüğü sıcaklıktır. Bu olay tersinirdir: malzeme bu sıcaklığın altına soğuduğunda manyetik özellikler geri gelir. Doyma akı yoğunluğu da bu sıcaklığa yaklaşıldıkça sürekli azalarak sıfıra iner; dolayısıyla Curie sıcaklığı nüvenin çalışma sıcaklığına bir üst sınır koyar."
+    },
+    "en": {
+      "term": "Curie temperature",
+      "definition": "The Curie temperature is the temperature above which a ferrite loses its ferrimagnetic properties and its initial permeability falls to that of air. The effect is reversible: the magnetic properties return when the material cools below this temperature. The saturation flux density also falls steadily to zero as this temperature is approached, so the Curie temperature sets an upper limit on the working temperature of a core."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "Yumuşak ferrit",
+      "definition": "Yumuşak ferrit, kolayca mıknatıslanabilen, kırılgan ve kimyasal olarak kararlı seramik bir manyetik malzemedir; genel bileşimi MeFe2O4 olup Me mangan, çinko veya nikel gibi bir ya da birkaç metali gösterir. Yüksek özdirenci sayesinde, manyetik metallerin gerektirdiği laminasyon olmadan çok yüksek frekanslara kadar kullanılabilir. En yaygın iki ailesi mangan-çinko ve nikel-çinko ferrittir."
+    },
+    "en": {
+      "term": "Soft ferrite",
+      "definition": "Soft ferrite is a brittle, chemically inert ceramic magnetic material that is easily magnetised, with the general composition MeFe2O4 where Me stands for one or more metals such as manganese, zinc or nickel. Its high intrinsic resistivity allows it to be used up to very high frequencies without the laminations that magnetic metals need. The two most common families are manganese-zinc and nickel-zinc ferrite."
+    },
+    "source": {
+      "url": "https://www.ferroxcube.com/en-global/download/download/11",
+      "tr": "Ferroxcube: Yumuşak ferritler ve aksesuarlar veri kitabı",
+      "en": "Ferroxcube: Soft Ferrites and Accessories data handbook"
+    },
+    "guide": "ferrit-nuve-nedir"
+  },
+  {
+    "tr": {
+      "term": "MnZn ferrit",
+      "definition": "MnZn ferrit, mangan ve çinko esaslı bir yumuşak ferrittir; NiZn ferrite göre daha yüksek geçirgenlik ve daha yüksek doyma akı yoğunluğu sağlar. Özdirenci daha düşük olduğundan, ferritlerin kullanıldığı frekans aralığının alt bölümüne uygundur. Güç dönüştürme nüvelerinde ve şebeke giriş filtrelerindeki ortak mod şok bobinlerinde yaygın olarak tercih edilir."
+    },
+    "en": {
+      "term": "MnZn ferrite",
+      "definition": "MnZn ferrite is a soft ferrite based on manganese and zinc that offers higher permeability and higher saturation flux density than NiZn ferrite. Its resistivity is lower, so it suits the lower part of the frequency range in which ferrites are used. It is the usual choice for power-conversion cores and for the common-mode chokes in mains input filters."
+    },
+    "source": {
+      "url": "https://www.ferroxcube.com/en-global/download/download/11",
+      "tr": "Ferroxcube: Yumuşak ferritler ve aksesuarlar veri kitabı",
+      "en": "Ferroxcube: Soft Ferrites and Accessories data handbook"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "NiZn ferrit",
+      "definition": "NiZn ferrit, nikel ve çinko esaslı, elektriksel özdirenci çok yüksek bir yumuşak ferrittir. Bu özelliği onu yüksek frekanslarda daha uygun ferrit ailesi yapar; buna karşılık geçirgenliği ve doyma akı yoğunluğu MnZn ferrite göre daha düşüktür. Yüksek frekanslı parazit bastırmada ve radyo frekansı bobin ve trafolarında yaygın olarak kullanılır."
+    },
+    "en": {
+      "term": "NiZn ferrite",
+      "definition": "NiZn ferrite is a soft ferrite based on nickel and zinc that has a very high electrical resistivity. This makes it the more suitable ferrite family at higher frequencies, while its permeability and saturation flux density are lower than those of MnZn ferrite. It is commonly chosen for interference suppression at high frequencies and for radio-frequency inductors and transformers."
+    },
+    "source": {
+      "url": "https://www.ferroxcube.com/en-global/download/download/11",
+      "tr": "Ferroxcube: Yumuşak ferritler ve aksesuarlar veri kitabı",
+      "en": "Ferroxcube: Soft Ferrites and Accessories data handbook"
+    },
+    "guide": "cf-ferrit-malzeme-kodlari"
+  },
+  {
+    "tr": {
+      "term": "Demir tozu nüve",
+      "definition": "Demir tozu nüve, birbirinden yalıtılmış demir taneciklerinin bir bağlayıcıyla preslenmesiyle elde edilen manyetik nüvedir; bu yapı malzemeye dağıtılmış bir hava aralığı kazandırır. Bu sayede nüve, ferrit nüveye göre doymadan önce daha yüksek DC akım taşıyabilir ve doyması yumuşak olur. Geçirgenliği de sıcaklık karşısında ferrite göre daha kararlıdır."
+    },
+    "en": {
+      "term": "Iron-powder core",
+      "definition": "An iron-powder core is a magnetic core pressed from iron particles that are insulated from each other and held by a binder, which gives the material a distributed air gap. This lets the core carry a higher DC current before it saturates than a ferrite core, and its saturation is gradual. Its permeability is also more stable with temperature than that of ferrite."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ferrit-demir-tozu-toroid"
+  },
+  {
+    "tr": {
+      "term": "Toroid nüve",
+      "definition": "Toroid nüve, sargının doğrudan üzerine sarıldığı, halka biçimli ve kapalı manyetik yol oluşturan manyetik nüvedir. Akı büyük ölçüde halkanın içinde kaldığı için toroid bobin kendinden ekranlıdır ve sargılar arasında yüksek kuplaj sağlar. Toroidler ferrit, demir tozu ve başka manyetik malzemelerden bulunduğundan, ölçülerle birlikte malzeme de belirtilmelidir."
+    },
+    "en": {
+      "term": "Toroid core",
+      "definition": "A toroid core is a ring-shaped magnetic core on which the winding is placed directly, forming a closed magnetic path. Because the flux stays largely inside the ring, a toroidal inductor is self-shielding and gives high coupling between windings. Toroids are available in ferrite, iron powder and other magnetic materials, so the material must be stated along with the dimensions."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ferrit-toroid-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "E nüve (EE)",
+      "definition": "E nüve (EE), E harfi biçiminde bir ferrit nüvedir; genellikle sargıyı taşıyan bir karkasın çevresinde iki yarım hâlinde kullanılır. Karkasa sarımı ve montajı kolaydır, ancak kendinden manyetik ekranlama sağlamaz. Farklı kalınlıklarda bulunduğu için kesit alanı seçeneği sunar; güç, konvertör ve geniş bant trafolarında ve bobinlerde kullanılır."
+    },
+    "en": {
+      "term": "E core (EE)",
+      "definition": "An E core (EE) is a ferrite core shaped like the letter E, normally used as a pair of two halves around a bobbin that carries the winding. It allows simple bobbin winding and easy assembly but does not shield itself magnetically. E cores are offered in different thicknesses, which gives a choice of cross-sectional areas, and are used in power, converter and broadband transformers and in inductors."
+    },
+    "source": {
+      "url": "https://www.mag-inc.com/Products/Ferrite-Cores/Ferrite-Shapes/Learn-More-about-Ferrite-Shapes",
+      "tr": "Magnetics: Ferrit nüve şekilleri hakkında",
+      "en": "Magnetics: Learn More about Ferrite Shapes"
+    },
+    "guide": "ee-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "ETD nüve",
+      "definition": "ETD nüve, yuvarlak orta bacaklı, ölçüleri güç trafosu verimi için optimize edilmiş E tipi bir ferrit nüvedir. Yuvarlak orta bacak sargı direncini en aza indirir, çünkü her sarım aynı kesitteki kare bir bacağa göre daha kısadır. ETD nüveler endüstri standardı bir boyut serisinde bulunur ve tipik olarak güç trafolarında ve diferansiyel bobinlerde kullanılır."
+    },
+    "en": {
+      "term": "ETD core",
+      "definition": "An ETD core is an E-type ferrite core with a round centre post, with dimensions optimised for power transformer efficiency. The round centre post keeps the winding resistance to a minimum, because each turn is shorter than on a square post of the same area. ETD cores come in a series of industry-standard sizes and are typically used in power transformers and differential inductors."
+    },
+    "source": {
+      "url": "https://www.mag-inc.com/Products/Ferrite-Cores/Ferrite-Shapes/Learn-More-about-Ferrite-Shapes",
+      "tr": "Magnetics: Ferrit nüve şekilleri hakkında",
+      "en": "Magnetics: Learn More about Ferrite Shapes"
+    },
+    "guide": "etd-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "U nüve (UU, UI)",
+      "definition": "U nüve, U harfi biçiminde bir ferrit nüvedir; iki U yarımı (UU) ya da düz bir I parçasıyla kapatılmış bir U (UI) olarak kullanılır. Uzun bacakları düşük kaçak endüktanslı tasarımlara imkân verir ve sargılar arasında iyi gerilim yalıtımını kolaylaştırır. Dar alanlarda veya alışılmadık biçimlerde yüksek güçle çalışan güç trafolarına uygundur."
+    },
+    "en": {
+      "term": "U core (UU, UI)",
+      "definition": "A U core is a ferrite core shaped like the letter U, used either as two U halves (UU) or as a U closed with a straight I bar (UI). Its long legs support designs with low leakage inductance and make good voltage isolation between windings easier. U cores suit power transformers that work at higher power in tight spaces or unusual form factors."
+    },
+    "source": {
+      "url": "https://www.mag-inc.com/Products/Ferrite-Cores/Ferrite-Shapes/Learn-More-about-Ferrite-Shapes",
+      "tr": "Magnetics: Ferrit nüve şekilleri hakkında",
+      "en": "Magnetics: Learn More about Ferrite Shapes"
+    },
+    "guide": "uu-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Çubuk nüve",
+      "definition": "Çubuk nüve, bacaklı veya bacaksız olabilen, silindirik çubuk biçiminde bir manyetik nüvedir. Manyetik yolu açıktır; bu yüzden manyetik enerjinin büyük bölümü nüvenin içinde değil, çevresindeki havada depolanır. Bu sayede kapalı şekillere göre daha yüksek akı seviyelerine dayanır; ancak çubuk bobin ekranlı değildir ve alanı yakındaki parçalara ulaşır."
+    },
+    "en": {
+      "term": "Rod core",
+      "definition": "A rod core is a magnetic core in the shape of a cylindrical rod, with or without leads. Its magnetic path is open, so most of the magnetic energy is stored in the air around the core rather than inside it. This lets it withstand higher flux levels than closed shapes, but a rod inductor is unshielded and its field reaches nearby parts."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ferrit-cubuk-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Makara nüve",
+      "definition": "Makara nüve, makara biçiminde, iki ucunda flanş bulunan ve telin bu flanşlar arasına doğrudan sarıldığı manyetik nüvedir. Bacaklı veya bacaksız, eksenel ve radyal tiplerde bulunur. Ekransız makara nüvenin manyetik yolu açıktır; bu nedenle ekranlı bir bobin gerektiğinde manyetik bir kılıf veya benzer bir önlem kullanılır."
+    },
+    "en": {
+      "term": "Drum core",
+      "definition": "A drum core is a magnetic core shaped like a bobbin or spool, with a flange at each end between which the wire is wound directly. It is available with or without leads, in axial and radial forms. An unshielded drum core has an open magnetic path, so a magnetic sleeve or a similar measure is used when a shielded inductor is required."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "makara-ferrit-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Karkas",
+      "definition": "Karkas, sargının üzerine sarıldığı ve ardından nüve yarımlarının takıldığı parçadır; flanşları, nüvenin geçtiği bir gövdesi ve çoğu zaman baskı devre kartına lehimlenen pimleri bulunur. Veri sayfasında sargı kesiti ve ortalama sarım uzunluğu verilir; bu değerler belirli bir telden kaç sarım sığacağını ve sargının DC direncinin ne olacağını belirler."
+    },
+    "en": {
+      "term": "Bobbin (coil former)",
+      "definition": "A bobbin, or coil former, is the part on which the winding is wound and to which the core halves are then fitted; it has flanges, a tube that the core passes through and often pins for soldering to a circuit board. Its data sheet gives the winding cross-section and the average turn length, which determine how many turns of a given wire will fit and what the winding's DC resistance will be."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ozel-trafo-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Endüktans",
+      "definition": "Endüktans, bir devre elemanının içinden geçen akımdaki değişime karşı koyma özelliğidir ve henri birimiyle ölçülür. Belirli bir bobinde nüve malzemesi, nüvenin şekli ve boyutu, sarım sayısı ve bobinin biçimi tarafından belirlenir. Değeri bir toleransla birlikte verilir ve tanımlı bir test frekansında ölçülür."
+    },
+    "en": {
+      "term": "Inductance",
+      "definition": "Inductance is the property of a circuit element that opposes any change in the current flowing through it, measured in henries. For a given inductor it is set by the core material, the shape and size of the core, the number of turns and the shape of the coil. The value is stated with a tolerance and is measured at a defined test frequency."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-induktor-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Empedans",
+      "definition": "Empedans, bir bileşenin akım geçişine gösterdiği toplam karşı koymadır; DC direnç ile frekansa bağlı AC bileşeni birlikte kapsar ve ohm ile ölçülür. İdeal bir bobinde AC bileşen, endüktans ve frekansla birlikte artan endüktif reaktanstır; deri etkisi ve nüve kayıpları da empedansa eklenir. Bu yüzden empedans her zaman belirli bir frekans için verilir."
+    },
+    "en": {
+      "term": "Impedance",
+      "definition": "Impedance is the total opposition of a component to the flow of current, combining its DC resistance with a frequency-dependent AC part, and is measured in ohms. For an ideal inductor the AC part is the inductive reactance, which rises with both inductance and frequency; skin effect and core losses add to it. Impedance is therefore always quoted at a stated frequency."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    }
+  },
+  {
+    "tr": {
+      "term": "Ortak mod",
+      "definition": "Ortak mod, akımı bütün bağlantı hatları boyunca aynı yönde akan ve kaynağına toprak üzerinden dönen paraziti tanımlar. Parazitik kapasitelerden ve toprak bağlantılarından kaynaklanır ve yüksek frekanslarda iletim yoluyla yayılan parazitin baskın biçimi olur. Akım kompanzasyonlu şok bobinleri ve Y kondansatörleriyle azaltılır; bu parçalar diferansiyel mod bileşenlerinden ayrı seçilir."
+    },
+    "en": {
+      "term": "Common mode",
+      "definition": "Common mode describes interference whose current flows in the same direction along all the connecting lines and returns to its source through ground. It arises from parasitic capacitances and ground connections and becomes the dominant form of conducted interference at higher frequencies. It is reduced with current-compensated chokes and Y capacitors, which are selected separately from the differential-mode components."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/528632/7f30b0110a521bb506ace36f0c56af5c/pdf-technical-information.pdf",
+      "tr": "TDK: EMC filtreleri, teknik bilgiler",
+      "en": "TDK: EMC filters, Technical information"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "Diferansiyel mod",
+      "definition": "Diferansiyel mod, akımı parazitten etkilenen cihaza bir hattan gidip kaynağa diğer hattan dönen, yani normal hat akımıyla aynı yolu izleyen paraziti tanımlar. Düşük frekanslarda iletim yoluyla yayılan parazitin başlıca biçimidir. Hatlar arasına bağlanan X kondansatörleri ve seri bobinlerle azaltılır; bu yüzden bir filtrede ortak mod bileşenlerine ek olarak bu parçalar da bulunur."
+    },
+    "en": {
+      "term": "Differential mode",
+      "definition": "Differential mode describes interference whose current flows to the disturbed equipment on one line and back to the source on the other, just as the normal line current does. It is the main form of conducted interference at lower frequencies. It is reduced with X capacitors connected between the lines and with series inductors, so a filter contains these parts in addition to its common-mode components."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/528632/7f30b0110a521bb506ace36f0c56af5c/pdf-technical-information.pdf",
+      "tr": "TDK: EMC filtreleri, teknik bilgiler",
+      "en": "TDK: EMC filters, Technical information"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "Ortak mod şok bobini",
+      "definition": "Ortak mod şok bobini, kapalı bir nüve üzerinde eşit sarım sayılı iki sargısı olan akım kompanzasyonlu bir bobindir; sargılar, birindeki çalışma akımının oluşturduğu manyetik akıyı diğeri yok edecek şekilde bağlanır. Böylece faydalı akım nüveyi doyurmaz, ortak mod parazit ise yüksek bir endüktansla karşılaşır. Nüve için yüksek geçirgenlikli MnZn ferrit yaygın olarak kullanılır; çok yüksek frekanslarda bastırma için NiZn ferrit seçilir."
+    },
+    "en": {
+      "term": "Common-mode choke",
+      "definition": "A common-mode choke is a current-compensated choke with two windings of equal turns on a closed core, connected so that the magnetic flux from the operating current in one winding is cancelled by the other. The useful current therefore does not saturate the core, while common-mode interference meets a high inductance. High-permeability MnZn ferrite is widely used for the core, and NiZn ferrite is chosen for suppression at very high frequencies."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/531536/badc7640e8213233c951b4540e3745e2/pdf-applicationnotes.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, uygulama notları",
+      "en": "TDK: Ferrites and accessories, Application notes"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "Ferrit boncuk",
+      "definition": "Ferrit boncuk, bir iletkenin ferrit parçasının içinden geçirilmesiyle ya da ferrit bir çipin içinde bobin oluşturulmasıyla elde edilen, yüksek frekanslarda kaybı yüksek ferrit kullanılan bir parazit bastırma bobinidir. Devreye seri bağlandığında alçak geçiren filtre gibi çalışır; yüksek frekanslardaki empedansı ağırlıklı olarak dirençseldir ve parazit enerjisi ferritte kayıp olarak soğurulur. Sinyal ve parazit frekanslarına göre empedans eğrisine bakılarak seçilir."
+    },
+    "en": {
+      "term": "Ferrite bead",
+      "definition": "A ferrite bead is a noise-suppression inductor formed by passing a conductor through a piece of ferrite, or by building a coil inside a ferrite chip, using ferrite that has high loss at high frequencies. Connected in series, it acts as a low-pass filter whose high-frequency impedance is mainly resistive, so noise energy is absorbed as loss in the ferrite. Beads are selected by their impedance curve in relation to the signal and noise frequencies."
+    },
+    "source": {
+      "url": "https://article.murata.com/en-us/article/basics-of-noise-countermeasures-lesson-4",
+      "tr": "Murata: Parazit önlemlerinin temelleri, 4. ders: çip ferrit boncuklar",
+      "en": "Murata: Basics of Noise Countermeasures, Lesson 4: Chip ferrite beads"
+    }
+  },
+  {
+    "tr": {
+      "term": "Kablo ferriti (ferrit halka)",
+      "definition": "Kablo ferriti, bir kablonun çevresine takılan ferrit nüvedir; tek sarımlı bir ortak mod şok bobini gibi çalışarak kabloya yüksek frekanslı direnç ekler. Ortak mod akımını, dolayısıyla kablonun yaydığı veya topladığı paraziti azaltır; düşük frekanslarda ve DC'de empedansı çok düşüktür. Kablo nüveden birkaç kez geçirilirse empedans artar, ancak yüksek frekans performansı düşer; geçmeli iki parçalı nüveler mevcut kablolara sonradan takılabilir."
+    },
+    "en": {
+      "term": "Cable ferrite (clip-on ferrite)",
+      "definition": "A cable ferrite is a ferrite core fitted around a cable, where it acts as a one-turn common-mode choke that adds high-frequency resistance to the cable. It reduces the common-mode current and with it the emission from, or pick-up by, the cable, with little or no impedance at low frequencies or DC. Several turns through the core raise the impedance but degrade high-frequency performance; snap-on split cores can be fitted to existing cables."
+    },
+    "source": {
+      "url": "https://www.fair-rite.com/wp-content/uploads/2023/07/FR_FerriteCoresForLowFrequencyEMICableSuppression_R01.pdf",
+      "tr": "Fair-Rite: Düşük frekanslı EMI kablo bastırma için ferrit nüveler",
+      "en": "Fair-Rite: Ferrite Cores for Low-Frequency EMI Cable Suppression"
+    },
+    "guide": "kablo-ferriti-secimi"
+  },
+  {
+    "tr": {
+      "term": "EMI",
+      "definition": "EMI (elektromanyetik girişim), her biçimdeki istenmeyen elektrik enerjisidir ve çoğu zaman parazit veya gürültü ile aynı anlamda kullanılır. En sık anahtarlamalı gerilim regülatörleri ve saat işaretli sayısal devreler gibi anahtarlama devreleri tarafından üretilir. Bobin ve kondansatörlerden oluşan filtrelerle zayıflatılır; bastırma elemanı seçerken çıkış noktası parazitin frekans aralığıdır."
+    },
+    "en": {
+      "term": "EMI",
+      "definition": "EMI (electromagnetic interference) is unwanted electrical energy in any form, and the term is often used interchangeably with noise. It is most often generated by switching circuits such as switching voltage regulators and clocked digital circuits. Filters built from inductors and capacitors attenuate it, and the frequency range of the interference is the starting point for choosing suppression parts."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "kablo-ferriti-secimi"
+  },
+  {
+    "tr": {
+      "term": "EMC",
+      "definition": "EMC (elektromanyetik uyumluluk), bir cihazın bulunduğu elektromanyetik ortamda, oradaki diğer cihazlara kabul edilemez bozucu etkiler yaymadan gerektiği gibi çalışabilme yeteneğidir. Hem cihazın yaydığı paraziti hem de başka cihazlardan gelen parazite karşı duyarlılığını kapsar. Standartlar her ikisi için sınır değerler belirler; EMC filtreleri ve şok bobinleri gibi bileşenler iletim yoluyla yayılan paraziti bu sınırların içinde tutmak için kullanılır."
+    },
+    "en": {
+      "term": "EMC",
+      "definition": "EMC (electromagnetic compatibility) is the ability of equipment to work properly in its electromagnetic environment without causing unacceptable disturbance to other equipment there. It covers both the emissions of a device and its susceptibility to interference from others. Standards set limit values for both, and components such as EMC filters and chokes are used to keep conducted interference within those limits."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/528632/7f30b0110a521bb506ace36f0c56af5c/pdf-technical-information.pdf",
+      "tr": "TDK: EMC filtreleri, teknik bilgiler",
+      "en": "TDK: EMC filters, Technical information"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "EMI filtresi",
+      "definition": "EMI filtresi, bobin, kondansatör ve dirençlerden oluşan ve güç hatlarındaki elektriksel paraziti sınırlayan bir devredir. Hemen her zaman alçak geçiren bir filtredir: şebeke veya DC besleme frekansı büyük ölçüde etkilenmeden geçer, parazit frekansları ise zayıflatılır. Başlıca elemanları X ve Y kondansatörleri, diferansiyel mod bobinleri ve akım kompanzasyonlu şok bobinleridir; besleme türüne göre iki, üç veya dört hatlı olur."
+    },
+    "en": {
+      "term": "EMI filter",
+      "definition": "An EMI filter is an electrical circuit of inductors, capacitors and resistors that limits electrical interference on power lines. It is almost always a low-pass filter: the mains or DC supply frequency passes largely unaffected, while interference frequencies are weakened. Its main parts are X and Y capacitors, differential-mode chokes and current-compensated chokes, and it is built with two, three or four lines depending on the type of supply."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/528632/7f30b0110a521bb506ace36f0c56af5c/pdf-technical-information.pdf",
+      "tr": "TDK: EMC filtreleri, teknik bilgiler",
+      "en": "TDK: EMC filters, Technical information"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "Kaçak akım",
+      "definition": "Kaçak akım, arızasız bir devrede toprağa veya dışarıdaki iletken bir parçaya akan akımdır; şebeke filtresinde anma frekansında gövde üzerinden referans potansiyele akar. Başlıca nedeni toprağa bağlı kondansatörler, yani Y kondansatörleridir. Bir tesisattaki bütün parçaların kaçak akımları toplanır; bu nedenle filtrenin değeri, cihazın tamamı için geçerli sınırla karşılaştırılır."
+    },
+    "en": {
+      "term": "Leakage current (of a mains filter)",
+      "definition": "Leakage current is the current that flows to ground or to an external conductive part in a fault-free circuit; in a mains filter it flows through the casing to the reference potential at the rated frequency. It is caused mainly by the capacitors connected to ground, the Y capacitors. The leakage currents of all parts of an installation add up, so the filter's value is checked against the limit for the whole equipment."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/528632/7f30b0110a521bb506ace36f0c56af5c/pdf-technical-information.pdf",
+      "tr": "TDK: EMC filtreleri, teknik bilgiler",
+      "en": "TDK: EMC filters, Technical information"
+    },
+    "guide": "tek-fazli-emi-filtre-secimi"
+  },
+  {
+    "tr": {
+      "term": "Etkin manyetik kesit (Ae)",
+      "definition": "Etkin manyetik kesit (Ae), gerçek nüveyle aynı manyetik özelliklere sahip hayalî bir halka nüvenin kesit alanıdır ve nüve geometrisinden hesaplanır. Her nüvenin veri sayfasında milimetrekare cinsinden verilir ve etkin manyetik yol uzunluğuyla birlikte AL değerini belirler. Nüvedeki akı yoğunluğu bu değerden bulunur; en yüksek akı yoğunluğunu bulmak için ise en küçük kesit kullanılır."
+    },
+    "en": {
+      "term": "Effective magnetic cross-section (Ae)",
+      "definition": "The effective magnetic cross-section (Ae) is the cross-sectional area of an imaginary ring core that has the same magnetic properties as the real core, calculated from the core geometry. It is given in each core data sheet in square millimetres and, together with the effective path length, sets the AL value. The flux density in the core is found from it, while the minimum cross-section is used to find the maximum flux density."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ee-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Etkin manyetik yol uzunluğu (le)",
+      "definition": "Etkin manyetik yol uzunluğu (le), gerçek nüveyle aynı manyetik özelliklere sahip hayalî bir halka nüvenin manyetik yol uzunluğudur ve nüve geometrisinden hesaplanır. Her nüvenin veri sayfasında milimetre cinsinden verilir. Etkin kesite bölündüğünde, geçirgenlik ile endüktans arasındaki bağı kuran nüve şekil faktörünü verir; hava aralığının etkisini hesaplamak için de gereklidir."
+    },
+    "en": {
+      "term": "Effective magnetic path length (le)",
+      "definition": "The effective magnetic path length (le) is the length of the magnetic path of an imaginary ring core that has the same magnetic properties as the real core, calculated from the core geometry. It is given in each core data sheet in millimetres. Divided by the effective cross-section it gives the form factor of the core, which links permeability to inductance, and it is needed to work out the effect of an air gap."
+    },
+    "source": {
+      "url": "https://www.tdk-electronics.tdk.com/download/187036/dbcde584d155cc270f5d5dbf1efec233/pdf-generaldefinitions.pdf",
+      "tr": "TDK: Ferritler ve aksesuarlar, genel tanımlar",
+      "en": "TDK: Ferrites and accessories, General – Definitions"
+    },
+    "guide": "ee-nuve-secimi"
+  },
+  {
+    "tr": {
+      "term": "Deri etkisi",
+      "definition": "Deri etkisi, alternatif akımın iletkenin bütün kesitini kullanmak yerine yüzeyine yakın bölgeden akma eğilimidir. İletkenin direncini artırır; frekans yükseldikçe akım yüzeye daha da itilir. Bu nedenle yüksek frekansta sargı kayıplarını artırır ve litz teli gibi çok damarlı iletkenlerin kullanılma nedenidir."
+    },
+    "en": {
+      "term": "Skin effect",
+      "definition": "Skin effect is the tendency of alternating current to flow near the surface of a conductor instead of using its whole cross-section. It raises the resistance of the conductor, and the current is pushed further towards the surface as frequency increases. It therefore adds to winding losses at high frequency, and is the reason stranded conductors such as litz wire are used."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    }
+  },
+  {
+    "tr": {
+      "term": "Litz teli",
+      "definition": "Litz teli, ayrı ayrı yalıtılmış çok sayıda damarın, her damar tel kesitindeki bütün konumlardan geçecek şekilde örülmesi veya bükülmesiyle oluşan bir iletkendir. Akım damarlar arasında eşit paylaşılır; böylece benzer kesitteki tek damarlı tele göre AC kayıpları daha düşük olur. Deri etkisinin sargı direncini artırdığı yüksek çalışma frekanslarında yararı daha da büyür."
+    },
+    "en": {
+      "term": "Litz wire",
+      "definition": "Litz wire is a conductor made of many separately insulated strands that are woven or bunched together so that each strand takes every possible position in the cross-section of the wire. The current is shared equally between the strands, which gives lower AC losses than a comparable solid wire. The benefit grows as the operating frequency increases, where skin effect would otherwise raise the winding resistance."
+    },
+    "source": {
+      "url": "https://www.vishay.com/docs/34053/definit.pdf",
+      "tr": "Vishay: Bobin ve manyetik ürün terimleri",
+      "en": "Vishay: Inductor and Magnetic Product Terminology"
+    },
+    "guide": "ozel-trafo-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Kaçak endüktans",
+      "definition": "Kaçak endüktans, bir trafoda primer ve sekonder sargılar arasındaki kuplaj kusursuz olmadığı için geriye kalan endüktanstır; primere seri bağlı bir endüktans gibi davranır. Flyback trafosunda anahtar kesime giderken anahtar üzerinde yüksek gerilim ve salınım oluşturur; bu enerjiyi bir sönümleme (snubber) devresi karşılamalıdır. Sargı katlarını tam doldurmak ve sargıları iç içe yerleştirmekle azaltılır, ancak tümüyle giderilemez."
+    },
+    "en": {
+      "term": "Leakage inductance",
+      "definition": "Leakage inductance is the inductance that remains in a transformer because the coupling between the primary and secondary windings is less than perfect; it behaves like an inductance in series with the primary. In a flyback transformer it produces a high voltage and ringing across the switch at turn-off, which a snubber network has to absorb. It is reduced, but never eliminated, by filling each winding layer and by interleaving the windings."
+    },
+    "source": {
+      "url": "https://www.bourns.com/docs/technical-documents/technical-library/inductive-components/application-notes/Bourns_Consumer_Grade_Flyback_Power_Supply_Appnote.pdf?sfvrsn=0",
+      "tr": "Bourns: Düşük güçlü flyback güç kaynağı tasarımı (uygulama notu)",
+      "en": "Bourns: Designing a Low Power Flyback Power Supply (application note)"
+    },
+    "guide": "ozel-trafo-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "SMPS (anahtarlamalı güç kaynağı)",
+      "definition": "SMPS (anahtarlamalı güç kaynağı), bir transistörü açıp kapatarak ve enerjiyi depolayıp aktarmak için bobin veya trafo kullanarak elektrik gücünü yükün gerektirdiği gerilim ve akım seviyelerine verimli biçimde dönüştüren güç kaynağıdır. Yaygın konvertör tipleri buck, boost, flyback, forward ve köprü konvertörlerdir. Uygun nüve malzemesi ve şeklini konvertör tipi ile çalışma frekansı belirler."
+    },
+    "en": {
+      "term": "SMPS (switched-mode power supply)",
+      "definition": "An SMPS (switched-mode power supply) is a power supply that efficiently converts electrical power into the voltage and current levels a load requires by switching a transistor on and off and using an inductor or transformer to store and transfer the energy. Common converter types are buck, boost, flyback, forward and bridge converters. The converter type and operating frequency decide which core material and shape are suitable."
+    },
+    "source": {
+      "url": "https://www.ferroxcube.com/en-global/download/download/11",
+      "tr": "Ferroxcube: Yumuşak ferritler ve aksesuarlar veri kitabı",
+      "en": "Ferroxcube: Soft Ferrites and Accessories data handbook"
+    },
+    "guide": "ozel-trafo-teklif-rehberi"
+  },
+  {
+    "tr": {
+      "term": "Flyback trafosu",
+      "definition": "Flyback trafosu, flyback konvertörün manyetik kuplajlı bobinidir: primer sargıdan akım geçerken enerji depolar, anahtar kesime gittiğinde bu enerjiyi sekonder sargı üzerinden çıkışa aktarır. Giriş ile çıkış arasında galvanik yalıtım sağlar; çıkış gerilimini sarım oranı belirler ve ek sekonder sargılar ek çıkışlar verir. Enerji depoladığı için, olağan bir trafodan farklı olarak nüvesinde hava aralığı gerekir."
+    },
+    "en": {
+      "term": "Flyback transformer",
+      "definition": "A flyback transformer is the magnetically coupled inductor of a flyback converter: energy is stored in it while current flows in the primary winding and is passed to the output through the secondary winding when the switch turns off. It provides galvanic isolation, and the output voltage is set by the turns ratio, with extra secondary windings giving extra outputs. Because it stores energy, its core needs an air gap, unlike an ordinary transformer."
+    },
+    "source": {
+      "url": "https://www.ferroxcube.com/en-global/download/download/11",
+      "tr": "Ferroxcube: Yumuşak ferritler ve aksesuarlar veri kitabı",
+      "en": "Ferroxcube: Soft Ferrites and Accessories data handbook"
+    },
+    "guide": "ozel-trafo-teklif-rehberi"
+  }
+]
