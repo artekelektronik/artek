@@ -144,6 +144,8 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
   const toroidComparison = guideSlug === "ferrit-demir-tozu-toroid";
   const materials = guideSlug === "cf-ferrit-malzeme-kodlari";
   const inductor = guideSlug === "ozel-induktor-teklif-rehberi";
+  // The two general ferrite guides have no product type of their own: show one core of each main shape.
+  const shapes = guideSlug === "ferrit-nuve-cesitleri" || guideSlug === "ferrit-nuve-nedir";
   const toroid = (p: AirtableProduct) => p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.includes("TOROID");
   const matches = products.filter(p => {
     if (transformer) return p.fields.Category === "Ferrit" && p.fields["Ürün Tipi"]?.some(type => type === "EE" || type === "ETD");
@@ -152,6 +154,7 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
     // Only typed products, so the catalog link can filter to exactly the shapes shown.
     if (materials) return p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.length && !!materialMark(p.fields["Product Name"]);
     if (inductor) return p.fields.Category === "IRON-POWDER" || toroid(p) || !!p.fields["Ürün Tipi"]?.includes("CUBUK");
+    if (shapes) return p.fields.Category === "Ferrit" && ["EE", "ETD", "TOROID", "CUBUK"].includes(p.fields["Ürün Tipi"]?.[0] ?? "");
     return productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"], p.fields["Product Name"]) === guideSlug;
   });
   if (guideSlug === "ee-nuve-secimi") {
@@ -160,7 +163,7 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
   }
   const categories = [...new Set(matches.map(p => p.fields.Category ?? ""))];
   const types = [...new Set(matches.flatMap(p => p.fields["Ürün Tipi"] ?? []))];
-  const groupKey = (p: AirtableProduct) => transformer ? p.fields["Ürün Tipi"]?.[0] : powderComparison ? p.fields["Product Name"].match(/(26|52)\s*$/)?.[1] : uu ? p.fields["Product Name"].split(" ")[0] : materials ? materialMark(p.fields["Product Name"]) : inductor ? p.fields["Ürün Tipi"]?.[0] : p.fields.Category;
+  const groupKey = (p: AirtableProduct) => transformer ? p.fields["Ürün Tipi"]?.[0] : powderComparison ? p.fields["Product Name"].match(/(26|52)\s*$/)?.[1] : uu ? p.fields["Product Name"].split(" ")[0] : materials ? materialMark(p.fields["Product Name"]) : inductor || shapes ? p.fields["Ürün Tipi"]?.[0] : p.fields.Category;
   const keys = [...new Set(matches.map(groupKey))];
   const groups = keys.map(key => matches.filter(p => groupKey(p) === key));
   const longest = Math.max(0, ...groups.map(group => group.length));

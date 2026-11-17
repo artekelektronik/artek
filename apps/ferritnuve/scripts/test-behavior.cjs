@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 14);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 14);
+  assert.equal(blogPosts.length, 16);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 16);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
@@ -117,6 +117,9 @@ test('every blog guide lists its own catalog products and links to them in the c
         assert.match(product.fields['Product Name'], /CF\s?\d{3}/);
       } else if (post.slug === 'ozel-induktor-teklif-rehberi') {
         assert.ok(product.fields.Category === 'IRON-POWDER' || product.fields['Ürün Tipi'].some(type => ['TOROID', 'CUBUK'].includes(type)));
+      } else if (post.slug === 'ferrit-nuve-cesitleri' || post.slug === 'ferrit-nuve-nedir') {
+        assert.equal(product.fields.Category, 'Ferrit');
+        assert.ok(['EE', 'ETD', 'TOROID', 'CUBUK'].includes(product.fields['Ürün Tipi'][0]));
       } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi'], product.fields['Product Name']), post.slug);
     }
     const query = new URL(related.catalogHref, 'https://test.invalid').searchParams;
@@ -156,6 +159,12 @@ test('every blog guide lists its own catalog products and links to them in the c
   const inductorCores = relatedProducts(products, 'ozel-induktor-teklif-rehberi').products;
   assert.ok(inductorCores.some(p => p.fields.Category === 'IRON-POWDER'));
   assert.ok(inductorCores.some(p => p.fields['Ürün Tipi'].includes('CUBUK')));
+  // The general ferrite guides show one core of each main shape and link to exactly those shapes.
+  for (const slug of ['ferrit-nuve-cesitleri', 'ferrit-nuve-nedir']) {
+    const shapes = relatedProducts(products, slug);
+    assert.deepEqual(new Set(shapes.products.map(p => p.fields['Ürün Tipi'][0])), new Set(['EE', 'ETD', 'TOROID', 'CUBUK']));
+    assert.deepEqual(new Set(new URL(shapes.catalogHref, 'https://test.invalid').searchParams.get('productTypes').split(',')), new Set(['EE', 'ETD', 'TOROID', 'CUBUK']));
+  }
   // Flat cable ferrites get their own guide, not the round cable one.
   const flat = relatedProducts(products, 'yassi-kablo-ferriti-secimi');
   assert.equal(flat.products.length, products.filter(p => p.fields['Ürün Tipi']?.includes('YASSI')).length);
