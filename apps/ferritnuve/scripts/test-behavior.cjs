@@ -288,3 +288,14 @@ test('FAQ page combines own questions with every guide FAQ and searches like a v
   assert.equal(matchFaq(tr, 'pizza teslimatı').length, 0);
   assert.equal(scrubSearch(' Ali  0532 718 33 64 ali@firma.com etd39 '), 'Ali [tel] [e-posta] etd39');
 });
+test('cookie choice is remembered, and anything else counts as not answered', () => {
+  const store = new Map();
+  globalThis.localStorage = {getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k)};
+  const {readConsent, setConsent} = require('../lib/consent.ts');
+  assert.equal(readConsent(), null);
+  setConsent('granted'); assert.equal(readConsent(), 'granted');
+  setConsent('denied'); assert.equal(store.get('artek-consent'), 'denied');
+  store.set('artek-consent', 'yes'); setConsent(null); assert.equal(readConsent(), null);
+  delete globalThis.localStorage;
+  setConsent('denied'); assert.equal(readConsent(), 'denied');
+});

@@ -3,14 +3,18 @@
 import { useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
+import { useConsent } from "@/lib/consent";
 
 function AnalyticsCore() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const consent = useConsent();
 
   useEffect(() => {
-    // Initialize Posthog
+    // Initialize Posthog, only after the visitor accepts statistics cookies
     if (
+      consent === "granted" &&
+      !posthog.__loaded &&
       typeof window !== "undefined" &&
       process.env.NEXT_PUBLIC_POSTHOG_KEY &&
       process.env.NEXT_PUBLIC_POSTHOG_HOST
@@ -23,7 +27,7 @@ function AnalyticsCore() {
         autocapture: true,
       });
     }
-  }, []);
+  }, [consent]);
 
   useEffect(() => {
     // Track pageviews on route changes
@@ -41,7 +45,7 @@ function AnalyticsCore() {
         locale: locale,
       });
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, consent]);
 
   return null;
 }

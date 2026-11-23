@@ -12,6 +12,7 @@ import "../globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers";
+import { ConsentGate } from "@/components/consent";
 import { routing } from "@/i18n/routing";
 import {
   getLanguageAlternates,
@@ -129,9 +130,9 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Google Analytics */}
+        {/* Google Analytics: loads only after the visitor accepts statistics cookies */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-          <>
+          <ConsentGate>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
               strategy="afterInteractive"
@@ -157,7 +158,7 @@ export default async function LocaleLayout({
                 }, true);
               `}
             </Script>
-          </>
+          </ConsentGate>
         )}
 
         <NextIntlClientProvider messages={messages}>

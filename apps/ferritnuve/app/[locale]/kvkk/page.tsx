@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { ConsentReset } from "@/components/consent";
 import { company } from "@/lib/company";
 import { getLanguageAlternates, getLocalizedPath, getSiteUrl } from "@/lib/seo";
 
 type Props = {params: Promise<{locale: string}>};
-type Section = {title: string; paragraphs?: string[]; items?: string[]};
+type Section = {title: string; paragraphs?: string[]; items?: string[]; cookies?: true};
 
 const updated = "2026-11-23";
 
@@ -20,7 +21,7 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       {title: "Hangi verileri işliyoruz", items: [
         "İletişim formu: ad soyad, e-posta adresi, telefon numarası, seçtiğiniz kategori ve yazdığınız mesaj.",
         "WhatsApp, e-posta veya telefonla bize ulaştığınızda: adınız, telefon numaranız veya e-posta adresiniz ve bize ilettiğiniz bilgiler.",
-        "Site kullanım verileri: ziyaret ettiğiniz sayfalar, tıkladığınız iletişim bağlantıları, tarayıcı ve cihaz bilgisi, yaklaşık konum (ülke, şehir) ve IP adresi.",
+        "Site kullanım verileri (yalnızca istatistik çerezlerini kabul ederseniz): ziyaret ettiğiniz sayfalar, tıkladığınız iletişim bağlantıları, tarayıcı ve cihaz bilgisi, yaklaşık konum (ülke, şehir) ve IP adresi.",
         "Sık sorulan sorular sayfasındaki aramalar: telefon numarası ve e-posta adresi gibi ifadeler silinerek, kimliğinizle ilişkilendirilmeden kaydedilir.",
       ]},
       {title: "Hangi amaçla işliyoruz", items: [
@@ -32,11 +33,16 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       {title: "Hukuki sebep ve toplama yöntemi", paragraphs: [
         "Verileriniz; formu doldurmanız, bize yazmanız veya bizi aramanız yoluyla doğrudan sizden ve siteyi ziyaretiniz sırasında otomatik yollarla toplanır.",
         "Talep ve teklif süreçlerine ilişkin veriler, KVKK'nın 5. maddesinin 2. fıkrasının (c) bendi (bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması) ve (f) bendi (veri sorumlusunun meşru menfaati) kapsamında işlenir. Yasal yükümlülüklerimiz için işlenen veriler (ç) bendine dayanır.",
+        "Site kullanım istatistikleri, yalnızca çerez bandında kabul etmeniz halinde, KVKK'nın 5. maddesinin 1. fıkrası uyarınca açık rızanıza dayanarak toplanır.",
+      ]},
+      {title: "Çerezler", cookies: true, paragraphs: [
+        "Google Analytics ve PostHog, siz kabul etmeden yüklenmez ve cihazınıza çerez yerleştirmez. Reddederseniz site aynı şekilde çalışır. Seçiminiz yalnızca tarayıcınızda saklanır.",
+        "Barındırma sağlayıcımız Vercel, çerez kullanmadan ve kimliğinizi belirlemeden toplu ziyaret sayıları tutar. İletişim sayfasındaki form Tally tarafından sunulur ve formun çalışması için gerekli kendi çerezlerini kullanabilir.",
       ]},
       {title: "Verilerin aktarıldığı taraflar", paragraphs: ["Verileriniz yalnızca yukarıdaki amaçlar için, hizmet aldığımız şu sağlayıcılarla paylaşılır. Bu sağlayıcıların sunucuları yurt dışında bulunabilir:"], items: [
         "Tally (iletişim formu altyapısı)",
         "Vercel (sitenin barındırılması ve ziyaret istatistikleri)",
-        "Google Analytics ve PostHog (site kullanım istatistikleri)",
+        "Google Analytics ve PostHog (site kullanım istatistikleri, yalnızca kabul ederseniz)",
         "WhatsApp (yalnızca siz WhatsApp üzerinden yazmayı seçtiğinizde)",
       ]},
       {title: "Saklama süresi", paragraphs: ["Talep ve yazışma kayıtları, talebiniz sonuçlanana kadar ve ilgili mevzuatta öngörülen saklama süreleri boyunca saklanır; süre dolduğunda silinir, yok edilir veya anonim hale getirilir."]},
@@ -62,7 +68,7 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       {title: "Data we process", items: [
         "Contact form: full name, email address, phone number, the category you choose and your message.",
         "When you reach us by WhatsApp, email or phone: your name, phone number or email address and the information you send us.",
-        "Site usage data: pages visited, contact links clicked, browser and device information, approximate location (country, city) and IP address.",
+        "Site usage data (only if you accept statistics cookies): pages visited, contact links clicked, browser and device information, approximate location (country, city) and IP address.",
         "Searches on the FAQ page: recorded without being linked to you, with phone numbers and email addresses removed.",
       ]},
       {title: "Why we process it", items: [
@@ -74,11 +80,16 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       {title: "Legal basis and collection method", paragraphs: [
         "Data is collected directly from you when you fill in the form, write to us or call us, and automatically while you visit the site.",
         "Data about enquiries and quotes is processed under Article 5(2)(c) of the KVKK (directly related to concluding or performing a contract) and Article 5(2)(f) (legitimate interest of the data controller). Data processed for legal obligations relies on Article 5(2)(ç).",
+        "Site usage statistics are collected only if you accept in the cookie banner, on the basis of your explicit consent under Article 5(1) of the KVKK.",
+      ]},
+      {title: "Cookies", cookies: true, paragraphs: [
+        "Google Analytics and PostHog are not loaded and set no cookies on your device until you accept. The site works the same if you decline. Your choice is stored only in your browser.",
+        "Our hosting provider Vercel keeps aggregate visit counts without cookies and without identifying you. The form on the contact page is served by Tally and may use its own cookies needed for the form to work.",
       ]},
       {title: "Who receives the data", paragraphs: ["Your data is shared only for the purposes above with the following service providers. Their servers may be located outside Türkiye:"], items: [
         "Tally (contact form)",
         "Vercel (site hosting and visit statistics)",
-        "Google Analytics and PostHog (site usage statistics)",
+        "Google Analytics and PostHog (site usage statistics, only if you accept)",
         "WhatsApp (only when you choose to write to us on WhatsApp)",
       ]},
       {title: "Retention", paragraphs: ["Enquiry and correspondence records are kept until your request is concluded and for the retention periods required by law; after that they are deleted, destroyed or anonymised."]},
@@ -116,6 +127,7 @@ export default async function PrivacyPage({params}: Props) {
     {page.sections.map(section => <section key={section.title} className="mt-10">
       <h2 className="text-2xl font-semibold">{section.title}</h2>
       {section.paragraphs?.map(text => <p key={text} className="mt-3 leading-7 text-slate-700">{text}</p>)}
+      {section.cookies && <ConsentReset />}
       {section.items && <ul className="mt-3 list-disc space-y-2 pl-5 leading-7 text-slate-700">{section.items.map(item => <li key={item}>{item}</li>)}</ul>}
     </section>)}
   </main>;
