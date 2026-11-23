@@ -10,6 +10,7 @@ import { getLocalizedPath, getSiteUrl } from "@/lib/seo";
 import { generateProductSlug } from "@/lib/utils";
 import { inquiryLinks } from "@/lib/inquiry";
 import { ProductShare } from "@/components/product-share";
+import { QuoteBar } from "@/components/quote-bar";
 
 export default async function ProductPage({params}: {params: Promise<{locale: string; slug: string}>}) {
   const {locale, slug} = await params;
@@ -50,5 +51,6 @@ export default async function ProductPage({params}: {params: Promise<{locale: st
         <ProductShare name={name} />
       </div>
     </div>
+    <QuoteBar links={links} locale={locale} className="lg:hidden" />
   </main>;
 }

@@ -200,7 +200,7 @@
       "team": "Ekip",
       "careers": "Kariyer",
       "contact": "İletişim",
-      "privacy": "Gizlilik",
+      "privacy": "Gizlilik ve KVKK",
       "help": "Yardım",
       "sales": "Satış",
       "advertise": "Reklam",
@@ -355,8 +355,7 @@
     "productFormNote": "WhatsApp ve e-posta bağlantıları ürün bilgilerini içerir. Formu kullanırsanız ürün kodunu mesajınıza ekleyin.",
     "invalidProduct": "Ürün bulunamadı. Lütfen ürün kodunu mesajınıza ekleyin.",
     "skipToForm": "Forma geç",
-    "formFallback": "Form açılmazsa telefon veya e-posta ile iletişime geçebilirsiniz.",
-    "externalLanguage": "Harici form Türkçedir. E-posta veya WhatsApp ile de iletişime geçebilirsiniz."
+    "formFallback": "Form açılmazsa telefon veya e-posta ile iletişime geçebilirsiniz."
   },
   "language": {
     "switchTo": "Dili değiştir"

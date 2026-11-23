@@ -12,6 +12,7 @@ import "../globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers";
+import { ConsentGate } from "@/components/consent";
 import { routing } from "@/i18n/routing";
 import {
   getLanguageAlternates,
@@ -129,9 +130,9 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Google Analytics */}
+        {/* Google Analytics: loads only after the visitor accepts statistics cookies */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-          <>
+          <ConsentGate>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
               strategy="afterInteractive"
@@ -153,11 +154,11 @@ export default async function LocaleLayout({
                   var name = href.indexOf('https://wa.me/') === 0 ? 'whatsapp_click'
                     : href.indexOf('tel:') === 0 ? 'phone_click'
                     : href.indexOf('mailto:') === 0 ? 'email_click' : null;
-                  if (name) gtag('event', name, { link_url: href.split('?')[0] });
+                  if (name) gtag('event', name, { link_url: href.split('?')[0], link_location: a.getAttribute('data-cta') || 'page' });
                 }, true);
               `}
             </Script>
-          </>
+          </ConsentGate>
         )}
 
         <NextIntlClientProvider messages={messages}>

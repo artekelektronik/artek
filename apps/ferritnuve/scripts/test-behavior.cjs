@@ -62,6 +62,12 @@ test('WhatsApp and email drafts contain name, unchanged code and localized produ
     }
   }
 });
+test('guide quote drafts name the guide and its URL, not a product', () => {
+  const url='https://www.ferritnuve.com/blog/smps-nedir';
+  const text=new URL(inquiryLinks('SMPS nedir?',undefined,url,'tr','guide').whatsapp).searchParams.get('text');
+  assert.equal(text,`Teklif talebi\nSMPS nedir?\n${url}`);
+  assert.match(inquiryLinks('What is an SMPS?',undefined,url,'en','guide').email,/Quote%20request/);
+});
 test('catalog products keep their old ids, so existing URLs and translations still work', () => {
   assert.equal(products.length, 92);
   products.forEach((p, i) => assert.equal(p.id, 'rec' + String(i + 1).padStart(14, '0')));
@@ -287,4 +293,43 @@ test('FAQ page combines own questions with every guide FAQ and searches like a v
   assert.equal(matchFaq(tr, '').length, tr.length);
   assert.equal(matchFaq(tr, 'pizza teslimatı').length, 0);
   assert.equal(scrubSearch(' Ali  0532 718 33 64 ali@firma.com etd39 '), 'Ali [tel] [e-posta] etd39');
+});
+test('cookie choice is remembered, and anything else counts as not answered', () => {
+  const store = new Map();
+  globalThis.localStorage = {getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k)};
+  const {readConsent, setConsent} = require('../lib/consent.ts');
+  assert.equal(readConsent(), null);
+  setConsent('granted'); assert.equal(readConsent(), 'granted');
+  setConsent('denied'); assert.equal(store.get('artek-consent'), 'denied');
+  store.set('artek-consent', 'yes'); setConsent(null); assert.equal(readConsent(), null);
+  delete globalThis.localStorage;
+  setConsent('denied'); assert.equal(readConsent(), 'denied');
+});
+test('quote form is forwarded to Artek Stok with the token; bots and a missing token never reach it', async () => {
+  const {POST} = require('../app/api/teklif/route.ts');
+  const send = fields => { const body = new FormData(); for (const [k, v] of Object.entries(fields)) body.set(k, v); return POST(new Request('https://www.ferritnuve.com/api/teklif', {method: 'POST', body})); };
+  const realFetch = globalThis.fetch, realError = console.error;
+  const calls = [];
+  let reply = () => Response.json({id: '1'});
+  globalThis.fetch = async (url, init) => { calls.push({url, init}); return reply(); };
+  console.error = () => {};
+  try {
+    delete process.env.TALEPLER_TOKEN;
+    assert.equal((await send({name: 'Deneme'})).status, 503);
+    process.env.TALEPLER_TOKEN = ' gizli\n';
+    assert.equal((await send({name: 'Bot', website: 'http://spam.example'})).status, 200);
+    assert.equal(calls.length, 0);
+    const ok = await send({name: 'Deneme', contact: '0555 000 00 00', message: 'ETD39 lazım.', website: ''});
+    assert.deepEqual(await ok.json(), {ok: true});
+    assert.equal(calls[0].url, 'https://stok.ferritnuve.com/api/talepler');
+    assert.equal(calls[0].init.headers.authorization, 'Bearer gizli');
+    assert.equal(calls[0].init.body.get('contact'), '0555 000 00 00');
+    assert.equal(calls[0].init.body.has('website'), false);
+    reply = () => Response.json({error: 'E-posta veya telefon gerekli.'}, {status: 400});
+    const bad = await send({name: 'Deneme'});
+    assert.equal(bad.status, 400);
+    assert.equal((await bad.json()).error, 'E-posta veya telefon gerekli.');
+    reply = () => new Response('x', {status: 500});
+    assert.equal((await send({name: 'Deneme'})).status, 502);
+  } finally { globalThis.fetch = realFetch; console.error = realError; delete process.env.TALEPLER_TOKEN; }
 });

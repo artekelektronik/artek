@@ -1,12 +1,12 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import Script from "next/script";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 import { company } from "@/lib/company";
 import { inquiryLinks } from "@/lib/inquiry";
 import { cn } from "@/lib/utils";
+import { QuoteForm } from "@/components/quote-form";
 
 interface Contact20Props {
   className?: string;
@@ -85,27 +85,8 @@ const Contact20 = ({ className, product, invalidProduct }: Contact20Props) => {
             <h2 className="text-2xl font-semibold text-artek-ink">{t("formTitle")}</h2>
             <p className="mt-2 text-sm text-slate-600">{t("formDescription")}</p>
             <p className="mt-3 text-sm text-slate-600">{t("formFallback")}</p>
-            {locale === "en" && <p className="mt-3 text-sm text-slate-600">{t("externalLanguage")}</p>}
             <div className="mt-6">
-              <iframe
-                src="https://tally.so/embed/7RLMoL?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-                loading="lazy"
-                width="100%"
-                height="521"
-                frameBorder="0"
-                marginHeight={0}
-                marginWidth={0}
-                title={t("formTitle")}
-              />
-              <Script
-                src="https://tally.so/widgets/embed.js"
-                strategy="lazyOnload"
-                onLoad={() => {
-                  if (typeof window !== "undefined" && "Tally" in window) {
-                    (window as { Tally?: { loadEmbeds: () => void } }).Tally?.loadEmbeds();
-                  }
-                }}
-              />
+              <QuoteForm subject={product?.name} productCode={product?.code} />
             </div>
           </div>
         </div>
