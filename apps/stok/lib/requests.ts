@@ -4,11 +4,12 @@ import { db } from "../db";
 import { notification, quoteRequest, requestStatus, user } from "../db/schema";
 import { logActivity } from "./activity";
 import { parseInput, UserError } from "./errors";
-import { appUrl, invoiceReminderTo } from "./finance-reminders";
+import { appUrl } from "./finance-reminders";
 import { requirePermission } from "./guard";
 import { requestStatusLabels } from "./request-status";
 
-// Talepler: quote requests from the ferritnuve.com form. Each lands here and in the company inbox.
+// Talepler: quote requests from the ferritnuve.com form. Each lands here and is emailed to whoever answers them.
+export const requestsTo = "merve@ferritnuve.com";
 
 const optional = (max: number) =>
   z
@@ -52,13 +53,13 @@ export function requestEmail(r: z.output<typeof requestInput>) {
   };
 }
 
-// Saves the request, logs it and queues the email to the company inbox, all or nothing.
+// Saves the request, logs it and queues the email, all or nothing.
 export async function createRequest(input: RequestInput) {
   const data = parseInput(requestInput, input);
   return db.transaction(async (tx) => {
     const [row] = await tx.insert(quoteRequest).values(data).returning({ id: quoteRequest.id });
     await logActivity(tx, { entity: "talep", entityId: row.id, label: data.name, action: "eklendi", detail: data.subject ?? null, userId: null, via: "site" });
-    await tx.insert(notification).values({ kind: "site_talebi", ...requestEmail(data), recipients: [invoiceReminderTo] });
+    await tx.insert(notification).values({ kind: "site_talebi", ...requestEmail(data), recipients: [requestsTo] });
     return row.id;
   });
 }

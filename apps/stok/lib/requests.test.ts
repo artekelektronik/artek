@@ -13,7 +13,7 @@ describe("Talepler", { skip: skipWithoutDatabase }, () => {
   });
   beforeEach(resetTestDatabase);
 
-  test("a site request is saved, logged and emailed to the company inbox with everything needed to answer", async () => {
+  test("a site request is saved, logged and emailed with everything needed to answer", async () => {
     const { createRequest, listRequests } = await import("./requests");
     await createRequest({ name: "Deneme Kişi", contact: "0555 000 00 00", message: "ETD39 nüve ve karkas, 200 adet.", subject: "ETD39", productCode: "X-1", pageUrl: "https://www.ferritnuve.com/products/etd39", photoUrl: "https://blob.example/p.jpg" });
     await createRequest({ name: "Deneme Kişi", contact: "0555 000 00 00", message: "İkinci talep, toroid." });
@@ -25,7 +25,7 @@ describe("Talepler", { skip: skipWithoutDatabase }, () => {
     const emails = await db.select().from(schema.notification);
     assert.equal(emails.length, 2);
     const first = emails.find((e) => e.subject.includes("ETD39"))!;
-    assert.deepEqual(first.recipients, ["artek@ferritnuve.com"]);
+    assert.deepEqual(first.recipients, ["merve@ferritnuve.com"]);
     for (const part of ["Deneme Kişi", "0555 000 00 00", "200 adet", "Kod: X-1", "https://blob.example/p.jpg", "/products/etd39", "/musteriler/talepler"]) assert.ok(first.body.includes(part), part);
 
     const log = await db.select().from(schema.activityLog);

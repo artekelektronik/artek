@@ -20,7 +20,7 @@ export default async function RequestsPage() {
     statusAt: r.statusAt ? formatIstanbulTime(r.statusAt) : null,
   }));
   return (
-    <PanelShell title="Talepler" lede="Sitedeki teklif formundan gelen talepler. Her talep ayrıca şirket e-postasına da düşer; yanıtlayınca burada işaretleyin.">
+    <PanelShell title="Talepler" lede="Sitedeki teklif formundan gelen talepler. Her talep ayrıca e-posta olarak da gelir; yanıtlayınca burada işaretleyin.">
       <RequestsBoard rows={rows} canEdit={can(actor, "crm.edit")} />
     </PanelShell>
   );
