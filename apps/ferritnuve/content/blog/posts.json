@@ -270,5 +270,141 @@
       "alt": "EE ferrite core group from the catalog",
       "description": "What is a ferrite core and what does it do? Soft vs hard ferrite, MnZn vs NiZn, why ferrite is used at high frequency and where it is used."
     }
+  },
+  {
+    "file": "17-smps-nedir.md",
+    "slug": "smps-nedir",
+    "category": "Temel bilgiler / Güç elektroniği",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "alt": "Katalogdaki ETD ferrit nüve",
+    "description": "SMPS nedir, nasıl çalışır? Anahtarlamalı güç kaynağında trafo neden küçüktür, neden ferrit nüve kullanılır ve şebeke trafosundan farkı nedir?",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/what-is-an-smps.md",
+      "slug": "what-is-an-smps",
+      "category": "Basics / Power electronics",
+      "alt": "ETD ferrite core from the catalog",
+      "description": "What is an SMPS and how does it work? Why its transformer is small, why it uses a ferrite core and how it differs from a mains transformer."
+    }
+  },
+  {
+    "file": "18-ferrit-boncuk-sok-bobini-farki.md",
+    "slug": "ferrit-boncuk-sok-bobini-farki",
+    "category": "EMI / Temel bilgiler",
+    "image": "/products-images/screenshot-2025-10-31-at-10.33.11-am.png",
+    "alt": "Katalogdaki klipsli kablo ferriti",
+    "description": "Ferrit boncuk, şok bobini (indüktör) ve ortak mod şok bobini arasındaki fark nedir? Hangisi ne zaman kullanılır, nasıl tanımlanır?",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/ferrite-bead-vs-inductor-vs-common-mode-choke.md",
+      "slug": "ferrite-bead-vs-inductor-vs-common-mode-choke",
+      "category": "EMI / Basics",
+      "alt": "Clip-on cable ferrite from the catalog",
+      "description": "Ferrite bead vs inductor vs common-mode choke: how each works, how it is specified and when to use which."
+    }
+  },
+  {
+    "file": "19-toroid-nuve-renkleri.md",
+    "slug": "toroid-nuve-renkleri",
+    "category": "Malzemeler / Toroidler",
+    "image": "/products-images/ir184.jpg",
+    "alt": "Katalogdaki renk kodlu toroid nüve",
+    "description": "Toroid nüve renkleri ne anlama gelir? Demir tozu nüvelerde renk kodu, ferrit toroidlerde kaplama rengi ve malzemeyi doğrulama yöntemi.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/toroid-core-colour-codes.md",
+      "slug": "toroid-core-colour-codes",
+      "category": "Materials / Toroids",
+      "alt": "Colour-coded toroid core from the catalog",
+      "description": "What do toroid core colours mean? The iron-powder colour code, ferrite coating colours and how to confirm the material."
+    }
+  },
+  {
+    "file": "20-al-degeri-sarim-sayisi-hesabi.md",
+    "slug": "al-degeri-sarim-sayisi-hesabi",
+    "category": "Temel bilgiler / Hesaplama",
+    "image": "/products-images/f2906219-02.webp",
+    "alt": "Katalogdaki ferrit toroid nüve",
+    "description": "AL değeriyle sarım sayısı ve endüktans nasıl hesaplanır? Formül, birimler, örnek hesap, tolerans ve doyma kontrolü.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/turns-and-inductance-from-al-value.md",
+      "slug": "turns-and-inductance-from-al-value",
+      "category": "Basics / Calculation",
+      "alt": "Ferrite toroid core from the catalog",
+      "description": "How to calculate turns and inductance from the AL value: formula, units, a worked example, tolerance and the saturation check."
+    }
+  },
+  {
+    "file": "21-smps-trafosu-nuve-karkas-secimi.md",
+    "slug": "smps-trafosu-nuve-karkas-secimi",
+    "category": "Güç elektroniği / SMPS trafosu",
+    "image": "/products-images/ee-cores.jpg",
+    "alt": "Katalogdaki EE ferrit nüve",
+    "description": "SMPS trafosu için nüve ve karkas nasıl seçilir? Topoloji, frekans, nüve biçimi, hava aralığı ve karkas uyumu için sarımdan önce netleşmesi gerekenler.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/smps-transformer-core-and-bobbin-selection.md",
+      "slug": "smps-transformer-core-and-bobbin-selection",
+      "category": "Power electronics / SMPS transformer",
+      "alt": "EE ferrite core from the catalog",
+      "description": "How to choose the core and bobbin for an SMPS transformer: topology, frequency, core shape, air gap and bobbin fit before winding."
+    }
+  },
+  {
+    "file": "22-emi-emc-rfi-nedir.md",
+    "slug": "emi-emc-rfi-nedir",
+    "category": "EMI / Temel bilgiler",
+    "image": "/products-images/screenshot-2025-10-31-at-12.35.05-pm.png",
+    "alt": "Katalogdaki EMI filtre",
+    "description": "EMI, EMC ve RFI nedir? İletilen ve yayılan parazit, ortak mod ve diferansiyel mod, EMC testinde ferrit ve filtrenin yeri.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/emi-emc-rfi-explained.md",
+      "slug": "emi-emc-rfi-explained",
+      "category": "EMI / Basics",
+      "alt": "EMI filter from the catalog",
+      "description": "What are EMI, EMC and RFI? Conducted and radiated emissions, common and differential mode, and where ferrites and filters fit in EMC testing."
+    }
+  },
+  {
+    "file": "23-nuve-doymasi-hava-araligi.md",
+    "slug": "nuve-doymasi-hava-araligi",
+    "category": "Temel bilgiler / Manyetik tasarım",
+    "image": "/products-images/uu-cores-soft-ferrite-cores.jpg",
+    "alt": "Katalogdaki ferrit nüveler",
+    "description": "Nüve neden doyar, hava aralığı ne işe yarar? Doyma akı yoğunluğu, sıcaklık etkisi, hava aralığının endüktansa ve akıma etkisi.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/core-saturation-and-air-gap.md",
+      "slug": "core-saturation-and-air-gap",
+      "category": "Basics / Magnetic design",
+      "alt": "Ferrite cores from the catalog",
+      "description": "Why does a core saturate and what does an air gap do? Saturation flux density, temperature, and how a gap changes inductance and current capability."
+    }
+  },
+  {
+    "file": "24-ortak-mod-sok-bobini-secimi.md",
+    "slug": "ortak-mod-sok-bobini-secimi",
+    "category": "EMI / Ortak mod şok bobinleri",
+    "image": "/products-images/ferrite_toroid_green_coated.jpg",
+    "alt": "Katalogdaki kaplamalı ferrit toroid nüve",
+    "description": "Ortak mod şok bobini nasıl çalışır, nasıl seçilir? Nüve malzemesi, sarım biçimi, empedans eğrisi, akım ve yalıtım için kontrol listesi.",
+    "publishedAt": "2026-11-23T00:00:00+03:00",
+    "modifiedAt": "2026-11-23T00:00:00+03:00",
+    "en": {
+      "file": "en/common-mode-choke-selection.md",
+      "slug": "common-mode-choke-selection",
+      "category": "EMI / Common-mode chokes",
+      "alt": "Coated ferrite toroid core from the catalog",
+      "description": "How a common-mode choke works and how to choose one: core material, winding style, impedance curve, current and insulation."
+    }
   }
 ]

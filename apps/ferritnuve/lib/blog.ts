@@ -91,17 +91,17 @@ export function getBlogPost(slug: string, locale = "tr") {
 // a new guide must be added to a chapter here (the tests fail until it is).
 const chapters = [
   {key: "basics", tr: "Temel bilgiler", en: "Basics",
-    trIntro: "Ferrit nüvenin ne olduğu, ne işe yaradığı ve hangi biçimlerde bulunduğu.", enIntro: "What a ferrite core is, what it does and which shapes it comes in.",
-    slugs: ["ferrit-nuve-nedir", "ferrit-nuve-cesitleri"]},
+    trIntro: "Ferrit nüvenin ne olduğu, hangi biçimlerde bulunduğu ve endüktans, doyma gibi temel kavramlar.", enIntro: "What a ferrite core is, which shapes it comes in, and basic concepts such as inductance and saturation.",
+    slugs: ["ferrit-nuve-nedir", "ferrit-nuve-cesitleri", "smps-nedir", "al-degeri-sarim-sayisi-hesabi", "nuve-doymasi-hava-araligi"]},
   {key: "shapes", tr: "Nüve biçimleri", en: "Core shapes",
     trIntro: "Her nüve biçimi için ölçü, malzeme ve kullanım yerine göre seçim adımları.", enIntro: "Selection steps for each core shape by size, material and application.",
-    slugs: ["ee-nuve-secimi", "etd-nuve-secimi", "uu-nuve-secimi", "ferrit-toroid-nuve-secimi", "ferrit-cubuk-nuve-secimi", "makara-ferrit-nuve-secimi"]},
+    slugs: ["ee-nuve-secimi", "etd-nuve-secimi", "uu-nuve-secimi", "ferrit-toroid-nuve-secimi", "ferrit-cubuk-nuve-secimi", "makara-ferrit-nuve-secimi", "smps-trafosu-nuve-karkas-secimi"]},
   {key: "materials", tr: "Malzemeler", en: "Materials",
     trIntro: "Ferrit ve demir tozu malzemeler, malzeme kodları ve muadil karşılaştırması.", enIntro: "Ferrite and iron-powder materials, material codes and comparing equivalents.",
-    slugs: ["ferrit-demir-tozu-toroid", "26-52-toroid-karsilastirmasi", "cf-ferrit-malzeme-kodlari"]},
+    slugs: ["ferrit-demir-tozu-toroid", "26-52-toroid-karsilastirmasi", "toroid-nuve-renkleri", "cf-ferrit-malzeme-kodlari"]},
   {key: "emi", tr: "EMI ve filtreler", en: "EMI and filters",
-    trIntro: "Kablo üzerindeki paraziti bastıran ferritler ve şebeke girişi filtreleri.", enIntro: "Ferrites that suppress interference on cables, and mains input filters.",
-    slugs: ["kablo-ferriti-secimi", "yassi-kablo-ferriti-secimi", "tek-fazli-emi-filtre-secimi"]},
+    trIntro: "Parazitin ne olduğu, onu bastıran ferritler, şok bobinleri ve şebeke girişi filtreleri.", enIntro: "What interference is, and the ferrites, chokes and mains input filters that suppress it.",
+    slugs: ["emi-emc-rfi-nedir", "ferrit-boncuk-sok-bobini-farki", "kablo-ferriti-secimi", "yassi-kablo-ferriti-secimi", "ortak-mod-sok-bobini-secimi", "tek-fazli-emi-filtre-secimi"]},
   {key: "rfq", tr: "Teklif hazırlama", en: "Preparing an enquiry",
     trIntro: "Özel trafo ve indüktör talebinde hangi bilgilerin verilmesi gerektiği.", enIntro: "What to include when asking for a custom transformer or inductor.",
     slugs: ["ozel-trafo-teklif-rehberi", "ozel-induktor-teklif-rehberi"]},
@@ -171,15 +171,27 @@ const materialMark = (name: string) => name.match(/CF\s?(\d{3})/)?.[1];
 
 // A product can support more than one guide. Take groups in turn so comparisons
 // and the transformer and UU guides show both relevant material/type/shape families.
+// Explanatory guides have no product type of their own: each shows one core of the shapes it talks about.
+export const guideShapes: Record<string, string[]> = {
+  "ferrit-nuve-cesitleri": ["EE", "ETD", "TOROID", "CUBUK"],
+  "ferrit-nuve-nedir": ["EE", "ETD", "TOROID", "CUBUK"],
+  "smps-nedir": ["EE", "ETD", "TOROID"],
+  "ferrit-boncuk-sok-bobini-farki": ["YUVARLAK", "TOROID"],
+  "al-degeri-sarim-sayisi-hesabi": ["TOROID", "EE", "ETD"],
+  "smps-trafosu-nuve-karkas-secimi": ["EE", "ETD"],
+  "nuve-doymasi-hava-araligi": ["EE", "ETD", "TOROID"],
+  "ortak-mod-sok-bobini-secimi": ["TOROID"],
+};
+
 export function relatedProducts(products: AirtableProduct[], guideSlug: string, limit = 4) {
   const transformer = guideSlug === "ozel-trafo-teklif-rehberi";
   const powderComparison = guideSlug === "26-52-toroid-karsilastirmasi";
   const uu = guideSlug === "uu-nuve-secimi";
-  const toroidComparison = guideSlug === "ferrit-demir-tozu-toroid";
+  const toroidComparison = guideSlug === "ferrit-demir-tozu-toroid" || guideSlug === "toroid-nuve-renkleri";
   const materials = guideSlug === "cf-ferrit-malzeme-kodlari";
   const inductor = guideSlug === "ozel-induktor-teklif-rehberi";
-  // The two general ferrite guides have no product type of their own: show one core of each main shape.
-  const shapes = guideSlug === "ferrit-nuve-cesitleri" || guideSlug === "ferrit-nuve-nedir";
+  const shapes = guideShapes[guideSlug];
+  const filters = guideSlug === "emi-emc-rfi-nedir";
   const toroid = (p: AirtableProduct) => p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.includes("TOROID");
   const matches = products.filter(p => {
     if (transformer) return p.fields.Category === "Ferrit" && p.fields["Ürün Tipi"]?.some(type => type === "EE" || type === "ETD");
@@ -188,7 +200,8 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
     // Only typed products, so the catalog link can filter to exactly the shapes shown.
     if (materials) return p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.length && !!materialMark(p.fields["Product Name"]);
     if (inductor) return p.fields.Category === "IRON-POWDER" || toroid(p) || !!p.fields["Ürün Tipi"]?.includes("CUBUK");
-    if (shapes) return p.fields.Category === "Ferrit" && ["EE", "ETD", "TOROID", "CUBUK"].includes(p.fields["Ürün Tipi"]?.[0] ?? "");
+    if (shapes) return p.fields.Category === "Ferrit" && shapes.includes(p.fields["Ürün Tipi"]?.[0] ?? "");
+    if (filters) return p.fields.Category === "PEM";
     return productGuideSlug(p.fields.Category, p.fields["Ürün Tipi"], p.fields["Product Name"]) === guideSlug;
   });
   if (guideSlug === "ee-nuve-secimi") {
