@@ -142,6 +142,10 @@ _Avoid_: Cari (accounting term), firma (when it's a customer specifically)
 **Öncelik** (Follow-up priority):
 Which group a Müşteri falls in for follow-up, worked out from its invoices: Geri kazan, Tekrar getir, Büyüt, Takipte tut or Sonra. It is computed, never typed in.
 
+**Talep** (Quote request):
+What a visitor sends from the quote form on ferritnuve.com: who they are, how to reach them, what they need, optionally a photo, and the page they wrote from. Each one is its own row, also when it comes from a Müşteri or from someone who wrote before. It is Yeni until someone marks it Yanıtlandı or Kapandı. It reaches the company inbox by email and the Müşteri paneli.
+_Avoid_: Aday (an Aday is a firm we found; a Talep is a message someone sent us), Sipariş
+
 **Takip** (Follow-up):
 The next date someone should contact a Müşteri. On that day the Müşteri appears in the admins' daily email.
 

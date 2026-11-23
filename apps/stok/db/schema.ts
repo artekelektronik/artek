@@ -854,9 +854,33 @@ export const leadEvent = pgTable(
   (t) => [index("lead_event_lead_idx").on(t.leadId, t.createdAt)],
 );
 
+// Talepler: quote requests visitors send from the ferritnuve.com form. One row per request, even from the same
+// person or from an existing Müşteri; nothing here is matched to a firm.
+export const requestStatus = pgEnum("request_status", ["yeni", "yanitlandi", "kapandi"]);
+
+export const quoteRequest = pgTable(
+  "quote_request",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(), // person or firm, as typed
+    contact: text("contact").notNull(), // email or phone, as typed
+    message: text("message").notNull(),
+    subject: text("subject"), // the product or guide the form was opened from
+    productCode: text("product_code"),
+    pageUrl: text("page_url"),
+    locale: text("locale").notNull().default("tr"),
+    photoUrl: text("photo_url"),
+    status: requestStatus("status").notNull().default("yeni"),
+    statusBy: text("status_by").references(() => user.id),
+    statusAt: timestamp("status_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("quote_request_created_idx").on(t.createdAt)],
+);
+
 // One append-only log of what happened to Faturalar, Müşteriler, Adaylar, Ürünler and Fiyatlar, for the İşlem geçmişi page. Field-level
 // changes of a Müşteri stay in customer_change; a row here only summarises them.
-export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat", "gider"]);
+export const activityEntity = pgEnum("activity_entity", ["fatura", "musteri", "aday", "urun", "fiyat", "gider", "talep"]);
 export const activityAction = pgEnum("activity_action", ["eklendi", "duzenlendi", "arsivlendi", "geri_alindi", "musteri_oldu", "onaylandi", "silindi"]);
 
 export const activityLog = pgTable(
