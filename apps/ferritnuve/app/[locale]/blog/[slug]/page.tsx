@@ -6,6 +6,8 @@ import { Link } from "@/i18n/navigation";
 import { getBlogPosts, getBlogPost, blogStructuredData, relatedProducts, readingNeighbours } from "@/lib/blog";
 import { getProducts } from "@/lib/catalog";
 import { ProductCard } from "@/components/product-card";
+import { QuoteBar } from "@/components/quote-bar";
+import { inquiryLinks } from "@/lib/inquiry";
 import { getSiteUrl } from "@/lib/seo";
 import styles from "../prose.module.css";
 
@@ -53,5 +55,6 @@ export default async function BlogPostPage({params}: Props) {
         <section className="mt-12 border-t border-slate-200 pt-9" aria-labelledby="related-posts"><h2 id="related-posts" className="text-2xl font-semibold">{tr ? "Bu bölümdeki diğer rehberler" : "Other guides in this chapter"}</h2><ul className="mt-5 space-y-4">{chapter.posts.filter(other => other.slug !== post.slug).map(other => <li key={other.slug}><Link href={`/blog/${other.slug}`} className="inline-block py-2 font-medium underline underline-offset-4">{other.title} →</Link></li>)}</ul><Link href="/blog" className="mt-5 inline-block py-2 font-medium underline underline-offset-4">{tr ? "Tüm kütüphaneyi görün" : "See the whole library"} →</Link></section>
       </div>
     </div>
+    <QuoteBar links={inquiryLinks(post.title, undefined, `${site}${tr ? "" : "/en"}/blog/${post.slug}`, locale, "guide")} locale={locale} />
   </main>;
 }
