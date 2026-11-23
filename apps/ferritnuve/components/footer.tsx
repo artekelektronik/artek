@@ -70,6 +70,7 @@ const Footer = ({
         { text: t("links.about"), url: "/about" },
         { text: t("links.contact"), url: "/contact" },
         { text: t("links.products"), url: "/products" },
+        { text: t("links.privacy"), url: "/kvkk" },
       ],
       subsections: [
         {
