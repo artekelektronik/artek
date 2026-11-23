@@ -62,6 +62,12 @@ test('WhatsApp and email drafts contain name, unchanged code and localized produ
     }
   }
 });
+test('guide quote drafts name the guide and its URL, not a product', () => {
+  const url='https://www.ferritnuve.com/blog/smps-nedir';
+  const text=new URL(inquiryLinks('SMPS nedir?',undefined,url,'tr','guide').whatsapp).searchParams.get('text');
+  assert.equal(text,`Teklif talebi\nSMPS nedir?\n${url}`);
+  assert.match(inquiryLinks('What is an SMPS?',undefined,url,'en','guide').email,/Quote%20request/);
+});
 test('catalog products keep their old ids, so existing URLs and translations still work', () => {
   assert.equal(products.length, 92);
   products.forEach((p, i) => assert.equal(p.id, 'rec' + String(i + 1).padStart(14, '0')));

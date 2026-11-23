@@ -153,7 +153,7 @@ export default async function LocaleLayout({
                   var name = href.indexOf('https://wa.me/') === 0 ? 'whatsapp_click'
                     : href.indexOf('tel:') === 0 ? 'phone_click'
                     : href.indexOf('mailto:') === 0 ? 'email_click' : null;
-                  if (name) gtag('event', name, { link_url: href.split('?')[0] });
+                  if (name) gtag('event', name, { link_url: href.split('?')[0], link_location: a.getAttribute('data-cta') || 'page' });
                 }, true);
               `}
             </Script>

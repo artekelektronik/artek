@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import Script from "next/script";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
@@ -18,6 +19,16 @@ const Contact20 = ({ className, product, invalidProduct }: Contact20Props) => {
   const t = useTranslations("contact");
   const locale = useLocale();
   const links = product ? inquiryLinks(product.name, product.code, product.url, locale) : {email:`mailto:${company.email}`,whatsapp:`https://wa.me/${company.whatsapp}`};
+
+  // The Tally iframe announces a sent form with a postMessage; count it as the site's lead event.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.origin === "https://tally.so" && typeof e.data === "string" && e.data.includes("Tally.FormSubmitted"))
+        (window as { gtag?: (...args: unknown[]) => void }).gtag?.("event", "generate_lead", {method: "form", product: product?.name});
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [product?.name]);
 
   return (
     <section className={cn("bg-artek-porcelain pb-24 pt-14", className)}>
