@@ -4,8 +4,8 @@ import { assistantSuggestion, customer, invoice, notification, user, userPanel, 
 import { followUpsDue } from "./crm";
 import { formatIstanbulTime, istanbulDate } from "./time";
 
-// The shared company inbox the owner reads; invoices are uploaded from there.
-export const invoiceReminderTo = "artek@ferritnuve.com";
+// Who is reminded to upload invoices.
+export const invoiceReminderTo = "merve@ferritnuve.com";
 export const invoiceReminderDays = 7;
 const dayMs = 86_400_000;
 export const appUrl = () => process.env.BETTER_AUTH_URL ?? "https://stok.ferritnuve.com";

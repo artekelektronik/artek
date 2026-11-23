@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeftRight, Bell, Boxes, Calculator, CalendarCheck, ClipboardCheck, ClipboardList, Contact, Factory, FileText, HandCoins, History, LayoutDashboard, LineChart, Package, PackageMinus, PackagePlus, Percent, Receipt, ShoppingBag, Sparkles, Tag, Truck, UserPlus, Users, Warehouse, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, Bell, Boxes, Calculator, CalendarCheck, ClipboardCheck, ClipboardList, Contact, Factory, FileText, HandCoins, History, Inbox, LayoutDashboard, LineChart, Package, PackageMinus, PackagePlus, Percent, Receipt, ShoppingBag, Sparkles, Tag, Truck, UserPlus, Users, Warehouse, type LucideIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,7 @@ const screens: { group: string; label: string; href: string; icon: LucideIcon; r
   { group: "Satış", label: "Takipler", href: "/musteriler/bugun", icon: CalendarCheck, requires: "crm" },
   { group: "Satış", label: "Müşteriler", href: "/musteriler", icon: Contact, requires: "crm" },
   { group: "Satış", label: "Adaylar", href: "/musteriler/adaylar", icon: UserPlus, requires: "crm" },
+  { group: "Satış", label: "Talepler", href: "/musteriler/talepler", icon: Inbox, requires: "crm" },
   { group: "Finans", label: "Finansal özet", href: "/finans", icon: LineChart, requires: "finance" },
   { group: "Finans", label: "Ürün satışları", href: "/finans/urunler", icon: ShoppingBag, requires: "finance" },
   { group: "Finans", label: "Trafo kârlılığı", href: "/finans/trafo", icon: Factory, requires: "finance" },

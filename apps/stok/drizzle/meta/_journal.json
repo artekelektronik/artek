@@ -267,6 +267,13 @@
       "when": 1794771699683,
       "tag": "0037_esnek-iscilik",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1795423821971,
+      "tag": "0038_talepler",
+      "breakpoints": true
     }
   ]
 }

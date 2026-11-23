@@ -10,6 +10,11 @@ export function leadsAuthorized(request: Request) {
   return bearerMatches(request, process.env.ADAYLAR_TOKEN);
 }
 
+// The ferritnuve.com site sends Authorization: Bearer $TALEPLER_TOKEN when a visitor submits the quote form.
+export function requestsAuthorized(request: Request) {
+  return bearerMatches(request, process.env.TALEPLER_TOKEN);
+}
+
 // A pasted secret may carry a stray space or line break; it never belongs to the value.
 function bearerMatches(request: Request, raw: string | undefined) {
   const secret = raw?.trim();
