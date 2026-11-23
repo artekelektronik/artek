@@ -305,3 +305,31 @@ test('cookie choice is remembered, and anything else counts as not answered', ()
   delete globalThis.localStorage;
   setConsent('denied'); assert.equal(readConsent(), 'denied');
 });
+test('quote form is forwarded to Artek Stok with the token; bots and a missing token never reach it', async () => {
+  const {POST} = require('../app/api/teklif/route.ts');
+  const send = fields => { const body = new FormData(); for (const [k, v] of Object.entries(fields)) body.set(k, v); return POST(new Request('https://www.ferritnuve.com/api/teklif', {method: 'POST', body})); };
+  const realFetch = globalThis.fetch, realError = console.error;
+  const calls = [];
+  let reply = () => Response.json({id: '1'});
+  globalThis.fetch = async (url, init) => { calls.push({url, init}); return reply(); };
+  console.error = () => {};
+  try {
+    delete process.env.TALEPLER_TOKEN;
+    assert.equal((await send({name: 'Deneme'})).status, 503);
+    process.env.TALEPLER_TOKEN = ' gizli\n';
+    assert.equal((await send({name: 'Bot', website: 'http://spam.example'})).status, 200);
+    assert.equal(calls.length, 0);
+    const ok = await send({name: 'Deneme', contact: '0555 000 00 00', message: 'ETD39 lazım.', website: ''});
+    assert.deepEqual(await ok.json(), {ok: true});
+    assert.equal(calls[0].url, 'https://stok.ferritnuve.com/api/talepler');
+    assert.equal(calls[0].init.headers.authorization, 'Bearer gizli');
+    assert.equal(calls[0].init.body.get('contact'), '0555 000 00 00');
+    assert.equal(calls[0].init.body.has('website'), false);
+    reply = () => Response.json({error: 'E-posta veya telefon gerekli.'}, {status: 400});
+    const bad = await send({name: 'Deneme'});
+    assert.equal(bad.status, 400);
+    assert.equal((await bad.json()).error, 'E-posta veya telefon gerekli.');
+    reply = () => new Response('x', {status: 500});
+    assert.equal((await send({name: 'Deneme'})).status, 502);
+  } finally { globalThis.fetch = realFetch; console.error = realError; delete process.env.TALEPLER_TOKEN; }
+});

@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import Script from "next/script";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
-import { Link } from "@/i18n/navigation";
 import { company } from "@/lib/company";
 import { inquiryLinks } from "@/lib/inquiry";
 import { cn } from "@/lib/utils";
+import { QuoteForm } from "@/components/quote-form";
 
 interface Contact20Props {
   className?: string;
@@ -20,16 +18,6 @@ const Contact20 = ({ className, product, invalidProduct }: Contact20Props) => {
   const t = useTranslations("contact");
   const locale = useLocale();
   const links = product ? inquiryLinks(product.name, product.code, product.url, locale) : {email:`mailto:${company.email}`,whatsapp:`https://wa.me/${company.whatsapp}`};
-
-  // The Tally iframe announces a sent form with a postMessage; count it as the site's lead event.
-  useEffect(() => {
-    const onMessage = (e: MessageEvent) => {
-      if (e.origin === "https://tally.so" && typeof e.data === "string" && e.data.includes("Tally.FormSubmitted"))
-        (window as { gtag?: (...args: unknown[]) => void }).gtag?.("event", "generate_lead", {method: "form", product: product?.name});
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [product?.name]);
 
   return (
     <section className={cn("bg-artek-porcelain pb-24 pt-14", className)}>
@@ -97,28 +85,8 @@ const Contact20 = ({ className, product, invalidProduct }: Contact20Props) => {
             <h2 className="text-2xl font-semibold text-artek-ink">{t("formTitle")}</h2>
             <p className="mt-2 text-sm text-slate-600">{t("formDescription")}</p>
             <p className="mt-3 text-sm text-slate-600">{t("formFallback")}</p>
-            <p className="mt-3 text-sm text-slate-600">{locale === "en" ? "Your details are processed as described in our " : "Bilgileriniz şu metinde açıklandığı şekilde işlenir: "}<Link href="/kvkk" className="underline underline-offset-4">{locale === "en" ? "Privacy Notice" : "KVKK Aydınlatma Metni"}</Link>.</p>
-            {locale === "en" && <p className="mt-3 text-sm text-slate-600">{t("externalLanguage")}</p>}
             <div className="mt-6">
-              <iframe
-                src="https://tally.so/embed/7RLMoL?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-                loading="lazy"
-                width="100%"
-                height="521"
-                frameBorder="0"
-                marginHeight={0}
-                marginWidth={0}
-                title={t("formTitle")}
-              />
-              <Script
-                src="https://tally.so/widgets/embed.js"
-                strategy="lazyOnload"
-                onLoad={() => {
-                  if (typeof window !== "undefined" && "Tally" in window) {
-                    (window as { Tally?: { loadEmbeds: () => void } }).Tally?.loadEmbeds();
-                  }
-                }}
-              />
+              <QuoteForm subject={product?.name} productCode={product?.code} />
             </div>
           </div>
         </div>

@@ -355,8 +355,7 @@
     "productFormNote": "WhatsApp and email links include the product details. If you use the form, include the product code in your message.",
     "invalidProduct": "Product not found. Please include the product code in your message.",
     "skipToForm": "Go to form",
-    "formFallback": "If the form does not load, you can contact us by phone or email.",
-    "externalLanguage": "The external form is currently in Turkish. You can also enquire in English by email or WhatsApp."
+    "formFallback": "If the form does not load, you can contact us by phone or email."
   },
   "language": {
     "switchTo": "Switch language"

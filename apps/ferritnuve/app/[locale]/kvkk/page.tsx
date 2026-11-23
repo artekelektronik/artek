@@ -9,7 +9,7 @@ type Section = {title: string; paragraphs?: string[]; items?: string[]; cookies?
 
 const updated = "2026-11-23";
 
-// Describes what the site actually does today: the Tally contact form, WhatsApp/email/phone links and the visit statistics.
+// Describes what the site actually does today: the quote form, WhatsApp/email/phone links and the visit statistics.
 // Update this page whenever a new form or tool starts collecting data.
 const content: Record<"tr" | "en", {title: string; description: string; intro: string; sections: Section[]}> = {
   tr: {
@@ -19,7 +19,7 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
     sections: [
       {title: "Veri sorumlusu", paragraphs: [`Veri sorumlusu ${company.legalName}'dir.`], items: [`Adres: ${company.address}`, `E-posta: ${company.email}`, `Telefon: ${company.phones[0].label}`]},
       {title: "Hangi verileri işliyoruz", items: [
-        "İletişim formu: ad soyad, e-posta adresi, telefon numarası, seçtiğiniz kategori ve yazdığınız mesaj.",
+        "Teklif formu: adınız veya firmanız, e-posta adresiniz veya telefon numaranız, yazdığınız mesaj, eklerseniz fotoğraf ve formu gönderdiğiniz sayfanın adresi.",
         "WhatsApp, e-posta veya telefonla bize ulaştığınızda: adınız, telefon numaranız veya e-posta adresiniz ve bize ilettiğiniz bilgiler.",
         "Site kullanım verileri (yalnızca istatistik çerezlerini kabul ederseniz): ziyaret ettiğiniz sayfalar, tıkladığınız iletişim bağlantıları, tarayıcı ve cihaz bilgisi, yaklaşık konum (ülke, şehir) ve IP adresi.",
         "Sık sorulan sorular sayfasındaki aramalar: telefon numarası ve e-posta adresi gibi ifadeler silinerek, kimliğinizle ilişkilendirilmeden kaydedilir.",
@@ -37,11 +37,11 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       ]},
       {title: "Çerezler", cookies: true, paragraphs: [
         "Google Analytics ve PostHog, siz kabul etmeden yüklenmez ve cihazınıza çerez yerleştirmez. Reddederseniz site aynı şekilde çalışır. Seçiminiz yalnızca tarayıcınızda saklanır.",
-        "Barındırma sağlayıcımız Vercel, çerez kullanmadan ve kimliğinizi belirlemeden toplu ziyaret sayıları tutar. İletişim sayfasındaki form Tally tarafından sunulur ve formun çalışması için gerekli kendi çerezlerini kullanabilir.",
+        "Barındırma sağlayıcımız Vercel, çerez kullanmadan ve kimliğinizi belirlemeden toplu ziyaret sayıları tutar.",
       ]},
       {title: "Verilerin aktarıldığı taraflar", paragraphs: ["Verileriniz yalnızca yukarıdaki amaçlar için, hizmet aldığımız şu sağlayıcılarla paylaşılır. Bu sağlayıcıların sunucuları yurt dışında bulunabilir:"], items: [
-        "Tally (iletişim formu altyapısı)",
-        "Vercel (sitenin barındırılması ve ziyaret istatistikleri)",
+        "Vercel (sitenin barındırılması, form kayıtları ve fotoğrafların saklanması, ziyaret istatistikleri)",
+        "Resend (form taleplerinin şirket e-postamıza iletilmesi)",
         "Google Analytics ve PostHog (site kullanım istatistikleri, yalnızca kabul ederseniz)",
         "WhatsApp (yalnızca siz WhatsApp üzerinden yazmayı seçtiğinizde)",
       ]},
@@ -66,7 +66,7 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
     sections: [
       {title: "Data controller", paragraphs: [`The data controller is ${company.legalName}.`], items: [`Address: ${company.address}`, `Email: ${company.email}`, `Phone: ${company.phones[0].label}`]},
       {title: "Data we process", items: [
-        "Contact form: full name, email address, phone number, the category you choose and your message.",
+        "Quote form: your name or company, your email address or phone number, your message, a photo if you add one, and the address of the page you sent the form from.",
         "When you reach us by WhatsApp, email or phone: your name, phone number or email address and the information you send us.",
         "Site usage data (only if you accept statistics cookies): pages visited, contact links clicked, browser and device information, approximate location (country, city) and IP address.",
         "Searches on the FAQ page: recorded without being linked to you, with phone numbers and email addresses removed.",
@@ -84,11 +84,11 @@ const content: Record<"tr" | "en", {title: string; description: string; intro: s
       ]},
       {title: "Cookies", cookies: true, paragraphs: [
         "Google Analytics and PostHog are not loaded and set no cookies on your device until you accept. The site works the same if you decline. Your choice is stored only in your browser.",
-        "Our hosting provider Vercel keeps aggregate visit counts without cookies and without identifying you. The form on the contact page is served by Tally and may use its own cookies needed for the form to work.",
+        "Our hosting provider Vercel keeps aggregate visit counts without cookies and without identifying you.",
       ]},
       {title: "Who receives the data", paragraphs: ["Your data is shared only for the purposes above with the following service providers. Their servers may be located outside Türkiye:"], items: [
-        "Tally (contact form)",
-        "Vercel (site hosting and visit statistics)",
+        "Vercel (site hosting, storage of form records and photos, visit statistics)",
+        "Resend (delivery of form requests to our company inbox)",
         "Google Analytics and PostHog (site usage statistics, only if you accept)",
         "WhatsApp (only when you choose to write to us on WhatsApp)",
       ]},
