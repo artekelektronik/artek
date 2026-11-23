@@ -90,6 +90,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     },
     {
+      url: `${siteUrl}/kvkk`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+      alternates: {
+        languages: {
+          tr: `${siteUrl}/kvkk`,
+          en: `${siteUrl}/en/kvkk`,
+        },
+      },
+    },
+    {
       url: `${siteUrl}/ferrit-nuve`,
       changeFrequency: "monthly" as const,
       priority: 0.85,
