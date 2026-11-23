@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import Script from "next/script";
 import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
+import { Link } from "@/i18n/navigation";
 import { company } from "@/lib/company";
 import { inquiryLinks } from "@/lib/inquiry";
 import { cn } from "@/lib/utils";
@@ -85,6 +86,7 @@ const Contact20 = ({ className, product, invalidProduct }: Contact20Props) => {
             <h2 className="text-2xl font-semibold text-artek-ink">{t("formTitle")}</h2>
             <p className="mt-2 text-sm text-slate-600">{t("formDescription")}</p>
             <p className="mt-3 text-sm text-slate-600">{t("formFallback")}</p>
+            <p className="mt-3 text-sm text-slate-600">{locale === "en" ? "Your details are processed as described in our " : "Bilgileriniz şu metinde açıklandığı şekilde işlenir: "}<Link href="/kvkk" className="underline underline-offset-4">{locale === "en" ? "Privacy Notice" : "KVKK Aydınlatma Metni"}</Link>.</p>
             {locale === "en" && <p className="mt-3 text-sm text-slate-600">{t("externalLanguage")}</p>}
             <div className="mt-6">
               <iframe

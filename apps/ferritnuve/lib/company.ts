@@ -1,9 +1,10 @@
 import { groupName, productGroups } from "./product-taxonomy";
 import { getLocalizedPath } from "./seo";
 
-// Existing public contact details, consolidated without asserting a legal entity name.
+// Public contact details. legalName is the registered company name, used where the law asks for it (privacy notice).
 export const company = {
   name: "Artek Elektronik",
+  legalName: "Artek Elektronik Sanayi ve Ticaret Limited Şirketi",
   email: "artek@ferritnuve.com",
   phones: [{label: "0212 252 11 68", href: "tel:+902122521168"}, {label: "0532 718 33 64", href: "tel:+905327183364"}],
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || "905327183364",
