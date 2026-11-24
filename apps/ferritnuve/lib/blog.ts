@@ -92,7 +92,7 @@ export function getBlogPost(slug: string, locale = "tr") {
 const chapters = [
   {key: "basics", tr: "Temel bilgiler", en: "Basics",
     trIntro: "Ferrit nüvenin ne olduğu, hangi biçimlerde bulunduğu ve endüktans, doyma gibi temel kavramlar.", enIntro: "What a ferrite core is, which shapes it comes in, and basic concepts such as inductance and saturation.",
-    slugs: ["ferrit-nuve-nedir", "ferrit-nuve-cesitleri", "smps-nedir", "al-degeri-sarim-sayisi-hesabi", "nuve-doymasi-hava-araligi"]},
+    slugs: ["ferrit-nuve-nedir", "ferrit-nuve-cesitleri", "smps-nedir", "al-degeri-sarim-sayisi-hesabi", "nuve-doymasi-hava-araligi", "deri-etkisi-litz-teli"]},
   {key: "shapes", tr: "Nüve biçimleri", en: "Core shapes",
     trIntro: "Her nüve biçimi için ölçü, malzeme ve kullanım yerine göre seçim adımları.", enIntro: "Selection steps for each core shape by size, material and application.",
     slugs: ["ee-nuve-secimi", "etd-nuve-secimi", "uu-nuve-secimi", "ferrit-toroid-nuve-secimi", "ferrit-cubuk-nuve-secimi", "makara-ferrit-nuve-secimi", "smps-trafosu-nuve-karkas-secimi"]},
@@ -181,6 +181,7 @@ export const guideShapes: Record<string, string[]> = {
   "smps-trafosu-nuve-karkas-secimi": ["EE", "ETD"],
   "nuve-doymasi-hava-araligi": ["EE", "ETD", "TOROID"],
   "ortak-mod-sok-bobini-secimi": ["TOROID"],
+  "deri-etkisi-litz-teli": ["EE", "TOROID"],
 };
 
 export function relatedProducts(products: AirtableProduct[], guideSlug: string, limit = 4) {

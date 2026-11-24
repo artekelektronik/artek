@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 24);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 24);
+  assert.equal(blogPosts.length, 25);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 25);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);

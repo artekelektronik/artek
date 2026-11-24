@@ -406,5 +406,22 @@
       "alt": "Coated ferrite toroid core from the catalog",
       "description": "How a common-mode choke works and how to choose one: core material, winding style, impedance curve, current and insulation."
     }
+  },
+  {
+    "file": "25-deri-etkisi-litz-teli.md",
+    "slug": "deri-etkisi-litz-teli",
+    "category": "Temel bilgiler / Sargı teli",
+    "image": "/products-images/ee-cores.jpg",
+    "alt": "Katalogdaki EE ferrit nüve",
+    "description": "Deri etkisi nedir, litz teli ne zaman gerekir? Sızma derinliği, AC direnç oranı, litz telinin bakır doluluğu bedeli ve sarım için talep listesi.",
+    "publishedAt": "2026-11-24T00:00:00+03:00",
+    "modifiedAt": "2026-11-24T00:00:00+03:00",
+    "en": {
+      "file": "en/skin-effect-and-litz-wire.md",
+      "slug": "skin-effect-and-litz-wire",
+      "category": "Basics / Winding wire",
+      "alt": "EE ferrite core from the catalog",
+      "description": "What skin effect is and when litz wire is needed: penetration depth, AC resistance ratio, the copper fill cost of litz wire and a request checklist for wound parts."
+    }
   }
 ]
