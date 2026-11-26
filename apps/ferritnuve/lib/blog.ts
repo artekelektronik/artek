@@ -101,7 +101,7 @@ const chapters = [
     slugs: ["ferrit-demir-tozu-toroid", "26-52-toroid-karsilastirmasi", "toroid-nuve-renkleri", "cf-ferrit-malzeme-kodlari"]},
   {key: "emi", tr: "EMI ve filtreler", en: "EMI and filters",
     trIntro: "Parazitin ne olduğu, onu bastıran ferritler, şok bobinleri ve şebeke girişi filtreleri.", enIntro: "What interference is, and the ferrites, chokes and mains input filters that suppress it.",
-    slugs: ["emi-emc-rfi-nedir", "ferrit-boncuk-sok-bobini-farki", "kablo-ferriti-secimi", "yassi-kablo-ferriti-secimi", "ortak-mod-sok-bobini-secimi", "tek-fazli-emi-filtre-secimi"]},
+    slugs: ["emi-emc-rfi-nedir", "ferrit-boncuk-sok-bobini-farki", "kablo-ferriti-secimi", "yassi-kablo-ferriti-secimi", "ortak-mod-sok-bobini-secimi", "tek-fazli-emi-filtre-secimi", "emi-filtre-baglantisi"]},
   {key: "rfq", tr: "Teklif hazırlama", en: "Preparing an enquiry",
     trIntro: "Özel trafo ve indüktör talebinde hangi bilgilerin verilmesi gerektiği.", enIntro: "What to include when asking for a custom transformer or inductor.",
     slugs: ["ozel-trafo-teklif-rehberi", "ozel-induktor-teklif-rehberi"]},
@@ -192,7 +192,7 @@ export function relatedProducts(products: AirtableProduct[], guideSlug: string, 
   const materials = guideSlug === "cf-ferrit-malzeme-kodlari";
   const inductor = guideSlug === "ozel-induktor-teklif-rehberi";
   const shapes = guideShapes[guideSlug];
-  const filters = guideSlug === "emi-emc-rfi-nedir";
+  const filters = guideSlug === "emi-emc-rfi-nedir" || guideSlug === "emi-filtre-baglantisi";
   const toroid = (p: AirtableProduct) => p.fields.Category === "Ferrit" && !!p.fields["Ürün Tipi"]?.includes("TOROID");
   const matches = products.filter(p => {
     if (transformer) return p.fields.Category === "Ferrit" && p.fields["Ürün Tipi"]?.some(type => type === "EE" || type === "ETD");

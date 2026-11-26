@@ -423,5 +423,22 @@
       "alt": "EE ferrite core from the catalog",
       "description": "What skin effect is and when litz wire is needed: penetration depth, AC resistance ratio, the copper fill cost of litz wire and a request checklist for wound parts."
     }
+  },
+  {
+    "file": "26-emi-filtre-baglantisi.md",
+    "slug": "emi-filtre-baglantisi",
+    "category": "EMI ve filtreler / Montaj ve test",
+    "image": "/products-images/screenshot-2025-10-31-at-12.35.05-pm.png",
+    "alt": "Katalogdaki 6 A EMI filtre",
+    "description": "EMI filtre nasıl bağlanır? Line ve load uçları, koruyucu toprak, gövde bağlantısı, kablo yerleşimi, kaçak akım ve LISN ile iletilen parazit testi.",
+    "publishedAt": "2026-11-26T00:00:00+03:00",
+    "modifiedAt": "2026-11-26T00:00:00+03:00",
+    "en": {
+      "file": "en/how-to-connect-and-test-an-emi-filter.md",
+      "slug": "how-to-connect-and-test-an-emi-filter",
+      "category": "EMI and filters / Installation and test",
+      "alt": "6 A EMI filter from the catalog",
+      "description": "How to connect an EMI filter: line and load terminals, protective earth, case grounding, cable routing, leakage current and conducted emission testing with a LISN."
+    }
   }
 ]

@@ -74,8 +74,8 @@ test('the site receives no stock, prices or internal fields from the catalog', (
 
 test('published blog guides have working source anchors and safe rendered markup', () => {
   const {blogPosts, englishBlogPosts, getBlogPost, renderBlogMarkdown, blogStructuredData, productGuideSlug} = require('../lib/blog.ts');
-  assert.equal(blogPosts.length, 25);
-  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 25);
+  assert.equal(blogPosts.length, 26);
+  assert.equal(new Set(blogPosts.map(post => post.slug)).size, 26);
   for (const post of [...blogPosts, ...englishBlogPosts]) {
     const ids = [...post.html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
     assert.equal(new Set(ids).size, ids.length);
@@ -141,7 +141,7 @@ test('every blog guide lists its own catalog products and links to them in the c
       } else if (guideShapes[post.slug]) {
         assert.equal(product.fields.Category, 'Ferrit');
         assert.ok(guideShapes[post.slug].includes(product.fields['Ürün Tipi'][0]));
-      } else if (post.slug === 'emi-emc-rfi-nedir') {
+      } else if (post.slug === 'emi-emc-rfi-nedir' || post.slug === 'emi-filtre-baglantisi') {
         assert.equal(product.fields.Category, 'PEM');
       } else assert.equal(productGuideSlug(product.fields.Category, product.fields['Ürün Tipi'], product.fields['Product Name']), post.slug);
     }
