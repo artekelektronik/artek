@@ -440,5 +440,22 @@
       "alt": "6 A EMI filter from the catalog",
       "description": "How to connect an EMI filter: line and load terminals, protective earth, case grounding, cable routing, leakage current and conducted emission testing with a LISN."
     }
+  },
+  {
+    "file": "27-flyback-trafosu-nuve-hava-araligi.md",
+    "slug": "flyback-trafosu-nuve-hava-araligi",
+    "category": "Nüve biçimleri / Flyback",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "alt": "Katalogdaki ETD ferrit nüve",
+    "description": "Flyback trafosu tasarımında nüve ve hava aralığı seçimi: sürekli ve kesintili mod, sarım sayısı, AL değeri, aralık hesabı örneği ve saçak akı.",
+    "publishedAt": "2026-11-27T00:00:00+03:00",
+    "modifiedAt": "2026-11-27T00:00:00+03:00",
+    "en": {
+      "file": "en/flyback-transformer-core-and-air-gap.md",
+      "slug": "flyback-transformer-core-and-air-gap",
+      "category": "Core shapes / Flyback",
+      "alt": "ETD ferrite core from the catalog",
+      "description": "Selecting the core and air gap of a flyback transformer: continuous and discontinuous mode, turns, AL value, a worked gap calculation and fringing flux."
+    }
   }
 ]
