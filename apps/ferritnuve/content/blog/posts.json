@@ -406,5 +406,56 @@
       "alt": "Coated ferrite toroid core from the catalog",
       "description": "How a common-mode choke works and how to choose one: core material, winding style, impedance curve, current and insulation."
     }
+  },
+  {
+    "file": "25-deri-etkisi-litz-teli.md",
+    "slug": "deri-etkisi-litz-teli",
+    "category": "Temel bilgiler / Sargı teli",
+    "image": "/products-images/ee-cores.jpg",
+    "alt": "Katalogdaki EE ferrit nüve",
+    "description": "Deri etkisi nedir, litz teli ne zaman gerekir? Sızma derinliği, AC direnç oranı, litz telinin bakır doluluğu bedeli ve sarım için talep listesi.",
+    "publishedAt": "2026-11-24T00:00:00+03:00",
+    "modifiedAt": "2026-11-24T00:00:00+03:00",
+    "en": {
+      "file": "en/skin-effect-and-litz-wire.md",
+      "slug": "skin-effect-and-litz-wire",
+      "category": "Basics / Winding wire",
+      "alt": "EE ferrite core from the catalog",
+      "description": "What skin effect is and when litz wire is needed: penetration depth, AC resistance ratio, the copper fill cost of litz wire and a request checklist for wound parts."
+    }
+  },
+  {
+    "file": "26-emi-filtre-baglantisi.md",
+    "slug": "emi-filtre-baglantisi",
+    "category": "EMI ve filtreler / Montaj ve test",
+    "image": "/products-images/screenshot-2025-10-31-at-12.35.05-pm.png",
+    "alt": "Katalogdaki 6 A EMI filtre",
+    "description": "EMI filtre nasıl bağlanır? Line ve load uçları, koruyucu toprak, gövde bağlantısı, kablo yerleşimi, kaçak akım ve LISN ile iletilen parazit testi.",
+    "publishedAt": "2026-11-26T00:00:00+03:00",
+    "modifiedAt": "2026-11-26T00:00:00+03:00",
+    "en": {
+      "file": "en/how-to-connect-and-test-an-emi-filter.md",
+      "slug": "how-to-connect-and-test-an-emi-filter",
+      "category": "EMI and filters / Installation and test",
+      "alt": "6 A EMI filter from the catalog",
+      "description": "How to connect an EMI filter: line and load terminals, protective earth, case grounding, cable routing, leakage current and conducted emission testing with a LISN."
+    }
+  },
+  {
+    "file": "27-flyback-trafosu-nuve-hava-araligi.md",
+    "slug": "flyback-trafosu-nuve-hava-araligi",
+    "category": "Nüve biçimleri / Flyback",
+    "image": "/products-images/screenshot-2025-10-31-at-2.13.53-pm.png",
+    "alt": "Katalogdaki ETD ferrit nüve",
+    "description": "Flyback trafosu tasarımında nüve ve hava aralığı seçimi: sürekli ve kesintili mod, sarım sayısı, AL değeri, aralık hesabı örneği ve saçak akı.",
+    "publishedAt": "2026-11-27T00:00:00+03:00",
+    "modifiedAt": "2026-11-27T00:00:00+03:00",
+    "en": {
+      "file": "en/flyback-transformer-core-and-air-gap.md",
+      "slug": "flyback-transformer-core-and-air-gap",
+      "category": "Core shapes / Flyback",
+      "alt": "ETD ferrite core from the catalog",
+      "description": "Selecting the core and air gap of a flyback transformer: continuous and discontinuous mode, turns, AL value, a worked gap calculation and fringing flux."
+    }
   }
 ]
